@@ -13,21 +13,29 @@ Bağış tipleri (ürün Bağış sekmesinde seçilir):
 
 ---
 
-## Ayarlar sayfası sekmeleri (özet)
+## Yönetici ekranı (12.0.0)
 
-| Sekme | Ne işe yarar |
+Eklentinin TEK yönetici girişi vardır: WordPress sol menüsünde üst düzey **Bağış Paneli** (kalp simgesi; WooCommerce altında eklenti girişi yok). Yetki: `manage_woocommerce`. Eski sekmeli ayar sayfası ve "eski ekrana dön" seçeneği kaldırıldı; eski adres (`wdp-popup-settings`) Genel Bakış'a yönlenir. Her ayar kendiliğinden kaydedilir (REST) ve altında kısa açıklaması vardır; "Rehber" düğmesi sayfa başlığındadır.
+
+| Sayfa | Ne işe yarar |
 |-------|----------------|
-| Ürünler | Tüm ürünlerin bağış tipi, kısa kodu ve (kampanyada) toplanan tutarı. Ayrıntılı ayar için “Bağış ayarları” ile ürünün Bağış sekmesine gidin. |
-| Ürün sayfası ve liste | Hangi ürünlerin bağış sayılacağı, mağaza/ürün sayfasında “Bağış Yap”, formun popup / panel / sayfa içi görünümü. |
-| Tasarım | Marka rengi, stil paketleri, e-posta / ithaf / anonim alanları, güven rozetleri, blok sırası. |
-| Modal | Popup, sağ panel ve sayfa içi formun ölçüleri ve iç boşlukları. |
-| Normal | Form ve buton renkleri, hızlı tutar düğmeleri, çok adımlı form. |
-| Hisseli | Hisseli forma özel metin ve renkler. |
-| Progress | İlerleme çubuğu renkleri ve hedef dolunca kutlama. |
-| Başarı | Sepete ekleme sonrası teşekkür ekranı, mini sepet, varsayılan alt bağış ürünü. |
-| Meta Pixel | Meta (Facebook) ölçüm olayları. |
-| Kategoriler | Kategori başlık / vurgu renkleri (ürün “Kategori rengini kullan” ile). |
-| Gelişmiş | Eklenti kaldırılınca veri silme; alt bağış bağlantıları denetim tablosu. |
+| **Genel Bakış** | Kurulum ilerlemesi (n/6 halka, "Sihirbaza devam et"), modül anahtarları (yan sepet, etki ifadeleri, sosyal kanıt, teşekkür ekranı, vergi indirimi, bağışçı hesabı vb.; açık/kapalı), **Durum** kutusu: ödeme sayfası (blok/klasik), para birimi, bağış ürünü sayısı, gizlilik sayfası, misafir ödeme kapalıysa uyarı (WooCommerce ayarına bağlantı; eklenti WooCommerce ayarını değiştirmez) |
+| **Kampanyalar** | Hedefli ürünler (hedef, toplanan, durum), **Etki ifadeleri** (tutarın yanında kısa karşılıklar; yalnız modül açıkken) |
+| **Formlar ve Görünüm** | Bölümler: **Form biçimi** (popup / sağ panel / sayfa içi; telefonda her zaman alttan panel), **Renkler** (varsayılan "temamı kullan"; istenirse Ana renk + Buton rengi, Bağış düğmesi metni, Tam genişlikte bağış düğmesi), **Tutarlar** (hızlı tutar düğmeleri + liste), **Form alanları** (E-posta alanı, Adına / ithaf [+ ipucu], Anonim seçeneği, İki adım, Güven satırı [+ metni]), **Hisseli bağışlar** (başlık, kopyalama düğmesi, hissedar e-postası), **Ürün sayfaları ve listeler** ("Sepete ekle" yerine bağış düğmesi, Konum, Ürün fiyatını gizle, Sayfa içi formun üstünde başlık, Ürün listelerindeki düğme, Hangi ürünler bağış ürünü, Kategori numaraları) |
+| **Sepet ve Ödeme** | **Ek bağış** (ek bağış ürünü numarası + etiketi), **Teşekkür ekranı** (mesaj, kutlama animasyonu, paylaş düğmesi), **Vergi indirimi beyanı** (ödemede tek soru; modüller açıkken) |
+| **Bağışçı Hesabı** | İsteğe bağlı hesap modülü: giriş/kayıt penceresi, Bağışlarım (WooCommerce Hesabım içinde), önceki misafir bağışlarını e-postayla hesaba bağlama |
+| **Gizlilik** | Formun altında kısa gizlilik bağlantısı (göster/gizle, bağlantı metni, adres; adres boşsa WordPress Gizlilik sayfası). Eklenti gizlilik metni YAZMAZ |
+| **Araçlar** | **Veri**: eklenti silinince eklenti verilerini sil (onay ister); ayarları dışa/içe aktar (tek dosya) |
+| **Rehber** | Yerleşik kullanım rehberi (kısa kodlar, bloklar, kancalar) + WordPress bağlamsal yardım sekmeleri |
+| **Hızlı kurulum** (sihirbaz; menüde görünmez, Genel Bakış'tan açılır) | 5 adım: Sayfalar, Görünüm, Bağış formu, Modüller, Bitir; her adımda kayıt, kaldığı yerden devam, atlanabilir, canlı telefon önizlemesi |
+
+Yönetici çubuğunda **Önizleme** düğümü (`?dp_preview=1`; yalnız oturumu açık, `manage_woocommerce` yetkili kullanıcı için etkilidir).
+
+Renk, yazı, boşluk, köşe ve genişlik ayarları kaldırıldı: bunlar tasarım belirteçlerinden ve temadan gelir. Eski ayar -> yeni alan eşlemesi: `build/handoff/12-adm-ayar-envanteri.md` (152 eski ayar: 29 taşındı, 91 otomatik, 32 eski motora özgü olduğu için kaldırıldı; veri kaybı yok, eski `wdp_*` seçenekleri silinmez).
+
+Aşağıdaki "Genel ayar" satırları artık bu sayfalardaki karşılıklarına işaret eder.
+
+> **Not (ürün Bağış sekmesi):** Ürün düzenleme ekranındaki Bağış sekmesi yerinde kalır (değişmedi). Sekmedeki bazı görünüm alanlarının (ürüne özel tema rengi, düzen, alan ikonları, etki/aciliyet/sosyal kanıt satırları vb.) yeni formda görsel karşılığı alan bazında DOĞRULANMADI; bu alanlar kayıt edilir ve veri kaybolmaz.
 
 ---
 
@@ -41,7 +49,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Bağış ürünlerinde klasik “Sepete ekle” yerine bağış formu kullanılır; ürün bağış listelerinde görünür.  
 - **Tip:** Tümü  
 - **Formda:** Ürün bağış ise form / “Bağış Yap”; isteğe bağlı “Normal ürün” ile klasik sepete ekle kalır.  
-- **Genel ayar:** Ürün sayfası ve liste → Kapsam (tüm basit ürünler / kategoriler / yalnızca işaretli).  
+- **Genel ayar:** Formlar ve Görünüm → Ürün sayfaları ve listeler → Hangi ürünler bağış ürünü (tüm basit ürünler / kategoriler / yalnızca işaretli).  
 - **Nasıl denenir:** 1) Kapsamı “yalnızca işaretli” yapın. 2) Üründe Genel / Bağış / Normal seçin. 3) Mağaza ve ürün sayfasında butonu kontrol edin.
 
 ### Otomatik yerleşim
@@ -50,7 +58,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Kapalıysa formu yalnızca kısa kod, blok veya widget ile siz eklersiniz.  
 - **Tip:** Tümü  
 - **Formda:** Açıkken ürün sayfasında form otomatik gelir (tema destekliyorsa).  
-- **Genel ayar:** Ürün sayfası ve liste → WooCommerce sayfalarında “Sepete Ekle” yerine “Bağış Yap”.  
+- **Genel ayar:** Formlar ve Görünüm → Ürün sayfaları ve listeler → "Sepete ekle" yerine bağış düğmesi göster.  
 - **Nasıl denenir:** 1) Genel ayarı açık bırakın. 2) Üründe Kapalı seçin. 3) Ürün sayfasında otomatik form olmamalı; kısa kodla form gelmeli.
 
 ### Bağış tipi
@@ -113,7 +121,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Hedefe ulaşıldığında (onaylı toplam geçiş anında) kısa kutlama gösterir; sayfa açılışında zaten %100 ise kutlama yok.  
 - **Tip:** Hedefli kampanya  
 - **Formda:** İlerleme çubuğu kutlaması.  
-- **Genel ayar:** Progress sekmesindeki “Hedef dolunca kutlama” ayrı bir genel ayardır.  
+- **Genel ayar:** Yok (Sepet ve Ödeme → Teşekkür ekranı → Kutlama animasyonu sipariş sonrası ekranı etkiler, ilerleme çubuğunu değil).  
 - **Nasıl denenir:** Hedefin altında açıp onaylı toplamı geçirin.
 
 ### Hızlı tutar düğmeleri
@@ -122,8 +130,8 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Tutar kutusunun üstünde 100 ₺ / 250 ₺ gibi tek tıkla seçilen düğmeler.  
 - **Tip:** Yalnız "Bağışçı belirler" ve "Hedefli kampanya" (yönetimde diğer tiplerde gizli; formda gelmez)  
 - **Formda:** Tutar alanının üstündeki düğmeler. En düşük tutarın altındakiler gizlenir; hepsi gizlenirse bölüm tamamen kalkar.  
-- **Genel ayar (gösterim):** Normal → Hızlı tutar düğmelerini göster. Üründe kapalıysa gizlenir; genel kapalıysa ürün açık olsa da düğmeler gelmez.  
-- **Nasıl denenir:** Normal'de düğmeleri açın, üründe kapatın → düğme yok; ikisini açın → düğme var.
+- **Genel ayar (gösterim):** Formlar ve Görünüm → Tutarlar → Hızlı tutar düğmeleri. Üründe kapalıysa gizlenir; genel kapalıysa ürün açık olsa da düğmeler gelmez.  
+- **Nasıl denenir:** Formlar ve Görünüm'de düğmeleri açın, üründe kapatın → düğme yok; ikisini açın → düğme var.
 
 ### Tutarlar (hızlı tutar düğmeleri listesi)
 
@@ -131,7 +139,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6, genel ayarda da). "1.000", "1,5", "5o0" gibi değerler geçersizdir: kayıt durur ve hatalı değer hata mesajında gösterilir. Ürün alanı boşsa genel ayardaki tutarlar kullanılır. Hiç kaydedilmemiş genel liste: mağaza ondalık sayısına göre `5, 10, 25, 50, 100` (ondalıklı para) veya `100, 250, 500, 1000, 2500` (0 ondalık). Yönetici kaydı her zaman önceliklidir; mevcut değerler değişmez.  
 - **Tip:** Yukarıdaki gibi  
 - **Formda:** Hızlı tutar düğmeleri. Hiçbir tutar kendiliğinden seçili gelmez.  
-- **Genel ayar:** Normal → Hızlı tutar düğmeleri.  
+- **Genel ayar:** Formlar ve Görünüm → Tutarlar → Tutarlar.  
 - **Nasıl denenir:** Ürüne `50, 100` yazın; formda yalnızca bunlar görünsün. `1.000` yazın; kayıt hata vermeli.
 
 ### Önerilen tutar
@@ -139,7 +147,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ekran adı:** Önerilen tutar  
 - **Ne işe yarar:** Üründe doluysa ve o tutar o an görünen hızlı tutar düğmeleri arasındaysa yalnız o düğmede "Önerilen" etiketi gösterir. Boş bırakılırsa hiçbir tutarda etiket yok. Listede olmayan / tam sayı olmayan değer kaydı durdurur. Etiketli tutar kendiliğinden seçilmez.  
 - **Tip:** Yalnız "Bağışçı belirler" ve "Hedefli kampanya" (hisseli/sabitte admin alanı gizli)  
-- **Genel ayar:** Yok (10.29.1’de Normal sekmesinden kaldırıldı; eski genel değer yok sayılır / migration siler).  
+- **Genel ayar:** Yok (10.29.1’de genel ayardan kaldırıldı; eski genel değer yok sayılır / migration siler).  
 - **Nasıl denenir:** Alanı boş bırakın → etiket yok; `250` yazın → yalnız 250 ₺ düğmesinde etiket; `777` yazın → kayıt hata.
 
 ### Adet seçici
@@ -166,8 +174,8 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Bağışçıdan e-posta ister.  
 - **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya (hisselide yok).  
 - **Formda:** Bağışçı bilgilerinde e-posta satırı (`maxlength=100`). Boş serbest; dolu ama geçersizse gönderim durur (görünür hata). Kapalıysa sunucu POST’taki değeri yok sayar. Sepet satırında görünür.  
-- **Genel ayar:** Tasarım → E-posta alanı.  
-- **Nasıl denenir:** Tasarım’da açık + üründe Genel → e-posta var; üründe Kapalı → yok; geçersiz adres → hata.
+- **Genel ayar:** Formlar ve Görünüm → Form alanları → E-posta alanı.  
+- **Nasıl denenir:** Formlar ve Görünüm’de açık + üründe Genel → e-posta var; üründe Kapalı → yok; geçersiz adres → hata.
 
 ### İthaf alanı
 
@@ -175,7 +183,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Bağışın kimin adına yapıldığını yazmak için alan gösterir.  
 - **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya (hisselide yok).  
 - **Formda:** İthaf metin kutusu (120 karakter). Kapalıysa sunucu yok sayar. Sepet satırında görünür.  
-- **Genel ayar:** Tasarım → İthaf alanı.  
+- **Genel ayar:** Formlar ve Görünüm → Form alanları → Adına / ithaf.  
 - **Nasıl denenir:** Açıkken ithaf yazıp sepete ekleyin.
 
 ### İthaf örnek metni
@@ -184,7 +192,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** İthaf alanı boşken içinde görünen örnek metin.  
 - **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya  
 - **Formda:** Alanın soluk örnek yazısı (kayıt sınırı 120).  
-- **Genel ayar (boşsa):** Tasarım → İthaf örnek metni.  
+- **Genel ayar (boşsa):** Formlar ve Görünüm → Form alanları → İthaf alanı ipucu.  
 - **Nasıl denenir:** Ürün metnini değiştirip formda görün.
 
 ### Anonim bağış
@@ -193,7 +201,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** İşaretlenirse bağışçı adı herkese açık listelerde gizlenir; sipariş kayıtlarında görünür.  
 - **Tip:** Sabit / Bağışçı belirler / Hedefli kampanya (hisselide yok).  
 - **Formda:** “İsmim gizli kalsın” kutusu. Sepette “İsmim gizli kalsın: Evet” satırı. Mini sepet herkese açık alt kümede tam ad maskelenir.  
-- **Genel ayar:** Tasarım → Anonim bağış.  
+- **Genel ayar:** Formlar ve Görünüm → Form alanları → Anonim seçeneği.  
 - **Nasıl denenir:** Kutuyu işaretleyip sepete ekleyin; herkese açık yanıtta tam ad olmamalı.
 
 ### Ürün notu / Not metni
@@ -212,7 +220,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Tip:** Tümü  
 - **Formda:** Adım adım geçiş; ithaf/anonim bloğu Bilgiler adımında.  
 - **Ürün:** Genel ayarı kullan / Açık / Kapalı (`_enable_wizard`).  
-- **İlgili genel ayar:** Normal → Çok adımlı form.  
+- **İlgili genel ayar:** Formlar ve Görünüm → Form alanları → İki adım.  
 - **Nasıl denenir:** Üründe Açık → adım adım; Kapalı → tek ekran (genel açık olsa bile).
 
 ### Alan ikonları
@@ -222,7 +230,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Tip:** Tümü  
 - **Formda:** Alan başı ikonları; ürün boşken genel ayar.  
 - **Ürün:** Genel ayarı kullan / Açık / Kapalı.  
-- **İlgili genel ayar:** Tasarım → Alan ikonları.  
+- **İlgili genel ayar:** Yok (yeni formda ikonlar sabit ve erişilebilirdir; genel ayar kaldırıldı).  
 - **Nasıl denenir:** Kapalı → `wdp-no-field-icons`, ikonlar kaybolmalı.
 
 ### Aydınlatma metni bağlantısı
@@ -231,7 +239,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Formda kişisel veri aydınlatma bağlantısı gösterir (varsayılan kapalı). Aydınlatma metni sitenizdeki KVKK/Gizlilik sayfasında olmalıdır; burada yalnız kısa bağlantı gösterilir. Varsayılan etiket: “Kişisel verilerin işlenmesine ilişkin aydınlatma metni” (ayardan değişir).  
 - **Tip:** E-posta, ithaf veya hissedar alanlarından en az biri varken  
 - **Formda:** Yalnız bağlantı (yeni sekme, `rel=noopener`). Adres boşsa WordPress Gizlilik Politikası sayfası; o da yoksa bağlantı gösterilmez + yönetici uyarısı.  
-- **Genel ayar:** Tasarım → Aydınlatma metni bağlantısı.  
+- **Genel ayar:** Gizlilik → Formun altında gizlilik bağlantısı göster (+ Bağlantı metni, Bağlantı adresi).  
 - **Nasıl denenir:** Açıp e-posta alanını açın → formda kısa bağlantı görünmeli.
 
 ### Etki satırı / Etki metni
@@ -267,7 +275,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Formun altında güven mesajları. Genel ayar kapalıysa ürün açık olsa da gösterilmez. Ürün listesi doluysa genel listenin yerine geçer.  
 - **Tip:** Tümü  
 - **Formda:** Sepete ekle altı güven şeridi.  
-- **Genel ayar (boş rozetler):** Tasarım → Güven rozetleri / Güven metni.  
+- **Genel ayar (boş rozetler):** Formlar ve Görünüm → Form alanları → Güven satırı / Güven satırı metni.  
 - **Nasıl denenir:** Ürün rozeti yazın → formda o metin.
 
 ### Blok sırası
@@ -276,7 +284,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Başlık altı 5 bloğun sırası (media, impact, urgency, social_proof, progress); kapalıysa Tasarım’daki genel sıra.  
 - **Tip:** Tümü  
 - **Formda:** Medya, etki, aciliyet, sosyal kanıt, ilerleme sırası.  
-- **Genel ayar:** Tasarım → Varsayılan modül sırası (yalnız bu 5 kimlik).  
+- **Genel ayar:** Yok (genel/ürün blok sırası ayarı kaldırıldı; sabit sıra).  
 - **Nasıl denenir:** Özel sıra açıp yukarı/aşağı taşıyın; formu kontrol edin.
 
 ### Alt bağış ekle
@@ -294,8 +302,8 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Alt bağışı açan düğmenin metni.  
 - **Tip:** Alt bağış açıkken  
 - **Formda:** Toggle düğmesi.  
-- **Genel ayar (boşsa):** Başarı → Alt Bağış Toggle Metni.  
-- **Nasıl denenir:** Boş bırakın → Başarı sekmesindeki metin; doldurun → ürün metni.
+- **Genel ayar (boşsa):** Sepet ve Ödeme → Ek bağış → Ek bağış etiketi.  
+- **Nasıl denenir:** Boş bırakın → Sepet ve Ödeme’deki Ek bağış etiketi; doldurun → ürün metni.
 
 ### Alt bağış ürünü
 
@@ -303,7 +311,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ne işe yarar:** Sepete eklenecek ikinci WooCommerce ürünü. Yalnızca basit, yayımlanmış veya özel ürün seçilmeli; ürünün kendisi seçilemez.  
 - **Tip:** Alt bağış açıkken  
 - **Formda:** Sepette ikinci satır.  
-- **Genel ayar (boşsa):** Başarı → Varsayılan alt bağış ürünü.  
+- **Genel ayar (boşsa):** Sepet ve Ödeme → Ek bağış → Ek bağış ürünü numarası.  
 - **Nasıl denenir:** 1) Ürün seçin veya boş bırakıp genel varsayılanı kullanın. 2) Alt bağışı açıp sepete ekleyin. 3) Sepette iki satır olmalı. Geçersiz seçim kaydedilmez; alan altında hata görünür.
 
 ### En düşük tutar / Sabit tutar (alt bağış)
@@ -329,22 +337,22 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 - **Ekran adı:** Düzen; Ürün görselini göster  
 - **Ne işe yarar:** Klasik / Kampanya / Hikâye yerleşimi; öne çıkan görsel. **Boş = Klasik; genel düzen ayarı yoktur.** Görsel açıkken ürünün öne çıkan görseli yoksa yönetici uyarısı.  
 - **Tip:** Tümü  
-- **Formda:** Yerleşim ve üst görsel (`wdp_campaign_media_url` filtresi URL’yi değiştirebilir). Liste kartları ürün temasını kullanmaz.  
+- **Formda:** Yerleşim ve üst görsel. Liste kartları ürün temasını kullanmaz.  
 - **Genel ayar:** Yok (düzen ürün başına).  
 - **Nasıl denenir:** Hikâye düzeni + görsel açın.
 
 ### Ana renk / hover / arka plan / köşe
 
 - **Ekran adı:** Ana renk; Ana renk (üzerine gelince); Arka plan rengi; Köşe yuvarlaklığı (px)  
-- **Ne işe yarar:** Bu ürüne özel renk ve köşe. Ana renk boşsa kategori rengi, o da yoksa genel marka rengi. Hover boşsa ana renkten türetilir. Köşe 4–32 px (boş/0 = genel). Yoğunluk ürün ekranından gizlendi (meta silinmez).  
+- **Ne işe yarar:** Bu ürüne özel renk ve köşe. Ana renk boşsa genel ana renk (yönetici "kendi renklerimi seçeyim" dediyse) ya da tema ön ayarı. Hover boşsa ana renkten türetilir. Köşe 4–32 px (boş/0 = genel). Yoğunluk ürün ekranından gizlendi (meta silinmez).  
 - **Tip:** Tümü  
 - **Formda:** Kabuk CSS değişkenleri (türev palet, `--wdp-on-primary`, panel/sheet köşe oranı).  
-- **Genel ayar:** Tasarım (marka) ve Normal (modal arka plan, UI radius); Kategoriler → kategori renkleri.  
+- **Genel ayar:** Formlar ve Görünüm → Renkler (Ana renk, Buton rengi).  
 - **Nasıl denenir:** Hex girin (`#` isteğe bağlı); açık renkte düğme yazısının koyu olduğunu kontrol edin.
 
 ### Kısa kodlar
 
-Ürün sekmesinde ve Ürünler tablosunda üç kod kopyalanır: buton, panel, form (hepsi `id="…"` ile). Gutenberg blokları ve Elementor widget’ları aynı render fonksiyonlarını kullanır.
+Ürün Bağış sekmesinde üç kod kopyalanır: buton, panel, form (hepsi `id="…"` ile; `id` verilmezse kod bulunduğu ürünü kendisi bulur). Gutenberg blokları ve Elementor widget’ları aynı render fonksiyonlarını kullanır. 12.0.0'da `title/show_title` yeni formda kullanılmaz; `class` bir `<div class="dp-entry ...">` sarmalayıcıya gider.
 
 **Kapsam atlama:** `id`, `slug` veya `sku` ile ürün açıkça verilirse bağış kapsamı kontrolü uygulanmaz (ürün kapsam dışında da çalışır). Kimlik verilmezse (mevcut ürün sayfası) kapsam dışındaki ürün boş döner; uyarı yalnız `edit_products` yetkilisine görünür.
 
@@ -419,7 +427,7 @@ Blok: **Bağış listesi** (`wdp/donations`). Elementor: **Bağış Listesi** (`
 
 ---
 
-## Alt bağış (Gelişmiş tablosu kaldırıldı)
+## Alt bağış (ek bağış; Gelişmiş tablosu kaldırıldı)
 
 10.28.4 bir kerelik `_sadaka_wc_product_id` temizliği `wdp_migration_log` ve (silinmeyen) `wdp_sadaka_links_audit` seçeneğinde durur. 10.33.0’dan itibaren Gelişmiş sekmesinde denetim tablosu yoktur.
 

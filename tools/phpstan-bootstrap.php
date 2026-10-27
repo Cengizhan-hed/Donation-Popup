@@ -12,7 +12,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', dirname(__DIR__) . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '11.0.0');
+	define('WDP_VERSION', '12.0.0');
 }
 if (!defined('WDP_PLUGIN_DIR')) {
 	define('WDP_PLUGIN_DIR', dirname(__DIR__) . '/');
@@ -21,7 +21,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '11.0.0');
+	define('WDP_ASSET_VERSION', '12.0.0');
 }
 
 // Yönetici köprüsü: eski küresel sınıf adları taşınan ad alanlı sınıflara takma ad olur (statik analiz için).

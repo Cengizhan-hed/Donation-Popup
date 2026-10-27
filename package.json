@@ -1,13 +1,11 @@
 {
   "name": "donation-popup",
-  "version": "11.0.0",
+  "version": "12.0.0",
   "description": "Donation Panel for WooCommerce — WordPress plugin.",
   "private": true,
   "scripts": {
     "e2e:quality": "node tests/e2e/run-quality.mjs",
-    "build:css": "php tools/build-css-bundle.php",
-    "build:js": "php tools/build-js-bundle.php",
-    "build": "npm run build:css && npm run build:js && npm run build:modules",
+    "build": "npm run build:modules",
     "smoke": "php tests/smoke/run.php",
     "test": "php vendor/bin/phpunit -c phpunit.xml.dist && WDP_UNIT_TEST=1 node --test tests/unit/js/*.test.mjs",
     "test:package": "node --test tests/unit/js/package-contents.test.mjs",

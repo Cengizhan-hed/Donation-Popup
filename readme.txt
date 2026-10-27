@@ -5,7 +5,7 @@ Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 11.0.0
+Stable tag: 12.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,10 +46,15 @@ Write it on your site; the form only shows a link to the page you choose.
 
 == Upgrade Notice ==
 
-= 11.0.0 =
-Major release. Settings, orders and shortcodes are kept. Upgraded sites keep the previous form and admin screens until you switch to the new experience in settings. Back up before updating.
+= 12.0.0 =
+Major release. One experience, one menu: the previous form engine and settings screens were removed. Settings, orders, shortcodes and blocks are kept. Back up before updating.
 
 == Changelog ==
+
+= 12.0.0 =
+* One experience, one menu, new design; donation form pre-fills the checkout page. The previous form engine and admin screens were removed.
+* Shortcodes, blocks, hooks and stored settings keep working (compatibility contract).
+
 
 = 11.0.0 =
 * New architecture: namespaced code (`DonationPanel\`), REST endpoints and a WooCommerce Store API bridge for the cart; the `wdp_render_modal` request is now protected by a nonce.

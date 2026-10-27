@@ -3,6 +3,16 @@
 All notable changes to Donation Panel for WooCommerce are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [12.0.0]
+
+### Changed
+- 12.0.0 — single experience, single menu, new design, checkout pre-fill; the previous form engine and admin screens were removed.
+- One set of design tokens (`--dp-*`) drives every donor surface; brand and button colors come from the admin settings or, when empty, from the theme presets.
+- The form uses the store country for the phone prefix, shows the WordPress privacy page link when enabled, and honors the full-width button setting.
+
+### Removed
+- The previous form engine, the old admin settings screen and the engine/admin switch settings (`experiences.engine`, `admin.ui`). Public shortcodes, hooks and option keys are unchanged.
+
 ## [11.0.0]
 
 ### Added

@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: woo-donation-popup 11.0.0\n"
+"Project-Id-Version: woo-donation-popup 12.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 06:54+0300\n"
+"POT-Creation-Date: 2026-10-27 07:09+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,7 +66,7 @@ msgid "Updated the donation flag for %d products."
 msgstr ""
 
 #: includes/class-admin-product-data-tab.php:64
-#: templates/donation-panel/experiences/form.php:361
+#: templates/donation-panel/experiences/form.php:366
 #: templates/donation-panel/thanks/summary.php:39
 msgid "Donation"
 msgstr ""
@@ -150,8 +150,8 @@ msgstr ""
 #: includes/class-admin-product-data-tab.php:597
 #: includes/class-admin-products-list-table.php:45
 #: src/WooCommerce/class-donation-order-meta.php:54
-#: templates/donation-panel/experiences/form.php:168
-#: templates/donation-panel/experiences/form.php:169
+#: templates/donation-panel/experiences/form.php:173
+#: templates/donation-panel/experiences/form.php:174
 msgid "Donation type"
 msgstr ""
 
@@ -382,7 +382,7 @@ msgid "Sample text shown inside the dedication field when it is empty."
 msgstr ""
 
 #: includes/class-admin-product-data-tab.php:791
-#: src/Modules/Experiences/class-form-context.php:468
+#: src/Modules/Experiences/class-form-context.php:499
 msgid "Anonymous donation"
 msgstr ""
 
@@ -943,7 +943,7 @@ msgstr ""
 #. translators: %s: percent
 #. translators: %s: fee percent.
 #: includes/class-form-modules.php:738
-#: templates/donation-panel/experiences/form.php:100
+#: templates/donation-panel/experiences/form.php:105
 #, php-format
 msgid "Cover processing costs (+%%%s)"
 msgstr ""
@@ -951,9 +951,9 @@ msgstr ""
 #: includes/class-form-modules.php:749
 #: src/Modules/DonorAccount/class-account-renderer.php:211
 #: src/Modules/SideCart/class-side-cart-renderer.php:88
-#: templates/donation-panel/experiences/form.php:360
-#: templates/donation-panel/experiences/form.php:364
-#: templates/donation-panel/experiences/form.php:384
+#: templates/donation-panel/experiences/form.php:365
+#: templates/donation-panel/experiences/form.php:369
+#: templates/donation-panel/experiences/form.php:389
 #: templates/donation-panel/thanks/summary.php:49
 msgid "Total"
 msgstr ""
@@ -1007,8 +1007,8 @@ msgid "Check"
 msgstr ""
 
 #: includes/class-icon-library.php:60 src/Admin/class-setup-wizard.php:153
-#: templates/donation-panel/experiences/form.php:133
-#: templates/donation-panel/experiences/form.php:389
+#: templates/donation-panel/experiences/form.php:138
+#: templates/donation-panel/experiences/form.php:394
 msgid "Continue"
 msgstr ""
 
@@ -1130,7 +1130,7 @@ msgstr ""
 
 #: includes/config/form-modules.php:35 src/WooCommerce/class-cart-hooks.php:345
 #: src/WooCommerce/class-order-meta-keys.php:77
-#: templates/donation-panel/experiences/form.php:362
+#: templates/donation-panel/experiences/form.php:367
 msgid "Processing fee"
 msgstr ""
 
@@ -1311,7 +1311,7 @@ msgstr ""
 
 #: src/Admin/class-field-registry.php:59
 #: src/WooCommerce/class-cart-hooks.php:791
-#: templates/donation-panel/experiences/form.php:363
+#: templates/donation-panel/experiences/form.php:368
 msgid "Add-on donation"
 msgstr ""
 
@@ -2372,7 +2372,7 @@ msgid "Setup progress"
 msgstr ""
 
 #: src/Admin/class-setup-wizard.php:151
-#: templates/donation-panel/experiences/form.php:135
+#: templates/donation-panel/experiences/form.php:140
 msgid "Back"
 msgstr ""
 
@@ -2530,14 +2530,14 @@ msgid "Select a valid simple WooCommerce product (published or private)."
 msgstr ""
 
 #: src/Domain/class-addon-settings.php:117
-#: templates/donation-panel/experiences/form.php:109
+#: templates/donation-panel/experiences/form.php:114
 msgid "Add add-on donation"
 msgstr ""
 
 #: src/Domain/class-addon-settings.php:242
 #: src/Domain/class-addon-settings.php:252
 #: src/Modules/Experiences/class-field-validator.php:278
-#: templates/donation-panel/experiences/form.php:133
+#: templates/donation-panel/experiences/form.php:138
 msgid "Please enter a valid add-on donation amount."
 msgstr ""
 
@@ -2593,7 +2593,7 @@ msgid "Privacy notice on the processing of personal data"
 msgstr ""
 
 #: src/Domain/class-product-context.php:122
-#: templates/donation-panel/experiences/form.php:120
+#: templates/donation-panel/experiences/form.php:125
 msgid "Add-on amount"
 msgstr ""
 
@@ -2604,7 +2604,7 @@ msgid "of %s goal"
 msgstr ""
 
 #: src/Modules/Campaign/class-progress-renderer.php:62
-#: templates/donation-panel/experiences/form.php:190
+#: templates/donation-panel/experiences/form.php:195
 msgid "Goal completion rate"
 msgstr ""
 
@@ -2615,7 +2615,7 @@ msgstr ""
 #. translators: %s: number of donors, already formatted
 #. translators: %s: number of donors.
 #: src/Modules/Campaign/class-progress-renderer.php:79
-#: templates/donation-panel/experiences/form.php:194
+#: templates/donation-panel/experiences/form.php:199
 #, php-format
 msgid "%s supporter"
 msgid_plural "%s supporters"
@@ -3281,7 +3281,7 @@ msgid "This product is out of stock (ID: %d)."
 msgstr ""
 
 #: src/Modules/EntryPoints/class-shortcodes.php:302
-#: src/Modules/Experiences/class-form-renderer.php:71
+#: src/Modules/Experiences/class-form-renderer.php:72
 msgid "Donate"
 msgstr ""
 
@@ -3298,14 +3298,14 @@ msgstr ""
 #: src/Modules/Experiences/class-field-validator.php:154
 #: src/Modules/Experiences/class-field-validator.php:173
 #: src/Modules/Experiences/class-field-validator.php:181
-#: templates/donation-panel/experiences/form.php:133
+#: templates/donation-panel/experiences/form.php:138
 msgid "Please enter a donation amount."
 msgstr ""
 
 #. translators: %s: minimum amount.
 #: src/Modules/Experiences/class-field-validator.php:179
 #: src/Modules/Experiences/class-field-validator.php:283
-#: templates/donation-panel/experiences/form.php:133
+#: templates/donation-panel/experiences/form.php:138
 #, php-format
 msgid "Minimum amount is %s."
 msgstr ""
@@ -3317,8 +3317,8 @@ msgid "Fractional amounts are not allowed on this site, e.g. %s"
 msgstr ""
 
 #: src/Modules/Experiences/class-field-validator.php:234
-#: templates/donation-panel/experiences/form.php:345
-#: templates/donation-panel/experiences/form.php:352
+#: templates/donation-panel/experiences/form.php:350
+#: templates/donation-panel/experiences/form.php:357
 msgid "This field is required."
 msgstr ""
 
@@ -3336,56 +3336,56 @@ msgstr ""
 msgid "Please check the phone number."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:127
+#: src/Modules/Experiences/class-form-context.php:145
 msgid "One-time donation"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:230
+#: src/Modules/Experiences/class-form-context.php:248
 #: templates/donation-panel/thanks/summary.php:43
 msgid "Amount"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:235
+#: src/Modules/Experiences/class-form-context.php:253
 msgid "Your details"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:315
-#: src/Modules/Experiences/class-form-context.php:416
+#: src/Modules/Experiences/class-form-context.php:346
+#: src/Modules/Experiences/class-form-context.php:447
 msgid "Full name *"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:317
+#: src/Modules/Experiences/class-form-context.php:348
 msgid "Please enter the shareholder’s name."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:324
-#: src/Modules/Experiences/class-form-context.php:425
+#: src/Modules/Experiences/class-form-context.php:355
+#: src/Modules/Experiences/class-form-context.php:456
 msgid "Phone number *"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:326
+#: src/Modules/Experiences/class-form-context.php:357
 msgid "Please enter the shareholder’s phone number."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:336
-#: src/Modules/Experiences/class-form-context.php:437
+#: src/Modules/Experiences/class-form-context.php:367
+#: src/Modules/Experiences/class-form-context.php:468
 msgid "Email (optional)"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:346
-#: src/Modules/Experiences/class-form-context.php:459
+#: src/Modules/Experiences/class-form-context.php:377
+#: src/Modules/Experiences/class-form-context.php:490
 msgid "Note (optional)"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:418
+#: src/Modules/Experiences/class-form-context.php:449
 msgid "Please enter your full name."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:427
+#: src/Modules/Experiences/class-form-context.php:458
 msgid "Please enter your phone number."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:449
+#: src/Modules/Experiences/class-form-context.php:480
 #: src/WooCommerce/class-cart-hooks.php:313
 #: src/WooCommerce/class-order-meta-keys.php:75
 msgid "Dedication"
@@ -3452,7 +3452,7 @@ msgid "On behalf of: %s"
 msgstr ""
 
 #: src/Modules/SideCart/class-side-cart-renderer.php:146
-#: templates/donation-panel/experiences/form.php:261
+#: templates/donation-panel/experiences/form.php:266
 msgid "Quantity"
 msgstr ""
 
@@ -3511,7 +3511,7 @@ msgid "today"
 msgstr ""
 
 #: src/Modules/SocialProof/class-social-proof-renderer.php:106
-#: templates/donation-panel/experiences/form.php:187
+#: templates/donation-panel/experiences/form.php:192
 msgid "raised"
 msgstr ""
 
@@ -4126,7 +4126,7 @@ msgstr ""
 
 #. translators: %d: shareholder number.
 #: src/WooCommerce/class-cart-hooks.php:273
-#: templates/donation-panel/experiences/form.php:295
+#: templates/donation-panel/experiences/form.php:300
 #, php-format
 msgid "Shareholder %d"
 msgstr ""
@@ -4222,129 +4222,129 @@ msgstr ""
 msgid "Shareholder %d phone"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:80
+#: templates/donation-panel/experiences/form.php:53
+msgid "privacy notice"
+msgstr ""
+
+#: templates/donation-panel/experiences/form.php:85
 msgid "Country code"
 msgstr ""
 
 #. translators: 1: current step, 2: number of steps.
-#: templates/donation-panel/experiences/form.php:133
+#: templates/donation-panel/experiences/form.php:138
 #, php-format
 msgid "Step %1$d of %2$d"
 msgstr ""
 
 #. translators: %s: formatted total amount.
-#: templates/donation-panel/experiences/form.php:133
+#: templates/donation-panel/experiences/form.php:138
 #, php-format
 msgid "Donate %s"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:133
+#: templates/donation-panel/experiences/form.php:138
 msgid "Added to your cart."
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:146
+#: templates/donation-panel/experiences/form.php:151
 msgid "Close popup"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:158
+#: templates/donation-panel/experiences/form.php:163
 msgid "Donation form closed"
 msgstr ""
 
 #. translators: %d: percent of goal reached.
-#: templates/donation-panel/experiences/form.php:188
+#: templates/donation-panel/experiences/form.php:193
 #, php-format
 msgid "%d%%"
 msgstr ""
 
 #. translators: %s: goal amount.
-#: templates/donation-panel/experiences/form.php:192
+#: templates/donation-panel/experiences/form.php:197
 #, php-format
 msgid "Goal %s"
 msgstr ""
 
 #. translators: %s: number of days left.
-#: templates/donation-panel/experiences/form.php:197
+#: templates/donation-panel/experiences/form.php:202
 #, php-format
 msgid "%s day left"
 msgid_plural "%s days left"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/donation-panel/experiences/form.php:204
-#: templates/donation-panel/experiences/form.php:228
+#: templates/donation-panel/experiences/form.php:209
+#: templates/donation-panel/experiences/form.php:233
 msgid "Donation amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:214
+#: templates/donation-panel/experiences/form.php:219
 msgid "Most popular"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:228
+#: templates/donation-panel/experiences/form.php:233
 msgid "Other amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:229
+#: templates/donation-panel/experiences/form.php:234
 msgid "Enter another amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:229
+#: templates/donation-panel/experiences/form.php:234
 msgid "Enter an amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:245
+#: templates/donation-panel/experiences/form.php:250
 msgid "Donate on behalf of someone"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:245
+#: templates/donation-panel/experiences/form.php:250
 msgid "Add a dedication note"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:261
+#: templates/donation-panel/experiences/form.php:266
 msgid "Number of shares"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:265
+#: templates/donation-panel/experiences/form.php:270
 msgid "Decrease"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:267
+#: templates/donation-panel/experiences/form.php:272
 msgid "Increase"
 msgstr ""
 
 #. translators: %s: price of one share.
-#: templates/donation-panel/experiences/form.php:271
+#: templates/donation-panel/experiences/form.php:276
 #, php-format
 msgid "%s per share"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:333
+#: templates/donation-panel/experiences/form.php:338
 msgid "Add a note (optional)"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:348
+#: templates/donation-panel/experiences/form.php:353
 msgid "We use this number to keep you updated about your donation."
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:392
+#: templates/donation-panel/experiences/form.php:397
 msgid "Add to cart"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:392
+#: templates/donation-panel/experiences/form.php:397
 msgid "Add to cart, choose another"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:393
+#: templates/donation-panel/experiences/form.php:398
 msgid "Secure payment · Your details are encrypted"
 msgstr ""
 
 #. translators: %s: link to the privacy policy.
-#: templates/donation-panel/experiences/form.php:400
+#: templates/donation-panel/experiences/form.php:405
 #, php-format
 msgid "By continuing you confirm you have read the %s."
-msgstr ""
-
-#: templates/donation-panel/experiences/form.php:401
-msgid "privacy notice"
 msgstr ""
 
 #: templates/donation-panel/tax-relief/step.php:22

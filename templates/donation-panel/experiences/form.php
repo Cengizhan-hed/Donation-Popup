@@ -97,7 +97,7 @@ $donation_panel_phone_field = static function ( $name, $id, $required, $extra ) 
 /**
  * İşlem ücreti ve ek bağış satırları.
  */
-$donation_panel_extras = static function () use ( $donation_panel_model, $donation_panel_key, $donation_panel_fee, $donation_panel_fee_text, $donation_panel_addon, $donation_panel_symbol, $donation_panel_format ) {
+$donation_panel_extras = static function () use ( $donation_panel_key, $donation_panel_fee, $donation_panel_fee_text, $donation_panel_addon, $donation_panel_symbol, $donation_panel_format ) {
 	if ( $donation_panel_fee > 0 ) :
 		?>
 		<label class="dp-check">
@@ -198,7 +198,7 @@ $donation_panel_extras = static function () use ( $donation_panel_model, $donati
 							<?php if ( (int) $donation_panel_camp['donors'] > 0 ) : ?>
 								<span><?php /* translators: %s: number of donors. */ echo esc_html( sprintf( _n( '%s supporter', '%s supporters', (int) $donation_panel_camp['donors'], 'woo-donation-popup' ), number_format_i18n( (int) $donation_panel_camp['donors'] ) ) ); ?></span>
 							<?php endif; ?>
-							<?php if ( isset( $donation_panel_camp['days_left'] ) && null !== $donation_panel_camp['days_left'] ) : ?>
+							<?php if ( isset( $donation_panel_camp['days_left'] ) ) : ?>
 								<span><?php /* translators: %s: number of days left. */ echo esc_html( sprintf( _n( '%s day left', '%s days left', (int) $donation_panel_camp['days_left'], 'woo-donation-popup' ), number_format_i18n( (int) $donation_panel_camp['days_left'] ) ) ); ?></span>
 							<?php endif; ?>
 						</p>

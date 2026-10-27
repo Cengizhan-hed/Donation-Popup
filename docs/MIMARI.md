@@ -1,479 +1,273 @@
-# MIMARI — woo-donation-popup (11.0.0)
+# MIMARI — woo-donation-popup (12.0.0)
 
-Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.  
-Dal referansı: `docs-mimari` / commit `220f4ec`.  
-Kural: her iddia `dosya:satır`; emin olunmayan yerler **DOĞRULANMADI**.
+Kalıcı mimari harita. Sonraki görevler için ilk okuma noktası.
+12.0.0 ile eski form motoru ve eski yönetici ekranı KALDIRILDI: tek deneyim (`src/Modules/Experiences` + onaylı yeni tasarım), tek yönetici menüsü (`src/Admin`), ödeme sayfası otomatik doldurma (`Checkout_Prefill`). Dört dal birleşti: a1 (eski çekirdek kaldırma), adm (yönetici), ui1 (popup/panel/form), ui2 (teşekkür/yan sepet/giriş/Bağışlarım) + d (ödeme ön doldurma); ardından 12-int (entegrasyon).
+Kural: emin olunmayan yerler **DOĞRULANMADI** diye işaretlenir. Aşağıdaki "Tarihsel kayıt" başlıklı bölümler (Faz 7 ve öncesi) eski motoru anlatabilir; geçerli durum bu dosyanın a–h bölümleri ve "12.0.0 entegrasyon kararları" bölümüdür.
 
 ---
 
 ## a) Klasör yapısı ve ana dosya sorumlulukları
 
-| Yol | Sorumluluk | Kanıt |
-|-----|------------|-------|
-| `woo-donation-popup.php` | Giriş: sabitler, aktivasyon/deaktivasyon, bootstrap | `woo-donation-popup.php:25-56` |
-| `uninstall.php` | `wdp_delete_data_on_uninstall=1` ise `WDP_Uninstall::cleanup_site`: eklenti option/transient + ürün meta (açık liste + `wdp_`/`_wdp_`/`_enable_`/`_sadaka_`/`_theme_` önekleri, yalnız `product`/`product_variation`); sipariş/HPOS dokunulmaz | `uninstall.php` + `includes/class-uninstall.php` |
-| `includes/` | PHP çekirdek, admin, trait, config, şablon sınıfları | `includes/class-woo-donation-popup.php:45-64` |
-| `includes/bootstrap/` | HPOS, bağımlılık, sürüm, legacy frontend | `includes/bootstrap/class-plugin-bootstrap.php:21-122` |
-| `includes/config/` | JS/CSS stack, stil paketleri, form modül sırası | `includes/config/frontend-js-stack.php`, `includes/config/frontend-css-stack.php` |
-| `includes/traits/` | AJAX / assets / utils parçaları | `includes/class-ajax.php:12-27` |
-| `includes/templates/` | Modal kabuk, alan, kampanya header, SVG | `tools/file-descriptions.json` (satır 76–79) |
-| `src/Modules/EntryPoints/` | Giriş noktaları modülü (E1): kısa kod, blok, otomatik yerleşim, yedek düğme, ürün çözücü, Elementor ince katmanı (`Elementor/`) | bkz. "Giriş noktaları modülü (E1)" |
-| `includes/compat/` | Uyumluluk: `class-compat-loader.php` (boş kayıt; K8: para birimi bağdaştırıcıları çekirdekten kaldırıldı, Curcy köprüsü `docs/site-snippets/curcy-bridge.php`), `class-builder-detect.php` (yalnız genel WordPress sinyalleriyle düzenleyici/önizleme tespiti) | `includes/compat/` |
-| `includes/i18n/` | JS sözlük sınıfı (`WDP_Js_I18n`) | `includes/i18n/class-wdp-js-i18n.php` |
-| `languages/` | `.pot` / `tr_TR.po|.mo` (parts/ dağıtıma girmez) | `.distignore` `languages/parts/` |
-| `templates/woocommerce/` | Simple add-to-cart şablon override | `templates/woocommerce/single-product/add-to-cart/simple.php` |
-| `blocks/` | Gutenberg `donation-form` + `donations` | `src/Modules/EntryPoints/class-blocks.php:34-63` |
-| `assets/js/src/` | Ön yüz JS kaynakları | `includes/config/frontend-js-stack.php` |
-| `assets/js/build/` | Hash’li JS bundle + `manifest.json` | `tools/build-js-bundle.php:11-12` |
-| `assets/css/src/` | Ön yüz CSS kaynakları | `includes/config/frontend-css-stack.php` |
-| `assets/css/build/` | Hash’li CSS bundle + manifest | `tools/build-css-bundle.php` (stack sırası) |
-| `assets/css/admin-style.css`, `assets/css/admin/products.css` | Admin UI | `includes/class-admin-assets.php` |
-| `assets/js/admin-script.js`, `assets/js/admin/products.js` | Admin JS | aynı |
-| `assets/css/list.css`, `assets/js/list.js` | `[wdp_donations]` liste | `includes/class-donations-list.php` |
-| `tools/` | Bundle / minify / docblock + lint baseline (`tools/lint-baseline/`) | `package.json:7-9`, `docs/MIMARI.md` Kod kalitesi |
-| `tools/bin/` | composer.phar / wp-cli.phar (git dışı, SHA `tools/lint-tools.json`) | `scripts/install-lint-tools.mjs` |
-| `vendor-dev/` | PHPCS / PHPStan / PHPUnit (composer `vendor-dir`; `vendor/` sembolik bağa yazılmaz) | `composer.json` `config.vendor-dir` |
-| `scripts/` | pack, deploy, ship, handoff, lint | `package.json` |
-| `tests/` | PHPUnit, JS unit, smoke, E2E | `package.json:10-23` |
-| `docs/` | AYARLAR + bu mimari | — |
+| Yol | Sorumluluk |
+|-----|------------|
+| `woo-donation-popup.php` | Giriş: sabitler (`WDP_PLUGIN_FILE/VERSION/PLUGIN_DIR/PLUGIN_URL/ASSET_VERSION`), `src/Core/class-autoloader.php` yükler, `Bootstrap::run()` çağırır; kısa kod uyumu için 2 ince işlev sarmalayıcı (`wdp_render_donation_button()`, `wdp_render_donation_form()`) |
+| `uninstall.php` | `src/Core/class-uninstall.php` (`Uninstall::cleanup_site`): "verileri sil" bayrağı (önce `donation_panel_settings.general.delete_data_on_uninstall`, yoksa `wdp_delete_data_on_uninstall`) açıksa eklenti seçenek/geçici verisi + ürün meta önekleri; sipariş/HPOS'a dokunmaz |
+| `src/Core/` | `Autoloader` (gömülü; `DonationPanel\Foo\Bar_Baz` -> `src/Foo/class-bar-baz.php`), `Bootstrap`, `Plugin`, `Container`, `Settings`, `Module_Registry`, `Module_Interface`, `Migrations` + `Version_Migrations` + `Release_12_Upgrade` + `Legacy_Settings_Importer`, `Uninstall` |
+| `src/Domain/` | Saf alan mantığı (çoğu statik): `Donation_Scope`, `Donation_Type`, `Campaign_Goal`, `Campaign_Totals`, `Progress_Currency`, `Placement_Settings`, `Product_Context`, `Button_Settings`, `Amount_Presets`, `Cover_Fee`, `Addon_Settings`, `Addon_Product_Visibility`, `Privacy_Notice` |
+| `src/WooCommerce/` | Sepet kancaları (`Cart_Hooks`, `Cart`, `Cart_Data`, `Addon_Line`), sipariş kalemi meta (`Order_Hooks`, `Order_Meta_Keys`, `Donation_Order_Meta`), satın alınabilirlik (`Donation_Purchasable`), `Checkout/Checkout_Prefill` |
+| `src/Http/` | `Rest_Controller` tabanı, `Rate_Limiter`, `Rest/Ping_Controller` |
+| `src/Frontend/` | `Assets` (modül varlık kaydı + `add_brand_variables`), `Template_Loader` (tema geçersiz kılma) |
+| `src/Modules/<Modül>/` | `EntryPoints`, `Experiences`, `Campaign`, `Impact`, `SocialProof`, `SideCart`, `Thanks`, `TaxRelief`, `DonorAccount`, `Preview` |
+| `src/Admin/` | Tek yönetici menüsü ve ekranları (`Admin_Bootstrap`, `Pages`, `Field_Registry`, `Settings_Store`, `Admin_Controller`, `Status`, `Setup_Wizard`, `Guide`, `Admin_View`, `Admin_Assets`) |
+| `src/Privacy/` | `Order_Privacy` (WP dışa aktar/sil: sipariş kalemi), `Privacy_Tools` (politika metni, eski `wdp_vid` çerezi temizliği) |
+| `src/Support/` | `Price`, `Security`, `Logger`, `Debug`, `Admin_Notice`, `Phone_Countries` |
+| `src/Compat/class-public-contract.php` | Dışa açık geri uyum sözleşmesinin TEK dosyası (kısa kod/blok/kanca/veri anahtarı; bkz. f) |
+| `src/Cli/` | WP-CLI: kampanya toplamı yeniden hesaplama (`Cli_Command`, `Totals_Recalculator`) |
+| `includes/` | **Kalan, geçici**: yalnız ürün düzenleme "Bağış" sekmesi ve onun yardımcıları (`class-admin-product-data-tab`, `-products-list-table`, `-bulk-actions`, `-product-settings-ajax`, `-request`, `class-product-settings-service`, `class-form-modules`, `class-color-palette`, `class-style-presets`, `class-icon-library`, `config/`), `class-woo-donation-popup-admin`/`-admin-hooks`/`-admin-assets` (yalnız ürün sekmesi için küçültüldü) ve eski küresel adların köprüsü (`class-autoloader` = `WDP_Autoloader::MOVED` sınıf takma adları, `class-admin-bridge`, shim'ler `class-utils/-assets/-templates/-donation-optional-fields`). `Bootstrap` köprü dosyası yoksa atlar. Ürün sekmesi yeni kodla yeniden yazılınca silinecek (açık iş) |
+| `templates/donation-panel/` | Tema ile geçersiz kılınabilir şablonlar: `experiences/{form,popup,side-panel,inline,bottom-sheet}.php`, `thanks/summary.php`, `tax-relief/step.php` |
+| `templates/woocommerce/` | `single-product/add-to-cart/simple.php` (otomatik yerleşim şablon override) |
+| `blocks/` | `donation-form`, `donations` (block.json + editör `index.js`); `src/Modules/DonorAccount/block/block.json` |
+| `assets/src/` | Modern JS/CSS kaynakları (modül başına): `experiences`, `campaign`, `side-cart`, `thanks`, `donor-account`, `admin`, `ui2-shared` |
+| `assets/build/` | `@wordpress/scripts` çıktısı: `<modül>/index.{js,css,asset.php}` (+ `-rtl.css`) |
+| `assets/css/list.css`, `assets/js/list.js`, `assets/{css,js}/admin/products.*` | `[wdp_donations]` liste ve ürün sekmesi (eski elle yazılmış dosyalar; paketlenir) |
+| `languages/` | `.pot`, `tr_TR.po/.mo`, blok JSON çevirileri; `parts/` dağıtıma girmez |
+| `tools/`, `scripts/`, `tests/`, `docs/`, `design/`, `research/` | Geliştirme (pakete girmez; `.distignore`) |
+
+Not: çalışma ağacında gitignore'lu eski `assets/css/build/`, `assets/js/build/` dosyaları kalmış olabilir; kaynakta ve pakette yoktur, `build:css`/`build:js` betikleri `package.json`'da duruyor ama hedef dosyaları (`tools/build-*-bundle.php`) silindi — gerçek derleme `build:modules`. (**DOĞRULANMADI:** `package.json` 12.0.0 değişikliğinin bu iki betiği kaldırıp kaldırmadığı.)
 
 ### Bootstrap sırası
 
-1. `woo-donation-popup.php` → `WDP_Plugin_Bootstrap::run()` (`woo-donation-popup.php:53-56`)
-2. HPOS uyumluluk + autoload + Migrations::init (`includes/bootstrap/class-plugin-bootstrap.php:22-27`)
-3. `init` → `load_plugin_textdomain` (`includes/bootstrap/class-plugin-bootstrap.php` `load_textdomain`)
-4. `plugins_loaded` → WC yoksa notice; varsa `Woo_Donation_Popup` (+ admin’de `Woo_Donation_Popup_Admin`) (`includes/bootstrap/class-plugin-bootstrap.php:35-44`)
-5. Modül `init()` sırası (`includes/class-woo-donation-popup.php:47-64`): Utils → Assets → Ajax → Cart → Order → Addon_Product_Visibility → **Donation_Purchasable** → Donations_List → Product_Page_Integration → Lazy_Modal → Blocks → Elementor → Form_Matrix → Shortcodes
+1. `woo-donation-popup.php` sabitleri tanımlar, `Core\Autoloader` kaydeder, `Bootstrap::run()` çağırır (`src/Core/class-bootstrap.php`).
+2. `Bootstrap::run()`: HPOS uyumluluk bildirimi (`before_woocommerce_init`), yönetici köprüsü (`includes/class-admin-bridge.php` varsa), `Version_Migrations::init`, Preview/CLI, `Plugin::boot`; `init` -> çeviri yükleme (`load_textdomain`); `plugins_loaded` 20 -> `launch_plugin` (WooCommerce yoksa uyarı; admin'de ürün sekmesi sınıfı) + `update_version`.
+3. `Plugin::on_plugins_loaded` (öncelik 20): `Migrations::run()` (adımlar `settings_import_v1` v1, `release_12_upgrade` v2) -> `register_core_hooks()` (WooCommerce varsa: `Campaign_Totals`, `Cart_Hooks`, `Order_Hooks`, `Addon_Product_Visibility`, `Donation_Purchasable`, `Donations_List`, `Checkout_Prefill`) -> `Public_Contract::register()` (kısa kodlar, bloklar, Elementor ince katmanı) -> `Module_Registry::boot()` -> yönetimde ya da `donation-panel/v1/admin` REST isteğinde `Admin\Admin_Bootstrap::init` -> `do_action('donation_panel_modules_booted')`.
+4. `rest_api_init` -> `Plugin::register_rest_routes` (`donation_panel_rest_controllers` süzgeci; her modül kendi denetleyicisini ekler). `wp_enqueue_scripts` 5 -> `Assets::register_all`.
+5. Modül kaydı (`Plugin::register_modules`): `entry_points` (açık), `experiences` (açık, koşulsuz), `campaign` (açık), `impact` (açık), `side_cart`, `social_proof`, `thanks`, `tax_relief`, `donor_account` (varsayılan kapalı; açma/kapama yönetici Genel Bakış'tan ya da `donation_panel_module_enabled` süzgeciyle; `Settings::seed_fresh_install` yeni kurulumda yalnız varsayılan şema kaydını yazar). Kapalı modülün dosyası yüklenmez (sınıf adı metin olarak kayıtlıdır).
 
 ---
 
-## b) PHP sınıfları / trait’ler ve hook tablosu
+## b) PHP sınıfları ve hook tablosu
 
-### Modül başlatma (özet)
+Kaldırılan eski sınıflar (12.0.0): `Woo_Donation_Popup`, `WDP_Ajax` + trait'ler, `WDP_Assets` (yükleyici/erteleme/gömülü veri), `WDP_Lazy_Modal`, `WDP_Form_Matrix`, `WDP_Templates`/modal-shell/form-fields renderer'ları, `WDP_Exceptions`, `WDP_Js_I18n`, `WDP_Plugin_Bootstrap`, eski yönetici sayfa/sekme render sınıfları, `Ui_Switch`, `Settings_Page`. Eski küresel adlar (`WDP_Utils` vb.) yalnız `includes/class-autoloader.php` takma adlarıyla yönetici ürün sekmesine hizmet eder. `WDP_Utils` bölündü: `Price`, `Campaign_Totals`, `Addon_Settings`, `Admin_Notice`, `Debug`, `Button_Settings`.
 
-| Sınıf | Rol | init kaynağı |
-|-------|-----|--------------|
-| `WDP_Plugin_Bootstrap` | Yaşam döngüsü | `woo-donation-popup.php:56` |
-| `Woo_Donation_Popup` | Orkestratör | bootstrap `launch_plugin` |
-| `Woo_Donation_Popup_Admin` | Ayar ekranı + AJAX kaydet | bootstrap admin |
-| `WDP_Migrations` | `wdp_db_version` geçişleri | bootstrap `includes/bootstrap/class-plugin-bootstrap.php:24` |
-| `WDP_Ajax` + 5 trait | Ön yüz AJAX | orkestratör |
-| `WDP_Cart` / `WDP_Order` | Sepet / sipariş meta | orkestratör; Order içinde Privacy + Order_Meta_Keys (`includes/class-order.php:20-25`) |
-| `WDP_Donation_Purchasable` | Custom/campaign ürünler Genel fiyat boşken `woocommerce_is_purchasable` | orkestratör; `includes/class-donation-purchasable.php` |
-| `WDP_Admin_Hooks` | Menü + admin AJAX | admin ctor (`includes/class-woo-donation-popup-admin.php:41`) |
+### Gerçek kanca tablosu (kaynak: `grep -rn "add_action\|add_filter" src includes woo-donation-popup.php`)
 
-### Hook tablosu (add_action / add_filter)
+| Kanca | Öncelik | Geri çağrı | Dosya |
+|-------|---------|------------|-------|
+| `init` | 10 | `Bootstrap::load_textdomain` | `src/Core/class-bootstrap.php` |
+| `plugins_loaded` | 20 | `Bootstrap::launch_plugin`, `update_version`; `Plugin::on_plugins_loaded` | `src/Core/class-bootstrap.php`, `class-plugin.php` |
+| `before_woocommerce_init` | 10 | HPOS `custom_order_tables` bildirimi | `class-bootstrap.php` |
+| `rest_api_init` | 10 | `Plugin::register_rest_routes` | `src/Core/class-plugin.php` |
+| `wp_enqueue_scripts` | 5 | `Assets::register_all` | `class-plugin.php` |
+| `admin_init` 5/20, `admin_notices`, `upgrader_process_complete` | | `Version_Migrations::maybe_run`/`maybe_dismiss_notice`/`maybe_admin_notice`/`on_upgrader_complete` | `src/Core/class-version-migrations.php` |
+| `woocommerce_add_cart_item_data` | 99 / 20 | `Cart_Hooks::stamp_input_currency`; `Tax_Relief_Module::add_cart_item_data` | `src/WooCommerce/class-cart-hooks.php` |
+| `woocommerce_add_to_cart_validation`, `woocommerce_store_api_validate_add_to_cart` | 10 | bağış alan doğrulama + eklenti akışı dışında yerel ekleme reddi | `Cart_Hooks` |
+| `woocommerce_get_item_data`, `woocommerce_before_calculate_totals` (99), `woocommerce_cart_item_price/subtotal`, `woocommerce_cart_item_quantity`, `woocommerce_update_cart_validation`, `woocommerce_cart_item_class/name/thumbnail` | | sepet görünümü, özel fiyat, hisse miktar kilidi | `Cart_Hooks` |
+| `woocommerce_blocks_loaded` | 10 | `Cart::register_store_api` (Store API uzantısı `donation-panel`) | `src/WooCommerce/class-cart.php` |
+| `woocommerce_checkout_create_order_line_item` | 10 / 20 | `Order_Hooks::add_donation_meta_to_order`; `Tax_Relief_Module::write_order_meta` | `Order_Hooks` |
+| `woocommerce_order_item_display_meta_key/value` | 10 | etiket çevirisi | `Order_Meta_Keys`, `Donation_Order_Meta` |
+| `woocommerce_is_purchasable` | 20 / 99 | `Donation_Purchasable` (Genel fiyatsız custom/campaign); `Addon_Line` | `src/WooCommerce/` |
+| `woocommerce_add_to_cart` 30, `template_redirect` 20 | | `Checkout_Prefill` (ödeme alanı ön doldurma) | `src/WooCommerce/Checkout/` |
+| `woocommerce_order_status_changed` 20, `woocommerce_order_refunded` 20, `before_delete_post`/`wp_trash_post`/`untrashed_post`, `updated/added/deleted_post_meta`, `save_post_product`, `woocommerce_update_product`, `woocommerce_loaded` 1, `wdp_recalculate_product_donation_total` (cron) | | kampanya toplamı senkronu + önbellek | `src/Domain/class-campaign-totals.php` |
+| `updated_option`, `*_post_meta` | 10 | ek bağış satırı önbellek temizliği | `Addon_Product_Visibility` |
+| `set_object_terms`, `woocommerce_product_set_stock(_status)`, `*_product_cat`, `woocommerce_new_product`, `trashed/untrashed_post`, `transition_post_status`, `*_post_meta`, `woocommerce_order_status_changed/refunded` | | `[wdp_donations]` liste önbelleği artırma | `src/Modules/EntryPoints/class-donations-list.php` |
+| `wp` 20, `body_class`, `post_class`, `wp_head` 30, `wc_get_template`, `woocommerce_locate_template`, `woocommerce_get_price_html`, `woocommerce_loop_add_to_cart_link`, `woocommerce_product_add_to_cart_text/url`, `woocommerce_product_supports`, `render_block_woocommerce/{add-to-cart-form,add-to-cart-with-options,product-price,product-button}`, `woocommerce_after_single_product` 999, `wp_footer` 4, `woocommerce_single_product_summary`, `woocommerce_after_single_product_summary` 5 | | otomatik yerleşim, döngü/fiyat filtreleri, yedek düğme | `Auto_Placement`, `Loop_Price_Filters`, `Fallback_Button` |
+| `init` | 10 | `Blocks::register`; kısa kod kaydı (`Experiences`, `Campaign`, `SocialProof`, `SideCart`, `DonorAccount` modülleri) | `src/Modules/` |
+| `elementor/widgets/register`, `elementor/elements/categories_registered` | | Elementor ince katmanı | `src/Modules/EntryPoints/Elementor/class-elementor-compat.php` |
+| `donation_panel_rest_controllers` | 10 | her modül kendi REST denetleyicisini ekler; yönetici denetleyicisi | modüller, `Admin_Bootstrap` |
+| `donation_panel_form_model` | 15 / 20 | `Campaign_Module::filter_model`, `Impact_Module::filter_model`, `Public_Contract::filter_form_model` | |
+| `donation_panel_amount_presets` | 20 | `Public_Contract::filter_amount_presets` (eski `wdp_amount_presets` köprüsü) | |
+| `donation_panel_form_steps` 20, `donation_panel_form_step_tax_relief` | | `Tax_Relief_Module` ek adım | |
+| `rest_request_before_callbacks` | 10 | `Tax_Relief_Module::capture_request` | |
+| `woocommerce_before_thankyou` | 5 | `Thanks_Module::render` | |
+| `woocommerce_add_to_cart_fragments`, `wp_enqueue_scripts` 20, `wp_footer` 5 | | `Side_Cart_Module` (sayaç parçası, çekmece) | |
+| `woocommerce_get_query_vars`, `woocommerce_account_menu_items`, `woocommerce_endpoint_<ep>_title`, `woocommerce_account_<ep>_endpoint`, `woocommerce_before_checkout_registration_form`, `wp_footer` 5, `wp_loaded` | | `Donor_Account_Module` (Bağışlarım uç noktası, giriş penceresi) | |
+| `wp_privacy_personal_data_exporters` 10/11, `wp_privacy_personal_data_erasers` 5/6, `admin_init` (politika metni), `init` 1 (`wdp_vid` çerezini sil) | | `Order_Privacy`, `Privacy_Tools` | `src/Privacy/` |
+| `admin_menu` 30, `admin_enqueue_scripts`, `admin_page_access_denied` 1, `plugin_action_links_<dosya>`, `load-<hook>` | | `Admin_Bootstrap` (tek menü, eski adres yönlendirmesi, Rehber yardım sekmeleri) | `src/Admin/class-admin-bootstrap.php` |
+| `send_headers`, `admin_bar_node` | | `Preview` (`?dp_preview=1`) | `src/Modules/Preview/` |
+| `woocommerce_product_data_tabs/panels`, `woocommerce_admin_process_product_object`, `bulk_actions-edit-product` + handle, `admin_enqueue_scripts`, `wp_ajax_wdp_recalculate_product_total` | | ürün "Bağış" sekmesi (kalan `includes/`) | `includes/class-admin-*.php` |
 
-| Hook | Öncelik | Callback | Dosya:satır |
-|------|---------|----------|-------------|
-| `before_woocommerce_init` | default | HPOS `custom_order_tables` uyum | `includes/bootstrap/class-plugin-bootstrap.php:99-106` |
-| `init` | default | `load_textdomain` (`woo-donation-popup` → `languages/`) | `includes/bootstrap/class-plugin-bootstrap.php` |
-| `plugins_loaded` | 20 | `launch_plugin`, `update_version` (+ çekirdek `Plugin::on_plugins_loaded`, 20) | `includes/bootstrap/class-plugin-bootstrap.php` |
-| `admin_notices` | default | WC eksik notice | `includes/bootstrap/class-plugin-bootstrap.php:37` |
-| `admin_init` | 5 / 20 | Migrations `maybe_run` / `maybe_dismiss_notice` | `includes/class-migrations.php:72-73` |
-| `admin_notices` | default | placement notice | `includes/class-migrations.php:74` |
-| `upgrader_process_complete` | 10 | migration tetik | `includes/class-migrations.php:75` |
-| `woocommerce_order_status_changed` | 20 | progress toplam sync | `includes/class-utils.php:52` |
-| `woocommerce_order_refunded` | 20 | refund sync | `includes/class-utils.php:53` |
-| `updated/added/deleted_post_meta` | 10 | ürün info cache invalidate | `includes/class-utils.php:56-58` |
-| `save_post_product` | 10 | cache invalidate | `includes/class-utils.php:59` |
-| `woocommerce_loaded` | 1 | `woocommerce_update_product` kaydı | `includes/class-utils.php:63` |
-| `woocommerce_update_product` | 10 | cache invalidate | `includes/class-utils.php:81` |
-| `before_delete_post` / `wp_trash_post` | 10 | cache purge | `includes/class-utils.php:67-68` |
-| `wp_enqueue_scripts` | default | Assets enqueue | `includes/class-assets.php:61` |
-| `wp_footer` | 1 | maybe enqueue / footer enqueue | `includes/class-assets.php:62`, `includes/class-assets.php:90` |
-| `style_loader_tag` | 10 | no-optimize | `includes/class-assets.php:64` |
-| `woocommerce_add_cart_item_data` | 10 | bağış cart data | `includes/class-cart.php:22` |
-| `woocommerce_add_to_cart_validation` | 10 | alan doğrulama + yerel add-to-cart reddi | `includes/class-cart.php:25` |
-| `woocommerce_store_api_validate_add_to_cart` | 10 | blok/Store API yerel ekleme reddi | `includes/class-cart.php:26` |
-| `woocommerce_get_item_data` | 10 | sepet görüntü | `includes/class-cart.php:29` |
-| `woocommerce_before_calculate_totals` | 99 | özel fiyat | `includes/class-cart.php:32` |
-| `woocommerce_cart_item_price/subtotal` | 10 | fiyat HTML | `includes/class-cart.php:33-34` |
-| `woocommerce_cart_item_quantity` | 10 | hisse qty kilidi | `includes/class-cart.php:37` |
-| `woocommerce_update_cart_validation` | 10 | hisse qty engel | `includes/class-cart.php:38` |
-| `woocommerce_cart_item_class/name/thumbnail` | 10 | sadaka satır görünümü | `includes/class-cart.php:40-42` |
-| `woocommerce_checkout_create_order_line_item` | 10 | sipariş meta yaz | `includes/class-order.php:22` |
-| `woocommerce_order_item_display_meta_key/value` | 10 | etiket çevirisi | `includes/class-order-meta-keys.php:345-346` |
-| `wp_privacy_personal_data_exporters` | 10 | exporter | `includes/class-privacy.php:26` |
-| `wp_privacy_personal_data_erasers` | 5 | eraser | `includes/class-privacy.php:28` |
-| `wp` | 20 | native ATC unhook + fallback | `src/Modules/EntryPoints/class-auto-placement.php:49` |
-| `body_class` / `post_class` | 10 | CSS sınıfları | `src/Modules/EntryPoints/class-auto-placement.php:50-51` |
-| `wp_head` | 30 | hide cart CSS | `src/Modules/EntryPoints/class-auto-placement.php:52` |
-| `wc_get_template` / `woocommerce_locate_template` | 20 | şablon override | `src/Modules/EntryPoints/class-auto-placement.php:54-55` |
-| `woocommerce_get_price_html` | 20 | fiyat gizle | `src/Modules/EntryPoints/class-auto-placement.php:57` |
-| `woocommerce_is_purchasable` | 20 | custom/campaign boş fiyat | `includes/class-donation-purchasable.php:24` |
-| `woocommerce_loop_add_to_cart_link` | 10 | döngü Bağış Yap | `src/Modules/EntryPoints/class-auto-placement.php:58` |
-| `woocommerce_product_add_to_cart_text/url` | 20 | metin/URL | `src/Modules/EntryPoints/class-auto-placement.php:59-60` |
-| `woocommerce_product_supports` | 20 | ajax_add_to_cart vs. | `src/Modules/EntryPoints/class-auto-placement.php:61` |
-| `render_block_woocommerce/*` | 10 | blok sepete ekle/fiyat/buton | `src/Modules/EntryPoints/class-auto-placement.php:63-66` |
-| `woocommerce_single_product_summary` | 21/30 | fallback form | `src/Modules/EntryPoints/class-auto-placement.php:107` |
-| `woocommerce_after_single_product_summary` | 5 | below_summary | `src/Modules/EntryPoints/class-auto-placement.php:103` |
-| `init` | default | Gutenberg blok kaydı | `src/Modules/EntryPoints/class-blocks.php:28` |
-| `elementor/widgets/register` | default | widget | `src/Modules/EntryPoints/Elementor/class-elementor-compat.php:22-26` |
-| `elementor/elements/categories_registered` | default | kategori | `src/Modules/EntryPoints/Elementor/class-elementor-compat.php:23-27` |
-| `template_redirect` | 0 | form matrix | `includes/class-form-matrix.php:21` |
-| `set_object_terms` + stok/kategori | 10 | liste cache bump | `includes/class-donations-list.php:38-43` |
-| `wp_footer` | 20 | liste schema | `includes/class-donations-list.php:177` |
-| `updated_option` / post_meta | 10 | sadaka line cache flush | `includes/class-addon-product-visibility.php:33-36` |
-| `admin_menu` / `admin_enqueue_scripts` | default | ayarlar | `includes/class-admin-hooks.php:23-24` |
-| `woocommerce_product_data_tabs` | default | Bağış sekmesi | `includes/class-admin-product-data-tab.php:35` |
-| `woocommerce_product_data_panels` | default | panel HTML | `includes/class-admin-product-data-tab.php:36` |
-| `woocommerce_admin_process_product_object` | default | kayıt | `includes/class-admin-product-data-tab.php:37` |
-| `bulk_actions-edit-product` + handle | default / 10 | toplu işlem | `includes/class-admin-bulk-actions.php:27-28` |
-| `wp_footer` | default | legacy `wdp_add_js_helpers` | `includes/bootstrap/class-legacy-frontend.php:215` |
-| Optimizer filtreleri (SG/Rocket/LS/…) | çeşitli | CSS exclude | `includes/traits/trait-wdp-assets-optimizer.php:14-31` |
-
-AJAX hook’ları → bölüm **e**.
+Dışa açık `apply_filters`/`do_action` listesi: `docs/HOOKS.md`.
 
 ---
 
-## c) JS modülleri, CSS bundle, globaller
+## c) JS modülleri, CSS, build zinciri
 
-### Build zinciri
+Ön yüz ve yönetici varlıkları modern, jQuery'siz ES modülleri (`.mjs`) ve düz CSS'tir; eski "bundle + stack + `WDPApp`/`wdp_ajax` global" sistemi silindi.
 
 | Adım | Komut / dosya | Çıktı |
 |------|---------------|-------|
-| CSS | `npm run build:css` → `tools/build-css-bundle.php` | `assets/css/build/donation-modal.<hash>.css` + `manifest.json` |
-| JS | `npm run build:js` → `tools/build-js-bundle.php` (esbuild minify) | `assets/js/build/donation-modal.<hash>.js` + `manifest.json` |
-| Sıra kaynağı | `includes/config/frontend-css-stack.php`, `includes/config/frontend-js-stack.php` | enqueue / birleştirme sırası |
-| Runtime tercih | `should_use_js_bundle()` → filtre `wdp_use_js_bundle` varsayılan `true` | `includes/traits/trait-wdp-assets-registry.php:98-99` |
-| Localize | `wp_localize_script(..., 'wdp_ajax', …)` | `includes/traits/trait-wdp-assets-registry.php:294+` |
+| Derleme | `npm run build` (zincirin gerçek adımı `npm run build:modules` -> `scripts/build-modules.mjs`) | `assets/src/index.*` ve `assets/src/<modül>/index.{js,mjs,...}` girişleri `wp-scripts build` ile `assets/build/<modül>/index.{js,css,asset.php}` (+ RTL CSS) |
+| Kaynak klasörleri | `assets/src/{experiences,campaign,side-cart,thanks,donor-account,admin,ui2-shared}` | `ui2-shared/tokens.css` ortak türetilmiş belirteçler (bkz. "12.0.0 entegrasyon kararları") |
+| Kayıt | `Frontend\Assets::define(slug, script, style)` + `register_all()`; sürüm/bağımlılık `index.asset.php`'den | modül varlığı yalnız ilgili sayfada/modül açıkken yüklenir |
+| Yönetici | `assets/src/admin/{index,dom,api,wizard}.mjs` + `admin.css` -> `assets/build/admin`; `Admin_Assets` yalnız kendi ekran kancalarında yükler | |
+| Paket | `npm run pack` (build + `scripts/package-wp-plugin.sh`); `assets/src` pakete girmez | `build/woo-donation-popup.zip` |
 
-`npm run pack` önce `build` çalıştırır (`package.json:14`); ZIP içinde admin CSS minify edilir (`scripts/package-wp-plugin.sh:59-62`).
-
-### JS yükleme sırası (stack — bağımlılıklar)
-
-Kaynak: `includes/config/frontend-js-stack.php`. Özet sıra:
-
-1. **i18n** (core’dan önce, bağımsız) → constants → utils → cta-viewport → state → dom  
-2. phone-input → product  
-3. cart/ui → cart/woo → cart/actions → cart  
-4. form/messages → pricing → feedback → addon-rules → addon → ajax → validate → wizard → **cta-ready** → form  
-5. shareholder/* → shareholder  
-6. progress-bar → modal → form-initializer → lazy-modal → event-manager → module-loader → **init**  
-   Bundle modunda `cta-ready.js` ayrıca `wdp-form-cta-ready-js` olarak bundle’dan **önce** basılır (`includes/traits/trait-wdp-assets-registry.php` `register_cta_ready_script`).
-
-### Global nesneler
-
-| Global | Kaynak | Not |
-|--------|--------|-----|
-| `window.WDPApp` | tüm `assets/js/src/**` | alt: `i18n`, `utils`, `state`, `modal`, `form`, `formCtaReady`, `cart`, `product`, `lazyModal`, `init`, … |
-| `window.WDPApp.i18n` | `assets/js/src/core/i18n.js` | `__`, `_x`, `sprintf`; sözlük `wdp_ajax.i18n_dict` (`WDP_Js_I18n::dictionary`) |
-| `window.wdp_ajax` | PHP localize | nonce, ajax_url, `currency`, `i18n_dict`… (`includes/traits/trait-wdp-assets-registry.php`, `WDP_Utils::get_js_currency_settings`) |
-| `WDPApp.utils.formatMoney` / `parseMoney` / `parseMoneyDetailed` / `formatPrice` / `formatMinPlaceholder` | `assets/js/src/core/utils.js` | TEK biçimleyici; Intl yok; `wdp_ajax.currency` (Woo). `parseMoneyDetailed` = PHP `WDP_Utils::parse_donor_amount` (aynı kural, `tests/fixtures/amount-parse-vectors.json`). Geçerli binlik gruplama (ilk 1–3, sonrakiler tam 3) → binlik (mağaza ayırıcısı farklı olsa da; `1.250` / `1,250` her zaman 1250). Gruplamayan son `.`/`,` → ondalık adayı. 0 dp: kesir tümü sıfırsa tam sayı (`50,00`→50, `10.00`→10); sıfır değilse görünür uyarı (`Bu sitede kuruşlu tutar girilemez, örn. 10`) — yuvarlama/100× yok. N>0: kesir ≤ N kabul, > N uyarı. İki ayırıcı: son ondalık, öncekiler gruplamaysa binlik. Sepete ekle aynı doğrulama. Tutar `inputmode=decimal`; yapıştırma normalize. |
-| `window.WDP.refresh` | `assets/js/src/lazy-modal.js:188-189` | DOM yenileme |
-
-Admin: `wdp_admin` localize (`includes/class-admin-assets.php` — ayrı yığın).
-
-### CSS stack sırası
-
-`includes/config/frontend-css-stack.php:12-39`: foundation → forms → components → overrides (theme-isolation son).
+Ön yüz sözleşmesi: sunucu form HTML'ini şablondan üretir (`templates/donation-panel/experiences/*.php`), JS davranış ekler (`store.mjs` saf durum makinesi, `layer.mjs` katman/odak tuzağı, `form.mjs` adımlar/doğrulama/sepete ekle, `index.mjs`). Olaylar: `dp:added` (kök), `donation-panel:cart-added` (document). Para birimi biçimi sunucudan (WooCommerce ayarları); JS'te ayrı biçimleyici/sözlük/global yok. Bütçe (ui1 ölçümü): JS ~6 KB gz, CSS ~7 KB gz.
 
 ---
 
 ## d) Veri modeli
 
+Option ve meta anahtarları 12.0.0'da DEĞİŞMEDİ (geri uyum sözleşmesi, `Public_Contract::DATA_KEYS`). Yalnız kaldırılanlar: `donation_panel_settings.experiences` grubu (`experiences.engine`), `admin.ui`, seçenek `wdp_upgrade_new_default`, `wdp_deprecated_ajax_*` sayaçları, `wdp_product_info_*` geçici verileri (`Release_12_Upgrade` siler). Eski sürüm göçlerinin `wdp_legacy_render_count` gibi izleri yalnız okunur/silinir.
+
 ### Options (`wp_options`)
 
-| Anahtar | Yazıldığı yer (ör.) | Okunduğu yer (ör.) |
-|---------|---------------------|---------------------|
-| `wdp_version` | bootstrap `update_version` `includes/bootstrap/class-plugin-bootstrap.php:77` | `includes/bootstrap/class-plugin-bootstrap.php:66` |
-| `wdp_cache_version` | activate, update_version, admin bump, style preset | `woo-donation-popup.php:29`, assets |
-| `wdp_db_version` | Migrations | `includes/class-migrations.php:20` |
-| `wdp_previous_version` / `wdp_migration_log` / notice/backup/lock | Migrations | `includes/class-migrations.php:21-26` |
-| `wdp_placement_settings` | `WDP_Placement_Settings::save` | `includes/class-placement-settings.php::get` (`includes/class-placement-settings.php:17,84-117`) |
-| `wdp_button_settings` | Normal/Tasarım kaydet + style preset | form render, inline CSS, context |
-| `wdp_shareholder_settings` | Hisseli sekme | inline CSS, form |
-| `wdp_success_settings` | Başarı sekme | başarı UI, sadaka varsayılan |
-| `wdp_progress_bar_settings` | Progress sekme | progress CSS/JS |
-| `wdp_modal_layout_settings` | Modal sekme | inline layout CSS |
-| `wdp_custom_style_presets` | stil import | `WDP_Style_Presets` |
-| `wdp_delete_data_on_uninstall` | Gelişmiş | `includes/class-uninstall.php` |
-| `wdp_list_cache_version` | liste HTML geçersiz kılma | `WDP_Donations_List::bump_cache` |
-| `wdp_css_signature` | assets registry | `includes/traits/trait-wdp-assets-registry.php:153-156` |
-| `wdp_legacy_render_count` | eski (kullanılmayan) sayaç; AJAX yolu 10.33.0’da kaldırıldı | `includes/bootstrap/class-legacy-frontend.php` |
-| `wdp_addon_links_audit` (eski `wdp_sadaka_links_audit` göçle kopyalanır, silinmez) | migration 10.28.4 anlık görüntü; UI 10.33.0’da kaldırıldı, option silinmez | `includes/class-addon-product-visibility.php` |
-| `wdp_sadaka_visibility_cache_cleared` | migration 10.28.5 | `includes/class-migrations.php:244` |
-| `wdp_migrated_10_29_0` | migration 10.29.0 (cover fee 0,5–15 onarımı, genel liste ≤6) | `includes/class-migrations.php` `step_10_29_0` |
-| `wdp_migrated_10_29_1` | migration 10.29.1 (genel `amount_preset_recommended` silinir) | `includes/class-migrations.php` `step_10_29_1` |
-| `wdp_migrated_10_30_0` | migration 10.30.0 (aydınlatma bağlantısı varsayılan anahtarları; veri silinmez) | `includes/class-migrations.php` `step_10_30_0` |
-| `wdp_migrated_10_31_0` | migration 10.31.0 (toplanan plan + aydınlatma varsayılanı) | `includes/class-migrations.php` `step_10_31_0` |
-| `wdp_migrated_10_32_0` | migration 10.32.0 (uzun aydınlatma varsayılan etiketlerini boşalt; özel metne dokunma) | `includes/class-migrations.php` `step_10_32_0` |
-| `wdp_migrated_10_33_0` | migration 10.33.0 (liste önbelleği sürümü artar; veri silinmez) | `includes/class-migrations.php` `step_10_33_0` |
-| `wdp_migrated_10_34_0` | migration 10.34.0 (liste önbelleği sürümü artar; kart HTML; veri silinmez) | `includes/class-migrations.php` `step_10_34_0` |
+| Anahtar | Not |
+|---------|-----|
+| `donation_panel_settings` | Yeni şemalı ayar deposu (`Core\Settings`): `general`, `modules`, `design`, `display`, `form`, `shares`, `placement`, `checkout`, `impact`, `thanks`, `tax_relief`, `admin` (`wizard`, `wizard_step`). Ayrıntı g) |
+| `donation_panel_migrations` | Göç adımı durumu (`settings_import_v1`, `release_12_upgrade`) |
+| `wdp_button_settings`, `wdp_placement_settings`, `wdp_shareholder_settings`, `wdp_success_settings`, `wdp_progress_bar_settings`, `wdp_modal_layout_settings`, `wdp_custom_style_presets` | Eski seçenekler SİLİNMEZ. `Button_Settings`/`Placement_Settings`/`Product_Context` hâlâ okur; yönetici ekranı yazarken eşlemesi olanlara yansıtır (`Settings_Store::mirror`) |
+| `wdp_version`, `wdp_cache_version`, `wdp_db_version`, `wdp_previous_version`, `wdp_migration_log`, `wdp_migrated_*`, `wdp_migration_lock` (geçici), `wdp_list_cache_version`, `wdp_addon_links_audit` | Sürüm/göç/liste önbelleği (`Bootstrap`, `Version_Migrations`, `Donations_List`) |
+| `wdp_delete_data_on_uninstall` | Eski veri silme bayrağı; `general.delete_data_on_uninstall` yoksa okunur |
 
-### Ürün meta (Bağış ayarları — tek kaynak `from_request`)
+### Ürün meta (Bağış sekmesi; kalan `includes/class-product-settings-service.php::from_request`)
 
-`WDP_Product_Settings_Service::from_request` anahtarları (10.32.0: `_theme_preset_id`, `_theme_density`, `_theme_inherit_category_color` yazılmaz; kayıtlı meta silinmez):
+`_allow_custom_price`, `_min_custom_price`, `_allow_multiple_shares`, `_max_shares`, `_enable_progress_bar`, `_progress_bar_limit`, `_goal_reached_action`, `_goal_reached_message`, `_enable_product_note`, `_product_note_text`, `_enable_addon_donation`, `_addon_*` (eski `_enable_sadaka_donation`, `_sadaka_*` okuma yedeği), `_enable_trust_strip`, `_enable_quantity`, `_enable_amount_presets`, `_amount_presets`, `_amount_preset_recommended`, `_enable_wizard`, `_enable_field_icons`, `_enable_impact_line`, `_impact_line_text`, `_enable_email|dedication|anonymous`, `_dedication_placeholder`, `_trust_badges`, `_theme_primary|primary_hover|modal_bg|radius`, `_layout_mode`, `_enable_campaign_media`, `_enable_urgency`, `_urgency_*`, `_enable_social_proof`, `_social_proof_text`, `_enable_cover_fee`, `_cover_fee_percent`, `_wdp_donation_product`, `_wdp_auto_place`. `Domain\Product_Context` bunları okur; yeni formun hangi alanı görsel olarak kullandığı alan bazında **DOĞRULANMADI** (kaldırılan eski görünüm alanları için bkz. docs/AYARLAR.md notu).
 
-`_allow_custom_price`, `_min_custom_price`, `_allow_multiple_shares`, `_max_shares`, `_enable_progress_bar`, `_progress_bar_limit`, `_goal_reached_action`, `_goal_reached_message`, `_enable_product_note`, `_product_note_text`, `_enable_addon_donation`, `_addon_*` (eski `_enable_sadaka_donation`, `_sadaka_*`), `_enable_trust_strip`, `_enable_quantity`, `_enable_amount_presets`, `_enable_wizard`, `_enable_field_icons`, `_enable_impact_line`, `_progress_celebrate`, `_impact_line_text`, `_amount_presets`, `_enable_email|dedication|anonymous` (tristate `yes`/`no`/''), `_dedication_placeholder`, `_trust_badges`, `_theme_primary|primary_hover|modal_bg|radius`, `_layout_mode`, `_enable_campaign_media`, `_enable_urgency`, `_urgency_*`, `_enable_social_proof`, `_social_proof_text`, `_enable_cover_fee`, `_cover_fee_percent`, `_wdp_module_order`, `_wdp_donation_product`, `_wdp_auto_place`.
-
-Ek progress meta: `_wdp_total_donation_amount`, `_wdp_donor_count`, `_wdp_progress_unconverted_orders` (`includes/class-utils.php`, `trait-wdp-utils-order-meta.php`).
-
-**10.31.0 hedef / toplanan:** `WDP_Campaign_Goal` (hedefe ulaşma kararı, message/close/continue); `WDP_Progress_Currency` (`wdp_progress_convert_amount` — Curcy `wmc_order_info` / rate, sert bağımlılık yok). Toplanan = paid statuses − cover fee; boş meta → cron `wdp_recalculate_product_donation_total` (ziyaretçi taraması yok). Çubuk yüzdesi = onaylı toplam / hedef (`WDP_Campaign_Goal::compute_percent`).
-
-**Faz 6-A/6-B (bağdaştırıcı ayrımı):** Çekirdek yalnız filtre + Woo verisi kullanır. `WDP_Progress_Currency::get_order_rate` -> `wdp_order_exchange_rate` (null, order, currency, base); canlı kur -> `wdp_progress_live_rate`; (K8: `WDP_Compat_Currency` kaldırıldı; Curcy/WOOCS okuyucuları site snippet'inde, `docs/site-snippets/`.) Ön yüz: `wdp_ajax.context` = `{currency, lang, currency_cookies[], lang_cookies[], switcher_selectors[], change_events[]}` (`wdp_client_context` filtresi); `lazy-modal.js` eklenti adı bilmez. `cart/woo.js` Avada seçicileri kaldırıldı (genel `menu-cart`/`widget-cart`/`shopping-cart` seçicileri + zaten tetiklenen standart `wc_fragment_refresh`). Oluşturucu tespiti: `Builder_Detect` genel kurallarla (`edit_products` + Gutenberg block-renderer, `is_preview()`/`is_customize_preview()`, anahtarı edit/preview/builder/fb parçası içeren dolu sorgu değişkeni) karar verir; adı bilinmeyen oluşturucu da çalışır; site sahibi ek işareti `wdp_is_builder_preview` / `wdp_builder_preview_context_product` filtreleriyle ekleyebilir (F6G: marka bazlı `WDP_Compat_Builders` kaldırıldı). Ürün sayfası yedeği (`render_builder_fallback`) zaten kanca tabanlıdır (şablon geçersiz kılma çalıştı mı).
-
-**10.32.0 ürün teması:** `WDP_Form_Modules::resolve_product_primary_color` / `resolve_product_shell_primary` (ürün → genel; kategori rengi K5 ile kaldırıldı; `_theme_inherit_category_color` okunmaz). `build_product_theme_style` → `WDP_Color_Palette::from_hex` türevleri + `--wdp-on-primary`; hover boşsa türetilmiş; koyu `--wdp-modal-bg` için metin token’ları. Köşe `PRODUCT_THEME_RADIUS_MIN/MAX` (4–32) + `product_radius_ladder` (panel/sheet oranı). Kampanya görseli URL: filtre `wdp_campaign_media_url` (`class-campaign-header-renderer.php`).
-
-Kapsam bayrağı: `_wdp_donation_product` (`includes/class-donation-scope.php:20`).
+Toplam/ilerleme meta: `_wdp_total_donation_amount`, `_wdp_donor_count`, `_wdp_manual_total`, `_wdp_progress_unconverted_orders`, `_wdp_campaign_starts_at|ends_at` (süzgeç `donation_panel_campaign_period`). 12.0.0 yeni: `_wdp_carried_amount` (= göç anındaki saklı toplam) ve `_wdp_campaign_start` (Unix, göç anı) yalnız yoksa kurulur; saklı toplam DEĞİŞMEZ (kullanımı: toplam tanımı, bkz. "K2").
 
 ### Sepet öğesi anahtarları
 
-| Anahtar | Yazma | Okuma |
-|---------|-------|-------|
-| `donation_data` (full_name, phone, note, email, dedication, anonymous, cover_fee, share_count, shareholders) | `WDP_Cart::add_donation_item_data` / AJAX cart-add | cart display, order meta |
-| `custom_price` | cart + AJAX | `apply_custom_price_to_cart` |
-| `unique_submission_key` / `unique_key` | cart | verify_submission |
-| `share_count_hidden` | cart | hisse |
-| `wdp_base_unit_price` | AJAX cart-add `includes/traits/trait-wdp-ajax-cart-add.php:290` | fiyat |
-| `wdp_sadaka_donation`, `wdp_parent_product_id`, `wdp_parent_cart_item_key`, `wdp_sadaka_linked_wc_product` | AJAX sadaka ekleme `includes/traits/trait-wdp-ajax-cart-add.php:497-504` | cart filtreleri / remove |
+`donation_data` (full_name, phone, note, email, dedication, anonymous, cover_fee, share_count, shareholders), `custom_price`, `unique_submission_key`, `wdp_base_unit_price`, `wdp_input_currency`, `wdp_sadaka_donation`, `wdp_sadaka_linked_wc_product` (+ `wdp_parent_*`), vergi indirimi `donation_panel_tax_relief`. Yazan: `Cart_Hooks` + `Experiences\Cart_Controller` (REST `/cart/add`).
 
 ### Sipariş satırı meta
 
-Sabit anahtarlar: `wdp_donor_name|phone|email`, `wdp_donation_note`, `wdp_dedication`, `wdp_anonymous`, `wdp_cover_fee`, `wdp_share_count`, `wdp_shareholder_%d_%s` (`includes/class-order-meta-keys.php:20-30`).  
-Yazma: `WDP_Order::add_donation_meta_to_order` (`includes/class-order.php:36-47`) + gizli `_custom_price` (`includes/class-order.php:38-39`).  
-Eski çevrilmiş etiket anahtarları `normalize_key` ile okunur (`includes/class-order-meta-keys.php:193-198`).
+`wdp_donor_name|phone|email`, `wdp_donation_note`, `wdp_dedication`, `wdp_anonymous`, `wdp_cover_fee`, `wdp_share_count`, `wdp_shareholder_%d_%s`, `wdp_donation_type`, `wdp_donation_frequency`, gizli `_custom_price`, `_donation_panel_video_url` (video bağlantısı), `_wdp_tax_relief_declared`, `_wdp_tax_relief_text_hash`. Yazma: `Order_Hooks::add_donation_meta_to_order` (`woocommerce_checkout_create_order_line_item`). Eski çevrilmiş etiket anahtarları `Order_Meta_Keys::normalize_key` ile okunur. Bağışçının yazdığı hiçbir alan anonim dahil sipariş kaydından silinmez/maskelenmez (yalnız herkese açık yüzeyler maskeler).
 
-### Transient / object cache / session / cookie
+### Transient / önbellek / oturum
 
-| Anahtar / grup | Tür | Kullanım |
-|----------------|-----|----------|
-| `wdp_product_info_{id}` | transient + `wdp_product_info` cache | get_product_info (`includes/traits/trait-wdp-ajax-product.php:32-68`) |
-| `wdp_total_donation_*` / `wdp_donor_count_*` | object cache `wdp_donations` | Utils |
-| `wdp_cart_count_*` / `wdp_cart_contents_*` | object cache `wdp_cart` | cart query (kısa TTL) |
-| `wdp_rate_limit_*` | transient | Security rate limit (`includes/class-security.php:201-219`) |
-| `wdp_migration_lock` | transient | Migrations |
-| `wdp_addon_line_ids` | transient | Addon visibility (`TRANSIENT` const) |
-| Liste HTML | 1 gün transient; `wdp_list_cache_version`; `orderby=random` atlar; UID/panel yer tutucu + admin notu cache dışı | `includes/class-donations-list.php` `render` / `bump_cache` |
-| `wdp_css_version_*` / `wdp_js_version_*` | transient+cache | assets |
-| WC session `get_customer_id()` | session | rate-limit / cart cache suffix (`includes/traits/trait-wdp-ajax-base.php:113-114`) |
-| Para birimi/dil sinyali (istemci) | `wdp_ajax.context` (sunucu; `wdp_client_context` filtresi) | lazy-modal çerez adı/seçici/olayları buradan okur; çekirdek eklenti/çerez adı bilmez (varsayılan listeler boş; K8), site snippet'i ekler (`assets/js/src/lazy-modal.js`) |
-| `wdp_vid` | KALDIRILDI (Faz 8, E8D) | Eski çerez gelirse yok sayılır ve silinir (`src/Privacy/class-privacy-tools.php`, `expire_legacy_cookie`). Salt okunur kovalar IP+UA(+Woo oturumu) karmasıdır. Bkz. docs/PRIVACY.md. |
-
-Eklenti artık çerez YAZMAZ (yalnız eski `wdp_vid`'i siler). JS çerez yazmaz.
+| Anahtar | Kullanım |
+|---------|----------|
+| `wdp_rate_limit_*`, `donation_panel_rate*` | Hız sınırı (`Support\Security`, `Http\Rate_Limiter`) |
+| `wdp_addon_line_ids` | Ek bağış satırı önbelleği |
+| nesne önbelleği `wdp_donations` | Kampanya toplamı/bağışçı sayısı (`Campaign_Totals`) |
+| `wdp_list_cache_version` + 1 günlük transient | `[wdp_donations]` HTML önbelleği |
+| `wdp_vid` | KALDIRILDI (Faz 8): eski çerez gelirse yok sayılır/silinir (`Privacy_Tools::expire_legacy_cookie`); eklenti çerez YAZMAZ. Bkz. docs/PRIVACY.md |
 
 ---
 
-## e) AJAX / REST uçları (tam liste)
+## e) REST uçları (ad alanı `donation-panel/v1`) ve kalan yönetici AJAX'ı
 
-`register_rest_route` / `admin_post_` / eklenti `wc_ajax_` kaydı: **yok** (grep). WC fragment yalnız istemci `get_refreshed_fragments` (`assets/js/src/cart/woo.js:35`).
+12.0.0'da ziyaretçiye açık `admin-ajax` uçları KALDIRILDI (`wdp_ajax_add_to_cart, wdp_get_cart_contents, wdp_get_cart_count, wdp_get_fresh_nonces, wdp_get_product_info, wdp_get_product_name, wdp_remove_cart_item, wdp_render_modal, wdp_verify_submission_in_cart`; `Public_Contract::RETIRED_AJAX_ACTIONS`; sözleşme testi kayıtlı olmadıklarını doğrular). `GET /modal` ve `wdp_render_modal_require_nonce` da yok. Kalan tek `wp_ajax_` eylemi yöneticiye ait `wdp_recalculate_product_total` (`manage_woocommerce`, ürün sekmesi; `includes/class-admin-hooks.php`).
 
-Yetki notu: `run_secured_ajax` varsayılan capability `read`; misafir için `check_capability('read')` → true (`includes/class-security.php:289-296`). `get_product_info` / `get_product_name` capability=`false` (`includes/traits/trait-wdp-ajax-product.php:65,197`).
+Gerçek uçlar (`grep -rn register_rest_route src`):
 
-Güvenlik reddi HTTP (`WDP_Utils::json_error`, 10.34.9): asla `200` + `success:false`. `WDP_Security_Exception` türü → HTTP: `nonce`/`capability`/`origin`/`method` = 403, `rate_limit` = 429 + `Retry-After` (`includes/class-exceptions.php`, `includes/class-utils.php`). JSON `code` = tür dizesi. Giriş yapmış kullanıcıda istek sınırı anahtarı `u:<id>|a:<action>` (10.34.10’da değişmez). Misafir **yazma** (`add_to_cart` vb.) `g:<hash(session\|ip\|ua)>|a:<action>`. Misafir **salt okunur** (`get_product_info`, `render_modal`): ziyaretçi kovası `v:<hash(wdp_vid)>|a:<action>` 60/dk + IP kovası `ip:<hash(ip)>|a:<action>` 600/dk (`wdp_rate_limit_ip_max` filtresi). Tehdit: CGNAT + aynı UA gerçek bağışçıları tek 60/dk kovasına düşürmesin; sahte `wdp_vid` HMAC’siz geçersiz (IP+UA 60’a düşer); geçerli belirteç çoğaltmak IP 600/dk ile sınırlı. Yazma uçları tek katman (eski davranış). `includes/class-security.php:234-290`, `includes/traits/trait-wdp-ajax-base.php:32-40`, `includes/class-lazy-modal.php`. `get_product_info` 60/dk (salt okunur, önbellekli; liste 24 kart + idle prefetch 3 `wdp_render_modal` — product_info form açılınca). Ön yüz: 403 nonce’ta bir kez `refreshWdpAjaxNonces` + yeniden dene; 429 görünür mesaj (`assets/js/src/product.js`, `assets/js/src/form/ajax.js`).
+| Uç | Yöntem | Yetki / koruma | Modül · dosya |
+|----|--------|----------------|----------------|
+| `/ping` | GET | herkese açık | `Http/Rest/class-ping-controller.php` |
+| `/product/{id}/form` (id isteğe bağlı) | GET | herkese açık, salt okunur, hız sınırı | `Experiences/class-form-controller.php` |
+| `/validate` | POST | WP REST nonce + hız sınırı; sunucuda yazmaz | `Experiences/class-form-controller.php` |
+| `/cart/add` | POST | JSON zorunlu, girişli kullanıcıda `X-WP-Nonce`, hız sınırı, `submission_key` ile çift ekleme koruması | `Experiences/class-cart-controller.php` |
+| `/nonce` | GET | herkese açık, `no-store` | `Experiences/class-cart-controller.php` |
+| `/progress/{id}`, `/impact/{id}` | GET | salt okunur, kişi verisiz | `Campaign`, `Impact` |
+| `/donations`, `/donations/stats` | GET | salt okunur, kişi verisiz | `SocialProof` |
+| `/side-cart` GET, `/side-cart/suggestion` POST | | oturumdaki sepet, `no-store` | `SideCart` |
+| `/account/session` GET, `/account/login` POST, `/account/register` POST, `/account/reset` POST, `/account/donations` GET, `/account/repeat` POST, `/account/link-guest` POST, `/account/link-guest/confirm` POST | | yazma uçları `wp_rest` nonce + hız sınırı; oturum gerektirenler `member` izniyle | `DonorAccount/class-account-controller.php` |
+| `/admin/settings` POST, `/admin/wizard` POST, `/admin/export` GET, `/admin/import` POST | | `manage_woocommerce` + `X-WP-Nonce` + hız sınırı | `Admin/class-admin-controller.php` |
 
-E2E bağışçı akışı ziyaretçi (`asVisitor`, storageState yok): ürün sayfası / popup / panel / layout yayımlı katalog. Yönetici: `decideScenarioProduct.admin` (private fixture), admin sekmeleri, **alt bağış yapılandırması** (`readProductSadakaAdminConfig` → WP eval `tests/e2e/helpers/sadaka-admin-config.php`, tarayıcı yok; eval olmazsa `post.php` 45s + en fazla 1 yeniden deneme; bağışçı senaryosu yine ziyaretçi). Auth işaret dosyası origin (şema+host+port) içerir — `WDP_LOCAL_E2E_PORT` değişince eski `.auth-ok` ile wp-login’e düşülmez. Atlama yalnız `tests/e2e/helpers/skip-policy.mjs` sabit kod (enum) + `evidence: wp-data|policy|css-source` (liste sayfası yok, yayımlı ürün yok, ayar kapalı, uzakta sipariş yok, local-only, related/upsell ID boş; **theme-hides-related** yalnız `css-source` + eklenti dışı stil yolu); **DOM gözlemi / açılamadı / timeout / admin okuma / enum dışı / evidence=dom / css-source eklenti yolu → hata** (`promoteIllegalSkips`). Mutasyon paketleri (form-fields, amount-options, campaign-blocks, product-theme, shortcodes, empty-price) yayımlı katalogda ziyaretçi, **uzak private fixture’da yönetici** (`decideDonationViewContext` / `donationViewContext` tek kural; katalog rolü yayımlı olsa bile fixture id private ise yönetici). Meta yazımı tarayıcıda değil PHP eval. Mutasyon suite’leri yalnız **iphone**; android/desktop salt okunur (layout her cihazda). Kilit senaryo başına (`mutation-lock.mjs`). Teşhis: `[e2e:ajax-kind] action=… http=… kind=nonce|rate|capability|id` (`tests/e2e/helpers/ajax-error-kind.mjs`).
-
-| Action | nopriv | Nonce | Yetki | Girdi temizleme (özet) | Çıktı | Dosya:satır |
-|--------|--------|-------|-------|------------------------|-------|-------------|
-| `wdp_get_cart_count` | evet | `wdp_get_cart_count` + origin | read | — | `{cart_count}` | `includes/class-ajax.php:35-36` + `includes/traits/trait-wdp-ajax-cart-query.php:47-68` |
-| `wdp_get_cart_contents` | evet | `wdp_get_cart_contents` | read | — | items + count | `includes/class-ajax.php:38-39`, `includes/traits/trait-wdp-ajax-cart-query.php:74-96` |
-| `wdp_ajax_add_to_cart` | evet | `wdp_ajax_add_to_cart` | read | absint/sanitize fiyat/hisse… | success cart JSON | `includes/class-ajax.php:41-42`, `includes/traits/trait-wdp-ajax-cart-add.php:22+` |
-| `wdp_get_fresh_nonces` | evet | **yok** (origin sıkı + POST) | read | — | nonces map | `includes/class-ajax.php:44-45`, `includes/traits/trait-wdp-ajax-cart-session.php:17-41` |
-| `wdp_verify_submission_in_cart` | evet | `wdp_ajax_add_to_cart` | read | unique_submission_key | in_cart bool | `includes/class-ajax.php:47-48`, `includes/traits/trait-wdp-ajax-cart-session.php:54-88` |
-| `wdp_remove_cart_item` | evet | `wdp_remove_cart_item` | read | cart_item_key | items | `includes/class-ajax.php:50-51`, query `includes/traits/trait-wdp-ajax-cart-query.php:212+` |
-| `wdp_get_product_name` | evet | `wdp_get_product_name` | yok (false) | product_id | deprecated name | `includes/class-ajax.php:54-55`, product `includes/traits/trait-wdp-ajax-product.php:145-176` |
-| `wdp_get_product_info` | evet | `wdp_get_product_info` | yok (false) | product_id | form meta JSON | `includes/class-ajax.php:57-58`, `includes/traits/trait-wdp-ajax-product.php:11-128` |
-| `wdp_render_modal` | evet | **bilinçli yok** | origin+rate+scope (Origin/Referer yoksa `validate_request_origin` false; `Sec-Fetch-Site` same-origin/same-site veya nonce’lu `none` istisna) | product_id, mode | `{html}` | `includes/class-lazy-modal.php:21-62` |
-| `wdp_recalculate_product_total` | hayır | `wdp_admin_nonce` | `manage_woocommerce` | product_id | total JSON | `includes/class-admin-hooks.php:29` + `includes/class-admin-product-settings-ajax.php:21-56` + `includes/class-admin-request.php:21-26` |
-| `wdp_save_placement_settings` | hayır | admin nonce | manage_woocommerce | placement alanları | success | `includes/class-admin-hooks.php:30` |
-| `wdp_save_advanced_settings` | hayır | aynı | aynı | uninstall flag vb. | success | `includes/class-admin-hooks.php:31` |
-| `wdp_save_normal_form_settings` | hayır | aynı | aynı | button_settings | success | `includes/class-admin-hooks.php:32` |
-| `wdp_save_design_studio_settings` | hayır | aynı | aynı | tasarım alanları | success | `includes/class-admin-hooks.php:33` |
-| `wdp_save_shareholder_form_settings` | hayır | aynı | aynı | shareholder_settings | success | `includes/class-admin-hooks.php:34` |
-| `wdp_save_success_screen_settings` | hayır | aynı | aynı | success_settings | success | `includes/class-admin-hooks.php:35` |
-| `wdp_save_modal_layout_settings` | hayır | aynı | aynı | modal_layout | success | `includes/class-admin-hooks.php:36` |
-| `wdp_save_progress_bar_settings` | hayır | aynı | aynı | progress | success | `includes/class-admin-hooks.php:38` |
-| `wdp_apply_style_preset` | hayır | aynı | aynı | preset id | success | `includes/class-admin-hooks.php:40` |
-| `wdp_export_style_preset` | hayır | aynı | aynı | — | export JSON | `includes/class-admin-hooks.php:41` |
-| `wdp_import_style_preset` | hayır | aynı | aynı | import payload | success | `includes/class-admin-hooks.php:42` |
-
-Ürün Bağış paneli kaydı AJAX değil: `woocommerce_admin_process_product_object` (`includes/class-admin-product-data-tab.php:37`).
+Yanıtlar kişi verisi döndürmez (hesap uçları oturumlu kullanıcının kendi verisi hariç). Hata biçimi `WP_Error` `donation_panel_*` kodları; güvenlik reddi 403/429. Ayrıntı ve parametreler: docs/HOOKS.md. Store API: `extensions['donation-panel']` kişi verisiz özet + `POST /wc/store/v1/cart/extensions` ile yalnız `dedication/note/anonymous` güncellenir. Uzak e2e koruması için bkz. "12.0.0 entegrasyon kararları (iv)".
 
 ---
 
 ## f) Kısa kodlar, blok, Elementor, ürün/mağaza entegrasyonu
 
+### Geri uyum katmanı: `Compat\Public_Contract` (tek dosya)
+
+Eski sürümlerden beri sitelerin kullandığı adlar bu dosyada toplanır ve yeni koda yönlendirilir; başka yerde eski ad bulunmaz. Sözleşme sabitleri: `SHORTCODES`, `BLOCKS`, `ACTIVE_HOOKS` (27 ad, kodda çalışır), `RETIRED_HOOKS` (20 ad, çağrılmaz), `RETIRED_AJAX_ACTIONS`, `DATA_KEYS`. Test: `tests/unit/Contract/PublicContractTest.php` (13 test). `register()` (WooCommerce yüklüyken): kısa kodlar, `Blocks::init`, `Elementor_Compat::init`, `donation_panel_amount_presets` ve `donation_panel_form_model` köprüleri. Giriş dosyasında 2 ince işlev sarmalayıcı (`wdp_render_donation_button/form`) `Public_Contract::render_for_product` çağırır.
+
 ### Kısa kodlar
 
-| Tag | Render | Dosya:satır |
-|-----|--------|-------------|
-| `[wdp_donation_button]` | popup buton+modal | `src/Modules/EntryPoints/class-shortcodes.php:21,33-40` |
-| `[wdp_donation_button_panel]` | side panel | `src/Modules/EntryPoints/class-shortcodes.php:22,49-56` |
-| `[wdp_donation_form]` | gömülü form | `src/Modules/EntryPoints/class-shortcodes.php:23,65-72` |
-| `[wdp_donations]` | liste ızgara | `src/Modules/EntryPoints/class-shortcodes.php:24` → `WDP_Donations_List::shortcode` |
+| Tag | Render |
+|-----|--------|
+| `[wdp_donation_button]` | popup düğmesi (+ katman) |
+| `[wdp_donation_button_panel]` | sağ panel düğmesi (`id` ile; DEĞİŞMEZ) |
+| `[wdp_donation_form]` | sayfa içi form |
+| `[wdp_donations]` | liste ızgarası (`Donations_List::shortcode`) |
+| `[donation_panel_experience id kind button_text]` | yeni kısa kod (`kind=popup|side_panel|inline|bottom_sheet`) |
+| `[donation_panel_progress]`, `[donation_panel_social_proof]`, `[donation_panel_side_cart]`, `[donation_panel_account]` | modül kısa kodları |
 
-Ürün çözümleme: `Product_Resolver` + `resolve_for_output`. `id`/`slug`/`sku` açıkça verilirse bağış kapsamı atlanır.
+Eski kısa kodlar `Shortcodes::render_button/render_form` -> `Experience_Renderer::render` -> `Module_Registry::get('experiences')->shortcode()` zincirinden yeni deneyimi çizer; `donation_panel_experience_html` süzgeci çıktıyı değiştirebilir. Öznitelikler: `id/slug/sku/text/button_text` çalışır; `class` -> `<div class="dp-entry ...">` sarmalayıcı; `title/show_title` yeni formda kullanılmaz. `id` yoksa ürün `Product_Resolver::resolve` ile bulunur (`id/slug/sku` -> blok `postId` -> global `$product` -> `is_product()` + sorgulanan nesne -> global `$post` -> `get_the_ID()` -> düzenleyici önizleme; filtre `wdp_resolve_product`); çözülemezse ziyaretçiye boş. Döngü/liste kartı düğmeleri (`loop_button`, `[wdp_donations]` kartı) ürün sayfasına BAĞLANTI olur (ağır formu liste başına basmamak için; isteğe bağlı tembel açıcı sonraki iş).
 
-Liste önbelleği bump (10.33.0 + 10.34.0; aynı istekte bir kez): stok/kategori (önceki) + `woocommerce_update_product`, `woocommerce_new_product`, `save_post_product`, `trashed_post` / `untrashed_post` / `before_delete_post`, `transition_post_status`, fiyat/ilerleme meta (`_price` `_regular_price` `_sale_price` `_wdp_total_donation_amount` `_wdp_donor_count`), bağış sekmesi kaydı (`on_product_settings_save`), sipariş durum / iade. 10.34.0 `step_10_34_0` bir kez sürüm artırır (kart HTML değişti).
+### Gutenberg ve Elementor
 
-**Liste kartı (10.34.0):** görsel ve başlık gerçek `<a href>` (ürün permalink); CTA popup/panelde `<button type="button" class="wdp-card__cta wdp-open-modal" data-wdp-lazy="1">` (sayfadan ayrılmaz); `button=link` iken `<a href>`. İç içe `<a>` yok (görsel bağlantısı `aria-hidden tabindex=-1`). Custom kart: yalnız `min. {wc_price(_min_custom_price)}` (sabit fiyat yok). Kampanya: toplanan/hedef `wc_price` + çubuk yalnız `_progress_bar_limit>0`; `DEFAULT_GOAL` kart yüzdesinde kullanılmaz; toplanan 0 anlamlı metin. Sekmeler: yalnız üründe doğrudan kategori; `get_option('default_product_cat')` ve slug `uncategorized` yok. `card_html` `includes/class-donations-list.php`.
+Bloklar `wdp/donation-form`, `wdp/donations` (`src/Modules/EntryPoints/class-blocks.php`; block.json `blocks/`; editör betiği `wp.i18n` + `wp_set_script_translations`). Hesap bloğu: `src/Modules/DonorAccount/block/block.json`. Elementor: `Elementor_Compat` + `Donation_Form_Widget` + `Donations_List_Widget` yalnız kısa kodun çıktısını döndüren ince uyumluluk katmanıdır (yeni özellik almaz; eklenti başka hiçbir oluşturucuyu tanımaz).
 
-**Fiyatsız custom/campaign (10.34.0):** `WDP_Donation_Purchasable` `woocommerce_is_purchasable` pri 20 — yayınlanmış (veya `edit_post`) bağış ürünü Genel fiyat boşken satın alınabilir. Min yalnız `_min_custom_price`. Eklenti Genel fiyatı yazmaz/eşitlemez. Kart/form birim fiyatı `wc_get_price_to_display`. Genel fiyat alanı görünür kalır; Bağış sekmesinde not.
+### Giriş noktaları modülü (`src/Modules/EntryPoints/`)
 
-**Şart b E2E (10.34.1, görev 2b):** Hedef (`allowMetaMutation`): custom + campaign ürününde `_regular_price`/`_price` geçici boşaltılır (`saveProductPrices`), liste önbelleği bump, (1) listede `data-product-id` görünür (2) ürün sayfası Bağış Yap (3) sepete eklenir tutar doğru (4) custom kartta sabit fiyat yok / HTML bozuk değil; `finally` eski fiyata döner — geri yükleme hatası testi fail eder. Ikram: gerçek fiyata dokunulmaz; `private` + `catalog hidden` + `_wdp_e2e_test=1` geçici custom ürün; `asAdmin` tam permalink (`pathname` `?p=` düşürmez) + sepet; `deleteMarkedProduct` (işaretsiz silinmez). Liste görünürlüğü Ikram’da atlanır. Coming soon değişmez.
+| Sınıf | Sorumluluk |
+|---|---|
+| `Entry_Points_Module` (`entry_points`, varsayılan açık) | Açıkken `Auto_Placement::init()`; WooCommerce yoksa hiçbir şey |
+| `Shortcodes`, `Blocks`, `Experience_Renderer` | giriş çizimi (yukarıda) |
+| `Product_Resolver`, `Builder_Detect` | ID'siz ürün çözümü; yalnız genel WP sinyalleriyle düzenleyici/önizleme tespiti |
+| `Auto_Placement` | Woo standart kancalarıyla otomatik yerleşim: `simple.php` şablon override, `wp` özet kancaları, blok `render_block_woocommerce/add-to-cart-*`, native add-to-cart söküm, gizleme CSS. Kapı: `placement.auto_place` + ürün `_wdp_auto_place !== 'no'` |
+| `Fallback_Button` | Kancalar çalışmazsa kendi düğmesi (`woocommerce_after_single_product` 999 + `wp_footer` 4); aynı sayfada asla iki giriş |
+| `Loop_Price_Filters` | Mağaza döngüsü düğmesi, sepete ekle metni/URL, ajax_add_to_cart kapatma, fiyat gizleme |
+| `Render_Registry`, `Render_Guard` | İstek içi kayıt defteri: çift giriş/çift form engeli (`wdp_allow_multiple_entries` ile açılır) |
+| `Donations_List` | `[wdp_donations]`; kart CTA ürün bağlantısı; önbellek |
 
-**Ürün sayfası auto_place yedek (10.34.1):** Özel ürün şablonu Woo sepete-ekle öğesi içermezse şablon override ve summary kancası çalışmaz. `auto_place=yes` iken `render_builder_fallback` bir kez basar (`woocommerce_after_single_product` + `wp_footer`); `has_product_ui` / `template_override_used` varsa boş. `src/Modules/EntryPoints/class-auto-placement.php`.
+Kayıt kuralı: kısa kodlar, bloklar, Elementor katmanı HER ZAMAN kayıtlı (WooCommerce etkinse); modül kapatılırsa yalnız otomatik yerleşim + yedek düğme + döngü/fiyat filtreleri durur. Kural (S5): görünür giriş yoksa eklenti kendi düğmesini çizer; ürün/genel ayarda otomatik yerleşim kapalıysa çizmez.
 
-**Giriş noktası yedeği ve ID'siz çözüm (Faz 7-A):** Tespit tema/oluşturucu adını bilmez; yalnız standart Woo kancaları + istek içi kayıt defteri (`WDP_Render_Registry`): kısa kod/blok/widget/şablon override/başka bir snippet'ten `do_shortcode` ile çağrılan çıktı `mark_trigger` / `claim_form` ile kayıtlanır, `has_product_ui` bunu okur. `render_builder_fallback` `woocommerce_after_single_product` **öncelik 999** (`FALLBACK_PRIORITY`) + `wp_footer` 4'te çalışır; ürün sayfası, bağış ürünü, genel `auto_place=yes`, ürün `_wdp_auto_place!=no`, kısa kod yok ve `has_product_ui` yok ise düğmeyi/formu `wdp-auto-place-fallback` içinde bir kez basar. Otomatik çizilen giriş `mark_auto` ile işaretlenir; **sonradan** aynı ürün için gelen açık kısa kod/blok/widget çıktısı boş döner (`Shortcodes::auto_entry_already_drawn`; tek giriş kuralı; builder önizlemede ve `wdp_allow_multiple_entries` filtresi `true` iken uygulanmaz). Blok tema `woocommerce/add-to-cart-form`: blok kendi çağrısında şablon override ile girişi zaten bastıysa `filter_block_add_to_cart` içeriği korur (`html_has_entry`), yalnız başka giriş varsa yerli içeriği atar. ID'siz kısa kod/blok/widget (`Product_Resolver::resolve`): `id/slug/sku` → blok `postId` → global `$product` → `is_product()` + sorgulanan ID → `get_queried_object()` ürün yazısı → global `$post` ürün yazısı → `get_the_ID()` → oluşturucu önizleme; çözülemezse çıktı ziyaretçi için sessizce boş (uyarı yalnız yönetici/önizleme). Kısa kod adları/öznitelikleri değişmez (`CompatibilityContractTest`). Testler: `tests/unit/EntryPointFallbackTest.php`; yerel HTTP e2e `npm run e2e:entry-points` (`tests/e2e/run-entry-points.mjs`; temalar `matrix.json` `entryPoints.themes`: twentytwentyfive, storefront, blocksy; test mu-plugin'i `tests/e2e/helpers/wdp-entry-sim.php` `[hd_panel_buton]` benzeri snippet'i ve Avada/Elementor benzeri "özet kancasında add-to-cart yok" düzenini (`builder_no_atc`) taklit eder; gerçek Avada yerelde kurulamaz).
-
-**Tutar etiketi koşulu (10.34.2):** Görünür “Bağış Tutarı” yalnız gerçek tutar *girişi* olan türlerde (bağışçı belirler `render_custom_price_amount_row`, hedefli/kampanya `render_progress_amount_block`). Sabit tutar `render_fixed_price_quantity_row` fiyat kutusu + adet (eşit ızgara); etiket yok (yalnız `screen-reader-text` / `aria-label`). Hisselide tutar girişi yok → etiket yok. CSS ile gizleme yok. `includes/templates/class-form-fields-renderer.php`.
-
-**CTA alt dolgu (10.34.2 + 10.34.10):** `--wdp-cta-clearance` varsayılan `0`. CTA varsayılan `position: relative` (akışta, son alanın altında ≈16–24px). JS `applyCtaClearance` kaydırma yoksa sınıf/spacer 0; gövde taşınca `.wdp-cta-overlays` → `sticky` + spacer = min(çubuk, bindirme). Panel footer `margin-block-start: 0`; panel main `flex: 0 1 auto` (kısa formda büyümez, taşınca küçülür). Hisselide dış `::after` 0. E2E: son öğe (görünür en alt, CTA dışı) çubuğun arkasında değil + kaydırma sonunda boşluk ≤48px (`CTA-GAP`); PNG `waitAndAssertShellOverlap`. `assets/js/src/core/cta-viewport.js`, `assets/css/src/foundation/tokens.css:186`, `layout.css`, `side-panel.css`, `tests/e2e/helpers/layout.mjs`, `shell-overlap.mjs`.
-
-### Gutenberg
-
-| Blok | Kayıt | Render |
-|------|-------|--------|
-| `blocks/donation-form` | `Blocks::register` `src/Modules/EntryPoints/class-blocks.php:52-57` | shortcode benzeri (`src/Modules/EntryPoints/class-blocks.php:72+`) |
-| `blocks/donations` | `src/Modules/EntryPoints/class-blocks.php:58-62` | liste |
-
-### Elementor
-
-`DonationPanel\Modules\EntryPoints\Elementor\Elementor_Compat` widget kaydı (`src/Modules/EntryPoints/Elementor/class-elementor-compat.php`); widget’lar shortcode fonksiyonlarını çağırır (`src/Modules/EntryPoints/Elementor/class-*-widget.php`). Liste `image_size` + `columns_tablet`/`columns_mobile` → `Donations_List_Widget::atts_from_settings`. Ayrıntı: "Genel ilke (F6G)".
-
-### Ürün sayfası / mağaza
-
-- Kapı: `WDP_Placement_Settings::value('auto_place')==='yes'` (`src/Modules/EntryPoints/class-auto-placement.php:43-45`)
-- Şablon: `templates/woocommerce/single-product/add-to-cart/simple.php` via `wc_get_template` / `locate_template` filtreleri (`src/Modules/EntryPoints/class-auto-placement.php:54-55`)
-- Döngü: `woocommerce_loop_add_to_cart_link` (`src/Modules/EntryPoints/class-auto-placement.php:58`) — popup/panel/lazy
-- Lazy modal: `data-wdp-lazy` + AJAX `wdp_render_modal` (`includes/class-lazy-modal.php`, `assets/js/src/lazy-modal.js`)
-- Native ATC unhook: `unhook_native_single_add_to_cart` (`src/Modules/EntryPoints/class-auto-placement.php` `on_wp`)
-- Fallback: summary hook’ları (`src/Modules/EntryPoints/class-auto-placement.php`)
-- Ürün override: `_wdp_auto_place`
+Ürün sayfası/mağaza ayrıntıları (fiyatsız custom/campaign satın alınabilirliği, native sepet gizleme, tek giriş kuralı) aşağıdaki Faz 7 öncesi tarihsel notlarda; kod yolu artık yukarıdaki sınıflardadır.
 
 ---
-
-### Giriş noktaları modülü (E1; `src/Modules/EntryPoints/`, ad alanı `DonationPanel\Modules\EntryPoints`)
-
-Eski `includes/class-{shortcodes,product-page-integration,product-resolver,blocks,elementor}.php`, `includes/elementor/*` ve `includes/compat/class-builder-detect.php` buraya taşındı; eski dosyalar silindi. Davranış birebir.
-
-| Sınıf (dosya `class-*.php`) | Sorumluluk |
-|---|---|
-| `Entry_Points_Module` (`entry-points-module`) | Modül (slug `entry_points`, varsayılan AÇIK). Açıkken `Auto_Placement::init()` çağırır. WooCommerce yoksa hiçbir şey yapmaz. |
-| `Shortcodes` | 4 kısa kod (`wdp_donation_button`, `wdp_donation_button_panel`, `wdp_donation_form`, `wdp_donations`; öznitelikler değişmez); ortak `render_button` / `render_form` (kısa kod, blok, widget, otomatik yerleşim hepsi bunu kullanır). |
-| `Blocks` | `wdp/donation-form`, `wdp/donations` (block.json `blocks/` altında kalır; PHP render). |
-| `Product_Resolver` | ID'siz çözüm sırası: id, slug, sku, blok bağlamı, global `$product`, `is_product()`, queried object, global `$post`, `get_the_ID()`, düzenleyici önizleme; `wdp_resolve_product` filtresi. Ayrıca `current_product()`, `current_product_id()`, `product_from_block()`. |
-| `Builder_Detect` | Yalnız genel WP sinyalleriyle düzenleyici/önizleme tespiti (hiçbir oluşturucu adı yok). |
-| `Auto_Placement` | Woo standart kancalarıyla otomatik yerleşim: `simple.php` şablon override (`wc_get_template`, `woocommerce_locate_template`), `wp` özet kancaları, blok `render_block_woocommerce/add-to-cart-*`, native add-to-cart söküm, gizleme CSS. Kapı: genel `auto_place=yes` + ürün `_wdp_auto_place!=='no'`. |
-| `Fallback_Button` | Yedek düğme: şablon override çalışmadıysa ve sayfada hiç giriş çizilmediyse (`woocommerce_after_single_product` öncelik 999 + `wp_footer` 4) kendi düğmesini çizer. Çift giriş asla. |
-| `Loop_Price_Filters` | Mağaza döngüsü düğmesi (popup/panel/bağlantı), sepete ekle metni/URL, ajax_add_to_cart kapatma, fiyat gizleme (`hide_price`). |
-| `Elementor\Elementor_Compat` + `Donation_Form_Widget` + `Donations_List_Widget` | Yalnız kısa kodun çıktısını döndüren ince uyumluluk katmanı (yeni özellik yok). |
-
-**Kayıt kuralı (sözleşme):** kısa kodlar, bloklar ve Elementor katmanı HER ZAMAN kayıtlıdır (`Plugin::register_entry_contract()`, yalnız WooCommerce etkinse); modül ayarı kapatılırsa yalnız otomatik yerleşim + yedek düğme + döngü/fiyat filtreleri kapanır, `Entry_Points_Module` ve bağlı sınıf dosyaları yüklenmez.
-**Tek kayıt defteri:** giriş noktası durumu (`has_product_ui`, `mark_auto`, `claim_form/modal`, `duplicate_*_notice`) `WDP_Render_Registry`'de tutulur (testli: `EntryPointFallbackTest`, `Shortcodes1033Test`); tüm giriş yolları aynı defteri kullanır, bu yüzden bir ürün sayfasında ikinci giriş çizilmez (`wdp_allow_multiple_entries` ile açılır).
-**Şablon:** `templates/woocommerce/single-product/add-to-cart/simple.php` `Auto_Placement::render_template_override()` çağırır.
-**Analiz:** `phpcs-src.xml.dist` (sıfır gevşetme; `edit_products` WooCommerce yetkisi bildirildi) ve `phpstan-src.neon` (seviye 6; `treatPhpDocTypesAsCertain: false`, legacy `includes/` yalnız taranır; Elementor klasörü temel sınıf kurulu olmadığından PHPStan'dan hariç, PHPCS'te kalır).
 
 ## g) Ayar → kod eşlemesi
 
-Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement / product service.
+Kaynak rehber: `docs/AYARLAR.md`. Tek yazma yolu yönetici ekranıdır (`Admin\Settings_Store`): doğrular -> `donation_panel_settings` (Core `Settings`) -> eşlemesi olan alanları eski `wdp_*` seçeneğine yansıtır (`mirror`). Okuma: Core kayıtlıysa o, yoksa eski seçenek, yoksa şema varsayılanı. Alan tanımlarının tek kaynağı `Admin\Field_Registry`.
 
-### Genel → ürün devralma (çözümleyiciler)
+### Çekirdek ayar şeması (`Core\Settings`)
+
+`general.delete_data_on_uninstall`; `modules.{entry_points,experiences,campaign,impact,social_proof,side_cart,thanks,tax_relief,donor_account}`; `design.{colors,brand,accent,button_text,button_full_width}`; `display.mode`; `form.{presets_enabled,presets,donor_email,dedication,dedication_label,anonymous,multi_step,trust_enabled,trust_text,privacy_notice,privacy_text,privacy_url}`; `shares.{header_text,copy_button,email}`; `placement.{auto_place,position,hide_price,show_title,loop_button,scope,categories}`; `checkout.{addon_product_id,addon_label}`; `impact.map`; `thanks.{celebrate,share,message}`; `tax_relief.{step_label,title,text,checkbox_label}`; `admin.{wizard,wizard_step}`.
+
+### Eski ayar -> yeni alan (özet; tam tablo `build/handoff/12-adm-ayar-envanteri.md`)
+
+| Eski (`wdp_*`) | Yeni | Durum |
+|---|---|---|
+| `popup_button_text`, `popup_button_color`, `popup_button_full_width`, `brand_color` | `design.button_text`, `design.accent`, `design.button_full_width`, `design.brand` | taşındı |
+| `enable_amount_presets`, `amount_presets`, `enable_multi_step`, `trust_strip_*`, e-posta/ithaf/anonim | `form.*` | taşındı |
+| `auto_place`, `position`, `display`, `hide_price`, `show_form_title`, `loop_button`, `donation_scope`, `donation_categories` | `placement.*`, `display.mode` | taşındı |
+| `wdp_delete_data_on_uninstall` | `general.delete_data_on_uninstall` | taşındı |
+| renk/yazı/boşluk/köşe/genişlik/dolgu değerleri | tasarım belirteçleri (`--dp-*`) ve tema | yeni modelde otomatik (152 eski ayardan 29 taşındı, 91 otomatik, 32 eski motora özgü kaldırıldı; kayıp 0, testle kanıtlı) |
+
+### Genel -> ürün devralma
 
 | Konu | Sıra | Fonksiyon |
 |------|------|-----------|
-| Bağış ürünü mü? | tip destek → meta yes/no → global scope | `WDP_Donation_Scope::evaluate` (`includes/class-donation-scope.php:81-93`) |
-| E-posta / ithaf / anonim | meta `yes`/`no` → değilse `wdp_button_settings`; hisseli tipte hep kapalı; sunucu kapalı alanı yok sayar (`WDP_Donation_Optional_Fields::apply_from_request`, AJAX + legacy cart) | `resolve_flag_or_global` / `WDP_Donation_Optional_Fields` — global: `enable_donor_email`, `enable_dedication`, `enable_anonymous` |
-| Çok adımlı form | ürün `_enable_wizard` tristate → global `enable_multi_step`; form sınıfı `wdp-multi-step` (JS genel bayrağa bakmaz) | CTX + `class-modal-shell-renderer.php` + `wizard.js` |
-| Alan ikonları | ürün `_enable_field_icons` tristate → global `enable_field_icons`; kapalıysa `wdp-no-field-icons` | CTX + MSR |
-| Aydınlatma bağlantısı | global `enable_privacy_notice` (varsayılan kapalı) + kısa etiket (`privacy_notice_text`) / URL; URL boşsa WP gizlilik sayfası; yoksa gösterilmez. Yalnız bağlantı (uzun gövde yok). Yalnız e-posta/ithaf/hissedar varken | `WDP_Donation_Optional_Fields::render_privacy_notice_html` |
-| Ürün vurgu rengi | ürün `_theme_primary` → genel marka; başlık aynı kural (`WDP_Form_Modules::get_title_style_attr`) | `WDP_Form_Modules::resolve_product_*` |
-| Anonim maske | yalnız herkese açık yüzeyler (`sanitize_public_donation_data`); sipariş/admin/e-posta orijinal ad | `mask_public_donor_name` |
-| Hızlı tutar düğmeleri | global `enable_amount_presets==='1'` → ürün `_enable_amount_presets==='no'` gizler; yalnız custom/campaign; min altı elenir; "Önerilen" yalnız ürün `_amount_preset_recommended` dolu ve görünen listedeyse (ortadaki/genel varsayılan yok; seçili gelmez) | `render_amount_presets` (`includes/templates/class-form-fields-renderer.php`) |
-| Modül sırası | sabit varsayılan sıra (`includes/config/form-modules.php`); ürün/genel sıra ayarı K4 ile kaldırıldı, eski `_wdp_module_order` / `module_order` değerleri okunmaz | `WDP_Form_Modules::resolve_order` |
-| Güven rozetleri | global → ürün `_trust_badges` doluysa ürün | `resolve_trust_badges` (`includes/class-form-modules.php:145-175`) |
-| Otomatik yerleşim | global `auto_place` + ürün `_wdp_auto_place!=='no'` | `should_auto_place` / meta (`src/Modules/EntryPoints/class-auto-placement.php`) |
-| Native sepet gizleme | bağış ürünü tekil sayfada tüm `form.cart` + `.single_add_to_cart_button` + sticky-add-to-cart (tema sınıfı yok); döngü/ilgili/upsell/koleksiyon `:not()` ile hariç | `hide_native_cart_css` yedek; asıl yol `unhook_native_single_add_to_cart` (`woocommerce_template_single_add_to_cart` + sticky callback adı) |
-| Alt bağış WC ürünü | ürün `_addon_wc_product_id` (yoksa eski `_sadaka_wc_product_id`) → yoksa success `sadaka_wc_product_id` | `WDP_Utils::resolve_addon_wc_product_id` (`includes/class-utils.php:104+`) |
+| Bağış ürünü mü? | tip desteği -> meta yes/no -> `placement.scope` | `Domain\Donation_Scope::evaluate` |
+| E-posta / ithaf / anonim | ürün meta `yes`/`no` -> genel `form.*`; hisseli tipte hep kapalı; sunucu kapalı alanı yok sayar | `Product_Context` |
+| Çok adımlı form | ürün `_enable_wizard` -> `form.multi_step` | `Product_Context` |
+| Aydınlatma bağlantısı | `form.privacy_notice` (açık) + e-posta/ithaf/hisse alanı varsa; adres boşsa WP gizlilik sayfası | `Domain\Privacy_Notice` |
+| Hızlı tutarlar | genel `form.presets_enabled` -> ürün `_enable_amount_presets='no'` gizler; yalnız custom/campaign; "Önerilen" yalnız ürün `_amount_preset_recommended` | `Domain\Amount_Presets` |
+| İşlem ücreti | yüzde HER ZAMAN ürün meta'sından, aralık 0 veya 0,5-15 | `Domain\Cover_Fee`, `Cart_Hooks` |
+| Otomatik yerleşim | `placement.auto_place` + ürün `_wdp_auto_place` | `Auto_Placement` |
+| Ek bağış ürünü | ürün `_addon_wc_product_id` (eski `_sadaka_wc_product_id`) -> `checkout.addon_product_id` | `Domain\Addon_Settings` |
 
-### Ürün sayfası ve liste (`wdp_placement_settings`)
+Ürün Bağış sekmesi (kalan `includes/`) alanları ve davranışı `docs/AYARLAR.md` "Ürün düzenleme -> Bağış sekmesi" bölümündedir; varsayılanlar `Product_Settings_Service::from_request`.
 
-| Ekran (AYARLAR) | Option alanı | Varsayılan | Okuma |
-|-----------------|--------------|------------|-------|
-| Sepete Ekle yerine Bağış | `auto_place` | `yes` (yeni kurulum defaults; option yoksa get() `auto_place=>no`) | `includes/class-placement-settings.php:33-45,84-91` |
-| Konum | `position` | `replace_cart` | aynı |
-| Görünüm | `display` | `button_panel` | `DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display` (içerikte `[wdp_donation_form]` → `inline`, `[wdp_donation_button_panel]` → `button_panel`, `[wdp_donation_button]` → `button_popup`; yoksa auto_place + bu alan). E2E katalog `display`. `data-wdp-display` düğme/form. |
-| Fiyat gizle | `hide_price` | `yes` | aynı |
-| Form başlığı | `show_form_title` | `no` | aynı |
-| Döngü butonu | `loop_button` | `panel` | aynı |
-| Kapsam | `donation_scope` | `all` | Scope |
-| Kategoriler | `donation_categories` | `[]` | Scope |
-
-**Çelişki notu (AYARLAR ↔ kod):** `defaults()` `auto_place=yes` (`includes/class-placement-settings.php:35`); `get()` option yokken `auto_place=>no` zorlar (`includes/class-placement-settings.php:89-91`) — yükseltmede ikinci form önleme. AYARLAR “genel açık bırakın” der; ham `defaults()` ile `get()` davranışı farklıdır.
-
-### Ürün Bağış sekmesi (özet tablo)
-
-| Ekran etiketi | Meta | Varsayılan (from_request / bayrak) | Okuma |
-|---------------|------|-------------------------------------|-------|
-| Bağış ürünü | `_wdp_donation_product` | `''` (global) | Scope |
-| Otomatik yerleşim | `_wdp_auto_place` | `''` (açık); `no` kapalı | PPI |
-| Bağış tipi | bayrak üçlüsü via `WDP_Donation_Type` | — | context / AJAX |
-| Hedef tutar | `_progress_bar_limit` | ≤0 / üst sınır hata; binlik parse; admin boş input `DEFAULT_GOAL` (yalnız form alanı); kart/çubuk boş hedefi göstermez (`resolve_goal_amount` 0) | context, PSS, Donations_List |
-| Hedefe ulaşınca | `_goal_reached_action`, `_goal_reached_message` | boş action→message; mesaj boş→varsayılan metin | Campaign_Goal, ajax-cart-add, cart validation |
-| En düşük tutar | `_min_custom_price` | `0`; **tek kaynak** (Genel fiyat min hesaplanmaz) | context / cart |
-| En fazla hisse | `_max_shares` | boş → runtime `7`; kayıt/sunucu üst 50 | context, ajax-cart-add |
-| Hızlı tutar / Tutarlar / Önerilen | `_enable_amount_presets`, `_amount_presets`, `_amount_preset_recommended` | presets varsayılan yes; kayıtta katı doğrulama; Önerilen yalnız ürün (boş=etiket yok; listede yoksa kayıt hata); okumada yumuşak parse | form-fields, product-settings-service |
-| Adet seçici | `_enable_quantity` | boş→yes; yalnız sabit tipte; sunucu adedi kapalıyken/sabit olmayan tipte 1'e sabitler (`WDP_Cart::product_allows_quantity`, hisseli hariç) | context, ajax-cart-add |
-| Cover fee | `_enable_cover_fee`, `_cover_fee_percent` | off / 0; tüm tipler; kayıt 0 veya 0,5–15 (`normalize_cover_fee_percent_for_save`, aralık dışı = hata), çalışma anı `clamp_cover_fee_percent_for_runtime`; yüzde sunucuda HER ZAMAN ürün meta'sından (`WDP_Cart::get_product_cover_fee_percent`), istemci yüzdesi yok sayılır; fiyat: custom → `custom_price`, sabit/hisseli → `wdp_base_unit_price` × (1+yüzde); sepette "İşlem ücreti" satırı; formda `data-wdp-form-total` Toplam satırı | context, cart, ajax-cart-add, form-modules |
-| E-posta/İthaf/Anonim | `_enable_*` tristate | `''`→global; hisseli tipte UI+sunucu yok; geçersiz e-posta `donation_email` hatası; ithaf 120 karakter (mb); sepette e-posta/ithaf/anonim satırı (kendi sepet) | CTX + Optional_Fields + cart display |
-| Ürün notu | `_enable_product_note`, `_product_note_text` | off; kayıt sınırı 400 (okumada kırpma yok) | context / PSS |
-| Wizard / ikon | `_enable_wizard`, `_enable_field_icons` tristate | `''`→global (`enable_multi_step` / `enable_field_icons`) | CTX + MSR |
-| Etki / aciliyet / sosyal / medya / layout / tema… | ilgili `_` meta | bkz. `from_request` | context + header renderer |
-| Alt bağış | `_enable_addon_donation`, `_addon_*` (eski `_enable_sadaka_donation`, `_sadaka_*`) | off | context; kampanyada UI gizlenir (product_info `includes/traits/trait-wdp-ajax-product.php:102`) |
-
-### Global sekmeler → option anahtarları (varsayılan örnekleri)
-
-| Sekme | Option | Örnek varsayılanlar (normalizer) | Kanıt |
-|-------|--------|----------------------------------|-------|
-| Normal (+ kısmen Tasarım alanları aynı option) | `wdp_button_settings` | primary `#0f608b`, popup text `Bağış Yap`, hızlı tutar düğmeleri `enable_amount_presets` default `'0'`, `amount_presets` hiç kaydedilmemişse `WDP_Form_Modules::default_amount_presets_csv()` (ondalıklı: `5, 10, 25, 50, 100`; 0 ondalık: `100, 250, 500, 1000, 2500`; kayıtlı değer değişmez), katı doğrulama: `WDP_Admin_Settings_Normalizer::$last_validation_error`, donor email/dedication/anonymous `'0'` | `includes/class-admin-settings-normalizer.php`, `includes/class-form-modules.php:206-220` |
-| Hisseli | `wdp_shareholder_settings` | header `#0f608b`, email enable `'0'` | `includes/class-admin-settings-normalizer.php:280-314` |
-| Başarı | `wdp_success_settings` | buton renkleri, sadaka toggle label | `includes/class-admin-settings-normalizer.php:335-353` |
-| Progress | `wdp_progress_bar_settings` | fill/pending/height | `includes/class-admin-settings-normalizer.php:372+` |
-| Modal | `wdp_modal_layout_settings` | panel %50, popup 540px, … | `includes/class-admin-settings-normalizer.php:433-456` |
-| Gelişmiş | `wdp_delete_data_on_uninstall` | `'0'` | `includes/class-admin-page-renderer.php:125` |
-| Stil paketleri | `wdp_button_settings` (+ share/progress/success merge) + `wdp_custom_style_presets` | `WDP_Style_Presets` | `includes/class-style-presets.php` |
-
-**AYARLAR çapraz kontrol:** Hızlı tutar düğmeleri için AYARLAR “genel kapalıysa ürün açık olsa da gelmez” → kodla uyumlu (`includes/templates/class-form-fields-renderer.php:101-111`). E-posta global anahtarı AYARLAR’da “Tasarım → E-posta”; kodda `enable_donor_email` (`includes/class-admin-settings-normalizer.php:137`, context `includes/class-donation-product-context-service.php:138`) — etiket/option adı eşleşmesi tutarlı.
+**Çelişki notu:** `Placement_Settings::defaults()` `auto_place=yes`; seçenek yokken `get()` `auto_place=>no` zorlar (yükseltmede ikinci form önleme).
 
 ---
 
-## h) Form akışı (sıralı)
+## h) Form akışı (12.0.0; tek deneyim)
 
-### A) Gömülü form
+1. **Çizim:** giriş (kısa kod/blok/otomatik yerleşim) -> `Experience_Renderer` -> `Experiences_Module::shortcode` -> `Form_Renderer` -> `Form_Context` (model: `Product_Context` + ayarlar; süzgeçler `donation_panel_form_model/_steps/_fields/_amount_presets/_frequency_options`) -> şablon `templates/donation-panel/experiences/{popup,side-panel,inline,bottom-sheet}.php` içinde `form.php`. Kaplar: `Popup`, `Side_Panel`, `Inline_Form`, `Bottom_Sheet`; başlık/kapat düğmesi `form.php`'dedir.
+2. **Açılış:** düğme katmanı açar (`layer.mjs`: odak tuzağı, Esc, kaydırma kilidi, sürükleyerek kapatma, `visualViewport` klavye uyumu). Form HTML'i sayfada hazırdır; gerektiğinde `GET /product/{id}/form` aynı modeli/HTML'i döndürür.
+3. **Adımlar:** `Form_Context::steps()` türe göre: tutarı bağışçı seçiyorsa `amount` + `details`; sabit tutar/hisseli türlerde tek `details`; ek adımlar `donation_panel_form_steps` ile (vergi indirimi).
+4. **Doğrulama:** istemci (`form.mjs`) + `POST /validate` (yazmaz) + sunucuda asıl doğrulama `Cart_Controller`/`Field_Validator`/`Cart_Hooks`; telefon: seçili ön ek + ulusal numara birleşip `+90 532...` biçiminde `donation_phone` olarak gider.
+5. **Sepete ekle:** `POST /cart/add` (`submission_key` ile çift ekleme koruması; bayat nonce 403 -> `GET /nonce` + bir kez yeniden dene) -> `Cart_Hooks::run_in_plugin_flow` -> `WC()->cart->add_to_cart`. Eklenti akışı dışında yerel `?add-to-cart=` ve Store API ile bağış ürünü ekleme reddedilir (`should_reject_native_add_to_cart`). Başarı: `{cart_item_key, cart_count, checkout_url, cart_url}`; "ödemeye git" -> `checkout_url`; "sepete ekle, başka bağış seç" -> katman kapanır, `dp:added` + `donation-panel:cart-added` olayları (yan sepet dinler).
+6. **Ödeme:** Woo klasik ya da blok ödeme. `Checkout_Prefill` (`woocommerce_add_to_cart` 30, `template_redirect` 20, yalnız `is_checkout()`, order-received hariç) oturum müşterisinin BOŞ fatura alanlarını (ad/soyad ayrılır, telefon, e-posta) sepetteki en son bağışın `donation_data`'sından doldurur; klasik ve blok ödeme aynı müşteriyi okur; dolu alana (giriş yapmış hesap) dokunulmaz; kalıcı müşteri kaydı yok; `woocommerce_checkout_get_value` bilerek kullanılmaz (POST'u ezerdi); hisseli bağış atlanır.
+7. **Sipariş:** `woocommerce_checkout_create_order_line_item` -> `Order_Hooks` kalem meta (Türkçe karakter bozulmadan; anonim dahil hiçbir alan silinmez). Kampanya toplamı: `Campaign_Totals` sipariş durum kancalarıyla.
 
-1. PHP: shortcode/blok/şablon → `WDP_Templates` / Modal_Shell / Form_Fields HTML  
-2. `WDPApp.init` → `formInitializer.inline` (`assets/js/src/bootstrap/init.js:47-49`)  
-3. `form.setup` / phone / wizard / progress
+---
 
-### B) Lazy buton (liste/döngü)
+## 12.0.0 entegrasyon kararları
 
-1. Buton `data-wdp-lazy`  
-2. Niyet: pointerenter/focus/touchstart → HTML prefetch (`assets/js/src/lazy-modal.js:1-5`)  
-3. Idle prefetch: `startIdlePrefetch` (`assets/js/src/bootstrap/init.js:60-62`); sunucu `wdp_lazy_idle_prefetch` filtre default 3 (`includes/traits/trait-wdp-assets-registry.php:318`)  
-4. Tık → `wdp_render_modal` (nonce zorunlu değil) → HTML cache (ürün+para+dil anahtarı) → `WDPApp.modal.open`
-
-### C) Modal açılış → iskelet → product_info
-
-1. `modal.open` → skeleton busy: `wdp-is-skeleton`, `aria-busy`, kontrol kilidi (`assets/js/src/modal.js:318-341`)  
-2. `runModalOpenInit`: değer koru → `resetForm` → `form.setup` → phone → shareholder → wizard → restore → **yeniden kilit** (`assets/js/src/modal.js:357-401`)  
-3. `WDPApp.product.fetchProductInfo` → POST `wdp_get_product_info` + nonce; `product_id≤0` ile istek yok (`assets/js/src/product.js` `isValidProductId`, `assets/js/src/modal.js` `openModal`)  
-4. PHP: eksik/geçersiz id `wp_send_json_error(..., 400)`; güvenlik reddi 403/429 (`json_error`); yayımlı ürün `success:true` (katalog gizliliği düşürmez) (`includes/traits/trait-wdp-ajax-product.php`). Ön yüz 400/403/429 için form hatası veya toast; 403 nonce bir kez yenilenir.  
-5. Yanıt: fiyat/hisse/sadaka HTML normalize; skeleton kapanır (product/modal işbirliği)  
-6. Watchdog: uzun skeleton uyarısı (`assets/js/src/modal.js:304-314`)
-
-### D) Doğrulama → sepete ekle / ödemeye git
-
-1. CTA HTML: JS hazır olana dek `disabled` + `.wdp-loading` + `.wdp-cta-gate__hit` kaplama (`includes/templates/class-modal-shell-renderer.php` `render_form_action_button`). Kaplama tıkı kuyruğa alınır; native disabled tık yutmaz.  
-2. `WDPApp.formCtaReady` (`assets/js/src/form/cta-ready.js`): `markFormReady` submit bağlanınca kilit açar; `queueCta` + `waitForFormReady` (5 sn) sonra **aynı** `_wdpSubmitHandler` bir kez (`invokePluginSubmit`) veya görünür hata. `requestSubmit` / native click yok — form `action=""` yerel belge gönderimi ürün sayfasını yeniden yüklemez. Handler bağlıyken kuyruk devre dışı; işlem sürerken ikinci tık yutulur (tıklama başına ≤1 istek). `event-manager` yedek submit **önce** `preventDefault` (handler bağlı olsa da), sonra kuyruk / aynı handler — sessiz `return` yok. İskelet kilidi `await-js` düğmeyi `await` diye işaretler; açılınca `markFormReady` (`assets/js/src/modal.js` `lockSkeletonControls`).  
-3. CTA tık / Enter / iOS «Git» → `WDPApp.form` validate (`assets/js/src/form/validate.js`, `assets/js/src/form.js` submit yolu). `onWdpFormSubmit` **her zaman önce** `preventDefault` (doğrulama reddi, belirsiz tutar, istisna). Enter son alanda `invokeEnterSubmit` (eklenti yolu, tek istek). False ise: hatalı alanı içeren her katlanmış hissedar kartı + sihirbaz adımı açılır (`revealInvalidFieldContainers` / `formWizard.revealInvalidSteps`); ilk hatalı alana odak + kaydır; her alanın altında `.wdp-input-error` (aria-invalid + aria-describedby; ilk mesaj `role=alert` bir kez duyurulur). Fiyat alanı: mesaj `.wdp-price-field` altına (para birimi kabuğunun içine değil). Açık kabuk `getLiveDonationForm` ile `.wdp-modal.show` / gömülü form (gizli tembel modal seçilmez).  
-4. `submitFormData(form, isCheckout)` → `formAjax.submitFormData` (`assets/js/src/form.js:205-207`, `assets/js/src/form/ajax.js:576+`). `directFormSubmit` de `form.submit()` değil aynı AJAX.  
-5. POST `action=wdp_ajax_add_to_cart` + `security` + alanlar + `wdp_ajax_flow`  
-6. PHP: `ajax_add_to_cart` → rate/nonce → doğrulama → `WC()->cart->add_to_cart` (+ sadaka satırı) (`includes/traits/trait-wdp-ajax-cart-add.php`)  
-7. Başarı: mini-cart UI; checkout ise yalnız `checkout_url` (Woo) ile yönlendirme — URL yoksa sepete eklendi bildirimi (`assets/js/src/form/ajax.js` `handleAjaxResponse`). Sepete ekleme sonrası **sayfa yenileme yok**; `fallbackCartUpdate` yalnız `wdp_ajax.flags.reload_after_add_to_cart` (filtre `wdp_reload_after_add_to_cart`, varsayılan kapalı) iken `location.reload` (`assets/js/src/cart/woo.js`).  
-8. Ağ hatası: `verify_submission_in_cart` kurtarma (`tryRecoverCartAfterAjaxFailure` `assets/js/src/form/ajax.js:517+`)  
-9. E2E: kabuk açıkken ürün sayfası belge yeniden yüklemesi **NATIVE-SUBMIT-RELOAD** (`tests/e2e/helpers/native-submit-guard.mjs`; matris + capture + uzak quick, salt okur).
+1. **`Settings_Store::mirror` hâlâ gerekli.** Form bağlamı (`Domain\Product_Context`, `Button_Settings`, `Placement_Settings`) eski `wdp_button_settings`, `wdp_placement_settings` vb. seçeneklerden okur; yönetici ekranı hem Core `Settings`'e (`donation_panel_settings`) hem eşlemesi olan alanlar için bu seçeneklere yazar. Kaldırma yalnız form bağlamı Core ayarına çevrilince (ayrı iş; veri kaybı olmasın diye eski seçenekler silinmez).
+2. **Tasarım belirteçleri tek kaynak `--dp-*`** (`assets/src/experiences/base.css`). ui2'nin `assets/src/ui2-shared/tokens.css` içindeki `--dpx-*` değişkenleri yalnız türetilmiş takma adlardır (`--dpx-accent: var(--dp-color-accent, var(--dp-color-primary))` vb.). Marka/eylem rengi: yönetici ayarı `design.colors = custom` iken `design.brand` ve `design.accent` değerleri `Frontend\Assets::add_brand_variables` ile `:root .dp{--dp-color-primary:..;--dp-accent:..}` olarak satır içi stile yazılır (yalnız geçerli `#hex`; istek başına bir kez); `base.css` `--dp-color-accent: var(--dp-accent, var(--dp-bridge-accent))` olarak türetir. Aksi halde (`design.colors` tema) hiçbir şey yazılmaz, renkler tema ön ayarından gelir. Açık renklerde beyaz yazı kontrastı `oklch` ile otomatik koyulaştırılır (genel çözüm; temaya özel yok).
+3. **Form entegrasyonları:** telefon ön eki `Support\Phone_Countries` (mağaza ülkesinden varsayılan ülke; `Form_Context::phone()` ön ek listesi üretir, `form.mjs` seçili ön ek + ulusal numarayı birleştirir); gizlilik bağlantısı `Domain\Privacy_Notice` (ayar `form.privacy_notice` açık + formda e-posta/ithaf/hisse alanı varsa gösterilir; adres boşsa WP gizlilik sayfası, o da yoksa gösterilmez); açma düğmesi tam genişlik: ayar `popup_button_full_width` (yönetimde `design.button_full_width`) -> `Form_Renderer::button_full_width` -> şablonlarda `.dp-btn--block`.
+4. **Uzak güvenlik koruması** (`tests/e2e/helpers/network-guard.mjs`): uzak ortamda `donation-panel/v1` altında yazan her istek (`cart/add`, `side-cart/suggestion`, `account/*` — tekrar bağış, giriş bağlama vb. —, `admin/*`) engellidir; yalnız GET ve sunucuda yazmayan `validate` POST'u geçer (`DONATION_PANEL_REST_READ_ONLY_POST_ROUTES = ['validate']`). Bu, eski admin-ajax izin listesinin karşılığıdır (eski AJAX listesi emekli ve donmuş). Hem `/wp-json/donation-panel/v1/...` hem `?rest_route=` biçimi çözülür.
+5. **Ödeme ön doldurma:** `WooCommerce\Checkout\Checkout_Prefill` (bkz. h-6). Testler: `tests/unit/Checkout/CheckoutPrefillTest.php`, e2e `checkout-prefill` (klasik + blok).
+6. **Tek deneyim / tek yönetici:** `engine`, `ENGINES`, `engine_is_new`, `admin.ui`, `Ui_Switch`, `wdp_upgrade_new_default`, "eski deneyime dön" kaldırıldı; `Plugin::register_modules` `experiences` + `impact` koşulsuz açık. Eski adres `wdp-popup-settings` `admin_page_access_denied` ile Genel Bakış'a yönlenir.
 
 ---
 
@@ -483,7 +277,7 @@ Kaynak rehber: `docs/AYARLAR.md`. Teknik varsayılanlar normalizer / placement /
 |-----------|----------|-------|
 | `npm run pack` | `build` + `scripts/package-wp-plugin.sh` | `package.json:14` |
 | `.distignore` | ZIP dışı: node_modules, .env*, docs, tests, tools, scripts, vendor… | `.distignore:4-38` |
-| `scripts/package-wp-plugin.sh` | rsync exclude → admin CSS minify → (DEST’te tools yoksa bundle yeniden denemesi uyarıya düşebilir) → prune → `build/woo-donation-popup.zip` | `scripts/package-wp-plugin.sh:57-119` |
+| `scripts/package-wp-plugin.sh` | rsync exclude → admin CSS minify →  prune → `build/woo-donation-popup.zip` | `scripts/package-wp-plugin.sh:57-119` |
 | `npm run deploy:staging` / `deploy:ikram` | Ortak `scripts/lib/ship-core.mjs` (e2e yok). `--dry-run` uzak yazmaz; `--rollback` son yedekten. | `scripts/deploy-staging.mjs`, `scripts/deploy-ikram.mjs` |
 | `npm run ship:staging` / `ship:ikram` | Güvenli zincir + (çıkış 0 ise) `e2e:quick`. Ortam farkı yalnız profil. | `scripts/ship-staging.mjs`, `scripts/ship-ikram.mjs`, `scripts/lib/ship-core.mjs` |
 | `npm run ikram:wp` | Ikram WP-CLI köprüsü (yalnız alias `ikramaid`; kara liste yıkıcı komutlar) | `scripts/ikram-wp.mjs`, `scripts/lib/ikram-wp-guard.mjs` |
@@ -540,6 +334,8 @@ Anahtar çıkarıcı: `get_option`/`update_option`/`add_option`/`get_post_meta`/
 ---
 
 ## j) E2E altyapısı (kısa)
+
+> 12.0.0 notu: eski modal/admin-ajax'a bağlı senaryo adları, seçiciler (`.wdp-*`, `WDPApp`) ve `includes/...` satır başvuruları tarihseldir; e2e yardımcıları ve baseline'lar yeni deneyime (`.dp-*`) göre yeniden bağlandı. Uzak ağ koruması için bkz. "12.0.0 entegrasyon kararları" (4).
 
 | Öğe | Değer |
 |-----|--------|
@@ -694,72 +490,34 @@ Eklenti `checkout_url` / `cart_url` PHP: `wc_get_checkout_url()` / `wc_get_cart_
 
 ---
 
-## k) Gözlemlenen riskler / teknik borç (düzeltme yok)
+## k) Teknik borç ve açık işler (12.0.0)
 
-| # | Gözlem | Dosya:satır |
-|---|--------|-------------|
-| 1 | `wdp_render_modal` nonce’suz (bilinçli; önbellek); koruma origin+rate+scope | `includes/class-lazy-modal.php:33-41` |
-| 2 | `wdp_get_fresh_nonces` nonce’suz; credential_issuance origin | `includes/traits/trait-wdp-ajax-cart-session.php:17-22` |
-| 3 | Misafir için `WDP_Security::check_capability('read')` her zaman true (`includes/class-security.php:240-244`); `run_secured_ajax` varsayılan `$capability='read'` (`includes/traits/trait-wdp-ajax-base.php:90-96`) — uç listesi aşağıda | `includes/class-security.php:240-244` |
-| 4 | `wdp_render_modal` sunucu maliyeti / nonce’suz → CLAUDE durum notuyla uyumlu gözlem | `includes/class-lazy-modal.php`, `includes/traits/trait-wdp-assets-registry.php` |
-| 5 | Uninstall 10.33.0’da açık ürün meta listesi + önek; sipariş/HPOS hâlâ dokunulmaz (bilinçli) | `includes/class-uninstall.php` |
-| 6 | Deprecated `wdp_get_product_name` hâlâ kayıtlı; taslak/özel/bekleyen/şifreli ürün `validate_product_id` ile kapatıldı; katalogda gizli ama yayında ürün kabul edilir (E8M, REST ile aynı kural; `tests/e2e/specs/experiences-legacy-hidden.spec.mjs`) | `includes/class-ajax.php:53-55`, `includes/class-security.php:131-167` |
-| 7 | Legacy nopriv `wdp_render_donation_button` 10.33.0’da kaldırıldı; PHP `wdp_render_donation_button()` yardımcısı duruyor | `includes/bootstrap/class-legacy-frontend.php` |
-| 8 | `pack` script DEST’te `tools/` yokken yeniden build denemesi → uyarıya düşebilir; asıl bundle `npm run build` ile gelir | `scripts/package-wp-plugin.sh:66-78` + `.distignore:37` |
-| 9 | Boş / noop catch ve `.catch(() => {})` envanteri (düzeltme yok) — alt tablo | grep `includes/`, `templates/`, `blocks/`, `assets/js/src/` |
-| 10 | product_info + transient 1 saat; meta değişince invalidate bağımlı | `includes/traits/trait-wdp-ajax-product.php:67-68`, utils hooks |
-| 11 | Hisseli default max 7 hem JS constants hem PHP boş meta | `assets/js/src/core/constants.js:54`, context `includes/class-donation-product-context-service.php:60-61` |
-| 12 | Placement `get()` vs `defaults()` auto_place farkı (yükseltme güvenliği) | `includes/class-placement-settings.php:35,89-91` |
+Eski k.1-k.9 gözlemleri (nonce'suz `wdp_render_modal`, misafir `capability=read` AJAX uçları, `wdp_get_fresh_nonces`, eski AJAX boş-catch envanteri, eski JS `catch` listesi) ilgili ön yüz admin-ajax uçları ve eski JS kaldırıldığı için GEÇERSİZDİR (REST uçları e bölümünde; hepsi `permission_callback` + hız sınırı ile). Güncel açık işler:
 
-### k.3 Misafir `capability=read` / `false` uçları
+| # | Konu |
+|---|------|
+| 1 | `includes/` altındaki ürün "Bağış" sekmesi ve yardımcıları (~4.800 satır) yeni kodla yeniden yazılıp `includes/` ve köprü (`WDP_Autoloader::MOVED`) silinecek; `Style_Presets`, `Icon_Library`, `Color_Palette` yeni formda kullanılmıyor olabilir (silmeden doğrula: **DOĞRULANMADI**) |
+| 2 | Ürün Bağış sekmesindeki eski görünüm alanlarının (tema rengi, düzen, alan ikonu vb.) yeni formdaki karşılığı alan bazında doğrulanmadı |
+| 3 | `Settings_Store::mirror` (eski `wdp_*` seçeneklerine yansıtma) form bağlamı Core ayarına geçince kaldırılır |
+| 4 | Döngü/liste kartı için isteğe bağlı tembel açıcı (şimdilik ürün bağlantısı) |
+| 5 | Kampanyalar ekranındaki "yeniden hesapla" yer tutucusu (`.dpa-recalc-slot`) işlevi; `_wdp_carried_amount`/`_wdp_campaign_start` kullanımı (kampanya toplamı, bkz. K2) |
+| 6 | `package.json` içinde dosyası silinmiş eski `build:css`/`build:js` betikleri (DOĞRULANMADI) |
+| 7 | Faz 8: KVKK/GDPR dışa aktarma/silme uçları ve Consent API ayrıntıları (`docs/PRIVACY.md`) |
 
-`check_capability('read')` misafirde true (`includes/class-security.php:240-244`). `run_secured_ajax(..., $capability='read')` varsayılanı `enforce_capability` çağırır (`includes/traits/trait-wdp-ajax-base.php:90-96`).
-
-| Action | `$capability` | Kanıt (çağrı) |
-|--------|---------------|---------------|
-| `wdp_get_cart_count` | `read` (varsayılan) | `includes/traits/trait-wdp-ajax-cart-query.php:48` |
-| `wdp_get_cart_contents` | `read` (varsayılan) | `includes/traits/trait-wdp-ajax-cart-query.php:75` |
-| `wdp_ajax_add_to_cart` | `read` (varsayılan) | `includes/traits/trait-wdp-ajax-cart-add.php:24` |
-| `wdp_verify_submission_in_cart` | `read` (varsayılan) | `includes/traits/trait-wdp-ajax-cart-session.php:56` |
-| `wdp_remove_cart_item` | `read` (varsayılan) | `includes/traits/trait-wdp-ajax-cart-query.php:213` |
-| `wdp_get_product_info` | `false` (atlanır) | `includes/traits/trait-wdp-ajax-product.php:13` |
-| `wdp_get_product_name` | `false` (atlanır) | `includes/traits/trait-wdp-ajax-product.php:151` |
-
-Not: `wdp_get_fresh_nonces` `run_secured_ajax` kullanmaz; doğrudan `enforce_capability('read')` (`includes/traits/trait-wdp-ajax-cart-session.php:25`) → aynı misafir-true yolu.
-
-### k.9 Boş / noop catch envanteri (düzeltme yok)
-
-Tarama: `includes/`, `templates/`, `blocks/`, `assets/js/src/` — boş gövde, yalnız yorum, veya `.catch(() => {})` / `.catch(function () {})`. PHP `catch` içinde hata işleyen bloklar (json_error vb.) listede yok. `templates/` ve `blocks/` içinde eşleşme yok.
-
-| Dosya:satır | Biçim | Değerlendirme |
-|-------------|-------|---------------|
-| `assets/js/src/modal.js:423` | `.catch(() => {})` | Progress bar `fetchCart` sonrası; gerçek ağ/sepet hatasını gizler |
-| `assets/js/src/modal.js:792` | `.catch(() => {})` | Aynı progress sync yolu (ikinci çağrı); gerçek hatayı gizler |
-| `assets/js/src/modal.js:794` | `catch (_) { /* noop */ }` | Progress kurulum sarmalayıcısı; iç hata yutulur |
-| `assets/js/src/cart/actions.js:271` | `.catch(() => {})` | Form reset sonrası progress `fetchCart`; gerçek hatayı gizler |
-| `assets/js/src/lazy-modal.js:417` | `.catch(function () { /* yorum */ })` | Bilinçli: niyet ön yükleme hatasını gösterme |
-| `assets/js/src/lazy-modal.js:500` | `.catch(function () {})` | Bilinçli: idle prefetch hatasını yutma (pump devam) |
-| `assets/js/src/core/utils.js:302` | `.catch(function() {})` | Görünür olunca nonce yenileme; başarısızlık sessiz (bilinçli tolerans / hata gizleme) |
-| `assets/js/src/product.js:365` | `catch (_) { /* noop */ }` | `input` event dispatch (eski tarayıcı); bilinçli noop |
-| `assets/js/src/form/wizard.js:485` | `catch (e) {}` | `shareholder.relayout`; gerçek layout hatasını gizler |
-| `assets/js/src/form/wizard.js:518` | `catch (e3) {}` | `focus({ preventScroll })`; bilinçli (tarayıcı farkı) |
-| `assets/js/src/form/wizard.js:528` | `catch (e4) {}` | `startViewTransition` yoksa fallback; bilinçli |
-| `includes/class-admin-assets.php:228` | inline JS `catch (e) {}` | `history.replaceState` sekme hash; bilinçli |
-| `includes/class-admin-assets.php:294` | inline JS `catch (e) {}` | hashchange `replaceState`; bilinçli |
 
 ---
 
 ## Çeviri (i18n)
 
-Kaynak dil (dönüşüm sonrası) İngilizce `__('…', 'woo-donation-popup')`; görünür Türkçe `languages/woo-donation-popup-tr_TR.po|.mo`. Bu aşamada kaynak metinler hâlâ Türkçe; altyapı davranış değiştirmez.
+Kaynak dil İngilizce `__('…', 'woo-donation-popup')`; görünür Türkçe `languages/woo-donation-popup-tr_TR.po|.mo`. 12.0.0: modül çevirileri `languages/parts/<kod>.po` altında yazılır, `npm run verify:i18n` birleştirir ve doğrular.
 
 | Parça | Dosya | Not |
 |-------|-------|-----|
 | Domain Path | `woo-donation-popup.php` başlık `Domain Path: /languages` | WP 6.7+ `init`’te yükle |
-| Yükleme | `WDP_Plugin_Bootstrap::load_textdomain` | `load_plugin_textdomain('woo-donation-popup', false, dirname(plugin_basename(WDP_PLUGIN_FILE)) . '/languages')` |
-| JS sözlük | `includes/i18n/class-wdp-js-i18n.php` → `wdp_ajax.i18n_dict` | Üretici: `tools/i18n/gen-js-strings.mjs` (`--check`) |
-| JS API | `WDPApp.i18n.__(msg, domain)`, `_x(msg, ctx, domain)`, `sprintf` | Bağlam anahtarı `ctx\u0004msg`; yoksa kaynak |
-| POT | `npm run i18n:pot` → `tools/i18n/make-pot.mjs` | xgettext PHP + `WDPApp.i18n.__` / `_x` |
+| Yükleme | `Core\Bootstrap::load_textdomain` | `load_plugin_textdomain('woo-donation-popup', false, dirname(plugin_basename(WDP_PLUGIN_FILE)) . '/languages')` |
+| JS sözlük | KALDIRILDI (12.0.0) | Ön yüz iletileri sunucudan (model/şablon/veri öznitelikleri) gelir; eski `WDPApp.i18n` ve `wdp_ajax.i18n_dict` yok |
+| JS API | Blok editörü: `wp.i18n` + `wp_set_script_translations` (`languages/*-wdp-block-*.json`) | `tools/i18n/verify-js.mjs` `assets/src` + `assets/js/admin` tarar |
+| POT | `npm run i18n:pot` → `tools/i18n/make-pot.mjs` | xgettext PHP (+ blok betikleri) |
 | Birleşim | `npm run i18n:merge` | `languages/parts/*.po` → `tr_TR.po`; aynı msgid farklı msgstr = ÇAKIŞMA |
 | MO | `npm run i18n:mo` | `msgfmt --check` |
 | Altın 1 | `tools/i18n/golden/golden-tr-source.json` | PHP tokenizer (`tools/i18n/token-scan.php`); regex değil |
@@ -767,32 +525,16 @@ Kaynak dil (dönüşüm sonrası) İngilizce `__('…', 'woo-donation-popup')`; 
 | Altın 2 | `npm run i18n:golden -- --capture\|--compare` | `tests/golden/i18n/<locale>/<config>/<ekran>.json` |
 | Paket | `.distignore` `languages/parts/` | `*.po` / `*.pot` / `*.mo` ZIP’e girer |
 
-Blok düzenleyici betikleri WordPress `wp.i18n` kullanır (tasarım kararı). Ön yüz bundle `wp.i18n` bağırlığı taşımaz.
+Blok düzenleyici betikleri WordPress `wp.i18n` kullanır. Ön yüz modülleri `wp.i18n` bağımlılığı taşımaz.
 
 Yerel biçimler (D5): yönetici önizleme tutarları mağaza ayarından (`wc_price` metne çevrilmiş; JS çipleri `wdp_admin.currency_symbol` + `price_format`); işlem ücreti yüzdesi ondalık ayırıcısı `wc_get_price_decimal_separator()`; `lazy-modal.js` para/dil önbellek anahtarında sabit `TRY`/`tr` yok (boş); `WDP_Progress_Currency::get_base_currency()` ve sepet verisi para birimi yedeği boş. Elementor arama anahtar sözcükleri `_x('…', 'elementor widget search keyword', …)` ile çevrilebilir (`languages/parts/D5.po`); altın 2 çıkarıcısı bu çağrıları çevirir. Tarih biçimi: sabit biçim yok (taramada 0). RTL: `npm run e2e:rtl` yerelde 34/34.
 
 ---
 
-## Doğrulama notu
 
-| Bölüm | Kapsam |
-|-------|--------|
-| a Klasör | Tam (kök + ana dizinler okundu) |
-| b Hook’lar | Tam grep `includes/**/*.php` + bootstrap; her satır doğrulandı |
-| c JS/CSS | Stack dosyaları + build araçları + localize tam; her src dosyasının gövdesi kısmi |
-| d Veri modeli | Option/meta/cart/order anahtarları koddan; yazma/okuma örnekleri — tüm çağrı siteleri eksiksiz envanter **kısmi** |
-| e AJAX | Tam (`wp_ajax_` / nopriv / rest / admin-post / wc_ajax` grep); her ucun sanitizasyon derinliği özet |
-| f Entegrasyon | Shortcode/blok/Elementor/PPI girişleri tam; widget gövdeleri kısmi |
-| g Ayar eşlemesi | Placement + ürün meta listesi + normalizer varsayılanları + AYARLAR çapraz; Normal/Tasarım’daki **her** renk alanının ekran etiketi tek tek **kısmi** (çok sayıda UI alanı aynı option’da) |
-| h Form akışı | modal/product/formAjax/PHP add_to_cart ana yol tam; wizard/sadaka yan dalları kısmi |
-| i Pack/deploy | script + guards + distignore tam; `.env` okunmadı |
-| Çeviri (i18n) | Domain Path + init yükleme + JS sözlük + araçlar + altın kayıt; msgid dönüşümü yok |
-| j E2E | komut/eşik/klasör tam; tüm senaryo listesi kısmi |
-| k Riskler | Yalnız gözlenen maddeler; boş catch + misafir `read` uçları grep ile eklendi |
+## Doğrulama notu (12.0.0)
 
-Kaynak tarama: `tools/file-descriptions.json`, `docs/AYARLAR.md`, `README.md`, `woo-donation-popup.php`, `includes/**`, `assets/js/src/**` (stack + kritik akış), `assets/css` stack, `blocks/`, `templates/`, `uninstall.php`, `scripts/`, `package.json`, `.distignore`, `tests/e2e` helpers özeti.
-
-**Düzeltme (docs-mimari):** (A) tüm `dosya:satır` referansları depo köküne göre tam yola çevrildi ve `ls`/`find` ile doğrulandı; (B) bölüm k’ya boş/noop catch envanteri eklendi; (C) misafir `check_capability('read')` + `run_secured_ajax` uç listesi eklendi.
+Bu belgenin a-h bölümleri 12.0.0 kaynağından yeniden yazıldı: dizin yapısı `git ls-files`/`ls` ile, kancalar `grep -rn "add_action\|add_filter" src includes woo-donation-popup.php` ile, REST uçları `grep -rn register_rest_route src` ile, filtre/eylemler `grep -rn "apply_filters\|do_action" src` ile doğrulandı. DOĞRULANMADI işaretli noktalar ve bölüm k tablosu açık işlerdir. Aşağıdaki Faz 7 ve öncesi bölümler tarihsel kayıttır.
 
 ---
 
@@ -833,6 +575,8 @@ Docker / wp-env yok. `scripts/local-wp.mjs`: PHP + WordPress + SQLite (`build/lo
 
 Eklenti kodu (`includes/`, `uninstall.php`) sayfa oluşturmaz/silmez; `wp_trash_post` kancaları yalnız dinler (`includes/class-utils.php:55,72`). `update_option` eklentide `wdp_*` (migrasyon yedeği `BACKUP_OPTION_KEYS` de `wdp_*`; döngü süzgeci yok — yedek eklenti kendi dosyası).
 
+
+> **Tarihsel kayıt: 12.0.0'da eski motor kaldırıldı.** Aşağıdaki bölümler (6-C, F6G, 7A, K5/K6/K1/K4, E0-E8, K2/K3/K7...) Faz 6-7 sürecinin kaydıdır. `engine=legacy|new`, `admin.ui`, "eski motorun yanında", `includes/` sınıf adları, `wdp_ajax`/`WDPApp`/admin-ajax uçları ve eski bundle/stack anlatımları ARTIK GEÇERSİZDİR; geçerli durum a-h bölümleri ve "12.0.0 entegrasyon kararları"dır. Kısa doğruluk notları ilgili başlıkların altına eklendi.
 
 ## 6-C: "sadaka" -> "addon" iç adlandırma (10.35.2)
 
@@ -937,7 +681,9 @@ Neden 20: (1) eklenti klasörü `woo-donation-popup` alfabetik olarak `woocommer
 Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kodları, `WDP_*` sınıflarının davranışını ya da eski çekirdek nesnesini (`$GLOBALS['woo_donation_popup']`) hazır BULAMAZ. Bu durumda `do_shortcode()` işlenmemiş etiketi döndürür (WordPress davranışı), filtreler varsayılan değerini döndürür, PHP hatası/uyarısı olmaz. Bu çağrılar `init` ya da sonrasında (render zamanı) yapılmalıdır. Kanıt: `tests/unit/js/hook-order-contract.test.mjs` (+ `tests/local-wp/hook-order-probe.php`, `hook-order-mu.php`): 10, 15 ve `init` 99'da ölçer.
 
 
-## E2A: Form deneyimleri modülü (yeni nesil motor, eski motorun yanında)
+## E2A: Form deneyimleri modülü (tarihsel; 12.0.0'da tek deneyim)
+
+> 12.0.0: `experiences.engine` ve `Settings::engine_is_new()` kaldırıldı; modül koşulsuz açık. Aşağıdaki "legacy/new" ifadeleri tarihseldir.
 
 - **Anahtar:** `donation_panel_settings.experiences.engine` = `legacy` (varsayılan) | `new` (`Settings::engine_is_new()`). `Plugin::register_modules` `experiences` modülünü metin sınıf adıyla kaydeder; `legacy` iken `src/Modules/Experiences/` altındaki hiçbir dosya yüklenmez (PHPUnit: `E2AEngineSwitchTest`, ayrı süreçte). Eski motor, kısa kodlar, AJAX uçları ve e2e/golden DEĞİŞMEDİ.
 - **PHP (`src/Modules/Experiences/`):** `Experiences_Module` (kısa kod `donation_panel_experience`, REST kaydı, tembel varlık), `Form_Context` (eski ürün bağlamından kişi verisiz form modeli), `Form_Renderer` (tek çekirdek `form.php` + kap şablonu), `Experience_Container` + `Popup`, `Side_Panel`, `Inline_Form`, `Bottom_Sheet` (yalnız kap işaretlemesi/şablon adı), `Field_Validator` (tutar ayrıştırma, alan kuralları; çok baytlı güvenli), `Form_Controller` (REST).
@@ -948,7 +694,9 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - **e2e:** `npm run e2e:experiences` (yalnız yerel, port `WDP_LOCAL_E2E_PORT`, varsayılan 8911): 4 kap x iPhone (WebKit) / Android / masaüstü, açılır-kapanır, odak tuzağı, >=44 px, axe WCAG 2.2 AA, RTL, Türkçe karakterli sepete gönderim, legacy motorda yeni varlık yok. Yardımcı mu-plugin: `tests/e2e/helpers/wdp-exp-sim.php`.
 - **Bilinen sınırlar:** (Store API köprüsü E2B'de eklendi), tek adım form (tutar+bilgiler), `wp.i18n` yerine sunucudan veri özniteliğiyle iletiler, hissedar (çok hisse) alanları yok.
 
-## E2B: Sepet köprüsü, Store API uzantısı, sipariş meta (yalnız `engine=new`)
+## E2B: Sepet köprüsü, Store API uzantısı, sipariş meta (tarihsel; 12.0.0'da koşulsuz)
+
+> 12.0.0: eski `class-cart.php` `Cart_Hooks`'a taşındı; `donation_modal` POST yolu ve `wdp_ajax_flow` bayrak köprüsü yok, REST `/cart/add` tek yol (`Cart_Hooks::run_in_plugin_flow`).
 
 - **Sınıflar (`src/WooCommerce/`):** `Cart_Data` (saf: form girdisi -> eski `donation_data`/`custom_price`/`unique_key` sözleşmesi; yalnız modelde açık alanlar; çok baytlı güvenli kırpma; kişi verisiz özet), `Cart` (`add_item()`: Field_Validator + eski sunucu kuralları `WDP_Campaign_Goal`/`WDP_Cart::get_donation_amount_error` -> `WC_Cart::add_to_cart`; Store API uç verisi + `/cart/extensions` güncelleme), `Donation_Order_Meta` (`woocommerce_checkout_create_order_line_item`; eski `WDP_Order` yazıcısının yerini `init` 99'da alır, çift yazım yok; `WDP_Order_Meta_Keys::build_item_meta` ile ESKİ anahtarlar birebir; anonim veriyi silmez/maskelemez; yalnız sipariş kalemi API'si = HPOS uyumlu, doğrudan postmeta yok).
 - **REST (`Cart_Controller`):** `POST /cart/add` (JSON zorunlu = çapraz site form gönderimi yok), `GET /nonce` (`no-store`; oturum çerezinden kullanıcı). Tarayıcı `form.mjs` doğrulamayı ve eklemeyi tek istekte yapar; 403'te nonce'u tazeleyip bir kez yeniden dener; `submission_key` çift eklemeyi önler. `/validate` ucu duruyor (canlı alan doğrulaması için).
@@ -970,7 +718,7 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 
 ## E3: Kampanya, etki ifadeleri, sosyal kanıt (üç ayrı modül; tek ön yüz paketi)
 
-- **Modüller (`src/Modules/`):** `Campaign` (slug `campaign`, varsayılan AÇIK), `Impact` (`impact`, varsayılan = `engine=new`), `SocialProof` (`social_proof`, varsayılan KAPALI; K3). Üçü de `Module_Registry` ile ayar/filtre ile açılıp kapanır; kapalıyken `*-module.php` ve yardımcı sınıfları yüklenmez (test: `E3CampaignTest::test_disabled_modules_load_no_files`). Kayıt: `Plugin::register_modules` içinde ardışık üç satır.
+- **Modüller (`src/Modules/`):** `Campaign` (slug `campaign`, varsayılan AÇIK), `Impact` (`impact`, 12.0.0'da varsayılan AÇIK), `SocialProof` (`social_proof`, varsayılan KAPALI; K3). Üçü de `Module_Registry` ile ayar/filtre ile açılıp kapanır; kapalıyken `*-module.php` ve yardımcı sınıfları yüklenmez (test: `E3CampaignTest::test_disabled_modules_load_no_files`). Kayıt: `Plugin::register_modules` içinde ardışık üç satır.
 - **Veri kaynağı (dokunulmadı, yalnız okuma):** `WDP_Campaign_Goal` (hedef/toplam/ulaşıldı), `WDP_Utils::get_donor_count` / `get_progress_paid_statuses` / `compute_order_progress_amounts`, `WDP_Progress_Currency::from_store_amount` (toplamlar ana birimde; gösterim değeri yalnız `donation_panel_convert_amount` filtresiyle çevrilir, varsayılan dönüşüm yok). Eski ilerleme çubuğu (`wdp-progress-bar-*`) ve mevcut kısa kod/öznitelikler DEĞİŞMEDİ.
 - **Campaign:** `Progress_Data` (saf `build()` + 30 sn geçici önbellek, para birimi başına), `Milestones` (ürün meta `_donation_panel_milestones`, satır `yüzde=etiket`, en çok 6), `Progress_Renderer` (SSR kart; `role=progressbar`), `Progress_Controller` (`GET /donation-panel/v1/progress/{id}`: salt okunur, herkese açık, hız sınırlı, `Cache-Control`; kampanya yoksa 404; gövdede kişi verisi yok). Yeni kısa kod: `[donation_panel_progress id="" milestones="yes" donors="yes"]` (`id` yoksa bulunduğu ürün).
 - **Impact:** `Impact_Map` (ürün meta `_donation_panel_impact` ya da site ayarı `impact.map` [Settings şemasına `text` tipi eklendi]; satır `birim=tekil|çoğul`, `{count}` adet; en yakın alt kademe, adet = tam bölüm), `Impact_Module::filter_model` (`donation_panel_form_model` ile `model['impact']` ekler; Experiences dosyalarına dokunulmaz), `GET /donation-panel/v1/impact/{id}`. Ön yüz formu zenginleştirir: tutar çiplerinin altında `£40 = 1 food parcel` (yazılan tutarda da canlı).
@@ -993,7 +741,7 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - **Bağımlılık:** adım kancası `donation_panel_form_steps`/`donation_panel_form_step_{id}` E2C'de (dal `f7-e2c`); bu dal E2C birleşmeden o kancayı görmez (modül kancayı yalnız ekler, kendi başına zarar vermez).
 - **Çeviri:** `languages/parts/E6.po`. **Testler:** PHPUnit `tests/unit/E6/E6ThanksTaxReliefTest.php`, JS `tests/unit/js/thanks-logic.test.mjs`.
 
-## E2C: Bağış türleri + çok adımlı form (yalnız `engine=new`; `Experiences` içinde)
+## E2C: Bağış türleri + çok adımlı form (tarihsel; `Experiences` içinde, 12.0.0'da koşulsuz)
 
 - **Tür (`Form_Context::kind()`):** eski ürün bayraklarından, eski önceliğle (`WDP_Donation_Type::infer_from_flags` ile aynı): hisseli > hedefli kampanya > bağışçı belirler (serbest tutar) > sabit tutar. Model anahtarları: `kind`, `unit_price`, `quantity{enabled,min,max}`, `cover_fee` (yüzde; ürün ayarından, 0 = kapalı), `addon` (etiket/ileti/sabit/en düşük; kapalıysa `null`), `steps`, `shareholder` (hissedar alan tanımları), `fields` (hisseli türde boş: kişi alanları hissedar satırlarıdır). Hedefli kampanya en düşük tutarı `progress_min_price`'tan alır.
 - **Tutar kuralı (`Field_Validator`):** sabit tutar ve hisseli türde tutar SUNUCUDA `birim fiyat x adet` olarak hesaplanır, istemci tutarı yok sayılır (adet 1..max; sabit tutarda adet seçici ürün ayarıyla kapalıysa 1). Serbest/kampanyada yazılan tutar doğrulanır. Hisseli: her hisse için ad+telefon zorunlu, hata anahtarı `shareholder_{n}_{alan}`; ek bağış açıksa tutar (sabit ya da yazılan; en düşük tutar kuralı) doğrulanır (`addon_amount`).
@@ -1019,7 +767,9 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - **Gizlilik (Faz 8 için veri alanları):** kullanıcı metası `_donation_panel_guest_link` (karma + bitiş + e-posta; silinmesi/dışa aktarılması gerekir); modül kendi siparişi/kişi tablosu oluşturmaz, sipariş verisi WooCommerce'in gizlilik araçlarına bağlıdır; `donation_panel_guest_orders_linked` eylemi yalnız sayı taşır. Kayıt ve bağlama için yeni çerez yok.
 - **Testler:** PHPUnit `E5DonorAccountTest` (20: belirteç süre/tek kullanım/karma/kullanıcıya bağlı, yalnız kendi siparişleri + eski anahtar, nonce, hız sınırı, enumeration eşitliği, yetki, bağlama kuralları, kaçış, modül kaydı), JS `tests/unit/js/donor-account-logic.test.mjs` (6); e2e `npm run e2e:donor-account [-- --project iphone] --env local` (`tests/e2e/run-donor-account.mjs` + `helpers/wdp-da-sim.php` + `specs/donor-account.spec.mjs`; yerel HPOS siparişleri, e-postalar yakalanır): pencere yerleşimi, odak/Esc, dokunma boyutu, tek tip hata, giriş, kayıt, sıfırlama, Bağışlarım, bağlama (başka kullanıcının bağlantısı dahil), ödeme notu, axe WCAG 2.2 AA.
 
-## E7: Yönetici deneyimi (`src/Admin/`, yalnız `admin.ui = new`)
+## E7: Yönetici deneyimi (tarihsel; 12.0.0'da tek yönetici menüsü)
+
+> 12.0.0: `admin.ui`, `Settings::admin_ui_is_new`, `donation_panel_admin_ui` süzgeci ve `DONATION_PANEL_ADMIN_UI` sabiti KALDIRILDI; `src/Admin` her zaman yüklenir (yönetimde ya da `donation-panel/v1/admin` REST isteğinde). Güncel menü/sayfa yapısı docs/AYARLAR.md ve a) bölümü: tek üst menü "Bağış Paneli" + alt sayfalar Genel Bakış, Kampanyalar, Formlar ve Görünüm, Sepet ve Ödeme, Bağışçı Hesabı, Gizlilik, Araçlar, Rehber + gizli sihirbaz `donation-panel-setup`.
 
 - **Strangler anahtarı:** Core ayarı `admin.ui` (`legacy` varsayılan | `new`), `Settings::admin_ui_is_new()`; `donation_panel_admin_ui` süzgeci ve `DONATION_PANEL_ADMIN_UI` sabiti üstüne yazar. `Plugin::on_plugins_loaded` yalnız `is_admin()` VE `new` iken `Admin_Bootstrap::init()` çağırır; aksi halde `src/Admin/*` hiç yüklenmez (PHPUnit `test_legacy_ui_loads_no_admin_file`). Ön yüz ve eski yönetici ekranı etkilenmez. Yeni ekranın içinden "Klasik ekran" seçimiyle geri dönülür (Gelişmiş sekmesi); eski ekrandaki ayarlar/ürün veri sekmesi/`wdp_*` seçenekleri dokunulmadan kalır. Ayar yeni ekrana geçişi şimdilik süzgeç/sabit/seçenekle yapılır (`includes/` bu görevde değişmedi; eski ekrana düğme eklemek ayrı iş).
 - **Menü:** WooCommerce altında `donation-panel` (Ayarlar; TR "Bağış Paneli"), `donation-panel-guide` (Rehber), gizli `donation-panel-setup` (sihirbaz; üst öğe `options.php`). Yetki `manage_woocommerce`.
@@ -1033,16 +783,22 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 
 
 ## E8A: Önizleme, varsayılan geçişi, geriye dönük toplam komutu
+
+> 12.0.0: "varsayılan geçişi" (yeni kurulumda `engine=new`/`admin.ui=new`, yükseltmede `wdp_upgrade_new_default`) ortadan kalktı; yalnız Önizleme (`?dp_preview=1`) ve toplam komutu geçerlidir.
 - **Önizleme** (`src/Modules/Preview/class-preview.php`): `?dp_preview=1`, yalnız oturumu açık + `manage_woocommerce` yetkili kullanıcı için; diğer herkes için etkisiz. `WDP_Plugin_Bootstrap::run` parametre varken sınıfı yükler (yoksa dosya yüklenmez); yetki `plugins_loaded` 1'de denetlenir (modül kaydı 20'den önce). Açıkken `Settings::set_preview(true)` bellekte tüm modülleri ve `engine_is_new()`'ü açar (ayar YAZILMAZ); yanıta `nocache_headers` + `DONOTCACHEPAGE`; yönetici çubuğunda "çık" bağlantısı. Salt okunur görünüm: REST uçları önizleme dışında normal kurallarla kayıtlı olduğundan gönderim önizlemede çalışmaz. Bağlantı biçimi: `<sayfa adresi>?dp_preview=1` (`Preview::link_for`).
-- **Varsayılan geçişi** (`Settings`): yeni kurulum (etkinleştirmede, `donation_panel_settings` ve `wdp_version`/`wdp_cache_version` yok) `Settings::seed_fresh_install()` ile `experiences.engine=new` + `admin.ui=new` yazar; mevcut kurulumda hiçbir şey yazılmaz (idempotent). `wdp_upgrade_new_default` seçeneği (varsayılan KAPALI; `donation_panel_upgrade_new_default` filtresi) açılırsa motor/ekran seçimi hiç kaydedilmemiş kurulumlar yeni deneyime geçer; açık kayıt ("eski deneyime dön") her zaman kazanır.
+- **Varsayılan geçişi** (`Settings`): yeni kurulum (etkinleştirmede, `donation_panel_settings` ve `wdp_version`/`wdp_cache_version` yok) `Settings::seed_fresh_install()` ile (12.0.0'da yalnız varsayılan şema kaydını; eskiden `experiences.engine=new` + `admin.ui=new`) yazar; mevcut kurulumda hiçbir şey yazılmaz (idempotent). `wdp_upgrade_new_default` seçeneği (varsayılan KAPALI; `donation_panel_upgrade_new_default` filtresi) açılırsa motor/ekran seçimi hiç kaydedilmemiş kurulumlar yeni deneyime geçer; açık kayıt ("eski deneyime dön") her zaman kazanır.
 - **`wp donation-panel recalc-totals [--product=ID|--all] [--dry-run]`** (`src/Cli/`, yalnız `WP_CLI` varken kaydolur): `WDP_Utils::recalculate_product_donation_totals()` tek sipariş taramasıyla çok ürünü hesaplar (`$dry_run` iken ürün meta, sipariş bayrağı, uyarı listesi, günlük YAZILMAZ). Uygulamada yalnız farklı çıkan ürünler yazılır; sipariş içeriği değişmez, yalnız eklentinin `_wdp_progress_*` sayım bayrakları (çift sayımı önler). Döviz kuru bulunamayan sipariş satırı toplama katılmaz, uyarı olarak sayılır.
 
 
 ## E8D: Gizlilik araçları, wdp_vid, render_modal nonce (Faz 8)
 
+> 12.0.0: `wdp_render_modal` AJAX ucu, `wdp_render_modal_require_nonce` süzgeci ve `GET /modal` kaldırıldı; aşağıdaki modal/nonce anlatımı tarihseldir. Gizlilik araçları (`Order_Privacy`, `Privacy_Tools`) ve `wdp_vid` kaldırması geçerlidir.
+
 - **Gizlilik:** `WDP_Privacy` (`includes/class-privacy.php`) sipariş kalemi verisini dışa aktarır/anonimleştirir (sayfa 50; telefon eşleşmesi; "tutulan" mesajı). `DonationPanel\Privacy\Privacy_Tools` (`src/Privacy/`) hesap bağlama kaydı için dışa aktarıcı/silici, `wp_add_privacy_policy_content` önerisi (yalnız `admin_init`) ve eski çerez temizliğini yapar; `WDP_Privacy::init` içinden her zaman yüklenir (modül ayarından bağımsız). Envanter: `docs/PRIVACY.md`.
 - **wdp_vid:** kaldırıldı (gerekçe PRIVACY.md). `WDP_Security::get_visitor_id/mint/parse` silindi; `get_rate_limit_key($a, $use_visitor_token)` imzası korunur (parametre artık yok sayılır), okuma uçlarında yalnız IP katmanı (`READ_IP_RATE_LIMIT`) eklenir.
 - **wdp_render_modal:** AJAX artık nonce ister (`wdp_render_modal`; süzgeç `wdp_render_modal_require_nonce`, varsayılan true). Başarısızlık HTTP 403 + `code: nonce`; istemci (`assets/js/src/lazy-modal.js`) yeni nonce alıp bir kez yeniden dener (değişmedi). Önbellek dostu nonce'suz yol: `GET /wp-json/donation-panel/v1/modal?product_id=&mode=` (`src/Http/Rest/class-modal-controller.php`; herkese açık, salt okunur, 60/dk, `no-store`); `WDP_Lazy_Modal::build()` ortak üretici. Denetleyici `donation_panel_rest_controllers` süzgeciyle eklenir.
+
+> 12.0.0 notu: `wdp-quality-sim.php` durum dosyasındaki `engine` ve `admin-screens.mjs` `--ui new|legacy` bayrakları test altyapısı kalıntısı olabilir (motor/ekran seçimi kodda yok; DOĞRULANMADI, test yardımcıları ayrı temizlenecek).
 
 ## E8B: Kalite kapıları koşucusu (yalnız yerel; `npm run e2e:quality` — betik Claude tarafından eklenecek: `e2e:quality=node tests/e2e/run-quality.mjs`)
 
@@ -1066,7 +822,7 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - Playwright `--workers` önerisi: min(4, CPU/2, bellek/1,5 GB); takas ≥ 1 GB ise −1, ≥ 2 GB ise 1.
 - Bağımlılıksız; ayrıştırıcılar sahte çıktıyla birim testli (`tests/unit/js/resource-gate.test.mjs`). package.json'a `resource:gate` E8Z'de eklenir.
 
-## E8J — Ön yüz paketi erteleme (ürün/mağaza performansı)
+## E8J — Ön yüz paketi erteleme (tarihsel; eski paket 12.0.0'da silindi)
 - **Sorun (E8B):** eski motor paketi (`donation-modal.*.js` 68 KB gzip) ürün/mağaza sayfasında sayfa yüklenirken çalışıyor; Lighthouse mobil tt5 ürün 59–73 (eklentisiz 92).
 - **Çözüm (yalnız yükleme stratejisi; CSS kural içeriği/şablon HTML'i değişmedi):** `includes/class-assets-defer.php` (`WDP_Assets_Defer`, `WDP_Assets::init`te bağlanır) WordPress `script_loader_tag` süzgeciyle yalnız `wdp-form-cta-ready-js` + `wdp-donation-modal-js` betiklerinin `<script src>` etiketini `type="text/wdp-deferred" data-wdp-src` yapar (satır içi `wdp_ajax` verisi, bağımlılıklar `jquery`/`wc-add-to-cart`, sıra, tutamaç aynı). Küçük satır içi yükleyici `assets/js/defer-loader.js` (≈4 KB, istek başına bir kez, ES5, bağımlılıksız) onları sırayla gerçek betik olarak ekler (`async=false`).
 - **Tetikleyiciler:** `pointerover`/`pointerdown`/`touchstart`/`focusin` (tetikleyici düğme `.wdp-donate-button/.wdp-open-modal/.wdp-open-side-panel`, `.wdp-cta-gate`, `.wdp-donation-form` üzerinde) → hemen yükle. Paket yokken tıklama kaybolmaz: yakalanır (`preventDefault`), düğmeye `wdp-loading` + `aria-busy`, yükleme sonrası aynı hedefe yeniden gönderilir (bağlantılar `a[href]` hariç, kendi yoluyla). Boşta: satır içi form olan sayfada (`[data-wdp-display="inline"]`; CTA "yükleniyor" bekler) `load` + 300 ms, yalnız tetikleyici düğmeli sayfada (mağaza/arşiv, kısa kod düğmesi) `load` + 4 sn (`requestIdleCallback`).
@@ -1081,7 +837,7 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - Koşucu `npm run e2e:elementor-compat`: varsayılan local = TÜMÜ ATLANIR; `-- --sim` yerel şablon simülasyonu (`wdp-elementor-sim.php` işaretleri taklit eder; gerçek Elementor yerelde kurulamaz); `-- --env ikram-aid` uzak (yalnız Claude; merkezi koruma, ortam kilidi, kanarya, ağ koruması, ziyaretçi, sipariş/forma verisi yok). Başka ortam reddedilir.
 - Spec (`elementor-pro-compat.spec.mjs`) yalnız loopback adreste ve `WDP_ELEMENTOR_COMPAT=sim` iken koşar. Kullanıcı adımları: `build/handoff/ELEMENTOR-PRO-KURULUM-ADIMLARI.md`.
 
-## E8W — Ürün sayfası HTML yükü (istemci verisi ayrı betik)
+## E8W — Ürün sayfası HTML yükü (tarihsel; `WDP_Client_Data` ve `wdp_ajax` silindi)
 - **Ölçüm bulgusu:** ürün sayfası HTML'i 153 KB: eklenti payı ≈43 KB (satır içi `wdp_ajax` 31,6 KB, satır içi CSS 8,5 KB, yükleyici 4 KB, satır içi form ≈7 KB; E8J'deki "~70 KB form" tahmini yanlış okumaydı — 70 KB değil ≈7 KB). Popup/panel/alt panel formu ürün/mağaza sayfasında zaten basılmaz (`data-wdp-lazy`, ilk etkileşimde `wdp_render_modal`/E8D REST `modal` ucu); yalnız sayfa içi form sunucuda basılı kalır (LCP/CLS).
 - **Çözüm:** `includes/class-client-data.php` (`WDP_Client_Data`, `WDP_Assets::init`te bağlanır). Telefon ülke listesi (≈21,7 KB) ve çeviri sözlüğü (`i18n_dict`, ≈5,8 KB) satır içi `wdp_ajax`ten çıkar; `?wdp_client_data=<yerel ayar>&ver=<sürüm-çeviri özeti>` adresinden ayrı, önbelleğe alınabilir (`public, max-age=86400`) bir betik olarak gelir ve `window.wdp_ajax.phone.countries` + `window.wdp_ajax.i18n_dict` alanlarını ekler. İçerik birebir aynıdır (önce/sonra JSON eşitliği doğrulandı); `wdp_ajax` küçük çekirdek (≈5,6 KB: nonce, para birimi, metinler, düğme simgeleri, `phone.default_country`).
 - **Sıra (eşzamanlı okuma sözleşmesi korunur):** `wdp_ajax` artık `wdp-form-cta-ready-js` tutamacının satır içi verisidir; `wdp-client-data-js` ona bağlıdır ve paketin (`wdp-donation-modal-js`) bağımlılığıdır → sıra: `var wdp_ajax` → veri betiği → paket. Erteleme açıkken (E8J) veri betiği de `type="text/wdp-deferred"` olur ve yükleyici onu paketle aynı sırada ekler; erteleme kapalıyken normal alt bilgi betiği.
@@ -1131,12 +887,9 @@ Etkiler: plugins_loaded 10-19 arasında çalışan bir snippet/eklenti kısa kod
 - Kişisel veri ve ayar değeri toplanmaz (girdi değerleri, bildirimler, tablo satırları okunmaz; plugins.php'de yalnız kendi eklenti satırı). Ekran görüntüsü yalnız yerelde. Çıktı: `build/handoff/admin-screens-<env>.json|md`.
 - `--check-doc`: belgede `A › B › C` biçiminde yazılmış yolları çıkarır, menü ağacı + toplanan metinlerle karşılaştırır, "belgede geçen ama bulunamayan" listesini üretir (site yönetici dili belgeden farklıysa yalancı eksik çıkabilir). İzinli ortam: local, staging-hedef, ikram-aid; canlı reddedilir. Saf mantık: `scripts/lib/admin-screens-lib.mjs`, test: `tests/unit/js/admin-screens.test.mjs`.
 
-## E8Q — Eski/yeni yönetici ekranı geçişi (`src/Admin/class-ui-switch.php`)
-- `Ui_Switch::init()` her yönetim isteğinde (admin.ui'den bağımsız) yüklenir; yeni ekran dosyaları `legacy` iken yine yüklenmez. Yalnız `admin.ui` yazar (aynı değerse yazmaz).
-- Geçiş GET değil: `admin-post.php?action=donation_panel_switch_ui` (POST, `manage_woocommerce`, nonce, `wp_safe_redirect`); `ui=new|legacy`, bilinmeyen değerde değişiklik yok.
-- Eski ekranın (`wdp-popup-settings`) üstünde "Yeni Bağış Paneli deneyimi hazır" kutusu (WP `notice`); kullanıcı başına kapatma: user meta `donation_panel_ui_notice_dismissed` (POST + nonce).
-- Yeni ekranın üstünde "Klasik ekrana dön" (POST) + "12.0'da kaldırılacak"; motor seçici etiketleri "Classic form engine (will be removed in 12.0)" / "New form engine".
-- Eklentiler listesi "Settings" bağlantısı `admin.ui` durumuna göre `donation-panel` ya da `wdp-popup-settings` sayfasına gider. Testler: `tests/unit/E8/E8QUiSwitchTest.php`, `admin-e7` (E8Q senaryoları).
+## E8Q — Eski/yeni yönetici ekranı geçişi (KALDIRILDI, 12.0.0)
+
+`src/Admin/class-ui-switch.php`, `donation_panel_switch_ui` admin-post eylemi, "Klasik ekrana dön" düğmesi ve motor seçici etiketleri silindi (eski ekran 11.0.x'te bir sürüm "eski deneyime dön" olarak kalmıştı; 12.0.0'da kaldırma sözü yerine getirildi). Eklentiler listesi "Settings" bağlantısı doğrudan `donation-panel` sayfasına gider; eski `wdp-popup-settings` adresi Genel Bakış'a yönlenir. Silinen testler: `E8QUiSwitchTest`, `admin-e7` E8Q senaryoları.
 
 ## K2 — Kampanya toplamları: tanım, "elle eklenen tutar", göç önerisi
 
