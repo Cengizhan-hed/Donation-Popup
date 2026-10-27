@@ -46,9 +46,9 @@ final class Named_Lock {
 	 * @return bool Kilit alındı mı.
 	 */
 	private static function acquire( $key ) {
-		$attempts = (int) apply_filters( 'donation_panel_lock_attempts', 10 );
-		for ( $i = 0; $i < max( 1, $attempts ); $i++ ) {
-			if ( add_option( $key, time(), '', 'no' ) ) {
+		$attempts = max( 1, (int) apply_filters( 'donation_panel_lock_attempts', 10 ) );
+		for ( $i = 0; $i < $attempts; $i++ ) {
+			if ( add_option( $key, time(), '', false ) ) {
 				return true;
 			}
 			$taken = (int) get_option( $key, 0 );

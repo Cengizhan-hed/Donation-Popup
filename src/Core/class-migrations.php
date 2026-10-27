@@ -134,7 +134,7 @@ class Migrations {
 	 * @return bool
 	 */
 	private function acquire_lock() {
-		if ( add_option( self::LOCK_OPTION, time(), '', 'no' ) ) {
+		if ( add_option( self::LOCK_OPTION, time(), '', false ) ) {
 			return true;
 		}
 		$taken = (int) get_option( self::LOCK_OPTION, 0 );

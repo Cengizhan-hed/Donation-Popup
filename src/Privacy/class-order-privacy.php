@@ -307,7 +307,7 @@ class Order_Privacy {
 					"SELECT DISTINCT oi.order_id, im.meta_key
 					FROM {$wpdb->prefix}woocommerce_order_itemmeta im
 					INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = im.order_item_id
-					WHERE im.meta_value = %s AND " . $key_sql,
+					WHERE im.meta_value = %s AND " . $key_sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $key_sql yalnız sabit "im.meta_key IN (%s,..) OR im.meta_key LIKE %s" parçalarından üretilir; değerler prepare'e bağlanır.
 					...array_merge( array( $email ), $key_args )
 				)
 			);
@@ -406,7 +406,7 @@ class Order_Privacy {
 						"SELECT DISTINCT oi.order_id, im.meta_key
 						FROM {$wpdb->prefix}woocommerce_order_itemmeta im
 						INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = im.order_item_id
-						WHERE im.meta_value = %s AND " . $key_sql,
+						WHERE im.meta_value = %s AND " . $key_sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $key_sql yalnız sabit "im.meta_key IN (%s,..) OR im.meta_key LIKE %s" parçalarından üretilir; değerler prepare'e bağlanır.
 						...array_merge( array( $phone ), $key_args )
 					)
 				);

@@ -111,7 +111,7 @@ final class Client_Ip {
 	 */
 	private static function matches( $ip, $entry ) {
 		if ( false === strpos( $entry, '/' ) ) {
-			return $ip === self::valid_ip( $entry );
+			return self::valid_ip( $entry ) === $ip;
 		}
 		list( $subnet, $bits ) = explode( '/', $entry, 2 );
 		$ip_bin                = @inet_pton( $ip ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- geçersiz giriş false döner.
