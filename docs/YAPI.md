@@ -8,8 +8,8 @@ woo-donation-popup/
 ├── uninstall.php               Kaldırma temizliği (paket)
 ├── readme.txt                  WordPress.org açıklaması + değişiklik günlüğü (paket)
 ├── src/                        PHP çalışma zamanı kodu, ad alanı DonationPanel\ (paket)
-│   ├── Core/                   Önyükleme, otomatik yükleyici, modül kaydı, ayarlar, göçler
-│   ├── Domain/                 WooCommerce'ten bağımsız bağış iş kuralları
+│   ├── Core/                   Önyükleme, otomatik yükleyici (gömülü, `is_file` taramalı; classmap yok), modül kaydı, ayarlar, göçler
+│   ├── Domain/                 Bağış iş kuralları (WooCommerce okuma API'sini kullanır; Modules/Cart_Hooks'a bağımlı değildir)
 │   ├── WooCommerce/            Sepet, ödeme, sipariş ve HPOS bağlantıları (yalnız standart kancalar)
 │   ├── Http/                   REST uçları ve istek sınırlayıcı
 │   ├── Admin/                  Yönetici ekranı, sihirbaz ve rehber

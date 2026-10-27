@@ -29,11 +29,26 @@ Meta (**korunur**): sipariş kalemi `wdp_donor_name, wdp_donor_phone, wdp_donor_
 
 **KALDIRILDI — ön yüz AJAX eylemleri (12.0.0):** `wdp_ajax_add_to_cart, wdp_get_cart_contents, wdp_get_cart_count, wdp_get_fresh_nonces, wdp_get_product_info, wdp_get_product_name, wdp_remove_cart_item, wdp_render_modal, wdp_verify_submission_in_cart`. Artık kayıtlı değildir; yerine REST `donation-panel/v1` (aşağıda). Süzgeç `wdp_render_modal_require_nonce` ve REST `GET donation-panel/v1/modal` de yoktur. Kaldırılan ayar/seçenekler: `donation_panel_settings.experiences.engine`, `admin.ui`, seçenek `wdp_upgrade_new_default`, `wdp_deprecated_ajax_*` sayaçları; `donation_panel_admin_ui` süzgeci ve `DONATION_PANEL_ADMIN_UI` sabiti.
 
-**Etkin eski filtre/eylemler — korunur (27; kodda uygulanır):** `wdp_allow_multiple_entries, wdp_amount_presets` (yeni `donation_panel_amount_presets`'e yönlendirilir), `wdp_builder_preview_context_product, wdp_builder_preview_product, wdp_convert_amount, wdp_donations_card_html, wdp_donations_query_args, wdp_form_context, wdp_is_builder_preview, wdp_is_donation_product, wdp_min_donation_amount, wdp_order_exchange_rate, wdp_phone_{countries,default_country,excluded_countries,national_length_rules}, wdp_progress_{convert_amount,live_rate,paid_statuses}, wdp_rate_limit_ip_max, wdp_resolve_product, wdp_sadaka_{cart_thumbnail_size,line_product_ids,toggle_label,wc_product_id}` (`wdp_sadaka_toggle_label` yeni deneyime yönlendirilir)`, wdp_supported_product_types, wdp_trust_proxy_headers`.
+**Etkin eski filtre/eylemler — korunur (26; kodda uygulanır):** `wdp_allow_multiple_entries, wdp_amount_presets` (yeni `donation_panel_amount_presets`'e yönlendirilir), `wdp_builder_preview_context_product, wdp_builder_preview_product, wdp_convert_amount, wdp_donations_card_html, wdp_donations_query_args, wdp_form_context, wdp_is_builder_preview, wdp_is_donation_product, wdp_min_donation_amount, wdp_order_exchange_rate, wdp_phone_{countries,default_country,excluded_countries,national_length_rules}, wdp_progress_{convert_amount,live_rate,paid_statuses}, wdp_resolve_product, wdp_sadaka_{cart_thumbnail_size,line_product_ids,toggle_label,wc_product_id}` (`wdp_sadaka_toggle_label` yeni deneyime yönlendirilir)`, wdp_supported_product_types, wdp_trust_proxy_headers`.
 
-**Emekli eski filtre/eylemler (20; ekleyen kod bozulmaz ama ARTIK ÇAĞRILMAZ — eski modal/form arayüzüne aitti):** `wdp_campaign_media_url, wdp_client_context, wdp_critical_css_page_type, wdp_defer_frontend_assets, wdp_defer_frontend_styles, wdp_enable_side_cart_recovery, wdp_field_hint_{email,name,note,phone}, wdp_impact_line, wdp_lazy_idle_prefetch, wdp_modal_product_thumb_{alt,url}, wdp_reload_after_add_to_cart, wdp_sadaka_price_label, wdp_should_enqueue_assets, wdp_show_amount_presets, wdp_split_client_data, wdp_use_js_bundle`.
+**Emekli eski filtre/eylemler (21; ekleyen kod bozulmaz ama ARTIK ÇAĞRILMAZ — eski modal/form arayüzüne aitti):** `wdp_campaign_media_url, wdp_client_context, wdp_critical_css_page_type, wdp_defer_frontend_assets, wdp_defer_frontend_styles, wdp_enable_side_cart_recovery, wdp_field_hint_{email,name,note,phone}, wdp_impact_line, wdp_lazy_idle_prefetch, wdp_modal_product_thumb_{alt,url}, wdp_rate_limit_ip_max, wdp_reload_after_add_to_cart, wdp_sadaka_price_label, wdp_should_enqueue_assets, wdp_show_amount_presets, wdp_split_client_data, wdp_use_js_bundle`.
 
 Eski kaldırılanlar (K56): `wdp_meta_pixel_has_consent`, `wdp_meta_woocommerce_purchase_integration_active` (Meta Pixel), `wdp_product_schema`. Para birimi (K8): `wdp_convert_amount` korunur (aşağıda `donation_panel_convert_amount` ile). Para birimi bağdaştırıcıları (Curcy/WOOCS/WPML) çekirdekte yoktur; Curcy için `docs/site-snippets/`.
+
+## Güvenlik ve veri bütünlüğü kancaları (12-fix)
+
+| Ad | Tür | Parametreler | Ne zaman |
+|---|---|---|---|
+| `donation_panel_trusted_proxies` | filtre | `string[] $proxies` | Güvenilen ters vekil/CDN adresleri (IP ya da CIDR, ör. `10.0.0.0/8`); varsayılan boş. `X-Forwarded-For`/`X-Real-IP` YALNIZ doğrudan bağlanan adres bu listedeyse okunur (sağdan ilk güvenilmeyen adres). Eski `wdp_trust_proxy_headers` hâlâ çalışır. Hız sınırı bu IP'ye göre kovalanır (girişli kullanıcı kendi kimliğiyle). |
+| `donation_panel_client_ip` | filtre | `string $ip, string $remote` | Hız sınırı için çözülen istemci IP'sini değiştirir. |
+| `donation_panel_max_amount` | filtre | `float $max` | Bağışçının yazabileceği en büyük tutar (varsayılan 9.999.999); doğrulayıcı, ek bağış ve sepet fiyat çözücü aynı sınırı kullanır. |
+| `donation_panel_lock_attempts` | filtre | `int $attempts` | Kampanya toplamı/bağışçı sayısı kilidi için deneme sayısı (varsayılan 10 x 50 ms). Kilit alınamazsa iş yine çalışır (bağış kaybı olmasın). |
+| `donation_panel_totals_changed` | eylem | (parametre yok) | Kampanya toplamı/bağışçı sayısı, yerleşim ya da ek bağış görünürlüğü değişince (Domain, dış katmanı bu olayla bilgilendirir; bağış listesi önbelleği buna bağlıdır). |
+| `donation_panel_cart_pending_total` | filtre | `float $total, int $product_id` | Sepetteki bekleyen bağış tutarı (Domain bu süzgeçle `Cart_Hooks`'a sormadan okur). |
+
+**Eski anahtar bağdaştırıcısı:** `wdp_form_context` süzgeci ek bağış anahtarlarını eski adlarla (`sadaka_wc_product_id`, `sadaka_toggle_label`, `sadaka_min_price`, `sadaka_fixed_price`, `sadaka_donation_message`, `sadaka_is_fixed_price`, `sadaka_price_placeholder`, `enable_sadaka_donation`) görür ve değiştirebilir; iç kod `addon_*` kullanır (`src/Compat/class-legacy-context.php`). Eski sepet oturumundaki `donation_data.is_sadaka` işareti de okunur.
+
+**Davranış notu (kapsam):** açık `id`/`slug`/`sku`'lu kısa kod, blok ve widget bağış kapsamı dışındaki ürün için artık çizilmez ve REST (`cart/add`, `form`, `experience`) bu ürünü reddeder. Kapsam `marked`/`categories` iken ürünün bağış olarak işaretlenmesi/kategoriye alınması gerekir. Ziyaretçi boş çıktı görür; `manage_woocommerce` yetkisi olan kullanıcı sayfada nedenini söyleyen ipucunu görür.
 
 ## Giriş noktaları modülü (`entry_points`, E1)
 
@@ -116,7 +131,7 @@ Filtreler:
 
 - `donation_panel_campaign_days_left( int|null $days, int $product_id )` — kampanyanın kalan gün sayısı (varsayılan `null`; doluysa form üstü kampanya bloğunda "N gün kaldı" gösterilir).
 
-Veri anahtarları: ürün meta `_donation_panel_milestones` (satır `yüzde=etiket`), `_donation_panel_impact` (satır `birim=tekil|çoğul`); site ayarı `impact.map`; ad izni meta `wdp_public_name` = `yes` (sipariş ya da satır).
+Veri anahtarları: ürün meta `_donation_panel_milestones` (satır `yüzde=etiket`), `_donation_panel_impact` (satır `birim=tekil|çoğul`); site ayarı `impact.map`; ad izni meta `wdp_public_name` ARTIK OKUNMAZ (K3: sosyal kanıtta kişi bilgisi yok; ad hiçbir koşulda gösterilmez, yalnız tutar ve zaman döner).
 
 Kısa kodlar (yeni): `[donation_panel_progress]`, `[donation_panel_social_proof]`. REST (`donation-panel/v1`): `GET /progress/{id}`, `GET /impact/{id}`, `GET /donations`, `GET /donations/stats` (hepsi salt okunur, kişi verisiz).
 
