@@ -83,7 +83,7 @@ final class Cli_Command {
 			\WP_CLI::error( 'Give exactly one of --product=<id> or --all.' );
 			return;
 		}
-		if ( ! class_exists( '\WDP_Utils' ) || ! function_exists( 'wc_get_orders' ) ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
 			\WP_CLI::error( 'WooCommerce is not active.' );
 			return;
 		}

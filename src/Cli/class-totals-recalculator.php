@@ -2,7 +2,7 @@
 /**
  * Geriye dönük toplam hesabı: ürün başına eski toplam -> hesaplanan toplam (kuru çalıştırma YAZMAZ).
  *
- * Mevcut `WDP_Utils` mantığını (sipariş tutarı, iade, para birimi dönüşümü) kullanır; siparişin içeriğini
+ * Mevcut `Campaign_Totals` mantığını (sipariş tutarı, iade, para birimi dönüşümü) kullanır; siparişin içeriğini
  * DEĞİŞTİRMEZ. Uygulamada yalnız farklı çıkan ürünler yazılır (ürün toplam/bağışçı sayısı meta + eklentinin kendi
  * `_wdp_progress_*` sayım bayrakları; çift sayımı önlemek için).
  *

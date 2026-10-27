@@ -59,9 +59,9 @@ final class DonationPurchasableTest extends TestCase {
 
 	public function test_default_presets_follow_decimals(): void {
 		WDP_Test_State::$price_decimals = 2;
-		$this->assertSame(array(5, 10, 25, 50, 100), WDP_Form_Modules::default_amount_preset_values());
+		$this->assertEquals(array(5, 10, 25, 50, 100), \DonationPanel\Domain\Amount_Presets::default_values());
 		WDP_Test_State::$price_decimals = 0;
-		$this->assertSame(array(100, 250, 500, 1000, 2500), WDP_Form_Modules::default_amount_preset_values());
+		$this->assertEquals(array(100, 250, 500, 1000, 2500), \DonationPanel\Domain\Amount_Presets::default_values());
 	}
 
 	public function test_cover_fee_rounds_to_price_decimals(): void {

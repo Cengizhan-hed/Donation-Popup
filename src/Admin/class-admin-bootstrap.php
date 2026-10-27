@@ -144,6 +144,8 @@ final class Admin_Bootstrap {
 		if ( ! is_admin() ) {
 			return;
 		}
+		// Ürün düzenleme "Donation" sekmesi, ürün listesi sütunu/toplu işlemleri (WooCommerce standart kancaları).
+		\DonationPanel\Admin\Product\Product_Admin::init();
 		add_action( 'admin_page_access_denied', array( $this, 'redirect_legacy' ), 1 );
 		add_action( 'admin_menu', array( $this, 'register_menu' ), 30 );
 		add_action( 'admin_enqueue_scripts', array( $this->assets, 'enqueue' ) );

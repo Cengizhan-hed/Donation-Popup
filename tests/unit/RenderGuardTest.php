@@ -86,7 +86,6 @@ final class RenderGuardTest extends TestCase {
 	}
 
 	public function test_legacy_settings_helpers_accept_corrupt_option_values(): void {
-		$this->assertSame(array(), \WDP_Utils::migrate_button_shadow_to_sc_modal('corrupt'));
 		$this->assertIsArray(\DonationPanel\Domain\Button_Settings::normalize_legacy_popup_button_text(null));
 	}
 }

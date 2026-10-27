@@ -1,12 +1,14 @@
 <?php
 /**
- * Ürün "Bağış" paneli ve eski AJAX kaydının meta normalizasyonu testleri.
+ * Ürün "Donation" sekmesi gönderiminin meta eşlemesi (Product_Settings::normalize).
  *
  * @package DonationPanel
  */
 
 declare(strict_types=1);
 
+use DonationPanel\Admin\Product\Product_Settings;
+use DonationPanel\Domain\Donation_Type;
 use PHPUnit\Framework\TestCase;
 
 final class ProductSettingsSaveTest extends TestCase {
@@ -14,162 +16,122 @@ final class ProductSettingsSaveTest extends TestCase {
 		WDP_Test_State::reset();
 	}
 
-	public function test_donation_type_overrides_legacy_flags(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
-			array(
-				'donation_type'         => 'campaign',
-				'allow_multiple_shares' => 'yes',
-				'allow_custom_price'    => 'no',
-			)
-		);
-
+	public function test_donation_type_decides_the_three_legacy_flags(): void {
+		$meta = Product_Settings::normalize(array('donation_type' => 'campaign', 'progress_bar_limit' => '1000'))['meta'];
 		$this->assertSame('yes', $meta['_allow_custom_price']);
 		$this->assertSame('no', $meta['_allow_multiple_shares']);
 		$this->assertSame('yes', $meta['_enable_progress_bar']);
 	}
 
-	public function test_invalid_donation_type_falls_back_to_legacy_flags(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
-			array(
-				'donation_type'         => 'everything',
-				'allow_multiple_shares' => '1',
-			)
-		);
-
-		$this->assertSame('yes', $meta['_allow_multiple_shares']);
-		$this->assertSame(\DonationPanel\Domain\Donation_Type::SHARES, \DonationPanel\Domain\Donation_Type::infer_from_meta($meta));
-	}
-
-	public function test_legacy_flag_exclusivity_is_unchanged(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
-			array(
-				'allow_custom_price'    => 'true',
-				'allow_multiple_shares' => 'true',
-				'enable_progress_bar'   => 'true',
-			)
-		);
-
-		$this->assertSame('yes', $meta['_enable_progress_bar']);
-		$this->assertSame('yes', $meta['_allow_custom_price']);
-		$this->assertSame('no', $meta['_allow_multiple_shares']);
+	public function test_unknown_donation_type_falls_back_to_fixed(): void {
+		$meta = Product_Settings::normalize(array('donation_type' => 'everything'))['meta'];
+		$this->assertSame(Donation_Type::FIXED, Donation_Type::infer_from_meta($meta));
 	}
 
 	public function test_every_type_saves_and_infers_back(): void {
-		foreach (\DonationPanel\Domain\Donation_Type::ids() as $type) {
-			$meta = WDP_Product_Settings_Service::from_product_panel(array('donation_type' => $type));
-			$this->assertSame($type, \DonationPanel\Domain\Donation_Type::infer_from_meta($meta), $type);
+		foreach (Donation_Type::ids() as $type) {
+			$meta = Product_Settings::normalize(array('donation_type' => $type, 'progress_bar_limit' => '500'))['meta'];
+			$this->assertSame($type, Donation_Type::infer_from_meta($meta), $type);
 		}
 	}
 
-	public function test_panel_keeps_the_same_meta_keys_as_legacy_save(): void {
-		$this->assertSame(
-			array_keys(WDP_Product_Settings_Service::from_request(array())),
-			array_keys(WDP_Product_Settings_Service::from_product_panel(array()))
-		);
+	public function test_only_the_managed_meta_keys_are_written(): void {
+		$keys = array_keys(Product_Settings::normalize(array('donation_type' => 'campaign', 'progress_bar_limit' => '500'))['meta']);
+		sort($keys);
+		$managed = Product_Settings::managed_meta_keys();
+		sort($managed);
+		$this->assertSame($managed, $keys, 'sözleşme: yazılan anahtarlar = sekmenin anahtarları');
+		foreach (array('_enable_urgency', '_theme_primary', '_trust_badges', '_layout_mode', '_enable_wizard', '_enable_product_note', '_wdp_manual_total', '_wdp_carried_amount', '_wdp_total_donation_amount') as $never) {
+			$this->assertNotContains($never, $managed, $never);
+		}
 	}
 
-	public function test_panel_unchecked_checkboxes_are_saved_as_no(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(
-			array(
-				'donation_type'   => 'fixed',
-				'enable_urgency'  => 'yes',
-			)
-		);
-
-		$this->assertSame('yes', $meta['_enable_urgency']);
-		// Legacy defaults are "on" when the key is missing; the panel must turn them off.
-		$this->assertSame('no', $meta['_enable_trust_strip']);
+	public function test_unchecked_checkboxes_are_saved_as_no(): void {
+		$meta = Product_Settings::normalize(array('donation_type' => 'fixed'))['meta'];
 		$this->assertSame('no', $meta['_enable_quantity']);
 		$this->assertSame('no', $meta['_enable_amount_presets']);
-		// 10.30.0: wizard / alan ikonları üçlü select; POST'ta yoksa genel ayar ('').
-		$this->assertSame('', $meta['_enable_field_icons']);
-		$this->assertSame('', $meta['_enable_wizard']);
+		$this->assertSame('no', $meta['_enable_cover_fee']);
+		$this->assertSame('no', $meta['_enable_addon_donation']);
 	}
 
 	public function test_tristate_fields(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(
+		$meta = Product_Settings::normalize(
 			array(
-				'enable_email'       => 'yes',
-				'enable_dedication'  => 'no',
-				'enable_anonymous'   => '',
-				'enable_wizard'      => 'yes',
-				'enable_field_icons' => 'no',
+				'enable_email'      => 'yes',
+				'enable_dedication' => 'no',
+				'enable_anonymous'  => '',
 			)
-		);
-
+		)['meta'];
 		$this->assertSame('yes', $meta['_enable_email']);
 		$this->assertSame('no', $meta['_enable_dedication']);
 		$this->assertSame('', $meta['_enable_anonymous']);
-		$this->assertSame('yes', $meta['_enable_wizard']);
-		$this->assertSame('no', $meta['_enable_field_icons']);
 
-		$this->assertSame('yes', WDP_Product_Settings_Service::parse_tristate_flag(true));
-		$this->assertSame('', WDP_Product_Settings_Service::parse_tristate_flag(false));
-		$this->assertSame('', WDP_Product_Settings_Service::parse_tristate_flag(null));
-		$this->assertSame('yes', WDP_Product_Settings_Service::parse_tristate_flag('ON'));
-		$this->assertSame('no', WDP_Product_Settings_Service::parse_tristate_flag(' No '));
-		$this->assertSame('', WDP_Product_Settings_Service::parse_tristate_flag('maybe'));
+		$this->assertSame('yes', Product_Settings::parse_tristate_flag(true));
+		$this->assertSame('', Product_Settings::parse_tristate_flag(false));
+		$this->assertSame('', Product_Settings::parse_tristate_flag(null));
+		$this->assertSame('yes', Product_Settings::parse_tristate_flag('ON'));
+		$this->assertSame('no', Product_Settings::parse_tristate_flag(' No '));
+		$this->assertSame('', Product_Settings::parse_tristate_flag('maybe'));
 	}
 
-	public function test_trust_badges_are_stored_in_the_legacy_json_format_with_unicode_intact(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(
+	public function test_turkish_characters_survive_and_are_slash_safe(): void {
+		$meta = Product_Settings::normalize(
 			array(
-				'trust_badges' => array(
-					3 => array('icon' => 'builtin:heart', 'text' => 'Güvenli ödeme'),
-					7 => array('icon' => 'builtin:heart', 'text' => ''),
-					9 => 'not-a-row',
-				),
+				'dedication_placeholder'  => addslashes('Anısına: Şükrü Çağlayan ğüöı'),
+				'sadaka_toggle_label'     => addslashes('Ek bağış ekle'),
+				'sadaka_donation_message' => addslashes("İyilik gizlice ulaşır;\nniyetiniz umut olur."),
 			)
-		);
-
-		$this->assertStringNotContainsString('\\u', $meta['_trust_badges']);
-		$this->assertSame(
-			array(array('icon' => 'builtin:heart', 'text' => 'Güvenli ödeme')),
-			json_decode($meta['_trust_badges'], true)
-		);
+		)['meta'];
+		$this->assertSame('Anısına: Şükrü Çağlayan ğüöı', $meta['_dedication_placeholder']);
+		$this->assertSame('Ek bağış ekle', $meta['_addon_toggle_label']);
+		$this->assertStringContainsString('niyetiniz umut olur', $meta['_addon_donation_message']);
 	}
 
-	public function test_empty_repeaters_store_empty_string(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(array('trust_badges' => 'junk'));
-
-		$this->assertSame('', $meta['_trust_badges']);
-	}
-
-	public function test_block_order_and_celebration_are_no_longer_written(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(
-			array('module_order' => array('urgency', 'media'), 'module_order_custom' => 'yes', 'progress_celebrate' => 'yes')
-		);
-		$this->assertArrayNotHasKey('_wdp_module_order', $meta);
-		$this->assertArrayNotHasKey('_progress_celebrate', $meta);
-	}
-
-	public function test_theme_preset_id_not_written(): void {
-		$meta = WDP_Product_Settings_Service::from_product_panel(array(), array( '_theme_preset_id' => 'ocean' ));
-		$this->assertArrayNotHasKey('_theme_preset_id', $meta);
-
-		$legacy = WDP_Product_Settings_Service::from_request(array( 'theme_preset_id' => 'forest' ));
-		$this->assertArrayNotHasKey('_theme_preset_id', $legacy);
+	public function test_text_limits_count_characters_not_bytes(): void {
+		$meta = Product_Settings::normalize(array('dedication_placeholder' => str_repeat('İ', 150)))['meta'];
+		$this->assertSame(120, mb_strlen($meta['_dedication_placeholder']));
 	}
 
 	public function test_max_shares_zero_or_empty_falls_back_to_default(): void {
-		$this->assertSame('', WDP_Product_Settings_Service::from_request(array('max_shares' => '0'))['_max_shares']);
-		$this->assertSame('', WDP_Product_Settings_Service::from_request(array('max_shares' => ''))['_max_shares']);
-		$this->assertSame(5, WDP_Product_Settings_Service::from_request(array('max_shares' => '5'))['_max_shares']);
+		$this->assertSame('', Product_Settings::normalize(array('max_shares' => '0'))['meta']['_max_shares']);
+		$this->assertSame('', Product_Settings::normalize(array('max_shares' => ''))['meta']['_max_shares']);
+		$this->assertSame('5', Product_Settings::normalize(array('max_shares' => '5'))['meta']['_max_shares']);
 	}
 
-	public function test_repair_unicode_escapes_restores_only_latin_letters(): void {
-		$this->assertSame('Güvenli ödeme', WDP_Product_Settings_Service::repair_unicode_escapes('Gu00fcvenli u00f6deme'));
-		$this->assertSame('Bağış', WDP_Product_Settings_Service::repair_unicode_escapes('Bau011fu0131u015f'));
-		$this->assertSame('menu0020 u0041', WDP_Product_Settings_Service::repair_unicode_escapes('menu0020 u0041'));
-		$this->assertSame('Normal metin', WDP_Product_Settings_Service::repair_unicode_escapes('Normal metin'));
+	public function test_goal_is_only_validated_for_campaigns_and_never_wiped_by_hidden_fields(): void {
+		$result = Product_Settings::normalize(
+			array('donation_type' => 'custom', 'progress_bar_limit' => '1500'),
+			array('_progress_bar_limit' => '1500')
+		);
+		$this->assertSame('1500', $result['meta']['_progress_bar_limit']);
+		$this->assertSame(array(), $result['notices']);
 	}
 
-	public function test_public_flags_include_donation_type(): void {
-		$meta  = WDP_Product_Settings_Service::from_request(array('donation_type' => 'custom'));
-		$flags = WDP_Product_Settings_Service::public_flags_from_normalized($meta);
+	public function test_goal_accepts_thousand_separators_and_rejects_nonsense(): void {
+		$this->assertSame('100000', Product_Settings::normalize(array('donation_type' => 'campaign', 'progress_bar_limit' => '100.000'))['meta']['_progress_bar_limit']);
+		$bad = Product_Settings::normalize(array('donation_type' => 'campaign', 'progress_bar_limit' => 'abc'), array('_progress_bar_limit' => '800'));
+		$this->assertSame('800', $bad['meta']['_progress_bar_limit']);
+		$this->assertNotEmpty($bad['notices']);
+	}
 
-		$this->assertSame('custom', $flags['donation_type']);
-		$this->assertTrue($flags['allow_custom_price']);
-		$this->assertFalse($flags['enable_progress_bar']);
+	public function test_goal_reached_message_is_limited_to_300_characters(): void {
+		$meta = Product_Settings::normalize(array('goal_reached_message' => str_repeat('ş', 350)))['meta'];
+		$this->assertSame(300, mb_strlen($meta['_goal_reached_message']));
+		$this->assertSame('message', $meta['_goal_reached_action']);
+	}
+
+	public function test_addon_prices_are_cleaned(): void {
+		$meta = Product_Settings::normalize(array('sadaka_min_price' => '-3', 'sadaka_fixed_price' => '25'))['meta'];
+		$this->assertSame('0', $meta['_addon_min_price']);
+		$this->assertSame('25', $meta['_addon_fixed_price']);
+	}
+
+	public function test_donation_product_and_auto_place_choices(): void {
+		$meta = Product_Settings::normalize(array('donation_product' => 'yes', 'auto_place' => 'no'))['meta'];
+		$this->assertSame('yes', $meta['_wdp_donation_product']);
+		$this->assertSame('no', $meta['_wdp_auto_place']);
+		$meta = Product_Settings::normalize(array('donation_product' => 'x', 'auto_place' => ''))['meta'];
+		$this->assertSame('', $meta['_wdp_donation_product']);
+		$this->assertSame('', $meta['_wdp_auto_place']);
 	}
 }

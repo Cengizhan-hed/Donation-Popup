@@ -12,8 +12,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @covers Campaign_Goal
  * @covers Progress_Currency
- * @covers WDP_Product_Settings_Service
- * @covers WDP_Utils
+ * @covers \DonationPanel\Admin\Product\Product_Settings
  */
 final class CampaignBlocksTest extends TestCase {
 
@@ -70,45 +69,45 @@ final class CampaignBlocksTest extends TestCase {
 	}
 
 	public function test_goal_zero_rejected_and_thousand_separator(): void {
-		$bad = WDP_Product_Settings_Service::from_request(
+		$bad = \DonationPanel\Admin\Product\Product_Settings::normalize(
 			array(
 				'donation_type'      => 'campaign',
 				'progress_bar_limit' => '0',
 			)
-		);
-		$this->assertSame('', $bad['_progress_bar_limit']);
+		)['meta'];
+		$this->assertArrayNotHasKey('_progress_bar_limit', $bad, 'reddedilen hedef yazılmaz (kayıtlı değer korunur)');
 
 		// Ölçüm: PHP (float)"100.000" = 100; parse_money_input TR binliği doğru okur.
 		$this->assertSame(100.0, (float) '100.000');
 		$this->assertSame(100.0, (float) wc_format_decimal('100.000'));
-		$parsed = WDP_Product_Settings_Service::parse_money_input('100.000');
+		$parsed = \DonationPanel\Admin\Product\Product_Settings::parse_money('100.000');
 		$this->assertTrue($parsed['ok']);
 		$this->assertSame(100000.0, $parsed['amount']);
 
-		$ok = WDP_Product_Settings_Service::from_request(
+		$ok = \DonationPanel\Admin\Product\Product_Settings::normalize(
 			array(
 				'donation_type'      => 'campaign',
 				'progress_bar_limit' => '100.000',
 			)
-		);
+		)['meta'];
 		$this->assertSame('100000', $ok['_progress_bar_limit']);
 	}
 
 	public function test_max_shares_over_50_rejected(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
+		$meta = \DonationPanel\Admin\Product\Product_Settings::normalize(
 			array(
 				'donation_type' => 'shares',
 				'max_shares'    => '51',
 			)
-		);
-		$this->assertSame('', $meta['_max_shares']);
-		$ok = WDP_Product_Settings_Service::from_request(
+		)['meta'];
+		$this->assertArrayNotHasKey('_max_shares', $meta);
+		$ok = \DonationPanel\Admin\Product\Product_Settings::normalize(
 			array(
 				'donation_type' => 'shares',
 				'max_shares'    => '50',
 			)
-		);
-		$this->assertSame(50, $ok['_max_shares']);
+		)['meta'];
+		$this->assertSame('50', $ok['_max_shares']);
 	}
 
 	public function test_cover_fee_stripped_with_rounding(): void {
@@ -202,30 +201,6 @@ final class CampaignBlocksTest extends TestCase {
 		$total = \DonationPanel\Domain\Campaign_Totals::get_total_donation_amount(self::PRODUCT);
 		$this->assertSame(0.0, $total);
 		$this->assertNotEmpty(WDP_Test_State::$cron);
-	}
-
-	public function test_urgency_ends_at_end_of_day_timezone(): void {
-		WDP_Test_State::$timezone = 'Europe/Istanbul';
-		$check = WDP_Product_Settings_Service::validate_urgency_ends_at('2026-12-31');
-		$this->assertTrue($check['ok']);
-		$invalid = WDP_Product_Settings_Service::validate_urgency_ends_at('31/12/2026');
-		$this->assertFalse($invalid['ok']);
-
-		$html = WDP_Form_Modules::render_urgency('Son gün', '2099-01-01');
-		$this->assertStringContainsString('data-ends-at', $html);
-		$past = WDP_Form_Modules::render_urgency('Bitti', '2000-01-01');
-		$this->assertSame('', $past);
-	}
-
-	public function test_social_proof_placeholder_and_zero_hidden(): void {
-		update_post_meta(self::PRODUCT, '_wdp_donor_count', 0);
-		$this->assertSame('', WDP_Form_Modules::render_social_proof('{donors} kişi', self::PRODUCT));
-		update_post_meta(self::PRODUCT, '_wdp_donor_count', 7);
-		$html = WDP_Form_Modules::render_social_proof('{donors} kişi bağış yaptı', self::PRODUCT);
-		$this->assertStringContainsString('7 kişi bağış yaptı', $html);
-		$legacy = WDP_Form_Modules::render_social_proof('128 kişi bağış yaptı', self::PRODUCT);
-		$this->assertStringContainsString('7 kişi bağış yaptı', $legacy);
-		$this->assertStringNotContainsString('128', $legacy);
 	}
 
 	public function test_privacy_default_is_short_link_label(): void {

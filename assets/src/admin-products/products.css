@@ -1,0 +1,245 @@
+/*
+ * Ürün düzenleme "Donation" sekmesi: WooCommerce'in kendi panel görünümü üzerine sade, gruplu yerleşim.
+ * Renkler yönetici arayüzü (WordPress renk şeması) ile uyumludur; mantıksal özellikler RTL'yi bozmaz.
+ */
+.dp-ptab {
+  --dp-ptab-brand: var(--wp-admin-theme-color, #2271b1);
+  --dp-ptab-ink: #1d2327;
+  --dp-ptab-muted: #50575e;
+  --dp-ptab-line: #dcdcde;
+  --dp-ptab-soft: #f6f7f7;
+  --dp-ptab-sel: #eef3fa;
+  --dp-ptab-ok: #1e6b45;
+  --dp-ptab-warn: #9a4a00;
+  --dp-ptab-radius: 12px;
+}
+
+.dp-ptab__block,
+.dp-ptab__sections,
+.dp-ptab__shortcode {
+  padding-block: 12px;
+  padding-inline: 12px;
+}
+
+.dp-ptab__heading {
+  margin: 0 0 4px;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dp-ptab-ink);
+}
+
+.dp-ptab__lead,
+.dp-ptab__note {
+  margin: 0 0 10px;
+  padding: 0;
+  color: var(--dp-ptab-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dp-ptab__note--warn {
+  color: var(--dp-ptab-warn);
+}
+
+.dp-ptab__types {
+  border: 0;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.dp-ptab__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.dp-ptab__card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-block-size: 44px;
+  padding: 12px;
+  border: 1px solid var(--dp-ptab-line);
+  border-radius: var(--dp-ptab-radius);
+  background: #fff;
+  cursor: pointer;
+  float: none;
+  width: auto;
+  margin: 0;
+}
+
+.dp-ptab__card:focus-within {
+  outline: 2px solid var(--dp-ptab-brand);
+  outline-offset: 1px;
+}
+
+.dp-ptab__card.is-selected {
+  border-color: var(--dp-ptab-brand);
+  background: var(--dp-ptab-sel);
+}
+
+.dp-ptab__card-input {
+  margin: 3px 0 0;
+  flex: none;
+}
+
+.dp-ptab__card-icon {
+  flex: none;
+  color: var(--dp-ptab-brand);
+}
+
+.dp-ptab__card-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.dp-ptab__card-title {
+  font-weight: 600;
+  color: var(--dp-ptab-ink);
+}
+
+.dp-ptab__card-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--dp-ptab-muted);
+}
+
+.dp-ptab__scope[hidden] {
+  display: none;
+}
+
+.dp-ptab__totals {
+  margin: 8px 12px 12px;
+  padding: 14px;
+  border: 1px solid var(--dp-ptab-line);
+  border-radius: var(--dp-ptab-radius);
+  background: var(--dp-ptab-soft);
+}
+
+.dp-ptab__totals-title {
+  margin: 0 0 2px;
+  padding: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dp-ptab-muted);
+}
+
+.dp-ptab__totals-main {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-ptab__totals-main span {
+  color: var(--dp-ptab-muted);
+  font-size: 14px;
+}
+
+.dp-ptab__bar {
+  block-size: 8px;
+  border-radius: 999px;
+  background: #e5e7ea;
+  overflow: hidden;
+}
+
+.dp-ptab__bar > span {
+  display: block;
+  block-size: 100%;
+  background: var(--dp-ptab-ok);
+  border-radius: 999px;
+}
+
+.dp-ptab__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px 16px;
+  margin: 12px 0 8px;
+}
+
+.dp-ptab__facts dt {
+  font-size: 12px;
+  color: var(--dp-ptab-muted);
+}
+
+.dp-ptab__facts dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-ptab__section {
+  margin-block-end: 8px;
+  border: 1px solid var(--dp-ptab-line);
+  border-radius: var(--dp-ptab-radius);
+  background: #fff;
+}
+
+.dp-ptab__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-block-size: 44px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.dp-ptab__title {
+  font-weight: 600;
+  color: var(--dp-ptab-ink);
+}
+
+.dp-ptab__hint {
+  font-size: 12px;
+  color: var(--dp-ptab-muted);
+}
+
+.dp-ptab__body {
+  padding-block: 4px 10px;
+}
+
+.dp-ptab__shortcode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.dp-ptab__shortcode-row select,
+.dp-ptab__shortcode-row input,
+.dp-ptab__shortcode-row .button {
+  min-block-size: 36px;
+  margin: 0;
+}
+
+.dp-ptab__shortcode-row input {
+  flex: 1 1 260px;
+  float: none;
+  width: auto;
+}
+
+/* Telefonda: WooCommerce'in dar sütun düzenini tek sütuna çevirir, dokunma alanı ≥44 px. */
+@media (max-width: 782px) {
+  .dp-ptab .form-field input[type='text'],
+  .dp-ptab .form-field input[type='number'],
+  .dp-ptab .form-field select,
+  .dp-ptab .form-field textarea {
+    width: 100%;
+    min-block-size: 44px;
+  }
+
+  .dp-ptab__shortcode-row select,
+  .dp-ptab__shortcode-row input,
+  .dp-ptab__shortcode-row .button {
+    min-block-size: 44px;
+  }
+
+  .dp-ptab__card {
+    min-block-size: 56px;
+  }
+}

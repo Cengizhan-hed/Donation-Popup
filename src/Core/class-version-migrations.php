@@ -968,16 +968,13 @@ class Version_Migrations {
 	}
 
 	/**
-	 * Re-run each global option through its normalizer so missing keys get defaults.
-	 * Stored user values win, including explicit 0 (see WDP_Admin_Settings_Normalizer::rewrite_stored_options).
+	 * Eski ayar normalleştiricisi 12.0.0'da kaldırıldı (ayarlar artık Core\Settings şemasıyla doldurulur); bu adım
+	 * log biçimini korumak için 0 döndürür.
 	 *
-	 * @return int Options rewritten.
+	 * @return int Yeniden yazılan seçenek sayısı (her zaman 0).
 	 */
 	private static function fill_stored_options() {
-		if ( ! class_exists( 'WDP_Admin_Settings_Normalizer' ) ) {
-			return 0;
-		}
-		return (int) \WDP_Admin_Settings_Normalizer::rewrite_stored_options();
+		return 0;
 	}
 
 	/**

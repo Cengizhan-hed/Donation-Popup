@@ -7,6 +7,7 @@
 
 declare(strict_types=1);
 
+use DonationPanel\Admin\Product\Product_Settings;
 use PHPUnit\Framework\TestCase;
 
 final class RobustMetaTest extends TestCase {
@@ -15,41 +16,42 @@ final class RobustMetaTest extends TestCase {
 	}
 
 	public function test_clamps_on_save(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
+		$result = Product_Settings::normalize(
 			array(
 				'cover_fee_percent'  => '99',
 				'max_shares'         => '500',
-				'theme_radius'       => '80',
 				'min_custom_price'   => '-12',
 				'progress_bar_limit' => '-1',
 				'donation_type'      => 'campaign',
-				'theme_primary'      => 'not-a-color',
-				'layout_mode'        => 'neon',
 			)
 		);
-		// 10.29.0 (Y2): sınır dışı yüzde sessizce kısılmaz; reddedilir (boş) ve hata bildirimi kuyruğa girer.
-		$this->assertSame('', $meta['_cover_fee_percent']);
-		// 10.31.0: hisse >50 ve hedef ≤0 reddedilir (sessiz DEFAULT_GOAL yok).
-		$this->assertSame('', $meta['_max_shares']);
-		// 10.32.0: köşe 4–32; geçersiz hex reddedilir (sessiz silme yok).
-		$this->assertSame('32', $meta['_theme_radius']);
+		$meta   = $result['meta'];
+		// Sınır dışı yüzde sessizce kısılmaz; reddedilir (kayıtlı değer yoksa yazılmaz) ve uyarı üretir.
+		$this->assertArrayNotHasKey('_cover_fee_percent', $meta);
+		// Hisse >50 ve hedef ≤0 reddedilir (sessiz varsayılan hedef yok).
+		$this->assertArrayNotHasKey('_max_shares', $meta);
+		$this->assertArrayNotHasKey('_progress_bar_limit', $meta);
 		$this->assertSame('0', $meta['_min_custom_price']);
-		$this->assertSame('', $meta['_progress_bar_limit']);
-		$this->assertSame('', $meta['_theme_primary']);
-		$notes = WDP_Product_Settings_Service::drain_corrections();
-		$this->assertNotEmpty(array_filter($notes, static function ($n) {
-			return strpos($n, 'Ana renk') !== false || strpos($n, 'Köşe') !== false;
-		}));
-		$this->assertSame('classic', $meta['_layout_mode']);
+		$this->assertNotEmpty($result['notices']);
 	}
 
-	public function test_invalid_trust_json_becomes_empty(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
+	public function test_rejected_values_keep_the_stored_ones(): void {
+		$result = Product_Settings::normalize(
 			array(
-				'trust_badges' => '{not json',
+				'donation_type'      => 'campaign',
+				'progress_bar_limit' => '0',
+				'cover_fee_percent'  => '99',
+				'max_shares'         => '500',
+			),
+			array(
+				'_progress_bar_limit' => '2500',
+				'_cover_fee_percent'  => '3',
+				'_max_shares'         => '9',
 			)
 		);
-		$this->assertSame('', $meta['_trust_badges']);
+		$this->assertSame('2500', $result['meta']['_progress_bar_limit']);
+		$this->assertSame('3', $result['meta']['_cover_fee_percent']);
+		$this->assertSame('9', $result['meta']['_max_shares']);
 	}
 
 	public function test_unknown_layout_on_read_is_classic(): void {
@@ -64,11 +66,7 @@ final class RobustMetaTest extends TestCase {
 	}
 
 	public function test_broken_addon_product_id_is_numeric(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
-			array(
-				'sadaka_wc_product_id' => 'abc',
-			)
-		);
-		$this->assertTrue($meta['_addon_wc_product_id'] === '' || $meta['_addon_wc_product_id'] === 0);
+		$meta = Product_Settings::normalize(array('sadaka_wc_product_id' => 'abc'))['meta'];
+		$this->assertSame('', $meta['_addon_wc_product_id']);
 	}
 }

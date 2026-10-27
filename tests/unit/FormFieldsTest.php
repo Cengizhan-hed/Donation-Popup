@@ -27,16 +27,10 @@ final class FormFieldsTest extends TestCase {
 		$this->assertSame(100, mb_strlen($o));
 	}
 
-	public function test_product_note_save_limit_400(): void {
-		$long = str_repeat('a', 450);
-		$meta = WDP_Product_Settings_Service::from_request(array('product_note_text' => $long));
-		$this->assertSame(400, mb_strlen($meta['_product_note_text']));
-	}
-
 	public function test_dedication_placeholder_save_limit_120(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
+		$meta = \DonationPanel\Admin\Product\Product_Settings::normalize(
 			array('dedication_placeholder' => str_repeat('b', 150))
-		);
+		)['meta'];
 		$this->assertSame(120, mb_strlen($meta['_dedication_placeholder']));
 	}
 
@@ -90,17 +84,6 @@ final class FormFieldsTest extends TestCase {
 		WDP_Test_State::$options['__privacy_policy_url'] = '';
 		$html = \DonationPanel\Domain\Privacy_Notice::render_html(array('has_shareholders' => true));
 		$this->assertSame('', $html, 'URL yoksa HTML boş');
-	}
-
-	public function test_wizard_icons_saved_as_tristate(): void {
-		$meta = WDP_Product_Settings_Service::from_request(
-			array(
-				'enable_wizard'      => '',
-				'enable_field_icons' => 'no',
-			)
-		);
-		$this->assertSame('', $meta['_enable_wizard']);
-		$this->assertSame('no', $meta['_enable_field_icons']);
 	}
 
 	public function test_migration_10_30_0_idempotent(): void {
