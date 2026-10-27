@@ -16,7 +16,6 @@ use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Modules\EntryPoints\Product_Resolver;
 use DonationPanel\WooCommerce\Cart;
-use DonationPanel\WooCommerce\Donation_Order_Meta;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,7 +68,6 @@ final class Experiences_Module implements Module_Interface {
 
 		$this->cart = new Cart();
 		$this->cart->register();
-		( new Donation_Order_Meta() )->register();
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
 		add_action( 'init', array( $this, 'register_shortcode' ) );
