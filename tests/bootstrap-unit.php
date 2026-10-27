@@ -1076,6 +1076,11 @@ if (!function_exists('wp_create_nonce')) {
 if (!function_exists('wp_script_add_data')) {
 	function wp_script_add_data(...$args) {}
 }
+if (!function_exists('rest_url')) {
+	function rest_url($path = '') {
+		return 'https://example.test/wp-json/' . ltrim((string) $path, '/');
+	}
+}
 if (!function_exists('home_url')) {
 	function home_url($path = '') {
 		return 'https://example.test' . $path;

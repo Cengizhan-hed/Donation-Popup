@@ -77,6 +77,13 @@ class Donations_List_Widget extends \Elementor\Widget_Base {
 	protected function register_controls() {
 		$this->start_controls_section( 'query', array( 'label' => __( 'Query', 'woo-donation-popup' ) ) );
 		$this->add_control(
+			'title',
+			array(
+				'label' => __( 'Title', 'woo-donation-popup' ),
+				'type'  => \Elementor\Controls_Manager::TEXT,
+			)
+		);
+		$this->add_control(
 			'categories',
 			array(
 				'label' => __( 'Categories (slugs, comma-separated)', 'woo-donation-popup' ),
@@ -372,6 +379,7 @@ class Donations_List_Widget extends \Elementor\Widget_Base {
 	public static function atts_from_settings( $s ) {
 		$s = is_array( $s ) ? $s : array();
 		return array(
+			'title'              => isset( $s['title'] ) ? $s['title'] : '',
 			'categories'         => isset( $s['categories'] ) ? $s['categories'] : '',
 			'exclude_categories' => isset( $s['exclude_categories'] ) ? $s['exclude_categories'] : '',
 			'ids'                => isset( $s['ids'] ) ? $s['ids'] : '',
