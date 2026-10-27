@@ -1,12 +1,12 @@
 {
   "generated_at": "2026-10-24T12:28:59+00:00",
-  "call_count": 556,
-  "file_count": 44,
+  "call_count": 417,
+  "file_count": 41,
   "functions": {
-    "esc_html_e": 2,
-    "__": 487,
-    "esc_html__": 48,
-    "esc_attr__": 18,
+    "esc_html_e": 1,
+    "__": 372,
+    "esc_html__": 29,
+    "esc_attr__": 14,
     "_n": 1
   },
   "calls": [
@@ -42,96 +42,6 @@
       "line": 120,
       "arg_count": 2,
       "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Toplam yeniden hesaplanıyor…",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-assets.php",
-      "line": 121,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "İşlem tamamlanamadı. Lütfen tekrar deneyin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-assets.php",
-      "line": 122,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Satır eklendi.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-assets.php",
-      "line": 123,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Satır silindi.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-assets.php",
-      "line": 124,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağış ürünü yap",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-bulk-actions.php",
-      "line": 39,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Normal ürün yap",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-bulk-actions.php",
-      "line": 40,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Genel ayara döndür",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-bulk-actions.php",
-      "line": 41,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "%d ürünün bağış işareti güncellendi.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-bulk-actions.php",
-      "line": 70,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
     },
     {
       "function": "__",
@@ -299,17 +209,6 @@
       "placeholders": []
     },
     {
-      "function": "esc_html__",
-      "msgid": "Kopyala",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-placement-tab-renderer.php",
-      "line": 190,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "__",
       "msgid": "Bağış",
       "plural": null,
@@ -321,17 +220,6 @@
       "placeholders": []
     },
     {
-      "function": "__",
-      "msgid": "0",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 187,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "esc_attr__",
       "msgid": "Hedefe ulaşma oranı",
       "plural": null,
@@ -339,28 +227,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-product-data-tab.php",
       "line": 198,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Toplamı yeniden hesapla",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 202,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Ödemesi alınmış siparişleri tarayıp toplamı yeniden hesaplar.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 202,
       "arg_count": 2,
       "placeholders": []
     },
@@ -407,17 +273,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-product-data-tab.php",
       "line": 476,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağış ürünü",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 528,
       "arg_count": 2,
       "placeholders": []
     },
@@ -628,17 +483,6 @@
       "placeholders": []
     },
     {
-      "function": "esc_html__",
-      "msgid": "Bağış tutarını bu sekmeden belirleyin. WooCommerce Genel fiyat alanı bu türlerde zorunlu değildir ve boş bırakılabilir; eklenti Genel fiyatı kendiliğinden değiştirmez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 614,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
       "function": "__",
       "msgid": "En düşük tutar (%s)",
       "plural": null,
@@ -650,28 +494,6 @@
       "placeholders": [
         "%s"
       ]
-    },
-    {
-      "function": "__",
-      "msgid": "Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır (WooCommerce Genel fiyat yedek/uyumluluk içindir, min hesaplanmaz).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 620,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "En fazla hisse",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 626,
-      "arg_count": 2,
-      "placeholders": []
     },
     {
       "function": "__",
@@ -692,17 +514,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-product-data-tab.php",
       "line": 631,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Yalnız ödemesi onaylanan siparişler (processing/completed) sayılır; işlem ücreti ve on-hold dahil değildir. Tutarlar mağaza ana para birimine çevrilir. Yenile simgesi toplamı baştan hesaplar.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 634,
       "arg_count": 2,
       "placeholders": []
     },
@@ -818,17 +629,6 @@
     },
     {
       "function": "__",
-      "msgid": "Tutar alanının üstünde tek tıkla seçilen tutar düğmeleri gösterir. Genel ayar (Ayarlar → Normal) kapalıysa bu kutu işaretli olsa da düğmeler görünmez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 674,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Tutarlar",
       "plural": null,
       "context": null,
@@ -852,17 +652,6 @@
     {
       "function": "__",
       "msgid": "Önerilen tutar",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 676,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Boş bırakılırsa hiçbir tutarda Önerilen etiketi gösterilmez. Doluysa yalnızca listedeki o tutarda etiket görünür; tutar kendiliğinden seçili gelmez. Listede olmayan veya tam sayı olmayan değer kaydı durdurur.",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
@@ -950,29 +739,7 @@
     },
     {
       "function": "__",
-      "msgid": "E-posta, ithaf, anonim bağış ve not",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 696,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "E-posta alanı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 703,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağışçıdan e-posta adresi ister; \"Genel ayar\" Tasarım sekmesindeki seçimi uygular.",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
@@ -1049,412 +816,12 @@
     },
     {
       "function": "__",
-      "msgid": "Ürün notu",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 709,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağışçının yazdığı not değildir; formun üstünde gösterilen bilgi metnidir.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 709,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Not metni",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 710,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bağışçıya gösterilecek kısa bilgi (en fazla 400 karakter).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 710,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Örn: 24 saat içinde video ulaştırılmaktadır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 710,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Çok adımlı form",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 711,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Formu bağışçı bilgisi ve tutar olarak adım adım gösterir. \"Genel ayarı kullan\" Normal sekmesindeki seçimi uygular.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 711,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Alan ikonları",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 712,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ad, not ve e-posta satırlarındaki ikonlar. \"Genel ayarı kullan\" Tasarım sekmesindeki seçimi uygular.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 712,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kampanya blokları",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 722,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Etki satırı, aciliyet, sosyal kanıt, güven rozetleri ve sıralama",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 722,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Etki satırı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 724,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Başlığın altında bağışın etkisini anlatan kısa bir cümle gösterir.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 724,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Etki metni",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 725,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Boş bırakılırsa satır görünmez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 725,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Örn: Bir bağışınız bir aileyi ısıtır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 725,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Etki satırı açık ama metin boş; satır formda görünmez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 727,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Aciliyet şeridi",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 730,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kampanyanın süreli olduğunu vurgulayan bir şerit gösterir. Bitiş tarihi yalnız şeridi kaldırır; kampanyayı kapatmaz.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 730,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Aciliyet metni",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 731,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Şeritte görünecek metin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 731,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bitiş tarihi",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 735,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Site saat diliminde bu günün sonuna (23:59:59) kadar şerit görünür (Y-m-d). Geçersiz tarih kaydedilmez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 736,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Kayıtlı bitiş tarihi geçersiz; şerit süresiz görünür. Geçerli bir Y-m-d girin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 746,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Sosyal kanıt",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-product-data-tab.php",
       "line": 750,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Gerçek bağışçı sayısını gösteren bir satır gösterir. Sayı 0 ise satır gizlenir.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 750,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sosyal kanıt metni",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 754,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Metinde {donors} yer tutucusu gerçek bağışçı sayısıyla değişir. Boş bırakılırsa varsayılan: “{donors} kişi bağış yaptı”.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 755,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "{donors} kişi bağış yaptı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 756,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Eski metin: %s — artık kullanılmıyor, gerçek sayı kullanılır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 763,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Güven rozetleri",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 769,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Formun altında güven mesajları gösterir. Genel ayar kapalıysa bu ürün için açık olsa da gösterilmez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 769,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Rozetler",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 772,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün listesi doluysa genel listenin yerine geçer (en fazla %d). Boş bırakırsanız genel rozetler kullanılır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 774,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "İkon",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 778,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Metin",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 779,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Alt bağış (sadaka)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 797,
       "arg_count": 2,
       "placeholders": []
     },
@@ -1555,28 +922,6 @@
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-product-data-tab.php",
-      "line": 826,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Alt bağış ürün ID",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 831,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
       "line": 831,
       "arg_count": 2,
       "placeholders": []
@@ -1653,259 +998,12 @@
     },
     {
       "function": "__",
-      "msgid": "Bu ürüne özel görünüm",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 846,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Düzen, renkler, köşe yuvarlaklığı ve medya",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 846,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Düzen",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 850,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Formun genel yerleşimi; \"Hikâye\" görseli ve formu yan yana gösterir. Boş bırakılamaz; varsayılan Klasik (genel düzen ayarı yoktur).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 851,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Klasik",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 853,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Kampanya",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-product-data-tab.php",
       "line": 854,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Hikâye (yan yana)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 855,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün görselini göster",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 858,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürünün öne çıkan görselini formun üst kısmında kampanya görseli olarak kullanır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 858,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Bu ürünün öne çıkan görseli yok; görsel gösterilemez.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 861,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ana renk",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 871,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Düğme ve vurgu rengi. Boş bırakılırsa kategori rengi, o da yoksa genel renk kullanılır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 872,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ana renk (üzerine gelince)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 875,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Fare düğmenin üzerindeyken kullanılan renk; boşsa ana renkten türetilir.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 875,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Arka plan rengi",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 876,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Form penceresinin arka planı; boşsa genel ayar kullanılır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 876,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Köşe yuvarlaklığı (px)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 882,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Düğme ve alan köşeleri için %1$s–%2$s px; boşsa genel ayar kullanılır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 885,
-      "arg_count": 2,
-      "placeholders": [
-        "%1$s",
-        "%2$s"
-      ]
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Satır ekle",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 920,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Satırı sil",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 954,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "Satırı sil",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 954,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Yüklenen görsel (#%d)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 973,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Kısa kod",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 1029,
       "arg_count": 2,
       "placeholders": []
     },
@@ -1988,56 +1086,12 @@
     },
     {
       "function": "__",
-      "msgid": "Geçersiz ürün ID.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-settings-ajax.php",
-      "line": 27,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ürün bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-settings-ajax.php",
-      "line": 32,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Toplam hesaplanamadı. Ayrıntı hata günlüğünde.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-settings-ajax.php",
-      "line": 61,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Ürün",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-products-list-table.php",
       "line": 43,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kategori",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 44,
       "arg_count": 2,
       "placeholders": []
     },
@@ -2065,105 +1119,6 @@
     },
     {
       "function": "__",
-      "msgid": "Hedef / Toplanan",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 47,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "İşlemler",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 48,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html_e",
-      "msgid": "Bu filtrelere uyan ürün bulunamadı.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 81,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Kategoriye göre filtrele",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 160,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Tüm kategoriler",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 167,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Bağış tipine göre filtrele",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 175,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Tüm bağış tipleri",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 177,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Filtrele",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 183,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Filtreleri temizle",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 186,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Bağış ürünü",
       "plural": null,
       "context": null,
@@ -2185,76 +1140,6 @@
       "placeholders": []
     },
     {
-      "function": "__",
-      "msgid": "Alt bağış olarak kullanılıyor (%d)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 239,
-      "arg_count": 2,
-      "placeholders": [
-        "%d"
-      ]
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Bağış ayarları",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 250,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Görüntüle",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 253,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "(yeni sekmede açılır)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 253,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Kategori yok",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 266,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kısa kodu kopyala: %s",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 298,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
       "function": "esc_attr__",
       "msgid": "Kopyala",
       "plural": null,
@@ -2262,41 +1147,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-products-list-table.php",
       "line": 298,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Hedef yok",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 314,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "%s bağış ayarlarını düzenle",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 328,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "Düzenle",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-products-list-table.php",
-      "line": 329,
       "arg_count": 2,
       "placeholders": []
     },
@@ -2651,46 +1501,6 @@
     },
     {
       "function": "__",
-      "msgid": "Hisse: %s",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donations-list.php",
-      "line": 802,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "min. %s",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donations-list.php",
-      "line": 810,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "%1$s / %2$s",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-donations-list.php",
-      "line": 820,
-      "arg_count": 2,
-      "placeholders": [
-        "%1$s",
-        "%2$s"
-      ]
-    },
-    {
-      "function": "__",
       "msgid": "%1$s / %2$s toplandı",
       "plural": null,
       "context": null,
@@ -2804,43 +1614,6 @@
     },
     {
       "function": "__",
-      "msgid": "Güvenli ödeme · SSL korumalı işlem",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-modules.php",
-      "line": 173,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: \"%s\". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-modules.php",
-      "line": 273,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: \"%s\". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-modules.php",
-      "line": 287,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
-    },
-    {
-      "function": "__",
       "msgid": "Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: \"%s\". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500).",
       "plural": null,
       "context": null,
@@ -2913,17 +1686,6 @@
     },
     {
       "function": "__",
-      "msgid": "{donors} kişi bağış yaptı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-form-modules.php",
-      "line": 712,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "İşlem maliyetini karşıla (+%%%s)",
       "plural": null,
       "context": null,
@@ -2948,28 +1710,6 @@
     },
     {
       "function": "__",
-      "msgid": "Kullanıcı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 49,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Not",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 50,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "E-posta",
       "plural": null,
       "context": null,
@@ -2981,133 +1721,12 @@
     },
     {
       "function": "__",
-      "msgid": "Telefon",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 52,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Sepet",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 53,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ödeme / Kalkan",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 54,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kalkan",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 55,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kalp",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 56,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Hediye",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 57,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Yıldız",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 58,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Onay",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 59,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Devam",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-icon-library.php",
       "line": 60,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Topluluk",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 61,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Saat",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 62,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Kilit",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-icon-library.php",
-      "line": 63,
       "arg_count": 2,
       "placeholders": []
     },
@@ -4738,95 +3357,12 @@
     },
     {
       "function": "__",
-      "msgid": "Köşe yuvarlaklığı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 380,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ana renk",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 388,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Ana renk (üzerine gelince)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 393,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Arka plan rengi",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 398,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "«%1$s» ile düğme yazısı kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha koyu veya açık bir renk seçin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 407,
-      "arg_count": 2,
-      "placeholders": [
-        "%1$s",
-        "%2$s"
-      ]
-    },
-    {
-      "function": "__",
       "msgid": "Ana renk",
       "plural": null,
       "context": null,
       "domain": "woo-donation-popup",
       "file": "includes/class-product-settings-service.php",
       "line": 408,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "«%1$s» ile metin kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha açık veya koyu bir arka plan seçin.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 419,
-      "arg_count": 2,
-      "placeholders": [
-        "%1$s",
-        "%2$s"
-      ]
-    },
-    {
-      "function": "__",
-      "msgid": "Arka plan rengi",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 420,
       "arg_count": 2,
       "placeholders": []
     },
@@ -4886,41 +3422,6 @@
       "line": 565,
       "arg_count": 2,
       "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bitiş tarihi Y-m-d biçiminde olmalıdır (örn. 2026-12-31).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 586,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bitiş tarihi geçerli bir takvim günü olmalıdır.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 596,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "«%s» geçerli bir renk olmalıdır (#RGB veya #RRGGBB).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-product-settings-service.php",
-      "line": 666,
-      "arg_count": 2,
-      "placeholders": [
-        "%s"
-      ]
     },
     {
       "function": "__",
@@ -5121,39 +3622,6 @@
     },
     {
       "function": "__",
-      "msgid": "Özel paket",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-style-presets.php",
-      "line": 225,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Mevcut ayarlardan dışa aktarıldı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-style-presets.php",
-      "line": 226,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "İçe aktarılan paket",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-style-presets.php",
-      "line": 242,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
       "msgid": "Alt Bağış Ekle",
       "plural": null,
       "context": null,
@@ -5228,17 +3696,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-woo-donation-popup-admin.php",
       "line": 335,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "Bu işlem için yetkiniz yok.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-woo-donation-popup-admin.php",
-      "line": 446,
       "arg_count": 2,
       "placeholders": []
     },
@@ -5901,17 +4358,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/templates/class-form-fields-renderer.php",
       "line": 196,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "İsterseniz bu vesileyle ayrıca bir sadaka bağışı da ekleyebilirsiniz. Her iyilik sessizce bir yere dokunur; sizin niyetiniz, ihtiyaç sahiplerine umut taşıyabilir.",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 336,
       "arg_count": 2,
       "placeholders": []
     },

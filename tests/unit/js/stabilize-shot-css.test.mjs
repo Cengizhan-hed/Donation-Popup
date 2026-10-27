@@ -31,8 +31,8 @@ describe('stabilize-shot-css', () => {
 
   it('plugin frontend CSS/PHP does not hide admin bar or coming-soon band', () => {
     const files = [
-      ...walk(path.join(root, 'assets/css/src')),
-      ...walk(path.join(root, 'includes')).filter((f) => f.endsWith('.php')),
+      ...walk(path.join(root, 'assets/src')).filter((f) => f.endsWith('.css')),
+      ...walk(path.join(root, 'src')).filter((f) => f.endsWith('.php')),
     ];
     assert.ok(files.length > 10, 'kaynak dosya bulunamadı');
     const hits = [];

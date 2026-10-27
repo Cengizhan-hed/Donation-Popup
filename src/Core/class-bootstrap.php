@@ -25,7 +25,6 @@ final class Bootstrap {
 	 */
 	public static function run() {
 		self::register_hpos_compatibility();
-		self::load_admin_bridge();
 		Version_Migrations::init();
 
 		// Önizleme (`?dp_preview=1`): sınıf yalnız istekte parametre varken yüklenir; yetki `plugins_loaded` 1'de denetlenir.
@@ -78,18 +77,13 @@ final class Bootstrap {
 	}
 
 	/**
-	 * WooCommerce yoksa uyarı gösterir; varsa (eski) yönetici katmanını başlatır.
+	 * WooCommerce yoksa uyarı gösterir (yönetici katmanı `Plugin::on_plugins_loaded` içinde kendi kancalarını bağlar).
 	 *
 	 * @return void
 	 */
 	public static function launch_plugin() {
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			add_action( 'admin_notices', array( __CLASS__, 'woocommerce_missing_notice' ) );
-			return;
-		}
-
-		if ( is_admin() && class_exists( '\Woo_Donation_Popup_Admin' ) ) {
-			new \Woo_Donation_Popup_Admin(); // Kancalarını kendisi kaydeder; örnek tutulmaz.
 		}
 	}
 
@@ -125,19 +119,6 @@ final class Bootstrap {
 		update_option( 'wdp_cache_version', time() );
 		if ( function_exists( 'wc_delete_product_transients' ) ) {
 			wc_delete_product_transients();
-		}
-	}
-
-	/**
-	 * Yönetici katmanı köprüsü: `includes/` altında kalan yönetici sınıflarının yükleyicisini (varsa) kaydeder.
-	 * Yönetici dosyaları kaldırıldığında `includes/` ile birlikte bu satır etkisiz kalır.
-	 *
-	 * @return void
-	 */
-	private static function load_admin_bridge() {
-		$bridge = WDP_PLUGIN_DIR . 'includes/class-admin-bridge.php';
-		if ( is_file( $bridge ) ) {
-			require_once $bridge;
 		}
 	}
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Yönetim CSS dosyalarını (admin/products.css ve list.css) yerinde küçültür; yalnızca npm run pack ZIP kopyasında kullanılır.
+ * Yönetim CSS dosyalarını (admin/products.css) yerinde küçültür; yalnızca npm run pack ZIP kopyasında kullanılır.
  *
  * Usage: php tools/minify-admin-css.php [file.css ...]
  * Without arguments the source files under assets/css are minified.

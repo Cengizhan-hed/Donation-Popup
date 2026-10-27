@@ -141,9 +141,7 @@
   ],
   "functions": {},
   "constants": {},
-  "files": {
-    "includes/class-sadaka-product-visibility.php": "includes/class-addon-product-visibility.php"
-  },
+  "files": {},
   "protect": {
     "dbKeys": {
       "sadaka_wc_product_id": 40,

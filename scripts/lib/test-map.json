@@ -138,7 +138,7 @@
       "reason": "Bloklar"
     },
     {
-      "pattern": "includes/class-shortcode*.php",
+      "pattern": "src/Modules/EntryPoints/class-shortcodes.php",
       "e2e": [
         "e2e:entry-points"
       ],

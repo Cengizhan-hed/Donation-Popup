@@ -21,7 +21,6 @@ vendor-dev/
 /build/
 dev/
 research/
-/includes/
 tests/
 tools/
 scripts/

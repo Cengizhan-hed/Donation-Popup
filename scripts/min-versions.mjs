@@ -53,7 +53,7 @@ function fetchZip(url, dest) {
   return dest;
 }
 
-const PLUGIN_PARTS = ['includes', 'src', 'assets', 'templates', 'blocks', 'languages', 'woo-donation-popup.php', 'uninstall.php', 'readme.txt', 'index.php'];
+const PLUGIN_PARTS = ['src', 'assets', 'templates', 'blocks', 'languages', 'woo-donation-popup.php', 'uninstall.php', 'readme.txt', 'index.php'];
 
 function installPlugin(wpDir) {
   const dest = path.join(wpDir, 'wp-content/plugins/woo-donation-popup');

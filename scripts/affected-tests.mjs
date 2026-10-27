@@ -22,7 +22,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MAP_PATH = path.join(ROOT, 'scripts/lib/test-map.json');
 const GRAPH_PATH = path.join(ROOT, 'build/graph/graph.json');
 
-const SCAN_DIRS = ['src', 'includes', 'assets/src', 'assets/js', 'templates', 'blocks', 'scripts', 'tests/unit', 'tests/e2e'];
+const SCAN_DIRS = ['src', 'assets/src', 'assets/js', 'templates', 'blocks', 'scripts', 'tests/unit', 'tests/e2e'];
 const SCAN_ROOT_FILES = ['woo-donation-popup.php', 'uninstall.php'];
 const SKIP_DIRS = new Set(['node_modules', 'vendor', 'vendor-dev', 'build', '.git', '__baseline__', '__baseline_prev__', 'fixtures', 'golden']);
 const MAX_DEPTH = 3;
