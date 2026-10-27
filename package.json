@@ -9,6 +9,7 @@
     "smoke": "php tests/smoke/run.php",
     "test": "php vendor/bin/phpunit -c phpunit.xml.dist && WDP_UNIT_TEST=1 node --test tests/unit/js/*.test.mjs",
     "test:package": "node --test tests/unit/js/package-contents.test.mjs",
+    "test:integration": "node scripts/test-integration.mjs",
     "test:local-wp": "node scripts/test-local-wp.mjs",
     "local-wp:ensure": "node scripts/local-wp.mjs ensure",
     "e2e:bootstrap": "node scripts/e2e-bootstrap.mjs",
