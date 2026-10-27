@@ -44,6 +44,21 @@ final class Tax_Relief_Declaration {
 	const META_HASH = '_wdp_tax_relief_text_hash';
 
 	/**
+	 * Sipariş meta: beyanın verildiği an (UTC, ISO 8601).
+	 */
+	const META_AT = '_wdp_tax_relief_declared_at';
+
+	/**
+	 * Sepet öğesi: bağışçının GÖRDÜĞÜ metnin özeti (beyan anında yazılır).
+	 */
+	const CART_HASH_KEY = 'donation_panel_tax_relief_hash';
+
+	/**
+	 * Sepet öğesi: beyan zamanı (Unix).
+	 */
+	const CART_TIME_KEY = 'donation_panel_tax_relief_time';
+
+	/**
 	 * Gösterilecek metinler: ayar doluysa o, değilse genel çevrilebilir varsayılan.
 	 *
 	 * @param array<string, mixed> $settings `tax_relief` ayar grubu.
@@ -108,9 +123,17 @@ final class Tax_Relief_Declaration {
 		if ( empty( $cart_item[ self::CART_KEY ] ) ) {
 			return array();
 		}
-		return array(
+		// Beyan anında sepete yazılan özet esastır; eski sepetlerde (özet yok) geçerli metnin özeti kullanılır.
+		$hash = isset( $cart_item[ self::CART_HASH_KEY ] ) && is_string( $cart_item[ self::CART_HASH_KEY ] ) && preg_match( '/^[a-f0-9]{64}$/', $cart_item[ self::CART_HASH_KEY ] )
+			? $cart_item[ self::CART_HASH_KEY ]
+			: self::hash( $text );
+		$meta = array(
 			self::META_DECLARED => 'yes',
-			self::META_HASH     => self::hash( $text ),
+			self::META_HASH     => $hash,
 		);
+		if ( ! empty( $cart_item[ self::CART_TIME_KEY ] ) && is_numeric( $cart_item[ self::CART_TIME_KEY ] ) ) {
+			$meta[ self::META_AT ] = gmdate( 'c', (int) $cart_item[ self::CART_TIME_KEY ] );
+		}
+		return $meta;
 	}
 }
