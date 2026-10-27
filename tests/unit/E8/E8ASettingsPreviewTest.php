@@ -26,26 +26,25 @@ final class E8ASettingsPreviewTest extends TestCase {
 		unset($_GET['dp_preview']);
 	}
 
-	public function test_fresh_install_defaults_to_new_admin_ui(): void {
+	public function test_fresh_install_seeds_settings_without_engine_or_ui_choice(): void {
 		$this->assertTrue(Settings::seed_fresh_install());
 		$stored = WDP_Test_State::$options[ Settings::OPTION_NAME ];
-		$this->assertSame('new', $stored['admin']['ui']);
 		$this->assertArrayNotHasKey('experiences', $stored);
-		$this->assertTrue(Settings::admin_ui_is_new());
+		$this->assertArrayNotHasKey('ui', $stored['admin']);
+		$this->assertFalse(method_exists(Settings::class, 'admin_ui_is_new'));
 	}
 
 	public function test_seed_is_idempotent_and_never_overwrites_a_choice(): void {
 		Settings::seed_fresh_install();
-		( new Settings() )->update(array( 'admin' => array( 'ui' => 'legacy' ) ));
+		( new Settings() )->update(array( 'admin' => array( 'wizard' => 'done' ) ));
 		$this->assertFalse(Settings::seed_fresh_install());
-		$this->assertFalse(Settings::admin_ui_is_new());
+		$this->assertSame('done', ( new Settings() )->get('admin.wizard'));
 	}
 
 	public function test_existing_installs_are_not_seeded(): void {
 		WDP_Test_State::$options['wdp_version'] = '10.30.0';
 		$this->assertFalse(Settings::seed_fresh_install());
 		$this->assertArrayNotHasKey(Settings::OPTION_NAME, WDP_Test_State::$options);
-		$this->assertFalse(Settings::admin_ui_is_new());
 
 		WDP_Test_State::reset();
 		WDP_Test_State::$options['wdp_cache_version'] = 12345;

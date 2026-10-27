@@ -109,7 +109,7 @@ final class Thanks_Module implements Module_Interface {
 			'share_url'    => $url,
 			'again_url'    => $first > 0 ? $url : '',
 			'campaign'     => $this->campaign_share( $summary, $order ),
-			'tax_relief'   => $settings->module_enabled( 'tax_relief', Settings::engine_is_new() ) && 'yes' === (string) $order->get_meta( Tax_Relief_Declaration::META_DECLARED, true ),
+			'tax_relief'   => $settings->module_enabled( 'tax_relief', true ) && 'yes' === (string) $order->get_meta( Tax_Relief_Declaration::META_DECLARED, true ),
 			'account'      => $this->account_card( $settings ),
 		);
 
@@ -148,7 +148,7 @@ final class Thanks_Module implements Module_Interface {
 	 * @return array{before: float, after: float, share: float}|array{}
 	 */
 	private function campaign_share( array $summary, $order ) {
-		if ( 1 !== count( $summary['lines'] ) || ! $this->container->get( Settings::class )->module_enabled( 'campaign', Settings::engine_is_new() ) ) {
+		if ( 1 !== count( $summary['lines'] ) || ! $this->container->get( Settings::class )->module_enabled( 'campaign', true ) ) {
 			return array();
 		}
 		$store_currency = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';

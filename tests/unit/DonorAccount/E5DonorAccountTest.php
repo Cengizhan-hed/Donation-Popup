@@ -369,6 +369,8 @@ final class E5DonorAccountTest extends TestCase {
 			new E5Item( 'Eski bağış', array( 'İthaf' => 'Dedem İbrahim için' ) ),
 		) );
 		$foreign  = new E5Order( 2, 8, 'b@example.test', array( new E5Item( 'Başkasının', array( '_custom_price' => '5' ) ) ) );
+		// get_post_status taslağı birden çok test dosyasında tanımlı (ilk yüklenen kazanır); ürünü açıkça yayımlanmış işaretle.
+		WDP_Test_State::$options['__post_status'][12] = 'publish';
 		$page     = Donation_History::page( 7, 1, 10, static function () use ( $own, $foreign ) {
 			return array(
 				'orders' => array( $own, $foreign ),

@@ -56,10 +56,17 @@ final class Release_12_Upgrade {
 	 */
 	private function clean_settings() {
 		$stored = get_option( Settings::OPTION_NAME, null );
-		if ( ! is_array( $stored ) || ! array_key_exists( 'experiences', $stored ) ) {
+		if ( ! is_array( $stored ) ) {
+			return 0;
+		}
+		$has_ui = isset( $stored['admin'] ) && is_array( $stored['admin'] ) && array_key_exists( 'ui', $stored['admin'] );
+		if ( ! array_key_exists( 'experiences', $stored ) && ! $has_ui ) {
 			return 0;
 		}
 		unset( $stored['experiences'] );
+		if ( $has_ui ) {
+			unset( $stored['admin']['ui'] );
+		}
 		update_option( Settings::OPTION_NAME, $stored, false );
 		return 1;
 	}
