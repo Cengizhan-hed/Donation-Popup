@@ -243,3 +243,93 @@
     min-block-size: 56px;
   }
 }
+
+/* WooCommerce'in `.woocommerce_options_panel` kayan/dar sütun kuralları kartları ve bölümleri bozmasın. */
+.woocommerce_options_panel.dp-ptab .dp-ptab__types {
+  float: none;
+  width: auto;
+  padding: 12px;
+  margin: 0;
+  border: 0;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__types legend {
+  float: none;
+  width: auto;
+  padding: 0;
+  margin: 0 0 4px;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__grid {
+  float: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__card {
+  float: none;
+  clear: none;
+  width: auto;
+  margin: 0;
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__card .dp-ptab__card-input {
+  float: none;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  margin: 3px 0 0;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__card .dp-ptab__card-icon {
+  float: none;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  margin: 0;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__card-text,
+.woocommerce_options_panel.dp-ptab .dp-ptab__card-title,
+.woocommerce_options_panel.dp-ptab .dp-ptab__card-desc {
+  float: none;
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__sections {
+  float: none;
+  width: auto;
+  box-sizing: border-box;
+  clear: both;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__section {
+  clear: both;
+  overflow: hidden;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__summary {
+  float: none;
+  width: auto;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__block,
+.woocommerce_options_panel.dp-ptab .dp-ptab__shortcode {
+  clear: both;
+  float: none;
+  width: auto;
+  box-sizing: border-box;
+}
+
+.woocommerce_options_panel.dp-ptab .dp-ptab__note,
+.woocommerce_options_panel.dp-ptab .dp-ptab__lead {
+  float: none;
+  width: auto;
+  padding: 0;
+}
