@@ -37,14 +37,16 @@ class Form_Renderer {
 	 *
 	 * @param array<string, mixed> $model   Form modeli.
 	 * @param string               $dom_key Benzersiz kimlik öneki.
+	 * @param bool                 $close   Başlıkta kapat düğmesi (katman kaplarında true).
 	 * @return string
 	 */
-	public function render_form( array $model, $dom_key ) {
+	public function render_form( array $model, $dom_key, $close = false ) {
 		return $this->loader->render_to_string(
 			'experiences/form.php',
 			array(
 				'model'   => $model,
 				'dom_key' => sanitize_key( (string) $dom_key ),
+				'close'   => (bool) $close,
 			)
 		);
 	}
@@ -83,7 +85,7 @@ class Form_Renderer {
 				'container' => $container,
 				'dom_key'   => $dom_key,
 				'args'      => $args,
-				'form_html' => $this->render_form( $model, $dom_key ),
+				'form_html' => $this->render_form( $model, $dom_key, $container->is_layer() ),
 			)
 		);
 	}

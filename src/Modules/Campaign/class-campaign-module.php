@@ -50,7 +50,48 @@ final class Campaign_Module implements Module_Interface {
 		$container->get( Assets::class )->define( 'campaign', 'assets/build/campaign/index.js', 'assets/build/campaign/index.css' );
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
+		add_filter( 'donation_panel_form_model', array( $this, 'filter_model' ), 15, 2 );
 		add_action( 'init', array( $this, 'register_shortcode' ) );
+	}
+
+	/**
+	 * Form modeline `campaign` (form üstündeki ilerleme özeti) ekler; kampanya verisi yoksa eklemez.
+	 *
+	 * Metinler sunucuda WooCommerce biçimiyle hazırlanır; kişi verisi yoktur.
+	 * Kalan gün: `donation_panel_campaign_days_left` filtresi tam sayı döndürürse gösterilir (varsayılan: yok).
+	 *
+	 * @param array<string, mixed> $model  Form modeli.
+	 * @param array<string, mixed> $legacy Eski bağlam.
+	 * @return array<string, mixed>
+	 */
+	public function filter_model( $model, $legacy = array() ) {
+		unset( $legacy );
+		$model      = (array) $model;
+		$product_id = isset( $model['product_id'] ) ? (int) $model['product_id'] : 0;
+		if ( $product_id < 1 || ! empty( $model['closed'] ) ) {
+			return $model;
+		}
+		$data = Progress_Data::for_product( $product_id );
+		if ( null === $data ) {
+			return $model;
+		}
+		/**
+		 * Kampanyanın kalan gün sayısı (bitiş tarihi yoksa null).
+		 *
+		 * @param int|null $days       Kalan gün.
+		 * @param int      $product_id Ürün.
+		 */
+		$days = apply_filters( 'donation_panel_campaign_days_left', null, $product_id );
+
+		$model['campaign'] = array(
+			'raised'    => Progress_Renderer::money( (float) $data['raised'] ),
+			'goal'      => Progress_Renderer::money( (float) $data['goal'] ),
+			'percent'   => (int) round( (float) $data['percent'] ),
+			'donors'    => (int) $data['donors'],
+			'days_left' => is_numeric( $days ) ? max( 0, (int) $days ) : null,
+			'reached'   => ! empty( $data['reached'] ),
+		);
+		return $model;
 	}
 
 	/**

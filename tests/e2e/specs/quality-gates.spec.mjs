@@ -325,7 +325,7 @@ test.describe('akış ve para birimi', () => {
     const label = ((await preset.innerText()) || '').replace(/ /g, ' ').replace(/\s/g, '');
     expect(label.includes(String(STORE.symbol || '').replace(/\s/g, '')), `ön ayar ${label}, sembol ${STORE.symbol}`).toBe(true);
     await preset.click();
-    const total = (await surface.locator('[data-dp-line="total"]').innerText()).replace(/ /g, ' ').replace(/\s/g, '');
+    const total = (await surface.locator('[data-dp-total]').innerText()).replace(/ /g, ' ').replace(/\s/g, '');
     expect(total.includes(String(STORE.symbol || '').replace(/\s/g, '')), `toplam ${total}`).toBe(true);
     expect(errors).toEqual([]);
   });

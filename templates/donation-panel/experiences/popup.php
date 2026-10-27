@@ -18,10 +18,6 @@ $donation_panel_opts  = (array) $args['args'];
 	<div class="dp-overlay dp-overlay--modal" data-dp-overlay>
 		<div class="dp-surface dp-surface--modal" id="<?php echo esc_attr( $donation_panel_key ); ?>" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-title" tabindex="-1" data-dp-surface>
 			<div class="dp-surface__handle" data-dp-handle aria-hidden="true"></div>
-			<div class="dp-surface__head">
-				<h2 class="dp-surface__title" id="<?php echo esc_attr( $donation_panel_key ); ?>-title"><?php echo esc_html( (string) $donation_panel_model['title'] ); ?></h2>
-				<button type="button" class="dp-iconbtn dp-surface__close" data-dp-close aria-label="<?php esc_attr_e( 'Close popup', 'woo-donation-popup' ); ?>"><svg class="dp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-			</div>
 			<?php echo $args['form_html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Form şablonunda kaçışlanmış çıktı. ?>
 		</div>
 	</div>

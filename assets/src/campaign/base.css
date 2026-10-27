@@ -90,7 +90,7 @@
 
 /* Otomatik okunabilir düğme yazısı: göreli renk sözdizimi destekleniyorsa. */
 @supports (color: oklch(from red l c h)) {
-  :root, .dp { --dp-color-on-primary: oklch(from var(--dp-color-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); }
+  :root, .dp { --dp-color-on-primary: oklch(from var(--dp-color-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); --dp-color-primary-strong: oklch(from var(--dp-color-primary) min(l, 0.48) c h); }
 }
 
 /* ---------- Koyu mod ---------- */

@@ -123,12 +123,14 @@ test.describe('etki ifadesi', () => {
     await expect(form).toBeVisible();
     const impact = form.locator('.dp-impact');
     // Hazır tutarlar: 10, 25, 50, 1234
+    // Hazır tutar kartları ifadeyi kendi içinde gösterir; ayrı satır yalnız yazılan tutar içindir.
     await form.locator('[data-dp-preset="25"]').click();
-    await expect(impact).toBeVisible();
-    await expect(impact).toContainText('= 1 food parcel');
+    await expect(form.locator('[data-dp-preset="25"] .dp-amount__i')).toContainText('1 food parcel');
+    await expect(impact).toBeHidden();
     await form.locator('[data-dp-preset="50"]').click();
-    await expect(impact).toContainText('= 2 food parcels');
+    await expect(form.locator('[data-dp-preset="50"] .dp-amount__i')).toContainText('2 food parcels');
     await form.locator('[data-dp-preset="10"]').click();
+    await expect(form.locator('[data-dp-preset="10"] .dp-amount__i')).toHaveCount(0);
     await expect(impact).toBeHidden();
     await form.locator('input[name="amount"]').fill('125');
     await expect(impact).toBeVisible();

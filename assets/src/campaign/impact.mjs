@@ -8,9 +8,9 @@ import { getJson } from './rest.mjs';
  * @return {number|null} Tutar.
  */
 function currentAmount(form) {
-  const chip = form.querySelector('[data-dp-preset][aria-checked="true"]');
-  if (chip) {
-    return parseAmount(chip.dataset.dpPreset);
+  // Seçili hazır tutarın ifadesini kartın kendisi gösterir; satır yalnız yazılan tutar için.
+  if (form.querySelector('[data-dp-preset][aria-checked="true"]')) {
+    return null;
   }
   const input = form.querySelector('input[name="amount"]');
   return input ? parseAmount(input.value) : null;

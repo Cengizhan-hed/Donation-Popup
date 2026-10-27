@@ -39,6 +39,7 @@ async function fillForm(page) {
   await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
   await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
   await page.locator('input[name="donation_phone"]').fill(DONOR.phone);
+  await page.locator('[data-dp-note-toggle]').click();
   await page.locator('textarea[name="donation_note"]').fill(DONOR.note);
 }
 

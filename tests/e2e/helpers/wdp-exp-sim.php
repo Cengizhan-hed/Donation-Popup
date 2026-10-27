@@ -47,6 +47,29 @@ if (isset($_GET['dp_freq'])) { // phpcs:ignore
 	);
 }
 
+// Tasarım karşılaştırma ekran görüntüleri için örnek veri (`?dp_demo=1`): önerilen tutar, etki ifadesi, rozet, kalan gün, görsel.
+if (isset($_GET['dp_demo'])) { // phpcs:ignore
+	add_filter( 'donation_panel_campaign_days_left', static function () { return 18; } );
+	add_filter(
+		'donation_panel_form_model',
+		static function ($model) {
+			$presets = isset($model['presets']) ? (array) $model['presets'] : array();
+			if (count($presets) >= 3) {
+				$model['recommended'] = (float) $presets[2];
+				$texts                = array( '1 aileye 1 ay su', '5 kişiye 6 ay su', 'Bir ailenin yıllık suyu', 'Kuyuya büyük katkı', 'Bir köye su' );
+				$model['impact']      = array( 'tiers' => array(), 'presets' => array() );
+				foreach ($presets as $i => $amount) {
+					$model['impact']['presets'][] = array( 'amount' => (float) $amount, 'text' => $texts[ $i % 5 ] );
+				}
+			}
+			$model['image']    = includes_url('images/crystal/default.png');
+			$model['badge']    = 'shares' === ($model['kind'] ?? '') ? '24 saat içinde kesim videosu' : '';
+			return $model;
+		},
+		40
+	);
+}
+
 add_action(
 	'template_redirect',
 	static function () {

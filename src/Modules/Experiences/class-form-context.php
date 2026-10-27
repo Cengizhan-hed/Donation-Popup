@@ -112,13 +112,23 @@ final class Form_Context {
 			'quantity'       => self::quantity( $legacy, $kind ),
 			'cover_fee'      => self::cover_fee_percent( $legacy ),
 			'addon'          => self::addon( $legacy ),
-			'steps'          => self::steps( $product_id ),
+			'steps'          => self::steps( $product_id, $kind ),
+			'image'          => self::image_url( $product ),
+			'subtitle'       => '',
+			'badge'          => '',
+			'brand'          => '',
+			'accent'         => '',
+			'privacy_url'    => function_exists( 'get_privacy_policy_url' ) ? (string) get_privacy_policy_url() : '',
+			'phone'          => self::phone(),
 			'fields'         => $shares ? array() : self::fields( $legacy ),
 			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
 		);
 
+		$model['subtitle'] = ! empty( $model['types'][0]['label'] ) ? (string) $model['types'][0]['label'] : __( 'One-time donation', 'woo-donation-popup' );
+
 		/**
-		 * Form modelini değiştirir (kişi verisi eklenmemelidir).
+		 * Form modelini değiştirir (kişi verisi eklenmemelidir). Ek anahtarlar: `badge` (başlık altı kısa etiket),
+		 * `brand` / `accent` (geçerli #hex; boşsa tema/belirteç değeri), `campaign` (ilerleme), `impact`.
 		 *
 		 * @param array<string, mixed> $model  Form modeli.
 		 * @param array<string, mixed> $legacy Eski bağlam.
@@ -203,26 +213,30 @@ final class Form_Context {
 	}
 
 	/**
-	 * Form adımları: tutar -> bilgiler. Ek adım (ör. vergi indirimi) `donation_panel_form_steps` ile eklenir;
+	 * Form adımları: tutar -> bilgiler. Tutarı kullanıcı belirlemeyen türlerde (sabit tutar, hisseli) tutar/adet seçimi
+	 * ve bilgiler tek adımdır (`details`). Ek adım (ör. vergi indirimi) `donation_panel_form_steps` ile eklenir;
 	 * ek adımın içeriği `donation_panel_form_step_{id}` kancasına yazılır.
 	 *
-	 * @param int $product_id Ürün.
+	 * @param int    $product_id Ürün.
+	 * @param string $kind       Bağış türü.
 	 * @return array<int, array{id: string, label: string}>
 	 */
-	private static function steps( $product_id ) {
-		$steps = array(
-			array(
+	private static function steps( $product_id, $kind = 'custom' ) {
+		$single = in_array( $kind, array( 'fixed', 'shares' ), true );
+		$steps  = array();
+		if ( ! $single ) {
+			$steps[] = array(
 				'id'    => 'amount',
 				'label' => __( 'Amount', 'woo-donation-popup' ),
-			),
-			array(
-				'id'    => 'details',
-				'label' => __( 'Your details', 'woo-donation-popup' ),
-			),
+			);
+		}
+		$steps[] = array(
+			'id'    => 'details',
+			'label' => __( 'Your details', 'woo-donation-popup' ),
 		);
 
 		/**
-		 * Form adımlarını değiştirir (ek adım eklemek için). `amount` ve `details` adımları kaldırılamaz.
+		 * Form adımlarını değiştirir (ek adım eklemek için). `details` (ve tutarı kullanıcı seçiyorsa `amount`) adımı kaldırılamaz.
 		 *
 		 * @param array<int, array{id: string, label: string}> $steps      Adımlar.
 		 * @param int                                          $product_id Ürün.
@@ -238,7 +252,53 @@ final class Form_Context {
 			}
 		}
 		$ids = array_column( $out, 'id' );
-		return ( in_array( 'amount', $ids, true ) && in_array( 'details', $ids, true ) ) ? $out : $steps;
+		return ( in_array( 'details', $ids, true ) && ( $single || in_array( 'amount', $ids, true ) ) ) ? $out : $steps;
+	}
+
+	/**
+	 * Ürün görselinin adresi (yoksa boş).
+	 *
+	 * @param object|null $product Ürün.
+	 * @return string
+	 */
+	private static function image_url( $product ) {
+		if ( ! is_object( $product ) || ! method_exists( $product, 'get_image_id' ) || ! function_exists( 'wp_get_attachment_image_url' ) ) {
+			return '';
+		}
+		$id = (int) $product->get_image_id();
+		if ( $id < 1 ) {
+			return '';
+		}
+		$url = wp_get_attachment_image_url( $id, 'medium_large' );
+		return $url ? (string) $url : '';
+	}
+
+	/**
+	 * Telefon ön eki seçenekleri ve varsayılan ülke (mağaza ülkesinden).
+	 *
+	 * @return array{iso: string, dial: string, countries: array<int, array{iso: string, name: string, dial: string}>}
+	 */
+	private static function phone() {
+		$out = array(
+			'iso'       => '',
+			'dial'      => '',
+			'countries' => array(),
+		);
+		if ( ! class_exists( 'WDP_Phone_Field' ) ) {
+			return $out;
+		}
+		$list = \WDP_Phone_Field::get_countries();
+		$iso  = \WDP_Phone_Field::get_default_country_iso();
+		foreach ( $list as $code => $row ) {
+			$out['countries'][] = array(
+				'iso'  => (string) $code,
+				'name' => (string) $row['name'],
+				'dial' => (string) $row['dial'],
+			);
+		}
+		$out['iso']  = $iso;
+		$out['dial'] = isset( $list[ $iso ]['dial'] ) ? (string) $list[ $iso ]['dial'] : '';
+		return $out;
 	}
 
 	/**
