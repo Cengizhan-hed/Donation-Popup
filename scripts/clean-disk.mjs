@@ -7,7 +7,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import net from 'node:net';
-import { buildPlan, applyPlan, summarize, fmtSize } from './lib/disk-clean.mjs';
+import { buildPlan, applyPlan, summarize, fmtSize, worktreeDecisions } from './lib/disk-clean.mjs';
 import { freeGB, classify } from './lib/disk-check.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -42,4 +42,6 @@ const plan = buildPlan(ROOT, { isPortBusy: (p) => busy.has(p) });
 const { freed } = applyPlan(ROOT, plan, { dryRun: !apply });
 for (const [rule, v] of Object.entries(summarize(plan))) console.log(`  ${rule.padEnd(15)} ${String(v.count).padStart(4)} öğe  ${fmtSize(v.size)}`);
 if (!apply) for (const i of plan.slice(0, 40)) console.log('  -', path.relative(ROOT, i.p) || i.p, fmtSize(i.size));
+console.log('Worktree kararları:');
+for (const d of worktreeDecisions(ROOT)) console.log(`  ${d.remove ? 'SİLİNİR ' : 'KORUNUR '} ${d.name} — ${d.reason}`);
 console.log(`${apply ? 'SİLİNDİ' : 'SİLİNECEK (dry-run; --apply ile sil)'}: ${fmtSize(freed)}`);

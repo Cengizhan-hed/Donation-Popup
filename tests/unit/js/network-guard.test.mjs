@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { dirAbsentOrOnlyOsJunk } from '../../../scripts/lib/os-junk.mjs';
 import {
   isTrackerUrl,
   isRemoteOrderRequest,
@@ -378,7 +379,7 @@ describe('uzak POST varsayılan-red', () => {
   });
 
   it('12.0.0: eklenti kaynağı (src/) hiç wdp AJAX ucu açmaz; emekli liste donmuş, yönetici uçları uzakta RED', () => {
-    assert.equal(fs.existsSync(path.join(ROOT, 'includes')), false, 'includes/ klasörü kalmamalı');
+    assert.equal(dirAbsentOrOnlyOsJunk(path.join(ROOT, 'includes')), true, 'includes/ klasörü kalmamalı');
     const { nopriv, adminOnly } = listWdpAjaxFromIncludes(path.join(ROOT, 'src'));
     assert.deepEqual(nopriv, []);
     for (const n of EXPECTED_WDP_NOPRIV_AJAX) {

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { buildPlan, applyPlan, summarize, olderThanNewest } from '../../../scripts/lib/disk-clean.mjs';
+import { buildPlan, applyPlan, summarize, olderThanNewest, worktreeDecisions } from '../../../scripts/lib/disk-clean.mjs';
 import { classify } from '../../../scripts/lib/disk-check.mjs';
 import { cleanPlaywrightOutputs } from '../../../scripts/e2e-prep.mjs';
 
@@ -82,5 +82,38 @@ test('worktree: yalnız merge edilmiş, temiz, korumasız wt-* silinir', () => {
     applyPlan(root, plan, { dryRun: false });
     assert.ok(!fs.existsSync(path.join(base, 'wt-done')));
     assert.ok(fs.existsSync(path.join(base, 'wt-dirty')));
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('worktree kararları: kilit/kirli/birleşmemiş korunur, yalnız birleşmiş+temiz+kilitsiz silinir', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-wtd-'));
+  const root = path.join(base, 'main-repo');
+  const g = (cwd, ...a) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd, stdio: 'ignore' });
+  try {
+    fs.mkdirSync(root);
+    g(root, 'init', '-b', 'ikram-ortam');
+    fs.writeFileSync(path.join(root, 'f'), '1');
+    g(root, 'add', 'f'); g(root, 'commit', '-m', 'i');
+    for (const n of ['clean', 'locked', 'dirty', 'ahead', 'lockedmerged', 'clean2']) g(root, 'worktree', 'add', '-b', n, path.join(base, `wt-${n}`));
+    fs.writeFileSync(path.join(base, 'wt-locked/.wdp-agent.lock'), 'ajan=x');
+    fs.writeFileSync(path.join(base, 'wt-lockedmerged/.wdp-agent.lock'), 'ajan=y');
+    fs.writeFileSync(path.join(base, 'wt-dirty/new'), 'x');
+    fs.writeFileSync(path.join(base, 'wt-ahead/a'), 'a');
+    g(path.join(base, 'wt-ahead'), 'add', 'a'); g(path.join(base, 'wt-ahead'), 'commit', '-m', 'a');
+    const d = Object.fromEntries(worktreeDecisions(root).map((x) => [x.name, x]));
+    assert.equal(d['wt-clean'].remove, true);
+    assert.equal(d['wt-clean'].reason, 'birleşmiş + temiz + kilitsiz');
+    assert.equal(d['wt-clean2'].remove, true);
+    for (const n of ['wt-locked', 'wt-lockedmerged', 'wt-dirty', 'wt-ahead']) assert.equal(d[n].remove, false, n);
+    assert.match(d['wt-locked'].reason, /kilit/);
+    assert.match(d['wt-lockedmerged'].reason, /kilit/);
+    assert.match(d['wt-dirty'].reason, /kaydedilmemiş/);
+    assert.match(d['wt-ahead'].reason, /birleşmemiş/);
+    // eski saatli kilit de korur
+    const old = new Date(Date.now() - 30 * DAY);
+    fs.utimesSync(path.join(base, 'wt-locked/.wdp-agent.lock'), old, old);
+    assert.equal(worktreeDecisions(root).find((x) => x.name === 'wt-locked').remove, false);
+    const plan = buildPlan(root, { includeWorktrees: true });
+    assert.deepEqual(plan.filter((i) => i.kind === 'worktree').map((i) => path.basename(i.p)).sort(), ['wt-clean', 'wt-clean2']);
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });

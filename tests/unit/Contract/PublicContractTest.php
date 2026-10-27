@@ -174,7 +174,7 @@ final class PublicContractTest extends TestCase {
 	}
 
 	public function test_legacy_includes_directory_and_global_class_bridge_are_gone(): void {
-		$this->assertDirectoryDoesNotExist(WDP_PLUGIN_DIR . 'includes');
+		$this->assertTrue(wdp_test_dir_absent_or_only_os_junk(WDP_PLUGIN_DIR . 'includes'), 'includes/ yalnız OS artıkları içerebilir');
 		foreach (array('WDP_Utils', 'WDP_Assets', 'WDP_Templates', 'WDP_Donation_Optional_Fields', 'WDP_Autoloader', 'Woo_Donation_Popup_Admin') as $name) {
 			$this->assertFalse(class_exists($name, false), $name . ' artık tanımlı olmamalı');
 		}

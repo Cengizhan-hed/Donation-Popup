@@ -49,27 +49,49 @@ function git(cwd, args) {
   return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
 }
 
-/** Biten worktree'ler: ana depoya bağlı, wt-* adlı, dalı merge edilmiş, temiz, korumasız. */
-export function finishedWorktrees(root, { protectedNames = PROTECTED_WORKTREES, mergeTargets = ['main', 'ikram-ortam'] } = {}) {
+export const AGENT_LOCK = '.wdp-agent.lock';
+
+/**
+ * Her worktree için karar: YALNIZ şu üç koşul BİRDEN sağlanırsa silinir (CLAUDE.md §14, kilit kuralı):
+ *  (a) dalı main/ikram-ortam'a birleşmiş, (b) kaydedilmemiş değişiklik yok (izlenmeyenler dahil; kilit dosyası hariç),
+ *  (c) kökte `.wdp-agent.lock` YOK (zaman ne olursa olsun kilit korur).
+ * Dönüş: [{ p, name, remove, reason }] (ana depo hariç).
+ */
+export function worktreeDecisions(root, { protectedNames = PROTECTED_WORKTREES, mergeTargets = ['main', 'ikram-ortam'] } = {}) {
   const out = [];
   let list;
   try { list = git(root, ['worktree', 'list', '--porcelain']); } catch { return out; }
   const parent = fs.realpathSync(path.dirname(root));
   for (const block of list.split('\n\n')) {
     const wt = /^worktree (.+)$/m.exec(block)?.[1];
+    if (!wt || !fs.existsSync(wt) || fs.realpathSync(wt) === fs.realpathSync(root)) continue;
     const branch = /^branch refs\/heads\/(.+)$/m.exec(block)?.[1];
-    if (!wt || !branch || fs.realpathSync(wt) === fs.realpathSync(root)) continue;
     const name = path.basename(wt);
-    if (path.dirname(fs.realpathSync(wt)) !== parent || !name.startsWith('wt-') || protectedNames.includes(name)) continue;
-    if (/^(main|ikram-ortam)$/.test(branch)) continue;
+    const keep = (reason) => out.push({ p: wt, name, remove: false, reason });
+    if (path.dirname(fs.realpathSync(wt)) !== parent || !name.startsWith('wt-')) { keep('wt-* değil / ana depo yanında değil'); continue; }
+    if (protectedNames.includes(name)) { keep('korumalı ad'); continue; }
+    if (!branch) { keep('dal yok (detached)'); continue; }
+    if (/^(main|ikram-ortam)$/.test(branch)) { keep('hedef dal'); continue; }
+    if (fs.existsSync(path.join(wt, AGENT_LOCK))) { keep(`kilit var (${AGENT_LOCK})`); continue; }
     const merged = mergeTargets.some((t) => {
       try { git(root, ['merge-base', '--is-ancestor', branch, t]); return true; } catch { return false; }
     });
-    if (!merged) continue;
-    try { if (git(wt, ['status', '--porcelain']).trim()) continue; } catch { continue; }
-    out.push({ rule: 'worktree', p: wt, size: dirSize(wt), kind: 'worktree' });
+    if (!merged) { keep('dal birleşmemiş'); continue; }
+    let dirty;
+    try {
+      dirty = git(wt, ['status', '--porcelain', '--untracked-files=all']).split('\n').filter((l) => l.trim() && !l.endsWith(AGENT_LOCK));
+    } catch { keep('git durumu okunamadı'); continue; }
+    if (dirty.length) { keep(`kaydedilmemiş değişiklik var (${dirty.length})`); continue; }
+    out.push({ p: wt, name, remove: true, reason: 'birleşmiş + temiz + kilitsiz' });
   }
   return out;
+}
+
+/** Biten (silinecek) worktree'ler; karar mantığı worktreeDecisions'ta. */
+export function finishedWorktrees(root, opts = {}) {
+  return worktreeDecisions(root, opts)
+    .filter((d) => d.remove)
+    .map((d) => ({ rule: 'worktree', p: d.p, size: dirSize(d.p), kind: 'worktree' }));
 }
 
 /** Silinecek öğeleri planlar. */

@@ -11,6 +11,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/bootstrap.php';
+require dirname(__DIR__) . '/support/os-junk.php';
 
 $failures = 0;
 
@@ -63,7 +64,7 @@ foreach (array(
     wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . $wdp_gone), 'Eski çekirdek kaldırıldı: ' . $wdp_gone);
 }
 
-wdp_smoke_assert(!is_dir(WDP_PLUGIN_DIR . 'includes'), 'includes/ directory is gone (12.0.0)');
+wdp_smoke_assert(wdp_test_dir_absent_or_only_os_junk(WDP_PLUGIN_DIR . 'includes'), 'includes/ directory is gone (12.0.0)');
 foreach (array(
     'DonationPanel\\Core\\Bootstrap',
     'DonationPanel\\Core\\Plugin',
