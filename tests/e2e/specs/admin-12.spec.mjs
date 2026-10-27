@@ -111,11 +111,11 @@ test('eski adres wdp-popup-settings yeni Genel Bakış sayfasına yönlenir', as
 test('Genel Bakış: durum kutusu; misafir ödeme kapalıysa uyarı', async ({ page }, info) => {
   await setOpt(page, 'woocommerce_enable_guest_checkout', 'yes');
   await page.goto(P('donation-panel'));
-  await expect(page.locator('.dpa-status--ok', { hasText: /Guest checkout is on/ })).toBeVisible();
+  await expect(page.locator('.dpa-status--ok', { hasText: /Guest checkout is on|Misafir ödeme açık/ })).toBeVisible();
   await expect(page.locator('.dpa-ring')).toBeVisible();
   await setOpt(page, 'woocommerce_enable_guest_checkout', 'no');
   await page.goto(P('donation-panel'));
-  const warn = page.locator('.dpa-status--warn', { hasText: /Guest checkout is off/ });
+  const warn = page.locator('.dpa-status--warn', { hasText: /Guest checkout is off|Misafir ödeme kapalı/ });
   await expect(warn).toBeVisible();
   await expect(warn.locator('a')).toHaveAttribute('href', /wc-settings&tab=account/);
   await shot(page, info, 'AdminGenel', 'uygulama-uyari');

@@ -137,7 +137,7 @@ describe('PHP dosyaları', () => {
     assert.match(curcy, /\$option_name = 'woo_multi_currency_params'/);
     const dir = path.join(ROOT, 'tests/e2e/helpers');
     for (const n of fs.readdirSync(dir)) {
-      if (n.endsWith('.php') && n !== 'curcy-rates.php' && /\bupdate_option\s*\(/.test(fs.readFileSync(path.join(dir, n), 'utf8')) && n !== 'snippet-manage.php' && n !== 'plugin-settings.php' && n !== 'wdp-admin-sim.php') {
+      if (n.endsWith('.php') && n !== 'curcy-rates.php' && /\bupdate_option\s*\(/.test(fs.readFileSync(path.join(dir, n), 'utf8')) && n !== 'snippet-manage.php' && n !== 'plugin-settings.php' && n !== 'wdp-admin-sim.php' && n !== 'wdp-sc-sim.php') {
         assert.fail(`update_option başka dosyada: ${n}`);
       }
     }

@@ -24,6 +24,7 @@ add_action(
 			nocache_headers();
 			$id     = (int) $_GET['dp_sc_add']; // phpcs:ignore
 			$amount = isset( $_GET['amount'] ) ? (float) $_GET['amount'] : 50.0; // phpcs:ignore
+			update_option( 'dp_sc_sim_primary', $id, false ); // Öneri bu ürünü hiç önermez; önerilen ürün sepete girince başka ürüne kaymaz.
 			$data   = array();
 			if ( ! empty( $_GET['name'] ) ) { // phpcs:ignore
 				$data['full_name'] = sanitize_text_field( wp_unslash( (string) $_GET['name'] ) ); // phpcs:ignore
@@ -85,13 +86,9 @@ add_action(
 add_filter(
 	'donation_panel_side_cart_suggestion',
 	static function () {
-		$in_cart = array();
-		if ( function_exists( 'WC' ) && WC() && WC()->cart ) {
-			foreach ( WC()->cart->get_cart() as $item ) {
-				$in_cart[] = (int) $item['product_id'];
-			}
-		}
-		$ids = get_posts(
+		$primary = (int) get_option( 'dp_sc_sim_primary', 0 );
+		$in_cart = $primary > 0 ? array( $primary ) : array();
+		$ids     = get_posts(
 			array(
 				'post_type'      => 'product',
 				'post_status'    => 'publish',
