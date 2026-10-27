@@ -740,6 +740,46 @@ export function isRemoteOrderRequest(req) {
   return false;
 }
 
+/** Eklentinin ziyaretçi/yönetici REST alanı (12.0.0). */
+export const DONATION_PANEL_REST_NAMESPACE = 'donation-panel/v1';
+
+/**
+ * POST olsa da sunucuda veri yazmayan uçlar (yalnız doğrulama). Bu listede olmayan her yazma yöntemi uzakta engellenir:
+ * `cart/add`, `side-cart/suggestion`, `account/*` (tekrar bağış, giriş bağlama), `admin/*` vb.
+ */
+export const DONATION_PANEL_REST_READ_ONLY_POST_ROUTES = Object.freeze(['validate']);
+
+/**
+ * `donation-panel/v1` altındaki yolun alt rotası (örn. `cart/add`); eklenti alanı değilse ''.
+ * Hem `/wp-json/donation-panel/v1/...` hem `?rest_route=/donation-panel/v1/...` biçimi.
+ *
+ * @param {string} pathname
+ * @param {URLSearchParams} [search]
+ * @returns {string}
+ */
+export function donationPanelRestRoute(pathname, search) {
+  const fromPath = String(pathname || '').match(/\/wp-json\/donation-panel\/v1\/?(.*)$/i);
+  if (fromPath) return String(fromPath[1] || '').replace(/^\/+|\/+$/g, '') || '/';
+  const q = String(search?.get?.('rest_route') || '');
+  const fromQuery = q.match(/^\/?donation-panel\/v1\/?(.*)$/i);
+  if (fromQuery) return String(fromQuery[1] || '').replace(/^\/+|\/+$/g, '') || '/';
+  return '';
+}
+
+/**
+ * Yazma yöntemli donation-panel/v1 isteği sunucuda yazmıyor mu (doğrulama gibi)?
+ *
+ * @param {string} pathname
+ * @param {URLSearchParams} [search]
+ * @returns {boolean}
+ */
+export function isDonationPanelRestReadOnly(pathname, search) {
+  const route = donationPanelRestRoute(pathname, search);
+  if (route === '') return false;
+  const first = route.split('/')[0];
+  return DONATION_PANEL_REST_READ_ONLY_POST_ROUTES.includes(first);
+}
+
 /**
  * Uzak profilde site alanına giden yazma: yalnız izin listesi.
  * apply_coupon ve update_order_review yok (ödeme sayfasında da).
@@ -761,6 +801,12 @@ export function isRemoteWriteAllowed(req) {
   const postData = bodyToString(req?.postData);
   const headers = req?.headers || {};
   const storePath = pathname.replace(/^\/wp-json/, '');
+
+  // 12.0.0: eski ön yüz AJAX uçlarının karşılığı. donation-panel/v1 altında yazan (sepete ekleme, tekrar bağış,
+  // yan sepet önerisi, yönetici ayarı...) her istek uzakta engelli; yalnız yazmayan POST uçları (doğrulama) geçer.
+  if (donationPanelRestRoute(pathname, search) !== '') {
+    return isDonationPanelRestReadOnly(pathname, search);
+  }
 
   const ajax = wcAjaxName(pathname, search);
   if (ajax) {

@@ -47,7 +47,12 @@ foreach ( $donation_panel_fields as $donation_panel_probe ) {
 // Tutarı bağışçı seçiyorsa "birinin adına" anahtarı tutar adımında; aksi halde alan bilgiler adımında düz alan.
 $donation_panel_dedi_switch = $donation_panel_dedi_def && ! $donation_panel_single;
 $donation_panel_privacy     = isset( $donation_panel_model['privacy_url'] ) ? (string) $donation_panel_model['privacy_url'] : '';
-$donation_panel_style       = '';
+// Bağlantı metni: yönetici özel metin yazdıysa o; yoksa kısa varsayılan.
+$donation_panel_privacy_label = isset( $donation_panel_model['privacy_label'] ) ? trim( (string) $donation_panel_model['privacy_label'] ) : '';
+if ( '' === $donation_panel_privacy_label || \DonationPanel\Domain\Privacy_Notice::default_link_label() === $donation_panel_privacy_label ) {
+	$donation_panel_privacy_label = __( 'privacy notice', 'woo-donation-popup' );
+}
+$donation_panel_style = '';
 foreach ( array(
 	'brand'  => '--dp-color-primary',
 	'accent' => '--dp-accent',
@@ -398,7 +403,7 @@ $donation_panel_extras = static function () use ( $donation_panel_model, $donati
 						sprintf(
 							/* translators: %s: link to the privacy policy. */
 							__( 'By continuing you confirm you have read the %s.', 'woo-donation-popup' ),
-							'<a href="' . esc_url( $donation_panel_privacy ) . '" target="_blank" rel="noopener">' . esc_html__( 'privacy notice', 'woo-donation-popup' ) . '</a>'
+							'<a href="' . esc_url( $donation_panel_privacy ) . '" target="_blank" rel="noopener">' . esc_html( $donation_panel_privacy_label ) . '</a>'
 						),
 						array(
 							'a' => array(

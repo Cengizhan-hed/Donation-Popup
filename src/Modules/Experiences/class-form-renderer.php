@@ -7,6 +7,7 @@
 
 namespace DonationPanel\Modules\Experiences;
 
+use DonationPanel\Domain\Button_Settings;
 use DonationPanel\Frontend\Template_Loader;
 
 defined( 'ABSPATH' ) || exit;
@@ -68,12 +69,13 @@ class Form_Renderer {
 		$dom_key   = 'dp-' . (int) $model['product_id'] . '-' . $container->slug() . '-' . self::next_instance();
 		$args      = array_merge(
 			array(
-				'button_text'  => __( 'Donate', 'woo-donation-popup' ),
-				'rest_url'     => '',
-				'nonce'        => '',
-				'ajax_url'     => '',
-				'cart_nonce'   => '',
-				'checkout_url' => '',
+				'button_text'       => __( 'Donate', 'woo-donation-popup' ),
+				'button_full_width' => self::button_full_width(),
+				'rest_url'          => '',
+				'nonce'             => '',
+				'ajax_url'          => '',
+				'cart_nonce'        => '',
+				'checkout_url'      => '',
 			),
 			$args
 		);
@@ -88,6 +90,16 @@ class Form_Renderer {
 				'form_html' => $this->render_form( $model, $dom_key, $container->is_layer() ),
 			)
 		);
+	}
+
+	/**
+	 * Açma düğmesi tam genişlikte mi (yönetici ayarı "Formlar ve Görünüm → düğme tam genişlik").
+	 *
+	 * @return bool
+	 */
+	private static function button_full_width() {
+		$button = Button_Settings::get();
+		return isset( $button['popup_button_full_width'] ) && '1' === (string) $button['popup_button_full_width'];
 	}
 
 	/**

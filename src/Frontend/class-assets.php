@@ -10,6 +10,8 @@
 
 namespace DonationPanel\Frontend;
 
+use DonationPanel\Core\Settings;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -119,6 +121,40 @@ class Assets {
 		}
 		if ( wp_style_is( $handle, 'registered' ) ) {
 			wp_enqueue_style( $handle );
+			$this->add_brand_variables( $handle );
+		}
+	}
+
+	/**
+	 * Yönetici "kendi renklerimi seçeyim" dediyse marka/eylem rengini tüm bağışçı yüzeylerine (form, teşekkür,
+	 * yan sepet, hesap) tek satır içi belirteçle yazar. Boşsa hiçbir şey yazılmaz: renkler tema ön ayarından gelir.
+	 * `:root .dp` seçicisi `.dp` kapsamındaki varsayılan tanımın önüne geçer. İstek başına bir kez eklenir.
+	 *
+	 * @param string $handle Stil tutamacı.
+	 * @return void
+	 */
+	private function add_brand_variables( $handle ) {
+		static $added = false;
+		if ( $added ) {
+			return;
+		}
+		$added    = true;
+		$settings = new Settings();
+		if ( 'custom' !== (string) $settings->get( 'design.colors', 'theme' ) ) {
+			return;
+		}
+		$declarations = '';
+		foreach ( array(
+			'design.brand'  => '--dp-color-primary',
+			'design.accent' => '--dp-accent',
+		) as $path => $variable ) {
+			$hex = trim( (string) $settings->get( $path, '' ) );
+			if ( 1 === preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', $hex ) ) {
+				$declarations .= $variable . ':' . $hex . ';';
+			}
+		}
+		if ( '' !== $declarations ) {
+			wp_add_inline_style( $handle, ':root .dp{' . $declarations . '}' );
 		}
 	}
 

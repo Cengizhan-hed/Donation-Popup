@@ -18,7 +18,7 @@
   --dpx-wait-bg: var(--dp-color-warning-soft, #fff3d6);
   --dpx-bad: var(--dp-color-danger, #b42318);
   --dpx-bad-bg: var(--dp-color-danger-soft, #fdeceb);
-  --dpx-r-sheet: 28px; --dpx-r-card: 20px; --dpx-r-card-sm: 16px; --dpx-r-field: 14px; --dpx-r-btn: 16px; --dpx-r-btn-sm: 14px;
+  --dpx-r-sheet: var(--dp-radius-sheet, 28px); --dpx-r-card: 20px; --dpx-r-card-sm: var(--dp-radius-card, 16px); --dpx-r-field: var(--dp-radius-field, 14px); --dpx-r-btn: var(--dp-radius-btn, 16px); --dpx-r-btn-sm: 14px;
   --dpx-h-btn: 56px; --dpx-h-field: 52px; --dpx-h-touch: 44px;
   --dpx-shadow-card: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px rgb(16 24 40 / .06);
 }

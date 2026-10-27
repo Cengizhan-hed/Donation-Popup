@@ -50,6 +50,43 @@ final class E2AFormContextTest extends TestCase {
 		$this->assertTrue( $model['allow_custom'] );
 	}
 
+	public function test_phone_prefix_list_comes_from_phone_countries(): void {
+		$model = Form_Context::from_legacy( $this->legacy() );
+		$this->assertNotEmpty( $model['phone']['countries'] );
+		$this->assertNotSame( '', $model['phone']['iso'] );
+		$this->assertNotSame( '', $model['phone']['dial'] );
+	}
+
+	public function test_brand_and_accent_follow_admin_setting_only_when_custom(): void {
+		$model = Form_Context::from_legacy( $this->legacy() );
+		$this->assertSame( '', $model['brand'] );
+		$this->assertSame( '', $model['accent'] );
+
+		WDP_Test_State::$options['donation_panel_settings'] = array( 'design' => array( 'colors' => 'theme', 'brand' => '#112233', 'accent' => '#aabbcc' ) );
+		$model = Form_Context::from_legacy( $this->legacy() );
+		$this->assertSame( '', $model['brand'], 'tema renkleri seçiliyken özel renk yok sayılır' );
+
+		WDP_Test_State::$options['donation_panel_settings'] = array( 'design' => array( 'colors' => 'custom', 'brand' => '#112233', 'accent' => 'javascript:x' ) );
+		$model = Form_Context::from_legacy( $this->legacy() );
+		$this->assertSame( '#112233', $model['brand'] );
+		$this->assertSame( '', $model['accent'], 'geçersiz değer reddedilir' );
+	}
+
+	public function test_privacy_link_needs_setting_and_a_personal_data_field(): void {
+		$this->assertSame( '', Form_Context::from_legacy( $this->legacy() )['privacy_url'], 'ayar kapalı' );
+
+		WDP_Test_State::$options['wdp_button_settings'] = array(
+			'enable_privacy_notice' => '1',
+			'privacy_notice_url'    => 'https://example.test/gizlilik/',
+		);
+		$this->assertSame( 'https://example.test/gizlilik/', Form_Context::from_legacy( $this->legacy() )['privacy_url'] );
+		$this->assertSame(
+			'',
+			Form_Context::from_legacy( $this->legacy( array( 'enable_email' => false, 'enable_dedication' => false ) ) )['privacy_url'],
+			'e-posta/ithaf alanı yoksa bağlantı gösterilmez'
+		);
+	}
+
 	public function test_field_names_match_order_contract(): void {
 		$model = Form_Context::from_legacy( $this->legacy() );
 		$names = array_column( $model['fields'], 'name' );

@@ -684,3 +684,31 @@ it('Stripe.js ölçüm işaretçileri (r./q./m.stripe.com) engellenir; js/api.st
   assert.equal(isTrackerUrl('https://js.stripe.com/v3/', { siteHost: 'site.example' }), false);
   assert.equal(isTrackerUrl('https://api.stripe.com/v1/payment_methods', { siteHost: 'site.example' }), false);
 });
+
+describe('network-guard: donation-panel/v1 REST uzakta yazma engeli (12.0.0)', () => {
+  const base = 'https://site.example/wp-json/donation-panel/v1/';
+  const write = (route, method = 'POST') => isRemoteWriteAllowed({ method, url: base + route, postData: '{}' });
+
+  it('sepete ekleme, yan sepet önerisi, tekrar bağış, yönetici yazmaları engellenir', () => {
+    for (const route of ['cart/add', 'side-cart/suggestion', 'account/repeat', 'admin/settings', 'admin/import']) {
+      assert.equal(write(route), false, route);
+      assert.equal(write(route, 'PUT'), false, `PUT ${route}`);
+      assert.equal(write(route, 'DELETE'), false, `DELETE ${route}`);
+    }
+  });
+
+  it('rest_route sorgu biçimi de engellenir', () => {
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: 'https://site.example/?rest_route=/donation-panel/v1/cart/add', postData: '{}' }), false);
+  });
+
+  it('okuma (GET) serbest; yazmayan doğrulama ucu geçer', () => {
+    for (const route of ['product/12/form', 'progress/12', 'impact/12', 'donations', 'side-cart', 'ping']) {
+      assert.equal(write(route, 'GET'), true, route);
+    }
+    assert.equal(write('validate'), true);
+  });
+
+  it('yazan uçların bilinmeyen yeni rotası da varsayılan olarak engellenir', () => {
+    assert.equal(write('yeni/uc'), false);
+  });
+});

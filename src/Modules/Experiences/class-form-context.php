@@ -11,7 +11,10 @@
 namespace DonationPanel\Modules\Experiences;
 
 use DonationPanel\Domain\Amount_Presets;
+use DonationPanel\Core\Settings;
+use DonationPanel\Domain\Privacy_Notice;
 use DonationPanel\Domain\Product_Context;
+use DonationPanel\Support\Phone_Countries;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -116,13 +119,28 @@ final class Form_Context {
 			'image'          => self::image_url( $product ),
 			'subtitle'       => '',
 			'badge'          => '',
-			'brand'          => '',
-			'accent'         => '',
-			'privacy_url'    => function_exists( 'get_privacy_policy_url' ) ? (string) get_privacy_policy_url() : '',
+			'brand'          => self::custom_color( 'design.brand' ),
+			'accent'         => self::custom_color( 'design.accent' ),
+			'privacy_url'    => '',
+			'privacy_label'  => '',
 			'phone'          => self::phone(),
 			'fields'         => $shares ? array() : self::fields( $legacy ),
 			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
 		);
+
+		// Form altı gizlilik bağlantısı: ayar açıksa ve form kişisel veri alanı topluyorsa; adres boşsa WordPress gizlilik sayfası.
+		$field_names = array_column( $model['fields'], 'name' );
+		$notice      = Privacy_Notice::resolve(
+			array(
+				'has_email'        => in_array( 'donation_email', $field_names, true ),
+				'has_dedication'   => in_array( 'donation_dedication', $field_names, true ),
+				'has_shareholders' => $shares,
+			)
+		);
+		if ( $notice && '' !== $notice['url'] ) {
+			$model['privacy_url']   = (string) $notice['url'];
+			$model['privacy_label'] = (string) $notice['link_label'];
+		}
 
 		$model['subtitle'] = ! empty( $model['types'][0]['label'] ) ? (string) $model['types'][0]['label'] : __( 'One-time donation', 'woo-donation-popup' );
 
@@ -274,21 +292,34 @@ final class Form_Context {
 	}
 
 	/**
+	 * Yönetici ayarındaki özel renk (yalnız "kendi renklerimi seçeyim" seçiliyse ve geçerli #hex ise); aksi halde ''
+	 * (form tema ön ayarından/belirteçten renk alır).
+	 *
+	 * @param string $path `design.brand` ya da `design.accent`.
+	 * @return string
+	 */
+	private static function custom_color( $path ) {
+		$settings = new Settings();
+		if ( 'custom' !== (string) $settings->get( 'design.colors', 'theme' ) ) {
+			return '';
+		}
+		$hex = trim( (string) $settings->get( $path, '' ) );
+		return 1 === preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', $hex ) ? $hex : '';
+	}
+
+	/**
 	 * Telefon ön eki seçenekleri ve varsayılan ülke (mağaza ülkesinden).
 	 *
 	 * @return array{iso: string, dial: string, countries: array<int, array{iso: string, name: string, dial: string}>}
 	 */
 	private static function phone() {
-		$out = array(
+		$out  = array(
 			'iso'       => '',
 			'dial'      => '',
 			'countries' => array(),
 		);
-		if ( ! class_exists( 'WDP_Phone_Field' ) ) {
-			return $out;
-		}
-		$list = \WDP_Phone_Field::get_countries();
-		$iso  = \WDP_Phone_Field::get_default_country_iso();
+		$list = Phone_Countries::get_countries();
+		$iso  = Phone_Countries::get_default_country_iso();
 		foreach ( $list as $code => $row ) {
 			$out['countries'][] = array(
 				'iso'  => (string) $code,
