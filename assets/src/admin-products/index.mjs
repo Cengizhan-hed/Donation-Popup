@@ -1,6 +1,6 @@
 /**
  * Ürün düzenleme ekranı "Donation" sekmesi: bağış türüne göre alanları gösterme, kısa kod kopyalama, sekmeyi
- * adresten açma, geçersiz alanda sekmeyi/bölümü açma. jQuery kullanılmaz.
+ * adresten açma, geçersiz alanda sekmeyi/bölümü açma. Yalnız standart DOM API'si kullanılır.
  */
 import './products.css';
 

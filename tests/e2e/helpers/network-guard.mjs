@@ -509,12 +509,12 @@ export function readRequestBody(request) {
 }
 
 /**
- * includes/ (özyinelemeli) `wp_ajax_nopriv_wdp_*` ve yalnız `wp_ajax_wdp_*`.
+ * Eklenti kaynağı src/ (özyinelemeli) `wp_ajax_nopriv_wdp_*` ve yalnız `wp_ajax_wdp_*` (12.0.0: includes/ yok).
  * @param {string} [includesDir]
  * @returns {{ nopriv: string[], adminOnly: string[] }}
  */
 export function listWdpAjaxFromIncludes(includesDir) {
-  const dir = includesDir || path.join(ROOT, 'includes');
+  const dir = includesDir || path.join(ROOT, 'src');
   const nopriv = new Set();
   const priv = new Set();
   function walk(d) {
