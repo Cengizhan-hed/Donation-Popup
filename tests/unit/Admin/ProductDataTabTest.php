@@ -64,7 +64,7 @@ final class ProductDataTabTest extends TestCase {
 			array(
 				'donation_type'          => 'campaign',
 				'progress_bar_limit'     => '2500',
-				'dedication_placeholder' => addslashes('Şükrü Bey adına, ğüöıİ'),
+				'dedication_placeholder' => 'Şükrü Bey adına, ğüöıİ',
 				'enable_dedication'      => 'yes',
 			)
 		);

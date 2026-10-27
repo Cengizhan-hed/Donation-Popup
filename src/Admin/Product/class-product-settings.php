@@ -88,7 +88,7 @@ final class Product_Settings {
 		if ( is_int( $value ) || is_float( $value ) ) {
 			return 1 === (int) $value;
 		}
-		$raw = strtolower( trim( (string) ( is_scalar( $value ) ? wp_unslash( $value ) : '' ) ) );
+		$raw = strtolower( trim( (string) ( is_scalar( $value ) ? $value : '' ) ) );
 		return in_array( $raw, array( '1', 'true', 'yes', 'on' ), true );
 	}
 
@@ -105,7 +105,7 @@ final class Product_Settings {
 		if ( is_bool( $value ) || is_int( $value ) || is_float( $value ) ) {
 			return self::parse_bool_flag( $value ) ? 'yes' : '';
 		}
-		$raw = strtolower( trim( (string) ( is_scalar( $value ) ? wp_unslash( $value ) : '' ) ) );
+		$raw = strtolower( trim( (string) ( is_scalar( $value ) ? $value : '' ) ) );
 		if ( 'no' === $raw ) {
 			return 'no';
 		}
@@ -115,7 +115,7 @@ final class Product_Settings {
 	/**
 	 * Sekme gönderimini ürün meta eşlemesine çevirir.
 	 *
-	 * @param array<string, mixed> $posted   Ham (slashed) `$_POST['wdp_donation']`.
+	 * @param array<string, mixed> $posted   Eğik çizgisi temizlenmiş (wp_unslash) `$_POST['wdp_donation']`.
 	 * @param array<string, mixed> $existing Meta anahtarı => kayıtlı değer (reddedilen alanlar için).
 	 * @param int                  $parent_id Ürün kimliği (ek bağış ürünü kendine bağlanamaz).
 	 * @return array{meta: array<string, mixed>, notices: string[]} Yazılacak meta ve yöneticiye gösterilecek uyarılar.
@@ -135,16 +135,16 @@ final class Product_Settings {
 		};
 		$text = static function ( $key, $max ) use ( $posted ) {
 			return isset( $posted[ $key ] ) && is_scalar( $posted[ $key ] )
-				? self::limit_text( sanitize_text_field( wp_unslash( (string) $posted[ $key ] ) ), $max )
+				? self::limit_text( sanitize_text_field( (string) $posted[ $key ] ), $max )
 				: '';
 		};
 		$area = static function ( $key, $max ) use ( $posted ) {
 			return isset( $posted[ $key ] ) && is_scalar( $posted[ $key ] )
-				? self::limit_text( sanitize_textarea_field( wp_unslash( (string) $posted[ $key ] ) ), $max )
+				? self::limit_text( sanitize_textarea_field( (string) $posted[ $key ] ), $max )
 				: '';
 		};
 		$raw  = static function ( $key ) use ( $posted ) {
-			return isset( $posted[ $key ] ) && is_scalar( $posted[ $key ] ) ? trim( (string) wp_unslash( (string) $posted[ $key ] ) ) : '';
+			return isset( $posted[ $key ] ) && is_scalar( $posted[ $key ] ) ? trim( (string) (string) $posted[ $key ] ) : '';
 		};
 
 		// Bağış türü üç eski bayrağı belirler (tek doğruluk kaynağı bu üç meta).
@@ -268,7 +268,7 @@ final class Product_Settings {
 			'_max_shares'                => $shares,
 			'_progress_bar_limit'        => $goal > 0 ? wc_format_decimal( $goal ) : '',
 			'_goal_reached_action'       => Campaign_Goal::sanitize_action( isset( $posted['goal_reached_action'] ) ? $posted['goal_reached_action'] : '' ),
-			'_goal_reached_message'      => Campaign_Goal::sanitize_message( isset( $posted['goal_reached_message'] ) && is_scalar( $posted['goal_reached_message'] ) ? (string) wp_unslash( (string) $posted['goal_reached_message'] ) : '' ),
+			'_goal_reached_message'      => Campaign_Goal::sanitize_message( isset( $posted['goal_reached_message'] ) && is_scalar( $posted['goal_reached_message'] ) ? (string) $posted['goal_reached_message'] : '' ),
 			'_enable_amount_presets'     => $flag( 'enable_amount_presets' ) ? 'yes' : 'no',
 			'_amount_presets'            => $presets,
 			'_amount_preset_recommended' => $recommended,

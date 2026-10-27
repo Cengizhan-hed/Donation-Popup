@@ -98,8 +98,8 @@ final class Product_Data_Tab {
 			return;
 		}
 
-		// Ham (slashed) gönderim: her alan Product_Settings::normalize() içinde çözülür, temizlenir ve doğrulanır.
-		$posted = ( isset( $_POST[ self::FIELD_NAME ] ) && is_array( $_POST[ self::FIELD_NAME ] ) ) ? $_POST[ self::FIELD_NAME ] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// Her alan Product_Settings::normalize() içinde temizlenir ve doğrulanır.
+		$posted = ( isset( $_POST[ self::FIELD_NAME ] ) && is_array( $_POST[ self::FIELD_NAME ] ) ) ? wp_unslash( $_POST[ self::FIELD_NAME ] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		$existing = array();
 		foreach ( Product_Settings::VALIDATED_META_KEYS as $meta_key ) {

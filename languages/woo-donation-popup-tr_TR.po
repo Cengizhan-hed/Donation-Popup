@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 04:10:49+0000\n"
-"PO-Revision-Date: 2026-10-27 04:10:49+0000\n"
+"POT-Creation-Date: 2026-10-27 05:01:18+0000\n"
+"PO-Revision-Date: 2026-10-27 05:01:18+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -405,6 +405,10 @@ msgstr "Ek bağış etiketi"
 msgid "Add-on product ID"
 msgstr "Ek bağış ürünü numarası"
 
+#: src/Admin/Product/
+msgid "Added by hand"
+msgstr "Elle eklenen"
+
 #: templates/donation-panel/experiences/form.php
 msgid "Added to your cart."
 msgstr "Sepetinize eklendi."
@@ -627,6 +631,10 @@ msgstr "Bağışçı makbuz alabilsin diye e-posta adresi ister."
 #: includes/class-admin-product-data-tab.php:703
 msgid "Asks the donor for an email address; \"Use general setting\" applies the choice on the Design tab."
 msgstr "Bağışçıdan e-posta adresi ister; \"Genel ayar\" Tasarım sekmesindeki seçimi uygular."
+
+#: src/Admin/Product/
+msgid "Asks the donor for an email address; \"Use general setting\" follows the Forms and Appearance screen."
+msgstr "Bağışçıdan e-posta adresi ister; \"Genel ayarı kullan\" Formlar ve Görünüm ekranındaki seçimi izler."
 
 #: src/Admin/
 msgid "Asks the donor one question. If they say yes, their name and address are saved on the order."
@@ -943,6 +951,10 @@ msgstr "Kart kenarlık rengi."
 #: includes/class-admin-form-tabs-renderer.php:177
 msgid "Card radius (px)"
 msgstr "Kart Radius (px)"
+
+#: src/Admin/Product/
+msgid "Carried over"
+msgstr "Devreden"
 
 #: includes/class-icon-library.php:53
 msgid "Cart"
@@ -1680,6 +1692,10 @@ msgstr "Bağış siparişleri ve tutarları muhasebe için saklanır; yalnızca 
 msgid "Donation Panel"
 msgstr "Bağış Paneli"
 
+#: src/Admin/Product/
+msgid "Donation Panel → Campaigns"
+msgstr "Bağış Paneli → Kampanyalar"
+
 #: assets/js/src/modal.js:738
 msgid "Donation panel closed"
 msgstr "Bağış paneli kapatıldı"
@@ -1951,6 +1967,10 @@ msgstr "E-posta veya şifre hatalı. Tekrar deneyin ya da şifrenizi sıfırlay�
 msgid "Email placeholder"
 msgstr "E-posta Placeholder"
 
+#: src/Admin/Product/
+msgid "Email, dedication, and anonymous donation"
+msgstr "E-posta, ithaf ve anonim bağış"
+
 #: includes/class-admin-product-data-tab.php:696
 msgid "Email, dedication, anonymous donation, and note"
 msgstr "E-posta, ithaf, anonim bağış ve not"
@@ -2071,6 +2091,10 @@ msgstr "Mevcut ayarlardan dışa aktarıldı"
 #: includes/class-admin-design-studio-renderer.php:228
 msgid "Expressive"
 msgstr "İfadeli"
+
+#: src/Admin/Product/
+msgid "Extra donation"
+msgstr "Ek bağış"
 
 #: includes/class-admin-product-data-tab.php:797
 msgid "Extra donation (sadaqah)"
@@ -4383,6 +4407,10 @@ msgstr "toplandı"
 msgid "Raised"
 msgstr "Toplanan"
 
+#: src/Admin/Product/
+msgid "Raised so far"
+msgstr "Şimdiye kadar toplanan"
+
 #: includes/elementor/class-widget-donations-list.php:88
 msgid "Random"
 msgstr "Rastgele"
@@ -4816,6 +4844,10 @@ msgstr "Hisseli form önizlemesi"
 msgid "Share-based form settings saved successfully."
 msgstr "Hisseli form ayarları başarıyla kaydedildi."
 
+#: src/Admin/Product/
+msgid "Share-based forms ask for a name and phone number for each share; these fields do not change per product."
+msgstr "Hisseli formlar her hisse için ad ve telefon ister; bu alanlar ürüne göre değişmez."
+
 #: includes/class-donations-list.php:802
 msgid "Share: %s"
 msgstr "Hisse: %s"
@@ -4998,6 +5030,10 @@ msgstr "Bağıştan sonra teşekkür ekranında gösterilir. Hazır metin için 
 msgid "Shown only when the form asks for email, dedication or shareholder details."
 msgstr "Yalnız form e-posta, ithaf ya da hissedar bilgisi istediğinde gösterilir."
 
+#: src/Admin/Product/
+msgid "Shows a \"Most chosen\" label on that amount of the list. It is not pre-selected. A value that is not on the list blocks saving."
+msgstr "Listedeki bu tutarda \"En çok seçilen\" etiketi gösterir; önceden seçili gelmez. Listede olmayan bir değer kaydı engeller."
+
 #: includes/class-admin-product-data-tab.php:704
 msgid "Shows a field to write who the donation is on behalf of."
 msgstr "Bağışın kimin adına yapıldığını yazmak için alan gösterir."
@@ -5013,6 +5049,10 @@ msgstr "Başlığın altında bağışın etkisini anlatan kısa bir cümle gös
 #: includes/class-admin-product-data-tab.php:730
 msgid "Shows a strip that highlights that the campaign is time-limited. The end date only removes the strip; it does not close the campaign."
 msgstr "Kampanyanın süreli olduğunu vurgulayan bir şerit gösterir. Bitiş tarihi yalnız şeridi kaldırır; kampanyayı kapatmaz."
+
+#: src/Admin/Product/
+msgid "Shows one-click amount buttons above the amount field."
+msgstr "Tutar alanının üstünde tek dokunuşla seçilen tutar düğmelerini gösterir."
 
 #: includes/class-admin-product-data-tab.php:674
 msgid "Shows one-click amount buttons above the amount field. If the general setting (Settings → Regular) is off, the buttons stay hidden even if this box is checked."
@@ -5488,6 +5528,10 @@ msgstr "Bağışçı hisse adedi seçer ve her hisse için ayrı isim girer."
 msgid "The donor enters the amount; you can set a minimum if you want."
 msgstr "Bağışçı tutarı kendisi yazar; isterseniz en düşük tutarı belirleyin."
 
+#: src/Admin/Product/
+msgid "The donor enters the amount. The WooCommerce General price field may stay empty for these types."
+msgstr "Tutarı bağışçı yazar. Bu türlerde WooCommerce Genel fiyat alanı boş kalabilir."
+
 #: includes/class-product-settings-service.php:596
 msgid "The end date must be a valid calendar day."
 msgstr "Bitiş tarihi geçerli bir takvim günü olmalıdır."
@@ -5556,6 +5600,10 @@ msgstr "İthaf alanının içindeki ipucu. Hazır metin için boş bırakın."
 #: includes/class-admin-layout-tabs-renderer.php:184
 msgid "The inner background color and inner corner radius of the popup box are in the “Inner popup box” section on the “Regular form” tab (this tab is sizes only)."
 msgstr "Modal kutusunun iç arka plan rengi ve iç köşe yuvarlaklığı “Normal Form” sekmesinde “Modal içi kutu” bölümündedir (bu sekme yalnızca ölçüler)."
+
+#: src/Admin/Product/
+msgid "The lowest amount the donor can enter. 0 means no minimum."
+msgstr "Bağışçının yazabileceği en düşük tutar. 0 alt sınır yok demektir."
 
 #: includes/class-admin-product-data-tab.php:620
 msgid "The lowest amount the donor can enter. This field is the single source (the WooCommerce General price is for fallback/compatibility; the minimum is not calculated from it)."
@@ -5689,6 +5737,10 @@ msgstr "Şu anda gösterilecek bağış bulunmuyor."
 #: includes/class-admin-design-studio-renderer.php:247
 msgid "These defaults are used when the product card is off."
 msgstr "Ürün kartı kapalıysa bu varsayılanlar kullanılır."
+
+#: src/Admin/Product/
+msgid "These figures are shown for reference. To add an amount by hand or recalculate the total, open %s."
+msgstr "Bu rakamlar bilgi içindir. Elle tutar eklemek ya da toplamı yeniden hesaplamak için %s ekranını açın."
 
 #: src/WooCommerce/class-cart.php
 msgid "This campaign is no longer accepting donations."
@@ -5930,6 +5982,12 @@ msgstr "Bilinmeyen modül."
 #: src/Admin/
 msgid "Unknown setting."
 msgstr "Bilinmeyen ayar."
+
+#: src/Admin/Product/
+msgid "Updated the donation flag for %d product."
+msgid_plural "Updated the donation flag for %d products."
+msgstr[0] "%d ürünün bağış bayrağı güncellendi."
+msgstr[1] "%d ürünün bağış bayrağı güncellendi."
 
 #: includes/class-admin-bulk-actions.php:70
 msgid "Updated the donation flag for %d products."

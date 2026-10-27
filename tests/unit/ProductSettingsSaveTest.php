@@ -77,9 +77,9 @@ final class ProductSettingsSaveTest extends TestCase {
 	public function test_turkish_characters_survive_and_are_slash_safe(): void {
 		$meta = Product_Settings::normalize(
 			array(
-				'dedication_placeholder'  => addslashes('Anısına: Şükrü Çağlayan ğüöı'),
-				'sadaka_toggle_label'     => addslashes('Ek bağış ekle'),
-				'sadaka_donation_message' => addslashes("İyilik gizlice ulaşır;\nniyetiniz umut olur."),
+				'dedication_placeholder'  => 'Anısına: Şükrü Çağlayan ğüöı',
+				'sadaka_toggle_label'     => 'Ek bağış ekle',
+				'sadaka_donation_message' => "İyilik gizlice ulaşır;\nniyetiniz umut olur.",
 			)
 		)['meta'];
 		$this->assertSame('Anısına: Şükrü Çağlayan ğüöı', $meta['_dedication_placeholder']);
