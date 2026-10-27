@@ -46,7 +46,8 @@ add_action(
 				return $order->get_id();
 			};
 			$ids = array( $make( 600, $now - 10 * DAY_IN_SECONDS ), $make( 120, $now - DAY_IN_SECONDS ), $make( 80, $now - 2 * HOUR_IN_SECONDS ) );
-			update_option( 'dp_cs_orders', $ids, false );
+			delete_option( 'dp_cs_orders' );
+			add_option( 'dp_cs_orders', $ids, '', false );
 			// Kurgu: üçüncü (sayılmamış) sipariş kaçmış; saklanan toplam yalnız ikinciyi içerir.
 			update_post_meta( $pid, '_wdp_total_donation_amount', 1120 );
 			wp_send_json( array( 'ok' => true, 'orders' => $ids, 'start' => $start ) );
