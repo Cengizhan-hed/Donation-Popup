@@ -119,12 +119,12 @@ final class ProgressTotalsTest extends TestCase {
 		$this->assertSame(0.0, \DonationPanel\Domain\Campaign_Totals::update_product_donation_total(self::PRODUCT, -25.0, true));
 	}
 
-	public function test_uninitialized_total_is_left_for_full_scan(): void {
+	public function test_uninitialized_total_starts_from_carried_amount_with_the_first_counted_order(): void {
 		$order = $this->order(6, 80.0);
 
 		\DonationPanel\Domain\Campaign_Totals::count_order_in_progress_totals($order);
 
-		$this->assertSame('', get_post_meta(self::PRODUCT, '_wdp_total_donation_amount', true));
+		$this->assertSame(80.0, (float) get_post_meta(self::PRODUCT, '_wdp_total_donation_amount', true));
 		$this->assertSame('yes', $order->meta['_wdp_progress_counted']);
 	}
 

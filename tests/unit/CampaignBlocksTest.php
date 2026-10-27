@@ -197,11 +197,11 @@ final class CampaignBlocksTest extends TestCase {
 		$this->assertSame(array(), \DonationPanel\Domain\Campaign_Totals::compute_order_progress_amounts($bad));
 	}
 
-	public function test_empty_meta_schedules_recalc_returns_zero(): void {
+	public function test_empty_meta_returns_zero_without_any_background_scan(): void {
 		delete_post_meta(self::PRODUCT, '_wdp_total_donation_amount');
 		$total = \DonationPanel\Domain\Campaign_Totals::get_total_donation_amount(self::PRODUCT);
 		$this->assertSame(0.0, $total);
-		$this->assertNotEmpty(WDP_Test_State::$cron);
+		$this->assertEmpty(WDP_Test_State::$cron, '12.0.0: otomatik arka plan taramasi yok');
 	}
 
 	public function test_urgency_ends_at_end_of_day_timezone(): void {
