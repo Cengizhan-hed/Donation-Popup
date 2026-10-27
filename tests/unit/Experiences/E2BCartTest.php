@@ -249,6 +249,22 @@ final class E2BCartTest extends TestCase {
 		$this->assertSame( 250.0, array_values( $cart->items )[0]['custom_price'] );
 	}
 
+	public function test_second_donation_with_different_dedication_or_note_is_kept_as_separate_line(): void {
+		$model  = Form_Context::from_legacy( array( 'product_id' => 7, 'allow_custom_price' => true, 'enable_dedication' => true, 'enable_note' => true, 'min_price' => '10' ) );
+		$cart   = new E2B_Fake_Cart();
+		$bridge = new Cart();
+		$bridge->add_item( $cart, $this->product(), $model, $this->input( array( 'donation_dedication' => 'Anneme', 'submission_key' => 'a1' ) ) );
+		$bridge->add_item( $cart, $this->product(), $model, $this->input( array( 'donation_dedication' => 'Babama', 'amount' => '75', 'submission_key' => 'a2' ) ) );
+		$this->assertCount( 2, $cart->items );
+	}
+
+	public function test_donations_without_identifying_fields_never_overwrite_each_other(): void {
+		$this->assertFalse( Cart_Data::same_donor( array(), array() ) );
+		$this->assertFalse( Cart_Data::same_donor( array( 'note' => 'a' ), array( 'note' => 'a' ) ) );
+		$this->assertTrue( Cart_Data::same_donor( array( 'full_name' => 'Ali', 'phone' => '1' ), array( 'full_name' => 'Ali', 'phone' => '1' ) ) );
+		$this->assertFalse( Cart_Data::same_donor( array( 'full_name' => 'Ali', 'phone' => '1' ), array( 'full_name' => 'Ali', 'phone' => '1', 'note' => 'x' ) ) );
+	}
+
 	public function test_fixed_price_product_sends_no_custom_price(): void {
 		$cart   = new E2B_Fake_Cart();
 		$model  = $this->model( array( 'allow_custom' => false, 'min' => 0.0, 'presets' => array( 100.0 ) ) );
