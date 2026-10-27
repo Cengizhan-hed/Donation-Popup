@@ -66,7 +66,7 @@
   "scripts/deploy-staging.mjs": "Yalnızca staging’e SSH ile kurulum / geri alma; canlı yol kilitleri.",
   "scripts/lib/deploy-guards.mjs": "Staging deploy kilit kontrolleri (staging zorunlu, canlı yol reddi).",
   "tests/unit/js/deploy-guards.test.mjs": "Deploy kilit birim testleri (ağ yok).",
-  "tests/unit/Migration10284AddonLinksTest.php": "10.28.4 alt bağış bağlantı temizliği geçiş testleri.",
+  "tests/unit/AddonLinksMigrationTest.php": "10.28.4 alt bağış bağlantı temizliği geçiş testleri.",
   "tests/e2e/run-quick.mjs": "Hızlı E2E: masaüstü Chromium, işlevsel + ürün/liste/mağaza.",
   ".env.deploy.example": "Staging deploy ortam değişkenleri şablonu (boş değerler).",
   "templates/woocommerce/single-product/add-to-cart/simple.php": "WooCommerce simple add-to-cart şablonunu bağış formu veya Bağış Yap butonuyla değiştirir.",
