@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 06:00:18+0000\n"
-"PO-Revision-Date: 2026-10-27 06:00:18+0000\n"
+"POT-Creation-Date: 2026-10-27 08:52:34+0000\n"
+"PO-Revision-Date: 2026-10-27 08:52:34+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -1713,6 +1713,12 @@ msgstr "Bağış formu deneyimi"
 msgid "Donation form for %s"
 msgstr "%s için bağış formu"
 
+#: src/Modules/EntryPoints/class-shortcodes.php
+#. translators: %d: product ID
+#, php-format
+msgid "Donation form hidden: product #%d is outside the donation scope. Mark it as a donation product (Donation Panel settings, \"Which products are donation products\") or change the scope."
+msgstr "Bağış formu gizlendi: #%d numaralı ürün bağış kapsamı dışında. Ürünü bağış ürünü olarak işaretleyin (Donation Panel ayarları, \"Hangi ürünler bağış ürünü\") ya da kapsamı değiştirin."
+
 #: assets/js/src/modal.js:500
 msgid "Donation form opened"
 msgstr "Bağış formu açıldı"
@@ -1757,6 +1763,11 @@ msgstr "Bağış Paneli → Kampanyalar"
 #: assets/js/src/modal.js:738
 msgid "Donation panel closed"
 msgstr "Bağış paneli kapatıldı"
+
+#: src/Core/class-migrations.php
+#, php-format
+msgid "Donation Panel could not finish an update step and will retry on the next request. Detail: %s"
+msgstr "Donation Panel bir güncelleme adımını tamamlayamadı ve sonraki istekte yeniden deneyecek. Ayrıntı: %s"
 
 #. Plugin Name of the plugin
 msgid "Donation Panel for WooCommerce"
@@ -5711,6 +5722,11 @@ msgstr "Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır
 #: src/Admin/
 msgid "The main donate button. Choose a color that keeps white text easy to read."
 msgstr "Ana bağış düğmesi. Beyaz yazının rahat okunacağı bir renk seçin."
+
+#: src/Modules/Experiences/class-field-validator.php
+#, php-format
+msgid "The maximum amount is %s."
+msgstr "En fazla tutar %s."
 
 #: includes/class-product-settings-service.php:362
 msgid "The maximum number of shares can be 50."

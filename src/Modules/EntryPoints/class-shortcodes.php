@@ -209,6 +209,18 @@ class Shortcodes {
 			return Admin_Notice::admin_notice_html( __( 'This product is not marked as a donation product.', 'woo-donation-popup' ) );
 		}
 
+		// Açık id/slug/sku'lu giriş de bağış kapsamında olmalı (REST artık kapsam dışı ürünü reddeder): ziyaretçiye boş
+		// çıktı, mağaza yöneticisine nedenini söyleyen ipucu.
+		if ( $explicit && ! Donation_Scope::is_donation_product( $product ) ) {
+			return Admin_Notice::manager_notice_html(
+				sprintf(
+					/* translators: %d: product ID */
+					__( 'Donation form hidden: product #%d is outside the donation scope. Mark it as a donation product (Donation Panel settings, "Which products are donation products") or change the scope.', 'woo-donation-popup' ),
+					(int) $product->get_id()
+				)
+			);
+		}
+
 		return array(
 			'product' => $product,
 			'notice'  => $preview_notice,
