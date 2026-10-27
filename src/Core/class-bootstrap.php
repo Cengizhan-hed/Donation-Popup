@@ -128,13 +128,23 @@ final class Bootstrap {
 	 * @return void
 	 */
 	private static function register_hpos_compatibility() {
-		add_action(
-			'before_woocommerce_init',
-			static function () {
-				if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WDP_PLUGIN_FILE, true );
-				}
-			}
-		);
+		add_action( 'before_woocommerce_init', array( __CLASS__, 'declare_woocommerce_compatibility' ) );
+	}
+
+	/**
+	 * HPOS ve blok sepet/ödeme uyumluluğunu bildirir (WooCommerce "uyumsuz/belirsiz" göstermesin).
+	 *
+	 * Sepet/ödeme kancaları Store API ve klasik yolda e2e ile doğrulanır; blok sepet/ödeme için ek bağış satırı
+	 * ve bağışçı alanları Store API uzantısı üzerinden taşınır.
+	 *
+	 * @return void
+	 */
+	public static function declare_woocommerce_compatibility() {
+		if ( ! class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			return;
+		}
+		foreach ( array( 'custom_order_tables', 'cart_checkout_blocks' ) as $feature ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( $feature, WDP_PLUGIN_FILE, true );
+		}
 	}
 }
