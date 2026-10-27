@@ -1024,6 +1024,13 @@ if (!function_exists('wp_reset_postdata')) {
 }
 if (!function_exists('wp_script_is')) {
 	function wp_script_is($handle = '', $status = 'enqueued') {
+		if ('registered' === $status) {
+			foreach (WDP_Test_State::$options['__scripts'] ?? array() as $row) {
+				if ($row['handle'] === (string) $handle) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 }
