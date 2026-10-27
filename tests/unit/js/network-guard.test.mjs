@@ -685,30 +685,46 @@ it('Stripe.js ölçüm işaretçileri (r./q./m.stripe.com) engellenir; js/api.st
   assert.equal(isTrackerUrl('https://api.stripe.com/v1/payment_methods', { siteHost: 'site.example' }), false);
 });
 
-describe('network-guard: donation-panel/v1 REST uzakta yazma engeli (12.0.0)', () => {
+describe('network-guard: donation-panel/v1 REST uzakta yazma kuralı (12.0.0)', () => {
   const base = 'https://site.example/wp-json/donation-panel/v1/';
   const write = (route, method = 'POST') => isRemoteWriteAllowed({ method, url: base + route, postData: '{}' });
 
-  it('sepete ekleme, yan sepet önerisi, tekrar bağış, yönetici yazmaları engellenir', () => {
-    for (const route of ['cart/add', 'side-cart/suggestion', 'account/repeat', 'admin/settings', 'admin/import']) {
+  it('sepete ekleyen uçlar izinli: cart/add, side-cart/suggestion, account/repeat, validate', () => {
+    for (const route of ['cart/add', 'side-cart/suggestion', 'account/repeat', 'validate']) {
+      assert.equal(write(route), true, route);
+    }
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: 'https://site.example/?rest_route=/donation-panel/v1/cart/add', postData: '{}' }), true);
+  });
+
+  it('Woo Store API sepete ekleme izinli, ödeme/sipariş gönderimi engelli ve sipariş sayılır', () => {
+    const store = 'https://site.example/wp-json/wc/store/v1/';
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: store + 'cart/add-item', postData: '{}' }), true);
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: store + 'checkout', postData: '{}' }), false);
+    assert.equal(isRemoteOrderRequest({ method: 'POST', url: store + 'checkout', postData: '{}' }), true);
+    assert.equal(isRemoteOrderRequest({ method: 'POST', url: store + 'cart/add-item', postData: '{}' }), false);
+  });
+
+  it('klasik ödeme gönderimi (?wc-ajax=checkout, woocommerce_checkout) engelli ve sipariş sayılır', () => {
+    const ajax = 'https://site.example/?wc-ajax=checkout';
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: ajax, postData: 'billing_email=x' }), false);
+    assert.equal(isRemoteOrderRequest({ method: 'POST', url: ajax, postData: '' }), true);
+    const admin = { method: 'POST', url: 'https://site.example/wp-admin/admin-ajax.php', postData: 'action=woocommerce_checkout' };
+    assert.equal(isRemoteWriteAllowed(admin), false);
+    assert.equal(isRemoteOrderRequest(admin), true);
+  });
+
+  it('ayar, üye/giriş/e-posta yazmaları ve bilinmeyen rotalar engellenir (her yöntem)', () => {
+    for (const route of ['admin/settings', 'admin/import', 'account/login', 'account/register', 'account/reset', 'account/link-guest', 'account/link-guest/confirm', 'yeni/uc', 'cart/add/x', 'checkout']) {
       assert.equal(write(route), false, route);
       assert.equal(write(route, 'PUT'), false, `PUT ${route}`);
       assert.equal(write(route, 'DELETE'), false, `DELETE ${route}`);
     }
   });
 
-  it('rest_route sorgu biçimi de engellenir', () => {
-    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: 'https://site.example/?rest_route=/donation-panel/v1/cart/add', postData: '{}' }), false);
-  });
-
-  it('okuma (GET) serbest; yazmayan doğrulama ucu geçer', () => {
+  it('okuma (GET) serbest', () => {
     for (const route of ['product/12/form', 'progress/12', 'impact/12', 'donations', 'side-cart', 'ping']) {
       assert.equal(write(route, 'GET'), true, route);
     }
-    assert.equal(write('validate'), true);
-  });
-
-  it('yazan uçların bilinmeyen yeni rotası da varsayılan olarak engellenir', () => {
-    assert.equal(write('yeni/uc'), false);
   });
 });
+
