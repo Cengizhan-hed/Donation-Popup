@@ -1,0 +1,46 @@
+# Turkish translations — 12-ui3 (Bağış listesi).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 12.0.0\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+msgid "Per share"
+msgstr "Hisse başı"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+msgid "Any amount"
+msgstr "İstediğiniz tutar"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+msgid "Donate now"
+msgstr "Bağış yap"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+#. translators: 1: button text (e.g. Donate), 2: donation product name
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+#. translators: %d: days left in the campaign
+msgid "Campaign · %d day"
+msgid_plural "Campaign · %d days"
+msgstr[0] "Kampanya · %d gün"
+msgstr[1] "Kampanya · %d gün"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+#. translators: %s: number of donors (formatted)
+msgid "%s donor"
+msgid_plural "%s donors"
+msgstr[0] "%s bağışçı"
+msgstr[1] "%s bağışçı"
+
+#: blocks/donations/index.js
+msgid "List title"
+msgstr "Liste başlığı"

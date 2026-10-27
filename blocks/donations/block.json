@@ -16,6 +16,7 @@
     "limit": { "type": "number", "default": 48 },
     "orderby": { "type": "string", "default": "menu_order" },
     "order": { "type": "string", "default": "ASC" },
+    "title": { "type": "string", "default": "" },
     "tabs": { "type": "string", "default": "yes" },
     "tab_all": { "type": "string", "default": "yes" },
     "tab_all_label": { "type": "string", "default": "" },

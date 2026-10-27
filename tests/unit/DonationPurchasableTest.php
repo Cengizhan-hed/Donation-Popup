@@ -93,7 +93,7 @@ final class DonationPurchasableTest extends TestCase {
 		$p->meta['_progress_bar_limit'] = '3000';
 		$html = $this->cardHtml($p, array('show_price' => 'yes', 'show_progress' => 'yes'), array(48 => 0.0));
 		$this->assertStringContainsString('wdp-card__progress', $html);
-		$this->assertStringContainsString('wdp-card__price', $html);
+		$this->assertStringContainsString('wdp-card__stats', $html);
 	}
 
 	public function test_tabs_skip_uncategorized_and_empty_ancestors(): void {
@@ -127,6 +127,38 @@ final class DonationPurchasableTest extends TestCase {
 	 * @param array      $atts    Atts.
 	 * @param array      $totals  Totals.
 	 */
+	public function test_card_layouts_follow_type(): void {
+		$campaign = $this->product(60, 'campaign');
+		WDP_Test_State::$post_meta[60]['_progress_bar_limit'] = '1000';
+		$campaign->meta['_progress_bar_limit'] = '1000';
+		$html = $this->cardHtml($campaign, array(), array(60 => 250.0));
+		$this->assertStringContainsString('wdp-card--campaign', $html);
+		$this->assertStringContainsString('wdp-card__badge', $html);
+		$this->assertStringContainsString('aria-valuenow="25"', $html);
+
+		$custom = $this->product(61, 'custom');
+		$html   = $this->cardHtml($custom);
+		$this->assertStringContainsString('wdp-card--row', $html);
+		$this->assertStringContainsString('wdp-card__price--any', $html);
+		$this->assertStringNotContainsString('wdp-card__progress', $html);
+	}
+
+	public function test_card_cta_is_real_link_that_opens_form_unless_link_mode(): void {
+		$p    = $this->product(62, 'custom');
+		$html = $this->cardHtml($p, array('button' => 'panel'));
+		$this->assertMatchesRegularExpression('/<a [^>]*href="[^"]*"[^>]*class="wdp-card__cta[^"]*"[^>]*data-wdp-form="62"/', $html);
+		$this->assertStringNotContainsString('<button', $html);
+
+		$html = $this->cardHtml($p, array('button' => 'link'));
+		$this->assertStringNotContainsString('data-wdp-form', $html);
+		$this->assertStringContainsString('wdp-card__cta', $html);
+	}
+
+	public function test_title_attribute_is_sanitized_and_defaults_empty(): void {
+		$this->assertSame('', \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts(array())['title']);
+		$this->assertSame('Give', \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts(array('title' => '<b>Give</b>'))['title']);
+	}
+
 	private function cardHtml($product, array $atts = array(), array $totals = array()): string {
 		$atts = \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts($atts);
 		$method = new ReflectionMethod('DonationPanel\\Modules\\EntryPoints\\Donations_List', 'card_html');

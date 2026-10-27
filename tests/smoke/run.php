@@ -101,7 +101,7 @@ wdp_smoke_assert(
         && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Core/class-uninstall.php', 'wdp_delete_data_on_uninstall'),
     'uninstall.php is guarded by WP_UNINSTALL_PLUGIN and the opt-in setting'
 );
-wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'assets/css/list.css') && file_exists(WDP_PLUGIN_DIR . 'assets/js/list.js'), 'List CSS/JS exist');
+wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'assets/src/list/index.mjs') && file_exists(WDP_PLUGIN_DIR . 'assets/src/list/list.css'), 'List CSS/JS exist');
 wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . 'blocks/donation-form/block.json') && file_exists(WDP_PLUGIN_DIR . 'blocks/donations/block.json'), 'Gutenberg block.json files exist');
 wdp_smoke_assert(
     defined('WDP_VERSION') && 1 === preg_match('/^\d+\.\d+\.\d+$/', (string) WDP_VERSION),

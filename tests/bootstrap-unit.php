@@ -1001,6 +1001,16 @@ if (!function_exists('taxonomy_exists')) {
 if (!function_exists('wp_reset_postdata')) {
 	function wp_reset_postdata() {}
 }
+if (!function_exists('wp_script_is')) {
+	function wp_script_is($handle = '', $status = 'enqueued') {
+		return false;
+	}
+}
+if (!function_exists('wp_style_is')) {
+	function wp_style_is($handle = '', $status = 'enqueued') {
+		return false;
+	}
+}
 if (!function_exists('wp_enqueue_style')) {
 	function wp_enqueue_style(...$args) {
 		$handle = isset($args[0]) ? (string) $args[0] : '';
