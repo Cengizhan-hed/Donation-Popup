@@ -1,99 +1,67 @@
 /**
- * E2E seçicileri — eklenti şablon / JS kaynaklarından.
- * Tahmini seçici kullanma; kaynak dosya yolu her girdinin yanında.
+ * E2E seçicileri — yeni nesil form (src/Modules/Experiences, templates/donation-panel/experiences/*.php,
+ * assets/src/experiences/*.mjs). Eski modal (`wdp-modal`, `hdf-*`) seçicileri kaldırıldı.
+ * Liste/kart/döngü düğmeleri (`wdp-card__cta`, `wdp-loop-donate`) eklentinin kendi sınıflarıdır.
  */
 
 export const SEL = {
-  // includes/class-shortcodes.php — .wdp-donate-button.wdp-open-modal
-  // includes/class-product-page-integration.php — .wdp-loop-donate.wdp-open-modal
-  // Not: panel butonları da .wdp-open-modal taşır; ortadaki popup için centeredPopupTrigger kullan.
-  donateTrigger: '.wdp-donate-button, .wdp-loop-donate, .wdp-open-modal',
+  // Tüm giriş noktaları: kök içindeki açma düğmesi + liste kartı + döngü düğmesi
+  donateTrigger: '[data-dp-exp] [data-dp-open], .wdp-card__cta, .wdp-loop-donate',
 
-  // Ortada açılan gerçek popup tetikleyici (side-panel sınıfı yok)
-  // includes/class-shortcodes.php wdp_donation_button; class-donations-list.php button=popup
-  centeredPopupTrigger: '.wdp-open-modal:not(.wdp-open-side-panel)',
+  // Ortada açılan popup / alttan panel kökünün açma düğmesi
+  centeredPopupTrigger: '[data-dp-exp]:is([data-dp-kind="popup"], [data-dp-kind="bottom_sheet"]) [data-dp-open]',
 
-  // includes/class-product-page-integration.php / class-shortcodes.php — side panel
-  sidePanelTrigger: '.wdp-open-side-panel, .wdp-donate-button.wdp-open-side-panel',
+  // Sağ panel kökünün açma düğmesi
+  sidePanelTrigger: '[data-dp-exp][data-dp-kind="side_panel"] [data-dp-open]',
 
-  // includes/templates/class-modal-shell-renderer.php — modal kabuğu
-  modalShell: '.hdf-donation-modal-wrapper.wdp-modal',
+  // Katman kabuğu (overlay) ve açık hali
+  modalShell: '[data-dp-overlay]',
+  openModalShell: '[data-dp-overlay].is-open',
+  openCenteredPopup:
+    '[data-dp-exp]:is([data-dp-kind="popup"], [data-dp-kind="bottom_sheet"]) [data-dp-overlay].is-open',
+  openSidePanel: '[data-dp-exp][data-dp-kind="side_panel"] [data-dp-overlay].is-open',
 
-  // assets/js/src/modal.js — açıkken .show (+ aria-hidden="false")
-  // Kapanma kontrolünde .show yokluğunu kullan (locator kaybolmasın diye shell için modalShell+.show).
-  openModalShell: '.hdf-donation-modal-wrapper.wdp-modal.show',
+  // Kabuk ekran görüntüsü kutusu
+  modalContent: '[data-dp-surface]',
+  sidePanelContent: '[data-dp-surface]',
 
-  // Ortada açılan gerçek popup kabuğu (sağ panel değil)
-  openCenteredPopup: '.hdf-donation-modal-wrapper.wdp-modal.show:not(.wdp-side-panel)',
+  modalClose: '[data-dp-close]',
+  donationForm: '[data-dp-form]',
 
-  // includes/templates/class-modal-shell-renderer.php — side panel sınıfı
-  openSidePanel: '.hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show',
+  // Form düzeyi uyarı (role=alert) ve satır içi hata metinleri
+  formError: '[data-dp-summary]',
+  toastError: '[data-dp-summary]',
+  fieldError: '[data-dp-field].has-error [data-dp-error]',
 
-  // includes/templates/class-modal-shell-renderer.php — .wdp-modal-content
-  // Kabuk ekran görüntüsü: wrapper (tam viewport + backdrop) değil, bu kutu.
-  modalContent: '.wdp-modal-content',
-  // Side panel içerik kutusu (aynı düğüm + sınıf)
-  sidePanelContent: '.wdp-modal-content.wdp-side-panel-content, .wdp-side-panel.show .wdp-modal-content',
-
-  // includes/templates/class-modal-shell-renderer.php — button.wdp-modal-close
-  modalClose: 'button.wdp-modal-close',
-
-  // includes/templates/class-modal-shell-renderer.php — form.wdp-donation-form-fields
-  donationForm: 'form.wdp-donation-form-fields',
-
-  // includes/templates/class-modal-shell-renderer.php — .wdp-form-error
-  // assets/js/src/form/feedback.js showFormError; product.js displayProductInfoError
-  formError: '.wdp-form-error',
-  // assets/js/src/core/utils.js showToast type=error
-  toastError: '.wdp-toast--error, #wdp-toast-host .wdp-toast--error',
-
-  // assets/js/src/form/feedback.js — .wdp-input-error / .wdp-error
-  fieldError: '.wdp-input-error, .wdp-error',
-
-  // includes/templates/class-form-fields-renderer.php — name="donation_full_name"
   donorName: 'input[name="donation_full_name"]',
-
-  // includes/class-phone-field.php — name="donation_phone" + .wdp-phone-field__number
-  // assets/js/src/phone-input.js — TR: +90 seçiliyken ulusal 10 hane (örn. 5551234567)
-  donorPhone: 'input[type="tel"][name="donation_phone"]',
-
-  // includes/templates/class-form-fields-renderer.php — name="donation_email" (isteğe bağlı)
+  donorPhone: 'input[type="tel"][name="donation_phone"], input[name="donation_phone"]',
   donorEmail: 'input[name="donation_email"]',
-
-  // includes/templates/class-form-fields-renderer.php — name="donation_note"
   donorNote: 'textarea[name="donation_note"]',
 
-  // includes/templates/class-form-fields-renderer.php — name="custom_price"
-  customPrice: 'input[name="custom_price"].wdp-custom-price-input, input[name="custom_price"]',
+  // Özel tutar kutusu (önerilen tutar gizli girdisi `input[type=hidden][name=amount]` ayrıdır)
+  customPrice: 'input.dp-custom__in[name="amount"]',
 
-  // includes/templates/class-form-fields-renderer.php — .wdp-line-total-value
-  lineTotal: '.wdp-line-total-value',
+  lineTotal: '[data-dp-total]',
+  qtyIncrease: '[data-dp-qty="1"]',
+  shareIncrease: '[data-dp-qty="1"]',
 
-  // includes/templates/class-form-fields-renderer.php — .wdp-product-quantity-increase
-  qtyIncrease: 'button.wdp-product-quantity-increase',
+  // Tek ana düğme: devam / bağış / ödemeye geç
+  addToCart: '[data-dp-submit]',
+  goCheckout: '[data-dp-submit]',
+  // Son adımda görünen ikincil düğme: sepete ekler, ödemeye yönlendirmez, katmanı kapatır
+  addOnly: '[data-dp-addcart]',
 
-  // includes/templates/class-form-fields-renderer.php — .wdp-share-btn-increase
-  shareIncrease: 'button.wdp-share-btn-increase',
+  // Ek bağış
+  addonWrap: '[data-dp-addon]',
+  addonToggle: 'input[name="addon_active"]',
+  addonPanel: '[data-dp-addon-box]',
+  addonPrice: 'input[name="addon_amount"]',
+  addonOpen: '[data-dp-addon-box]:not([hidden])',
 
-  // includes/templates/class-modal-shell-renderer.php — button[name="donation_add_to_cart"]
-  addToCart: 'button[name="donation_add_to_cart"]',
+  // Gömülü (satır içi) form
+  inlineDonationForm: '[data-dp-exp][data-dp-kind="inline"] [data-dp-form]',
 
-  // includes/templates/class-modal-shell-renderer.php — button[name="donation_go_checkout"]
-  goCheckout: 'button[name="donation_go_checkout"]',
-
-  // includes/templates/class-form-fields-renderer.php — alt bağış
-  addonWrap: '[data-wdp-sadaka-donation]',
-  addonToggle: '.wdp-sadaka-donation__toggle',
-  addonPanel: '.wdp-sadaka-donation__panel',
-  addonPrice: 'input[name="sadaka_custom_price"]',
-  addonOpen: '[data-wdp-sadaka-donation].is-open',
-  // includes/templates/class-form-fields-renderer.php — data-wdp-alt-wc-product-id
-  addonAltWcProductId: '[data-wdp-alt-wc-product-id]',
-
-  // includes/templates/class-modal-shell-renderer.php — gömülü form
-  inlineDonationForm: '.hdf-donation-modal-wrapper.wdp-donation-form',
-
-  // Admin sekmeleri (mevcut admin UI)
+  // Admin sekmeleri
   adminTab: '.wdp-nav-tab-wrapper a.nav-tab[data-tab]',
   productDonationTab: '.wdp_donation_tab a, a[href="#wdp_donation_data"], li.wdp_donation_options a',
 };
