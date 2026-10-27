@@ -1,0 +1,25 @@
+# Turkish translations — 12-fix (inceleme düzeltmeleri).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 12.0.0\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: templates/donation-panel/experiences/popup.php
+msgid "Too many attempts. Please wait a moment and try again."
+msgstr "Çok fazla deneme yapıldı. Lütfen biraz bekleyip tekrar deneyin."
+
+#: src/Modules/Experiences/class-field-validator.php
+#, php-format
+msgid "The maximum amount is %s."
+msgstr "En fazla tutar %s."
+
+#: src/Core/class-migrations.php
+#, php-format
+msgid "Donation Panel could not finish an update step and will retry on the next request. Detail: %s"
+msgstr "Donation Panel bir güncelleme adımını tamamlayamadı ve sonraki istekte yeniden deneyecek. Ayrıntı: %s"

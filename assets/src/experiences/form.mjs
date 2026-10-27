@@ -209,7 +209,9 @@ export function createForm(root, hooks = {}) {
       summary.textContent = has ? root.dataset.dpMsgInvalid || '' : '';
       if (state.status === 'failed') {
         summary.classList.add('is-visible');
-        summary.textContent = root.dataset.dpMsgFailed || '';
+        // 429 (hız sınırı) için ayırt edici ileti; diğer hatalar genel iletiyi gösterir.
+        summary.textContent =
+          root.dataset.dpFailKind === 'rate' ? root.dataset.dpMsgRate || root.dataset.dpMsgFailed || '' : root.dataset.dpMsgFailed || '';
       }
     }
   };
@@ -530,8 +532,9 @@ export function createForm(root, hooks = {}) {
         return;
       }
       if (!outcome.ok) {
-        throw new Error('cart');
+        throw new Error(outcome.rate ? 'rate' : 'cart');
       }
+      root.dataset.dpFailKind = '';
       dispatch({ type: 'submitDone' });
       if (onlyAdd) {
         form.reset();
@@ -556,7 +559,8 @@ export function createForm(root, hooks = {}) {
       if (target) {
         window.location.assign(target);
       }
-    } catch {
+    } catch (error) {
+      root.dataset.dpFailKind = error && error.message === 'rate' ? 'rate' : '';
       dispatch({ type: 'submitFail' });
     }
   });
@@ -636,5 +640,5 @@ async function addToCart(root, productId, values) {
   if (errors && Object.keys(errors).length) {
     return { ok: false, errors };
   }
-  return { ok: false };
+  return { ok: false, rate: response.status === 429 };
 }
