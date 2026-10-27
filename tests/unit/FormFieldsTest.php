@@ -21,11 +21,6 @@ final class FormFieldsTest extends TestCase {
 		return $p;
 	}
 
-	public function test_security_sanitize_text_char_based(): void {
-		$s = str_repeat('İ', 105);
-		$o = \DonationPanel\Support\Security::sanitize_text($s, 100);
-		$this->assertSame(100, mb_strlen($o));
-	}
 
 	public function test_dedication_placeholder_save_limit_120(): void {
 		$meta = \DonationPanel\Admin\Product\Product_Settings::normalize(

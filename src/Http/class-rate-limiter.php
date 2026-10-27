@@ -24,7 +24,7 @@ class Rate_Limiter {
 	/**
 	 * Kurucu.
 	 *
-	 * @param callable|null $client_id function (): string; yoksa REMOTE_ADDR.
+	 * @param callable|null $client_id function (): string; yoksa Client_Ip (REMOTE_ADDR; vekil başlıkları yalnız güvenilen vekilden).
 	 */
 	public function __construct( $client_id = null ) {
 		$this->client_id = is_callable( $client_id ) ? $client_id : null;
@@ -77,6 +77,11 @@ class Rate_Limiter {
 		if ( null !== $this->client_id ) {
 			return (string) call_user_func( $this->client_id );
 		}
-		return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
+		// Girişli kullanıcı kendi kimliğiyle sayılır (ortak NAT/vekil arkasında başkalarının kovasını tüketmez).
+		$user_id = function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : 0;
+		if ( $user_id > 0 ) {
+			return 'u' . $user_id;
+		}
+		return Client_Ip::get();
 	}
 }

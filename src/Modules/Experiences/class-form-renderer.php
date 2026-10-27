@@ -57,7 +57,7 @@ class Form_Renderer {
 	 *
 	 * @param array<string, mixed> $model Form modeli.
 	 * @param string               $kind  Kap adı (popup, side_panel, inline, bottom_sheet).
-	 * @param array<string, mixed> $args  `button_text`, `rest_url`, `nonce`, `ajax_url`, `cart_nonce`, `checkout_url`.
+	 * @param array<string, mixed> $args  `button_text`, `rest_url`, `nonce`, `checkout_url`.
 	 * @return string
 	 */
 	public function render( array $model, $kind, array $args = array() ) {
@@ -73,8 +73,6 @@ class Form_Renderer {
 				'button_full_width' => self::button_full_width(),
 				'rest_url'          => '',
 				'nonce'             => '',
-				'ajax_url'          => '',
-				'cart_nonce'        => '',
 				'checkout_url'      => '',
 			),
 			$args
