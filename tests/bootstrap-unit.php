@@ -121,6 +121,8 @@ final class WDP_Test_State {
 
 	/** @var array<int, string> post_id => post_type */
 	public static $post_types = array();
+	/** @var array<int, object> wc_get_order() kayıtları. */
+	public static $orders = array();
 
 	/** @var int */
 	public static $unique_id = 0;
@@ -165,6 +167,7 @@ final class WDP_Test_State {
 		self::$price_thousand = '.';
 		self::$price_decimal  = ',';
 		self::$post_types    = array();
+		self::$orders        = array();
 		self::$unique_id     = 0;
 		self::$user_id       = 0;
 		self::$last_json     = null;
@@ -532,6 +535,14 @@ if (!function_exists('get_option')) {
 			return WDP_Test_State::$options[ $key ];
 		}
 		return $default;
+	}
+}
+if (!function_exists('wc_get_order')) {
+	function wc_get_order($id = false) {
+		if (isset(WDP_Test_State::$orders[ (int) $id ])) {
+			return WDP_Test_State::$orders[ (int) $id ];
+		}
+		return class_exists('WDP_Privacy_Registry', false) ? (WDP_Privacy_Registry::$orders[ (int) $id ] ?? false) : false;
 	}
 }
 if (!function_exists('add_option')) {
