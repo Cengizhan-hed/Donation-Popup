@@ -78,6 +78,8 @@ for entry in "$DEST"/* "$DEST"/.[!.]*; do
   [[ $keep -eq 1 ]] || rm -rf "$entry"
 done
 # Calisma zamani disi dosyalar (belge/test/kaynak haritasi) paketten cikar.
+# OS artiklari (.DS_Store, Thumbs.db, ._*) pakete girmez.
+find "$DEST" -type f \( -name ".DS_Store" -o -name "Thumbs.db" -o -name "._*" \) -delete
 find "$DEST" -type f \( -name "*.md" -o -name "*.map" -o -name "*.test.*" \) -delete
 find "$DEST" -type d \( -name tests -o -name __tests__ \) -prune -exec rm -rf {} +
 

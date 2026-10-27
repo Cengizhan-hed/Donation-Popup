@@ -1189,6 +1189,7 @@ if (!function_exists('get_terms')) {
 }
 
 require_once __DIR__ . '/support/fakes.php';
+require_once __DIR__ . '/support/os-junk.php';
 $GLOBALS['wpdb'] = new WDP_Fake_Wpdb();
 
 require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';

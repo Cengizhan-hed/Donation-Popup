@@ -170,7 +170,7 @@ final class E8ESecurityTest extends TestCase {
 				$this->assertGreaterThanOrEqual( $calls, substr_count( $code, "'permission_callback'" ) , $file->getPathname() );
 			}
 		}
-		$this->assertDirectoryDoesNotExist( $root . '/includes' );
+		$this->assertTrue( wdp_test_dir_absent_or_only_os_junk( $root . '/includes' ), 'includes/ yalnız OS artıkları içerebilir' );
 	}
 
 	public function test_admin_settings_are_saved_only_through_guarded_rest_routes(): void {
