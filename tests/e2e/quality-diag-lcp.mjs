@@ -36,7 +36,7 @@ try {
   const cdp = await ctx.newCDPSession(page);
   const p = arg('--path', w.probe.products.fixed.path);
   for (const v of variants) {
-    const q = { control: '?dp_q_off=1', stripcss: '?dp_q_strip=css', stripjs: '?dp_q_strip=js', stripall: '?dp_q_strip=all', stripside: '?dp_q_strip=side', htmljson: '?dp_q_html=json', htmlcss: '?dp_q_html=css', htmlform: '?dp_q_html=form', htmlall: '?dp_q_html=all' }[v] || '';
+    const q = { control: '?dp_q_off=1', stripcss: '?dp_q_strip=css', stripjs: '?dp_q_strip=js', stripall: '?dp_q_strip=all', stripside: '?dp_q_strip=side', htmljson: '?dp_q_html=json', htmlcss: '?dp_q_html=css', htmlform: '?dp_q_html=form', htmlall: '?dp_q_html=all' }[v] || (v.startsWith('s:') ? `?dp_q_strip=${v.slice(2)}` : '');
     const url = `${proxy.base}${p}${q}`;
     await page.goto(url);
     const rows = [];
@@ -52,6 +52,10 @@ try {
       const items = bd;
       const node = null;
       const fonts = { phases: phases ? phases.items : null, lcpReq, longTasks, details: JSON.stringify(bd).slice(0, 600) };
+      if (i === 0 && process.env.WDP_DIAG_NET) {
+        (out.__net ||= {})[v] = (au['network-requests'].details.items || []).map((r) => `${r.url.replace(/^https?:\/\/[^/]+/, '').slice(0, 70)} ${r.resourceType} ${Math.round(r.transferSize / 1024)}KB ${Math.round(r.networkRequestTime)}-${Math.round(r.networkEndTime)} ${r.priority}`);
+        (out.__tasks ||= {})[v] = (au['main-thread-tasks'] && au['main-thread-tasks'].details && au['main-thread-tasks'].details.items || []).filter((t) => t.duration > 25).map((t) => `${Math.round(t.startTime)}+${Math.round(t.duration)}`).slice(0, 12);
+      }
       rows.push({
         perf: Math.round(lhr.categories.performance.score * 100),
         fcp: Math.round(lhr.audits['first-contentful-paint'].numericValue),

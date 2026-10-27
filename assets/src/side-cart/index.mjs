@@ -360,9 +360,30 @@ function mount(root) {
     jq(document.body).on('added_to_cart', onAdded);
   }
 
-  // Sayfa önbelleğe alınmış olabilir: sayaç gösterge varsa taze değeri al.
+  // Sayfa önbelleğe alınmış olabilir: sayaç gösterge varsa taze değeri al. Store API isteği ilk boyamayı/LCP'yi
+  // geciktirmesin diye sayfa yüklendikten sonra, tarayıcı boştayken yapılır.
   if (triggers().length) {
-    refresh();
+    whenIdle(refresh);
+  }
+}
+
+/**
+ * Sayfa yüklendikten ve tarayıcı boşa çıktıktan sonra çalıştır.
+ *
+ * @param {Function} task Görev.
+ */
+function whenIdle(task) {
+  const run = () => {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(task, { timeout: 4000 });
+    } else {
+      window.setTimeout(task, 1500);
+    }
+  };
+  if (document.readyState === 'complete') {
+    run();
+  } else {
+    window.addEventListener('load', run, { once: true });
   }
 }
 
