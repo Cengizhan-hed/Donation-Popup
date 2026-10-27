@@ -34,7 +34,7 @@ export function parseAmountDetailed(raw, currency) {
   const thousand = c.thousandSeparator != null ? String(c.thousandSeparator) : ',';
   const decimal = c.decimalSeparator != null ? String(c.decimalSeparator) : '.';
   let s = String(raw).trim().replace(/[\s\u00A0\u202F\u2009\u2007\u2060]+/g, '');
-  s = s.replace(/[^\d.,\-]/g, '');
+  s = s.replace(/[^\d.,-]/g, '');
   if (!s || s === '-' || s === '.' || s === ',' || s === thousand || s === decimal) {
     return { ok: false, amount: NaN, status: 'invalid' };
   }

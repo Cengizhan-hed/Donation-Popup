@@ -118,3 +118,15 @@ test('boyut bütçesi: modül JS <= 25 KB gz, kritik CSS <= 8 KB gz', () => {
   assert.ok(gz('index.js') <= 25 * 1024, `JS gz ${gz('index.js')}`);
   assert.ok(gz('index.css') <= 8 * 1024, `CSS gz ${gz('index.css')}`);
 });
+
+test('durum: 3 ondalıklı para biriminde "1.250" ondalık, belirsiz biçim amountStatus=ambiguous', () => {
+  const kwd = { decimals: 3, thousandSeparator: ',', decimalSeparator: '.' };
+  let s = initialState({ presets: [] });
+  s = reducer(s, { type: 'setCustom', value: '1.250', currency: kwd });
+  assert.equal(s.amount, 1.25);
+  assert.equal(s.amountStatus, 'ok');
+  const spaced = { decimals: 3, thousandSeparator: ' ', decimalSeparator: ',' };
+  s = reducer(s, { type: 'setCustom', value: '1.250', currency: spaced });
+  assert.equal(s.amount, null);
+  assert.equal(s.amountStatus, 'ambiguous');
+});

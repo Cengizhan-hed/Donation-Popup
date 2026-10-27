@@ -47,6 +47,22 @@ export function createForm(root, hooks = {}) {
   const addonMin = Number(form.dataset.addonMin || 0);
   const minAmount = Number(form.dataset.min || 0);
   const decimals = Number(form.dataset.decimals || 2);
+  // Woo ayırıcıları: yazılan tutar sunucudakiyle AYNI kuralla ayrıştırılır (amount.mjs).
+  const currency = {
+    decimals,
+    thousandSeparator: form.dataset.thousandSep ?? ',',
+    decimalSeparator: form.dataset.decimalSep ?? '.',
+  };
+  /**
+   * Seçili (yazılmamış) tutarı sunucunun beklediği mağaza biçiminde yazar (binliksiz, Woo ondalık ayırıcılı).
+   *
+   * @param {number} value Tutar.
+   * @return {string} Örn. "1,250" (3 ondalıklı, virgül ondalık).
+   */
+  const canonicalAmount = (value) => {
+    const fixed = Number.isInteger(value) ? String(value) : value.toFixed(Math.max(decimals, 2)).replace(/0+$/, '').replace(/\.$/, '');
+    return fixed.replace('.', currency.decimalSeparator);
+  };
   const locale = document.documentElement.lang || undefined;
 
   const sections = Array.from(form.querySelectorAll('[data-dp-step]'));
@@ -92,7 +108,7 @@ export function createForm(root, hooks = {}) {
   const lastStep = Math.max(0, sections.length - 1);
 
   const money = (value) => formatTotal(value, symbol, decimals, locale);
-  const addonValue = () => (addonFixed > 0 ? addonFixed : parseAmount(state.addonAmount));
+  const addonValue = () => (addonFixed > 0 ? addonFixed : parseAmount(state.addonAmount, currency));
   const totals = (fee) =>
     computeTotals({
       kind,
@@ -292,7 +308,7 @@ export function createForm(root, hooks = {}) {
   });
 
   if (amountInput && !hiddenAmount) {
-    amountInput.addEventListener('input', () => dispatch({ type: 'setCustom', value: amountInput.value }));
+    amountInput.addEventListener('input', () => dispatch({ type: 'setCustom', value: amountInput.value, currency }));
   }
   qtyButtons.forEach((button) => {
     button.addEventListener('click', () => dispatch({ type: 'setQty', value: clampQty(state.qty + Number(button.dataset.dpQty), qtyMax) }));
@@ -378,7 +394,7 @@ export function createForm(root, hooks = {}) {
    * @return {Record<string, unknown>} Alan adı -> değer.
    */
   const collect = () => {
-    const values = { amount: state.amount === null ? form.querySelector('input[name="amount"]')?.value || '' : String(state.amount) };
+    const values = { amount: state.amount === null ? form.querySelector('input[name="amount"]')?.value || '' : canonicalAmount(state.amount) };
     form.querySelectorAll('input[name], textarea[name]').forEach((el) => {
       if (el.name === 'amount' || el.disabled || HOLDER.test(el.name)) {
         return;
@@ -430,7 +446,10 @@ export function createForm(root, hooks = {}) {
     // Tutar kontrolleri: tutarı bağışçının seçtiği adımda ya da tutarla bilgilerin tek adım olduğu formlarda.
     if (section.querySelector('[data-dp-amounts], [data-dp-qtyset], [data-dp-addon]')) {
       if (!derived && section.querySelector('[data-dp-amounts]')) {
-        if (state.amount === null || !(state.amount > 0)) {
+        if (state.amountStatus === 'ambiguous') {
+          // Belirsiz biçim (ör. 3 ondalıklı para biriminde "1,250"): tahmin etmeden net biçim istenir.
+          errors.amount = form.dataset.msgAmountFormat || form.dataset.msgAmount || '';
+        } else if (state.amount === null || !(state.amount > 0)) {
           errors.amount = form.dataset.msgAmount || '';
         } else if (state.amount < Math.max(minAmount, 0.01)) {
           errors.amount = form.dataset.msgMin || '';
