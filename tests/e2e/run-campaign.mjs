@@ -6,7 +6,7 @@
  *   npm run e2e:campaign [-- --project iphone] [-- --grep açılır]
  *
  * Port: WDP_LOCAL_E2E_PORT (varsayılan 8923). Tema: WDP_EXP_THEME (varsayılan twentytwentyfive).
- * Ödeme: `--checkout classic|blocks` (varsayılan classic); `--spec <ad>` yalnız o dosyayı koşar (varsayılan: campaign).
+ * Ödeme: `--checkout classic|blocks` (varsayılan classic); `--spec <ad>` yalnız o dosyayı koşar (varsayılan: campaign.spec; toplamlar için `npm run e2e:campaign-totals`).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -25,7 +25,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
-const SIM_SRC = path.join(__dirname, 'helpers/wdp-campaign-sim.php');
+const SIM_SRC = path.join(__dirname, 'helpers/wdp-campaign-card-sim.php');
 const PORT = Number(process.env.WDP_LOCAL_E2E_PORT || 8923) || 8923;
 
 /**
@@ -55,7 +55,7 @@ async function main() {
   const probe = meta.probe || meta;
   const wpDir = materializeWorker(resolved.id, PORT, snap, { hpos: true });
   fs.mkdirSync(path.join(wpDir, 'wp-content/mu-plugins'), { recursive: true });
-  fs.copyFileSync(SIM_SRC, path.join(wpDir, 'wp-content/mu-plugins/wdp-campaign-sim.php'));
+  fs.copyFileSync(SIM_SRC, path.join(wpDir, 'wp-content/mu-plugins/wdp-campaign-card-sim.php'));
   restoreSqlite(wpDir, snap);
   const gateways = matrixEval(wpDir, ['enable-offline-gateways']);
   if (gateways && gateways.ok === false) {
@@ -66,7 +66,7 @@ async function main() {
   try {
     fs.rmSync(path.join(ROOT, 'test-results'), { recursive: true, force: true });
     fs.rmSync(path.join(ROOT, 'playwright-report'), { recursive: true, force: true });
-    const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', flag(argv, '--spec') || 'campaign'];
+    const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', flag(argv, '--spec') || 'campaign.spec'];
     const project = flag(argv, '--project');
     if (project) args.push('--project', project);
     const grep = flag(argv, '--grep');
