@@ -2,9 +2,8 @@
 /**
  * Sosyal kanıt verisi (K3): yalnız toplu gerçek veri; kişi bilgisi yok.
  *
- * Bir bağışın adı YALNIZ bağışçı adının görünmesine açıkça izin verdiyse (`wdp_public_name` = `yes`,
- * sipariş ya da satır meta) ve anonim işaretlemediyse gösterilir: ad + soyad baş harfi. Aksi halde ad boştur.
- * E-posta, telefon, ithaf, not, adres hiçbir yanıta girmez.
+ * Ad, e-posta, telefon, ithaf, not, adres hiçbir yanıta girmez: yalnız tutar ve zaman döner (`name` anahtarı
+ * yanıt biçimi sabit kalsın diye vardır, her zaman boştur; ön yüz "A kind donor" yazar).
  *
  * @package DonationPanel
  */
@@ -15,7 +14,6 @@ use DonationPanel\Domain\Campaign_Goal;
 use DonationPanel\Domain\Campaign_Totals;
 use DonationPanel\Domain\Progress_Currency;
 use DonationPanel\Modules\Campaign\Progress_Renderer;
-use DonationPanel\WooCommerce\Order_Meta_Keys;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,11 +21,6 @@ defined( 'ABSPATH' ) || exit;
  * Donation_Feed.
  */
 final class Donation_Feed {
-
-	/**
-	 * İzin meta anahtarı (sipariş ya da satır).
-	 */
-	const CONSENT_KEY = 'wdp_public_name';
 
 	/**
 	 * Sayfa başına üst sınır.
@@ -55,27 +48,6 @@ final class Donation_Feed {
 	const MAX_PAGE = 50;
 
 	/**
-	 * "Ayşe Yılmaz" -> "Ayşe Y." (tek sözcük: olduğu gibi; boşsa boş).
-	 *
-	 * @param string $full_name Tam ad.
-	 * @return string
-	 */
-	public static function public_name( $full_name ) {
-		$parts = preg_split( '/\s+/u', trim( (string) $full_name ), -1, PREG_SPLIT_NO_EMPTY );
-		if ( ! $parts ) {
-			return '';
-		}
-		$first = (string) $parts[0];
-		if ( count( $parts ) < 2 ) {
-			return $first;
-		}
-		$last    = (string) end( $parts );
-		$initial = function_exists( 'mb_substr' ) ? mb_substr( $last, 0, 1, 'UTF-8' ) : substr( $last, 0, 1 );
-		$initial = function_exists( 'mb_strtoupper' ) ? mb_strtoupper( $initial, 'UTF-8' ) : strtoupper( $initial );
-		return $first . ' ' . $initial . '.';
-	}
-
-	/**
 	 * Sayfa başına değeri sınırlar.
 	 *
 	 * @param mixed $raw Ham değer.
@@ -89,13 +61,12 @@ final class Donation_Feed {
 	/**
 	 * Yanıt girdisi: yalnız izinli alanlar (saf; test edilebilir).
 	 *
-	 * @param array<string, mixed> $raw `full_name`, `consent`, `anonymous`, `amount`, `timestamp`.
+	 * @param array<string, mixed> $raw `amount`, `timestamp` (diğer anahtarlar yok sayılır; ad asla alınmaz).
 	 * @return array{name: string, amount: float, timestamp: int}
 	 */
 	public static function build_entry( array $raw ) {
-		$allowed = ! empty( $raw['consent'] ) && empty( $raw['anonymous'] );
 		return array(
-			'name'      => $allowed ? self::public_name( isset( $raw['full_name'] ) ? (string) $raw['full_name'] : '' ) : '',
+			'name'      => '',
 			'amount'    => max( 0.0, isset( $raw['amount'] ) ? (float) $raw['amount'] : 0.0 ),
 			'timestamp' => isset( $raw['timestamp'] ) ? (int) $raw['timestamp'] : 0,
 		);
@@ -245,38 +216,9 @@ final class Donation_Feed {
 	 * @return array{name: string, amount: float, timestamp: int}
 	 */
 	private static function entry_for_order( $order, $product_id, $amount ) {
-		$consent   = false;
-		$anonymous = false;
-		$full_name = '';
-
-		if ( method_exists( $order, 'get_meta' ) && 'yes' === (string) $order->get_meta( self::CONSENT_KEY ) ) {
-			$consent = true;
-		}
-		foreach ( method_exists( $order, 'get_items' ) ? $order->get_items() : array() as $item ) {
-			if ( $product_id > 0 && absint( $item->get_product_id() ) !== $product_id ) {
-				continue;
-			}
-			if ( 'yes' === (string) $item->get_meta( self::CONSENT_KEY ) ) {
-				$consent = true;
-			}
-			$data = Order_Meta_Keys::get_item_donation_data( $item );
-			if ( isset( $data[ Order_Meta_Keys::ANONYMOUS ] ) && 'yes' === (string) $data[ Order_Meta_Keys::ANONYMOUS ]['value'] ) {
-				$anonymous = true;
-			}
-			if ( '' === $full_name && isset( $data[ Order_Meta_Keys::DONOR_NAME ] ) ) {
-				$full_name = (string) $data[ Order_Meta_Keys::DONOR_NAME ]['value'];
-			}
-		}
-		if ( $consent && '' === $full_name && method_exists( $order, 'get_billing_first_name' ) ) {
-			$full_name = trim( (string) $order->get_billing_first_name() . ' ' . (string) $order->get_billing_last_name() );
-		}
-
 		$created = method_exists( $order, 'get_date_created' ) ? $order->get_date_created() : null;
 		$entry   = self::build_entry(
 			array(
-				'full_name' => $full_name,
-				'consent'   => $consent,
-				'anonymous' => $anonymous,
 				'amount'    => $amount,
 				'timestamp' => $created ? (int) $created->getTimestamp() : 0,
 			)

@@ -102,23 +102,27 @@ final class E3CampaignTest extends TestCase {
 		$this->assertSame( array(), Impact_Map::tiers_for_product( 8, '' ) );
 	}
 
-	public function test_social_proof_name_is_first_name_plus_last_initial(): void {
-		$this->assertSame( 'Ayşe Y.', Donation_Feed::public_name( 'Ayşe  Yılmaz' ) );
-		$this->assertSame( 'Elif Ç.', Donation_Feed::public_name( 'Elif Maria çelik' ) );
-		$this->assertSame( 'Can', Donation_Feed::public_name( 'Can' ) );
-		$this->assertSame( '', Donation_Feed::public_name( '   ' ) );
-	}
-
-	public function test_social_proof_hides_name_without_consent_or_when_anonymous(): void {
+	/**
+	 * K3: sosyal kanıtta kişi bilgisi yok. Ad, ham girdide ne olursa olsun (eski `wdp_public_name` izni dahil) hiç gösterilmez.
+	 */
+	public function test_social_proof_never_exposes_a_name(): void {
 		$base = array(
 			'full_name' => 'Ayşe Yılmaz',
 			'amount'    => 50.0,
 			'timestamp' => 1700000000,
 		);
 		$this->assertSame( '', Donation_Feed::build_entry( $base )['name'] );
-		$this->assertSame( '', Donation_Feed::build_entry( $base + array( 'consent' => false ) )['name'] );
-		$this->assertSame( 'Ayşe Y.', Donation_Feed::build_entry( $base + array( 'consent' => true ) )['name'] );
-		$this->assertSame( '', Donation_Feed::build_entry( $base + array( 'consent' => true, 'anonymous' => true ) )['name'] );
+		$this->assertSame( '', Donation_Feed::build_entry( $base + array( 'consent' => true ) )['name'] );
+		$this->assertSame( '', Donation_Feed::build_entry( $base + array( 'consent' => true, 'anonymous' => false ) )['name'] );
+		$this->assertFalse( method_exists( Donation_Feed::class, 'public_name' ), 'Ad biçimleme işlevi kaldırıldı.' );
+		$this->assertFalse( defined( Donation_Feed::class . '::CONSENT_KEY' ), 'Ad izni anahtarı artık okunmaz.' );
+	}
+
+	public function test_social_proof_page_ignores_legacy_name_consent_meta(): void {
+		$source = (string) file_get_contents( dirname( __DIR__, 3 ) . '/src/Modules/SocialProof/class-donation-feed.php' );
+		$this->assertStringNotContainsString( 'wdp_public_name', preg_replace( '#/\*.*?\*/#s', '', $source ) );
+		$this->assertStringNotContainsString( 'DONOR_NAME', $source );
+		$this->assertStringNotContainsString( 'get_billing_first_name', $source );
 	}
 
 	public function test_social_proof_entry_has_only_allowed_keys(): void {
