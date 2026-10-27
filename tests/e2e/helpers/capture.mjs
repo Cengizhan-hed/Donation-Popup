@@ -4465,26 +4465,22 @@ export async function captureAll({
         })
       )
     );
-    const tabs = await admin.locator(SEL.adminTab).all();
-    for (let i = 0; i < tabs.length; i++) {
-      const tab = tabs[i];
-      const key = (await tab.getAttribute('data-tab')) || String(i);
-      await tab.click();
-      const panel = admin.locator(`#wdp-${key}-tab`);
-      await panel.waitFor({ state: 'visible', timeout: CHECK_MS }).catch(() => {});
-      const visible = await panel.isVisible().catch(() => false);
-      const fields = await panel.locator('input, select, textarea, table').count();
-      if (runFunctional && (!visible || fields < 1)) {
+    for (const slug of ['donation-panel', 'donation-panel-campaigns', 'donation-panel-forms', 'donation-panel-checkout', 'donation-panel-account', 'donation-panel-privacy', 'donation-panel-tools', 'donation-panel-guide']) {
+      await admin.goto(withCacheBust(env.E2E_BASE_URL, `/wp-admin/admin.php?page=${slug}`), { waitUntil: 'domcontentloaded' });
+      const panel = admin.locator('.dpa').first();
+      await panel.waitFor({ state: 'visible', timeout: CHECK_MS });
+      const fields = await panel.locator('input, select, textarea, table, a, button').count();
+      if (runFunctional && fields < 1) {
         failures.push(
           makeFailure({
-            check: `admin-tab-${key}`,
-            description: 'Admin sekmesi görünür değil veya boş',
-            detail: `visible=${visible} fields=${fields}`,
-            screenshot: `admin-tab-${key}.png`,
+            check: `admin-screen-${slug}`,
+            description: 'Yönetici ekranı boş',
+            detail: `fields=${fields}`,
+            screenshot: `admin-screen-${slug}.png`,
           })
         );
       }
-      shots.push(await shot(admin, outDir, `admin-tab-${key}`, maskList));
+      shots.push(await shot(admin, outDir, `admin-screen-${slug}`, maskList));
     }
     try {
       if (runFunctional) assertNoConsoleErrors(adminErrors);
