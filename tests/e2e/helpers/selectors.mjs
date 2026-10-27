@@ -60,6 +60,7 @@ export const SEL = {
 
   // Gömülü (satır içi) form
   inlineDonationForm: '[data-dp-exp][data-dp-kind="inline"] [data-dp-form]',
+  inlineRoot: '[data-dp-exp][data-dp-kind="inline"]',
 
   // Admin sekmeleri
   adminTab: '.wdp-nav-tab-wrapper a.nav-tab[data-tab]',

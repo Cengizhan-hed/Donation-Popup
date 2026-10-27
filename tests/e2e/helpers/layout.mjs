@@ -57,7 +57,7 @@ async function waitShellReady(shell, page) {
  */
 async function openProductShell(page, mode, opts) {
   const openPath = mode === 'popup' ? opts.listPath : opts.productPath;
-  await page.goto(withCacheBust(opts.baseUrl, openPath, { hdf_no_side_cart: '1', ...(opts.extraQuery || {}) }), {
+  await page.goto(withCacheBust(opts.baseUrl, openPath, { ...(opts.extraQuery || {}) }), {
     waitUntil: 'domcontentloaded',
   });
   if (mode === 'popup') {

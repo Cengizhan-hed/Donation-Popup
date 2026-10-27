@@ -30,7 +30,7 @@ export async function probeTouchTargets(page, scopeSel) {
       const root = document.querySelector(sel) || document.body;
       const nodes = Array.from(
         root.querySelectorAll(
-          'button, a[href], [role="button"], .wdp-amount-preset, .wdp-chip, input[type="checkbox"], .wdp-product-quantity-increase, .wdp-product-quantity-decrease, .wdp-share-btn-increase, .wdp-share-btn-decrease, .wdp-modal-close, .wdp-nav-tab, [role="tab"]'
+          'button, a[href], [role="button"], .dp-amount, input[type="checkbox"], [data-dp-qty], [data-dp-close], [role="tab"]'
         )
       );
       function vis(el) {
@@ -110,7 +110,7 @@ export async function probeScrollLock(page) {
     const cls = `${html.className} ${body.className}`;
     const overflow = `${getComputedStyle(html).overflow} ${getComputedStyle(body).overflow}`;
     return {
-      locked: /wdp-.*open|modal-open|no-scroll|overflow:\s*hidden/i.test(`${cls} ${overflow}`),
+      locked: /dp-lock|modal-open|no-scroll|overflow:\s*hidden/i.test(`${cls} ${overflow}`),
       htmlOverflow: getComputedStyle(html).overflow,
       bodyOverflow: getComputedStyle(body).overflow,
       bodyPosition: getComputedStyle(body).position,
@@ -127,19 +127,16 @@ export async function probeSafeArea(page, inset) {
     const vv = window.visualViewport;
     const vw = vv && vv.width ? vv.width : window.innerWidth;
     const vh = vv && vv.height ? vv.height : window.innerHeight;
-    const root = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+    const root = document.querySelector('[data-dp-overlay].is-open');
     if (!root) return { clipped: [], vw, vh, box, pendingAnim: false };
-    if (root.classList.contains('wdp-side-panel--opening')) {
-      return { clipped: [], vw, vh, box, pendingAnim: true };
-    }
-    const content = root.querySelector('.wdp-modal-content');
+    const content = root.querySelector('[data-dp-surface]');
     const tr = content ? window.getComputedStyle(content).transform : 'none';
     if (tr && tr !== 'none') {
       return { clipped: [], vw, vh, box, pendingAnim: true };
     }
     const els = Array.from(
       root.querySelectorAll(
-        'button.wdp-modal-close, button[name="donation_add_to_cart"], button[name="donation_go_checkout"]'
+        '[data-dp-close], [data-dp-submit]'
       )
     );
     const clipped = [];
@@ -174,7 +171,7 @@ export async function probeKeyboardVisibility(page, field) {
     const vv = window.visualViewport;
     const active = document.activeElement;
     const btn = document.querySelector(
-      '.wdp-modal.show button[name="donation_go_checkout"], .wdp-modal.show button[name="donation_add_to_cart"]'
+      '[data-dp-overlay].is-open [data-dp-submit]'
     );
     function inVv(el) {
       if (!el || !vv) return null;
@@ -197,7 +194,7 @@ export async function probeKeyboardVisibility(page, field) {
  */
 export async function probeDesktopFocus(page) {
   return page.evaluate(() => {
-    const modal = document.querySelector('.wdp-modal.show');
+    const modal = document.querySelector('[data-dp-overlay].is-open');
     if (!modal) return { open: false };
     const ae = document.activeElement;
     return {
@@ -393,7 +390,7 @@ export async function runMobileA11yChecks({
       if (!fieldVisible) {
         field = page
           .locator(
-            '.wdp-modal.show input:not([type=hidden]):not([type=checkbox]):not([type=radio]), .wdp-donation-form input:not([type=hidden]):not([type=checkbox]):not([type=radio])'
+            '[data-dp-overlay].is-open input:not([type=hidden]):not([type=checkbox]):not([type=radio]), [data-dp-form] input:not([type=hidden]):not([type=checkbox]):not([type=radio])'
           )
           .first();
         fieldVisible = (await field.count()) > 0 && (await field.isVisible().catch(() => false));
@@ -449,7 +446,7 @@ export async function runMobileA11yChecks({
       }
     } else {
       const stretch = await page.evaluate(() => {
-        const modal = document.querySelector('.wdp-modal.show .wdp-modal-content');
+        const modal = document.querySelector('[data-dp-overlay].is-open [data-dp-surface]');
         if (!modal) return { open: false };
         const r = modal.getBoundingClientRect();
         return {

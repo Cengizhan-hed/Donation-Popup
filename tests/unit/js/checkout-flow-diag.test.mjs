@@ -73,7 +73,19 @@ describe('Woo oturum çerez adı', () => {
 });
 
 describe('isDonationAddToCartRequest', () => {
-  it('wdp_ajax_add_to_cart ve wc-ajax add_to_cart', () => {
+  it('REST cart/add ve wc-ajax add_to_cart; eski admin-ajax eylemi artık sayılmaz', () => {
+    assert.equal(
+      isDonationAddToCartRequest(
+        mockReq({ url: 'https://shop.test/wp-json/donation-panel/v1/cart/add', postData: '{"product_id":1}' })
+      ),
+      true
+    );
+    assert.equal(
+      isDonationAddToCartRequest(
+        mockReq({ url: 'https://shop.test/?rest_route=%2Fdonation-panel%2Fv1%2Fcart%2Fadd', postData: '{}' })
+      ),
+      true
+    );
     assert.equal(
       isDonationAddToCartRequest(
         mockReq({
@@ -81,7 +93,7 @@ describe('isDonationAddToCartRequest', () => {
           postData: 'action=wdp_ajax_add_to_cart&product_id=1',
         })
       ),
-      true
+      false
     );
     assert.equal(
       isDonationAddToCartRequest(

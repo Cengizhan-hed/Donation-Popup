@@ -18,6 +18,18 @@ export function formOf(shell) {
 }
 
 /**
+ * Görsel olarak gizli (özel) onay kutusu / anahtar: koordinat tıklaması yanlış öğeye (ör. alt eylem çubuğu)
+ * düşebildiği için DOM click() ile işaretlenir; `change` olayı normal yoldan tetiklenir.
+ * @param {import('@playwright/test').Locator} input
+ * @param {boolean} [on]
+ */
+export async function setChecked(input, on = true) {
+  await input.evaluate((el, want) => {
+    if (el.checked !== want) el.click();
+  }, on);
+}
+
+/**
  * Bilgi adımı görünene kadar "Devam"a basar (adımlar tek sayfaysa bir şey yapmaz).
  * @param {import('@playwright/test').Locator} form
  * @param {number} [timeout]
@@ -26,7 +38,22 @@ export async function advanceToDetails(form, timeout = CHECK_MS) {
   const details = form.locator(DP_SEL.detailsStep).first();
   if (await details.isVisible()) return;
   await form.locator(DP_SEL.submit).first().click({ timeout });
-  await details.waitFor({ state: 'visible', timeout });
+  try {
+    await details.waitFor({ state: 'visible', timeout });
+  } catch (err) {
+    // Teşhis: adım/alan durumu (değer yok, yalnız uzunluk) + görünür hata metinleri.
+    const state = await form
+      .evaluate((f) => ({
+        mounted: (f.closest('[data-dp-exp]') || {}).dataset ? f.closest('[data-dp-exp]').dataset.dpMounted : null,
+        amountLen: Array.from(f.querySelectorAll('[name="amount"]')).map((i) => String(i.value || '').length),
+        steps: Array.from(f.querySelectorAll('[data-dp-step]')).map((x) => x.dataset.dpStep + (x.hidden ? ':hidden' : ':shown')),
+        errors: Array.from(f.querySelectorAll('[data-dp-error]'))
+          .map((e) => e.dataset.dpError + '=' + String(e.textContent || '').trim().slice(0, 60))
+          .filter((x) => !x.endsWith('=')),
+      }))
+      .catch((e) => ({ diag: String(e && e.message ? e.message : e) }));
+    throw new Error(`bilgi adımına geçilemedi: ${JSON.stringify(state)} — ${String(err && err.message ? err.message : err).split('\n')[0]}`);
+  }
 }
 
 /**
@@ -67,7 +94,7 @@ export async function fillDonorDetails(form, vals = {}) {
   }
   if (vals.anonymous) {
     const anon = form.locator('input[name="donation_anonymous"]').first();
-    if ((await anon.count()) > 0) await anon.check({ force: true });
+    if ((await anon.count()) > 0) await setChecked(anon, true);
   }
 }
 
@@ -110,7 +137,7 @@ export async function fillDonationForm(shell, spec) {
     await fillAmountStep(form, spec.fill);
     const toggle = form.locator(DP_SEL.dediToggle).first();
     if ((await toggle.count()) > 0) {
-      await toggle.check({ force: true });
+      await setChecked(toggle, true);
       await form.locator('input[name="donation_dedication"]').first().fill((spec.donor && spec.donor.dedication) || DEDICATION);
     }
   }

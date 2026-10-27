@@ -415,11 +415,12 @@ export async function collectStorefrontPageState(page, productId = 0) {
     const body = document.body;
     const cls = body ? String(body.className || '') : '';
     const idEl =
+      document.querySelector('[data-dp-product]') ||
       document.querySelector('[data-product-id]') ||
       document.querySelector('input[name="product_id"]') ||
       document.querySelector('button[data-product-id]');
     const idAttr = idEl
-      ? idEl.getAttribute('data-product-id') || idEl.value || ''
+      ? idEl.getAttribute('data-dp-product') || idEl.getAttribute('data-product-id') || idEl.value || ''
       : '';
     let pathname = '';
     try {

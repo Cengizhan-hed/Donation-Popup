@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import { expect } from '@playwright/test';
 import path from 'node:path';
 import { SEL, DP_SEL } from './selectors.mjs';
+import { setChecked } from './dp-form.mjs';
 import { formatMoney, formatMinPlaceholder, formatFillAmount } from './currency.mjs';
 import { withCacheBust } from './env.mjs';
 import {
@@ -73,7 +74,7 @@ const DONATION_RELOAD_GUARD_IDS = new Set([
 ]);
 
 function extraQuery() {
-  return { hdf_no_side_cart: '1' };
+  return {};
 }
 
 function locFromError(err) {
@@ -257,7 +258,7 @@ async function fillDonationForm(scope, store, opts = {}) {
   await fillAmountStep(form, store, amount);
   const toggle = form.locator(DP_SEL.dediToggle).first();
   if ((await toggle.count()) > 0) {
-    await toggle.check({ force: true });
+    await setChecked(toggle, true);
     await form.locator('input[name="donation_dedication"]').first().fill(DEDICATION);
   }
   await advanceToDetails(form);
@@ -271,10 +272,10 @@ async function fillDonationForm(scope, store, opts = {}) {
   const ded = form.locator('input[name="donation_dedication"]').first();
   if ((await ded.count()) > 0 && (await ded.isVisible()) && !(await ded.inputValue())) await ded.fill(DEDICATION);
   const anon = form.locator('input[name="donation_anonymous"]').first();
-  if ((await anon.count()) > 0) await anon.check({ force: true });
-  const shName = form.locator('input[name="shareholder_name_1"]').first();
+  if ((await anon.count()) > 0) await setChecked(anon, true);
+  const shName = form.locator('input[name="shareholder_1_name"]').first();
   if ((await shName.count()) > 0 && (await shName.isVisible())) await shName.fill(SHAREHOLDER_NAME);
-  const shPhone = form.locator('input[name="shareholder_phone_1"]').first();
+  const shPhone = form.locator('input[name="shareholder_1_phone"]').first();
   if ((await shPhone.count()) > 0 && (await shPhone.isVisible())) await shPhone.fill(SHAREHOLDER_PHONE);
 }
 

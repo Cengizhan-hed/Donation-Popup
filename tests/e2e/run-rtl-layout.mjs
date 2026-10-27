@@ -34,7 +34,7 @@ const ANA_SHOT_DIR =
 const ADMIN_SCREENS = ['donation-panel', 'donation-panel-campaigns', 'donation-panel-forms'];
 
 function extraQuery() {
-  return { hdf_no_side_cart: '1' };
+  return {};
 }
 
 async function gotoPath(page, baseUrl, pathName) {

@@ -248,7 +248,7 @@ export function classifyShellCompleteness(m) {
  * @returns {ShellCompletenessMetrics}
  */
 export function collectShellCompletenessMetrics() {
-  const root = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+  const root = document.querySelector('[data-dp-overlay].is-open');
   const vv = window.visualViewport;
   const vw = vv ? vv.width : window.innerWidth;
   const vh = vv ? vv.height : window.innerHeight;
@@ -272,7 +272,7 @@ export function collectShellCompletenessMetrics() {
   };
   if (!root) return empty;
 
-  const content = root.querySelector('.wdp-modal-content') || root;
+  const content = root.querySelector('[data-dp-surface]') || root;
   const box = content.getBoundingClientRect();
   const hasBox = (el) => {
     if (!el) return false;
@@ -288,23 +288,23 @@ export function collectShellCompletenessMetrics() {
   };
   const hiddenType = (el) => el.matches('input[type="hidden"], [hidden], [aria-hidden="true"]');
   const cta = root.querySelector(
-    '.wdp-form-cta-zone, .wdp-side-panel-footer-zone, button[name="donation_go_checkout"], button[name="donation_add_to_cart"]'
+    '.dp-actionbar, [data-dp-submit]'
   );
   const header = root.querySelector(
-    '.wdp-modal-header, .wdp-form-title-wrapper, .wdp-modal-title, .wdp-form-title, button.wdp-modal-close'
+    '.dp-head, [data-dp-close]'
   );
   const inCta = (el) =>
-    !!(cta && (cta.contains(el) || el.closest('.wdp-form-cta-zone, .wdp-side-panel-footer-zone')));
+    !!(cta && (cta.contains(el) || el.closest('.dp-actionbar')));
   const scrollers = Array.from(
-    root.querySelectorAll('.wdp-side-panel-main, .wdp-donation-form-fields, .wdp-shareholders-scroll')
+    root.querySelectorAll('.dp-surface__body')
   );
   const scrollRoot = scrollers[0] || content;
 
   const findLast = () => {
-    const skip = /wdp-form-cta-zone|wdp-side-panel-footer-zone|wdp-form-error/;
+    const skip = /dp-actionbar|dp-summary-err/;
     const nodes = Array.from(
       scrollRoot.querySelectorAll(
-        'input:not([type="hidden"]), textarea, select, button, .wdp-sadaka-donation, .wdp-cover-fee, .wdp-shareholder-form, .wdp-shareholders-area'
+        'input:not([type="hidden"]), textarea, select, button, [data-dp-addon], .dp-holder'
       )
     ).filter((el) => !hiddenType(el) && hasBox(el) && !inCta(el));
     Array.from(scrollRoot.children)

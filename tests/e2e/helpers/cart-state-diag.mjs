@@ -305,7 +305,7 @@ export async function probeCartPageState(page, baseUrl, cartPath) {
   }
   if (!already) {
     try {
-      const gotoUrl = withCacheBust(baseUrl, dest, { hdf_no_side_cart: '1' });
+      const gotoUrl = withCacheBust(baseUrl, dest, {});
       const hadHeaders = CART_CACHE_HEADER_KEYS.some((k) => out.headers[k]);
       const nav = page.waitForResponse(
         (r) => {

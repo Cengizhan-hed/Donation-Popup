@@ -53,7 +53,7 @@ import {
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks, resolveDonationFillAmount } from './donation-flow.mjs';
-import { advanceToDetails, fillAmountStep, fillDonorDetails, formOf } from './dp-form.mjs';
+import { advanceToDetails, fillAmountStep, fillDonorDetails, formOf, setChecked } from './dp-form.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
 import {
   probeSimilarDonations,
@@ -1278,7 +1278,13 @@ async function runSubmitFaultChecks({ browser, contextOpts, env, productPath, gu
       const root = (await openShellLocator(page).count()) > 0 ? openShellLocator(page) : page.locator('[data-dp-exp]').first();
       const form = formOf(root);
       const custom = form.locator(DP_SEL.amount).first();
-      const probeInput = (await custom.count()) > 0 ? custom : form.locator('input:not([type="hidden"]):not([disabled])').first();
+      const probeInput =
+        (await custom.count()) > 0
+          ? custom
+          : form
+              .locator('input[type="text"]:not([disabled]), input[type="tel"]:not([disabled])')
+              .filter({ visible: true })
+              .first();
       await probeInput.fill('7');
       const val = await probeInput.inputValue();
       if (val !== '7') {
@@ -1669,6 +1675,8 @@ async function findProductNodes(page, { slug, id = 0, name = '' }) {
         const idStr = String(productId);
         const selectors = [
           `[data-product-id="${idStr}"]`,
+          `[data-wdp-form="${idStr}"]`,
+          `[data-dp-product="${idStr}"]`,
           `[data-product_id="${idStr}"]`,
           `.post-${idStr}`,
           `button[value="${idStr}"]`,
@@ -2314,7 +2322,6 @@ export async function runAddonScenario({
   const paths = tracePaths(runLabel, check);
   const timeline = createTimeline(check);
   const guestExtra = {
-    ...(noSideCart ? { hdf_no_side_cart: '1' } : {}),
     ...comingSoonQuery(env, getActiveProfile()),
   };
   if (wantDiag) {
@@ -2452,7 +2459,7 @@ export async function runAddonScenario({
     }
 
     timeline.mark('open-addon');
-    await toggle.check({ force: true });
+    await setChecked(toggle, true);
     const fixedAddon = Number(await form.getAttribute('data-addon-fixed')) || 0;
     const isFixedAddon = fixedAddon > 0;
     const price = form.locator(SEL.addonPrice).first();
@@ -2843,7 +2850,6 @@ export async function captureAll({
   // Quick: 4 worker (shell + addon dalgaları daha kısa)
   const maxWorkers = Math.max(1, Math.min(quick ? 4 : 3, Number(workers) || (quick ? 4 : 3)));
   const guestExtra = {
-    ...(noSideCart ? { hdf_no_side_cart: '1' } : {}),
     ...comingSoonQuery(env, profile),
   };
   /** @type {ReturnType<typeof makeFailure>[]} */
@@ -4303,15 +4309,16 @@ export async function captureAll({
     await addonPromise;
     void addonProductIds;
 
+    // 12.0.0: eski motorun ürün-meta suite'leri (amount-options, form-fields, campaign-blocks, product-theme)
+    // eski modal / sihirbaz / ikon / ürün rengi seçeneklerini sınıyordu; yeni motorda eşdeğeri
+    // tests/e2e/specs/* (experiences-types, experiences-containers, campaign, ...) ve PHPUnit'tedir.
+    // Dosyaları duruyor ama koşulmaz (silme/yeniden yazma kararı RAPOR-12-e2e.md "Kalan işler").
     const mutationSuites = [
-      ['amount-options', './amount-options.mjs', 'runAmountOptionsChecks', 'Tutar seçenekleri E2E koşucusu çöktü'],
-      ['form-fields', './form-fields.mjs', 'runFormFieldsChecks', 'Form alanları E2E koşucusu çöktü'],
-      ['campaign-blocks', './campaign-blocks.mjs', 'runCampaignBlocksChecks', 'Kampanya blokları E2E koşucusu çöktü'],
-      ['product-theme', './product-theme.mjs', 'runProductThemeChecks', 'Ürün görünüm E2E koşucusu çöktü'],
       ['shortcodes', './shortcodes.mjs', 'runShortcodeChecks', 'Kısa kod E2E koşucusu çöktü'],
       ['empty-price', './empty-price.mjs', 'runEmptyPriceChecks', 'Fiyatsız ürün E2E koşucusu çöktü'],
     ];
-    const layoutSuite = ['layout', './layout.mjs', 'runLayoutChecks', 'Yerleşim E2E koşucusu çöktü'];
+    // layout.mjs (eski modalın .wdp-* yerleşim ölçüleri) koşulmaz: yeni formda kabuk bütünlüğü + eylem çubuğu
+    // (assertShellCompleteness, assertPanelCtaPinnedWhenShort, POPUP-OVERLAP) ve tasarım karşılaştırması kapsar.
     const { withEnvMutationLock } = await import('./mutation-lock.mjs');
     const { deviceRunsMutations } = await import('./mutation-policy.mjs');
     const expectAjaxError = new Set(['form-fields', 'campaign-blocks', 'shortcodes']);
@@ -4357,7 +4364,6 @@ export async function captureAll({
           });
         }
       }
-      await runOneMeta(layoutSuite, false);
     } catch (e) {
       failures.push(
         makeFailure({

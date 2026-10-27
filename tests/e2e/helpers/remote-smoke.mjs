@@ -343,7 +343,7 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     const shell =
       classified.kind === 'form'
-        ? page.locator(SEL.inlineDonationForm).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classified.kind === 'panel' ? 'panel' : classified.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const overlap = await waitAndAssertShellOverlap(page, timeouts.settle);
@@ -396,7 +396,7 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     const shell =
       classAdd.kind === 'form'
-        ? page.locator(SEL.inlineDonationForm).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classAdd.kind === 'panel' ? 'panel' : classAdd.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const picked = await resolveDonationFillAmount(shell, profile.currency);
@@ -520,7 +520,7 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     const shell =
       classAmb.kind === 'form'
-        ? page.locator(SEL.inlineDonationForm).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classAmb.kind === 'panel' ? 'panel' : classAmb.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const pageCur = await readPageCurrency(page);

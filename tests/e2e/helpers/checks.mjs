@@ -36,9 +36,9 @@ export function extractPostActionFromRequest(req) {
   return extractAjaxActionFromRequest(req);
 }
 
-/** product.js / modal.js genel hata metinleri — doğrulama mesajı değil. */
+/** Yeni form genel gönderim hatası / hız sınırı iletileri (src/Modules/Experiences) — alan doğrulama mesajı değil. */
 export const UNEXPECTED_PLUGIN_ERROR_RE =
-  /Ürün bilgileri alınamadı|Form tam yüklenemedi|sayfayı yenileyip|ağ hatası|network error|HTTP error|could not be loaded|did not finish loading|refresh the page/i;
+  /Something went wrong|Too many attempts|Bir hata oluştu|Çok fazla deneme|ağ hatası|network error|HTTP error|could not be loaded|refresh the page/i;
 
 /** Yeni form: form düzeyi uyarı kutusu (role=alert, `data-dp-summary`). */
 export const PLUGIN_ERROR_BANNER_SEL = SEL.formError;
@@ -176,6 +176,8 @@ export function assertNoConsoleErrors(errors) {
       return false;
     }
     const t = String(e);
+    // WordPress çekirdeği speculation-rules ön getirme iletisi (http yerel sunucu): eklentiden bağımsız tarayıcı gürültüsü.
+    if (/Prefetch request denied: URL must be secure/i.test(t)) return false;
     const blocked = classifyBlockedConsoleError(t);
     if (blocked === 'blocked-live' || blocked === 'blocked-site' || blocked === 'cancelled-ajax') {
       return false;
@@ -440,34 +442,16 @@ export async function collectWdpAjaxCheckoutPathname(page) {
 }
 
 /**
- * Sepete ekle POST (admin-ajax wdp_ajax_add_to_cart veya wc-ajax add_to_cart).
+ * Sepete ekle POST: yeni nesil REST `donation-panel/v1/cart/add` (rest_route sorgusu kodlanmış olabilir)
+ * ya da WooCommerce standart `wc-ajax=add_to_cart`. (12.0.0: admin-ajax ön yüz uçları kaldırıldı.)
  * @param {import('@playwright/test').Request} req
  */
 export function isDonationAddToCartRequest(req) {
   if (!req || typeof req.method !== 'function' || req.method() !== 'POST') return false;
   const url = req.url();
-  const post = req.postData() || '';
-  // Yeni nesil form: REST `donation-panel/v1/cart/add` (rest_route sorgusu kodlanmış olabilir).
   if (/donation-panel(?:\/|%2F)v1(?:\/|%2F)cart(?:\/|%2F)add/i.test(url)) return true;
-  const isAdminAjax = /admin-ajax\.php/i.test(url);
-  const isWcAjax = /[?&]wc-ajax=/i.test(url) || /\/wc-ajax\//i.test(url);
-  if (!isAdminAjax && !isWcAjax) return false;
-  if (isAdminAjax) {
-    const action = extractPostActionFromRequest(req);
-    if (action === 'wdp_ajax_add_to_cart') return true;
-    return (
-      post.includes('wdp_ajax_add_to_cart') ||
-      post.includes('action=wdp_ajax_add_to_cart') ||
-      post.includes('donation_add_to_cart')
-    );
-  }
-  try {
-    const u = new URL(url);
-    if (u.searchParams.get('wc-ajax') === 'add_to_cart') return true;
-  } catch {
-    /* pathname */
-  }
-  return /\/wc-ajax\/add_to_cart/i.test(url) || /add_to_cart/i.test(post);
+  if (/[?&]wc-ajax=add_to_cart/i.test(url) || /\/wc-ajax\/add_to_cart/i.test(url)) return true;
+  return false;
 }
 
 /**
@@ -589,7 +573,7 @@ export async function resolveCartPaths(page, baseUrl) {
   };
   try {
     const raw = await page.evaluate(() => {
-      const w = window.wdp_ajax && window.wdp_ajax.cart_url;
+      const w = '';
       const wc = window.wc_add_to_cart_params && window.wc_add_to_cart_params.cart_url;
       return { w: String(w || ''), wc: String(wc || '') };
     });
@@ -615,7 +599,7 @@ export async function gotoWooCart(page, baseUrl) {
   const paths = await resolveCartPaths(page, baseUrl);
   for (const pathName of paths) {
     if (await pageLooksLikeWooCart(page)) break;
-    const cartUrl = withCacheBust(baseUrl, pathName, { hdf_no_side_cart: '1' });
+    const cartUrl = withCacheBust(baseUrl, pathName, {});
     try {
       await page.goto(cartUrl, { waitUntil: 'domcontentloaded', timeout: getActiveTimeouts().navigation });
     } catch (navErr) {
@@ -1184,7 +1168,7 @@ export async function visibleValidationErrors(page) {
 }
 
 /**
- * Sepete ekleme AJAX yanıtını bekle (admin-ajax wdp_ajax_add_to_cart veya wc-ajax).
+ * Sepete ekleme yanıtını bekle (REST donation-panel/v1/cart/add veya wc-ajax).
  * waitForResponse tıklamadan ÖNCE kurulur.
  *
  * @param {import('@playwright/test').Page} page
