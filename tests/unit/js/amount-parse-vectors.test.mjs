@@ -7,6 +7,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseMoneyDetailed } from '../../e2e/helpers/currency.mjs';
+import { parseAmountDetailed } from '../../../assets/src/experiences/amount.mjs';
+import { parseAmount } from '../../../assets/src/experiences/store.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../../..');
@@ -21,6 +23,20 @@ test('e2e helper parseMoneyDetailed matches shared vectors', () => {
     assert.equal(got.status, row.status, `${row.store} "${row.input}" helper`);
     if (row.status === 'ok') {
       assert.ok(Math.abs(got.amount - row.amount) < 0.0001);
+    }
+  }
+});
+
+test('production parser (assets/src/experiences/amount.mjs) matches shared vectors', () => {
+  for (const row of fixture.vectors) {
+    const store = fixture.stores[row.store];
+    const got = parseAmountDetailed(row.input, store);
+    assert.equal(got.status, row.status, `${row.store} "${row.input}" production`);
+    if (row.status === 'ok') {
+      assert.ok(Math.abs(got.amount - row.amount) < 0.0001, `${row.store} "${row.input}" amount`);
+      assert.ok(Math.abs(parseAmount(row.input, store) - row.amount) < 0.0001, `${row.store} "${row.input}" parseAmount`);
+    } else {
+      assert.equal(parseAmount(row.input, store), null);
     }
   }
 });
