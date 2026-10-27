@@ -162,6 +162,8 @@ class Uninstall {
 		return array(
 			'donation_panel_settings',
 			'donation_panel_migrations',
+			'donation_panel_migrations_lock',
+			'donation_panel_migrations_error',
 			'wdp_version',
 			'wdp_db_version',
 			'wdp_previous_version',

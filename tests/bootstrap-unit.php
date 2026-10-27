@@ -534,6 +534,16 @@ if (!function_exists('get_option')) {
 		return $default;
 	}
 }
+if (!function_exists('add_option')) {
+	function add_option($key, $value = '', $deprecated = '', $autoload = 'yes') {
+		unset($deprecated, $autoload);
+		if (array_key_exists($key, WDP_Test_State::$options)) {
+			return false;
+		}
+		WDP_Test_State::$options[ $key ] = $value;
+		return true;
+	}
+}
 if (!function_exists('update_option')) {
 	function update_option($key, $value, $autoload = null) {
 		WDP_Test_State::$options[ $key ] = $value;
