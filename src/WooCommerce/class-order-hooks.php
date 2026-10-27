@@ -44,7 +44,7 @@ class Order_Hooks {
 		unset( $cart_item_key, $order );
 		// Özel fiyat varsa order item meta'ya ekle (progress bar için gerekli)
 		if ( isset( $values['custom_price'] ) && $values['custom_price'] > 0 ) {
-			$item->add_meta_data( '_custom_price', floatval( $values['custom_price'] ) );
+			$item->add_meta_data( '_custom_price', floatval( $values['custom_price'] ) ); // @phpstan-ignore argument.type (WC_Data::add_meta_data gerçekte mixed alır; WooCommerce stub'ı dar; tür değişirse eski yazıcı ile bayt-bayt eşitlik bozulur.)
 			if ( ! empty( $values['wdp_input_currency'] ) ) {
 				$item->add_meta_data( '_wdp_input_currency', strtoupper( sanitize_text_field( (string) $values['wdp_input_currency'] ) ) );
 			}

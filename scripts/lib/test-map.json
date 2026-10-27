@@ -361,7 +361,7 @@
       "reason": "Çeviri dosyası"
     },
     {
-      "pattern": "design/**",
+      "pattern": "dev/**",
       "ignore": true,
       "reason": "Tasarım vitrini"
     },

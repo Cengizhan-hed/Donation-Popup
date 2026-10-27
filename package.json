@@ -96,7 +96,8 @@
     "health:onoff": "node scripts/plugin-onoff-compare.mjs",
     "e2e:rtl": "node tests/e2e/run-rtl-layout.mjs",
     "verify:lint-front": "node scripts/lint-front.mjs js --gate && node scripts/lint-front.mjs css --gate",
-    "build:modules": "node scripts/build-modules.mjs"
+    "build:modules": "node scripts/build-modules.mjs",
+    "code:report": "node scripts/code-report.mjs"
   },
   "repository": {
     "type": "git",

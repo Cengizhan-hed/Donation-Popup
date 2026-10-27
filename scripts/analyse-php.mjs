@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * PHPStan çalıştırır; build/lint/phpstan.json|md yazar. Mevcut kodu düzeltmez.
+ * PHPStan çalıştırır; build/lint/phpstan.json|md yazar. Tek phpstan.neon, baseline yok. Kodu düzeltmez.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,8 +22,7 @@ if (!fs.existsSync(BIN)) {
   process.exit(2);
 }
 
-const writeBaseline = process.argv.includes('--write-baseline');
-const extra = process.argv.slice(2).filter((a) => a !== '--write-baseline');
+const extra = process.argv.slice(2);
 const args = [
   BIN,
   'analyse',
@@ -50,19 +49,6 @@ try {
 const issues = issuesFromPhpstan(parsed, ROOT);
 const summary = summarizeIssues(issues);
 writeLintPair(OUT, 'phpstan', { summary, issues }, summaryMarkdown('PHPStan', summary));
-
-if (writeBaseline) {
-  const base = path.join(ROOT, 'tools/lint-baseline/phpstan-baseline.neon');
-  const gen = spawnSync(
-    'php',
-    [BIN, 'analyse', '--memory-limit=2G', '--generate-baseline', base, '--allow-empty-baseline'],
-    { cwd: ROOT, encoding: 'utf8', stdio: 'inherit' }
-  );
-  if (gen.status !== 0) process.exit(gen.status || 1);
-  fs.mkdirSync(OUT, { recursive: true });
-  fs.copyFileSync(base, path.join(OUT, 'phpstan-baseline.neon'));
-  console.log('baseline yazıldı: tools/lint-baseline/phpstan-baseline.neon');
-}
 
 console.log(`PHPStan ${summary.total} hata. Rapor: build/lint/phpstan.md`);
 for (const [cat, n] of Object.entries(summary.categories)) {

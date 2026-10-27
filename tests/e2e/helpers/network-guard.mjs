@@ -744,10 +744,14 @@ export function isRemoteOrderRequest(req) {
 export const DONATION_PANEL_REST_NAMESPACE = 'donation-panel/v1';
 
 /**
- * POST olsa da sunucuda veri yazmayan uçlar (yalnız doğrulama). Bu listede olmayan her yazma yöntemi uzakta engellenir:
- * `cart/add`, `side-cart/suggestion`, `account/*` (tekrar bağış, giriş bağlama), `admin/*` vb.
+ * Uzakta İZİNLİ `donation-panel/v1` yazma rotaları (tam eşleşme). CLAUDE.md §2: uzakta SİPARİŞ yok, sepete ekleme serbest.
+ * - `validate`            : yalnız doğrulama (veri yazmaz)
+ * - `cart/add`            : bağış ürününü sepete ekler (sipariş değil)
+ * - `side-cart/suggestion`: yan sepet önerisini sepete ekler
+ * - `account/repeat`      : önceki bağışı sepete ekler (sipariş değil)
+ * Bu listede olmayan her yazma yöntemi (ayar, üye/giriş, e-posta, bilinmeyen yeni rota) uzakta engellenir.
  */
-export const DONATION_PANEL_REST_READ_ONLY_POST_ROUTES = Object.freeze(['validate']);
+export const DONATION_PANEL_REST_ALLOWED_WRITE_ROUTES = Object.freeze(['validate', 'cart/add', 'side-cart/suggestion', 'account/repeat']);
 
 /**
  * `donation-panel/v1` altındaki yolun alt rotası (örn. `cart/add`); eklenti alanı değilse ''.
@@ -767,17 +771,17 @@ export function donationPanelRestRoute(pathname, search) {
 }
 
 /**
- * Yazma yöntemli donation-panel/v1 isteği sunucuda yazmıyor mu (doğrulama gibi)?
+ * Yazma yöntemli donation-panel/v1 isteği uzakta izinli mi (yalnız sepete ekleyen/doğrulayan uçlar)?
+ * Sipariş oluşturan hiçbir uç izinli değildir; sipariş yolları ayrıca isRemoteOrderRequest ile kesilir.
  *
  * @param {string} pathname
  * @param {URLSearchParams} [search]
  * @returns {boolean}
  */
-export function isDonationPanelRestReadOnly(pathname, search) {
+export function isDonationPanelRestWriteAllowed(pathname, search) {
   const route = donationPanelRestRoute(pathname, search);
   if (route === '') return false;
-  const first = route.split('/')[0];
-  return DONATION_PANEL_REST_READ_ONLY_POST_ROUTES.includes(first);
+  return DONATION_PANEL_REST_ALLOWED_WRITE_ROUTES.includes(route);
 }
 
 /**
@@ -802,10 +806,10 @@ export function isRemoteWriteAllowed(req) {
   const headers = req?.headers || {};
   const storePath = pathname.replace(/^\/wp-json/, '');
 
-  // 12.0.0: eski ön yüz AJAX uçlarının karşılığı. donation-panel/v1 altında yazan (sepete ekleme, tekrar bağış,
-  // yan sepet önerisi, yönetici ayarı...) her istek uzakta engelli; yalnız yazmayan POST uçları (doğrulama) geçer.
+  // 12.0.0: donation-panel/v1 yazmaları: yalnız sepete ekleyen/doğrulayan rotalar (DONATION_PANEL_REST_ALLOWED_WRITE_ROUTES);
+  // ayar, üye/giriş, e-posta ve bilinmeyen rotalar engelli. Sipariş oluşturan uç eklentide yoktur.
   if (donationPanelRestRoute(pathname, search) !== '') {
-    return isDonationPanelRestReadOnly(pathname, search);
+    return isDonationPanelRestWriteAllowed(pathname, search);
   }
 
   const ajax = wcAjaxName(pathname, search);

@@ -1,20 +1,14 @@
 #!/usr/bin/env node
 /**
- * verify kapısı: değişen satırlarda (git diff -U0) baseline dışı yeni hata → kırmızı.
+ * verify kapısı: değişen satırlarda (git diff -U0) her PHPCS/PHPStan hatası → kırmızı (baseline yok).
  * Tam tarama yok; hedef +20 sn altı. Araç yoksa atlar (çıkış 0).
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { issuesFromPhpcs, issuesFromPhpstan, issueFingerprint } from './lib/lint-report.mjs';
-import {
-  changedPhpLines,
-  loadPhpcsBaseline,
-  baselineFingerprints,
-  newErrorsOnChangedLines,
-  SCOPE_PATHS,
-} from './lib/lint-baseline.mjs';
+import { issuesFromPhpcs, issuesFromPhpstan } from './lib/lint-report.mjs';
+import { changedPhpLines, SCOPE_PATHS } from './lib/lint-baseline.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PHPCS = path.join(ROOT, 'vendor-dev/bin/phpcs');
@@ -32,13 +26,10 @@ if (!diff.files.length) {
   process.exit(0);
 }
 
-// src/ (yeni mimari): ayrı sıfır-gevşetme kural dosyası, baseline YOK (her hata kırmızı).
-const srcFiles = diff.files.filter((f) => f.startsWith('src/'));
-const legacyFiles = diff.files.filter((f) => !f.startsWith('src/'));
-function runPhpcs(files, standard) {
+// Tek kural dosyası (phpcs.xml.dist), baseline YOK: değişen satırdaki her PHPCS hatası kırmızı.
+function runPhpcs(files) {
   if (!files.length) return [];
-  const args = [PHPCS, '-q', '--report=json'];
-  if (standard) args.push(`--standard=${standard}`);
+  const args = [PHPCS, '-q', '--report=json', '--standard=phpcs.xml.dist'];
   const res = spawnSync('php', [...args, ...files], { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
   try {
     return issuesFromPhpcs(JSON.parse(String(res.stdout || '{}') || '{}'), ROOT);
@@ -50,17 +41,16 @@ function runPhpcs(files, standard) {
     return [];
   }
 }
-const phpcsIssues = runPhpcs(legacyFiles, '');
-const srcIssues = runPhpcs(srcFiles, 'phpcs-src.xml.dist');
-
-const baseline = baselineFingerprints(loadPhpcsBaseline(ROOT));
-const phpcsGate = newErrorsOnChangedLines(phpcsIssues, diff.lines, baseline);
+const phpcsIssues = runPhpcs(diff.files).filter((i) => {
+  const set = diff.lines.get(i.file);
+  return set && set.has(Number(i.line));
+});
 
 const stanArgs = [
   PHPSTAN,
   'analyse',
   '-c',
-  'phpstan.verify.neon',
+  'phpstan.neon',
   '--memory-limit=1G',
   '--error-format=json',
   '--no-progress',
@@ -89,8 +79,8 @@ for (const issue of stanIssues) {
   else if (set) stanWarn.push(issue);
 }
 
-const red = [...phpcsGate.neu, ...srcIssues, ...stanNew];
-const warn = [...phpcsGate.existingOnChanged, ...stanWarn];
+const red = [...phpcsIssues, ...stanNew];
+const warn = [...stanWarn];
 const ms = Date.now() - started;
 
 if (warn.length) {
@@ -105,7 +95,6 @@ if (red.length) {
 }
 
 void SCOPE_PATHS;
-void issueFingerprint;
 console.log(
   `verify:lint temiz (${diff.files.length} dosya, ${ms} ms, taban ${String(diff.base).slice(0, 8)})`
 );

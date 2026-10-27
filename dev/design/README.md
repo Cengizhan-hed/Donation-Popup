@@ -1,6 +1,6 @@
 # Donation Panel — tasarım sistemi ve prototipler (Faz 7D)
 
-Bu klasör **eklenti kodu değildir**; Faz 7E'nin uygulayacağı görsel dili, etkileşimleri ve ekranları kanıtlayan çalışır prototipdir. Açmak için: `python3 -m http.server 9910 --directory design` → `http://localhost:9910/showcase/index.html` (vitrin; iframe'ler `../<ekran>.html` yükler, bu yüzden klasörü `design/` kökünden sunun).
+Bu klasör **eklenti kodu değildir**; Faz 7E'nin uygulayacağı görsel dili, etkileşimleri ve ekranları kanıtlayan çalışır prototipdir. Açmak için: `python3 -m http.server 9910 --directory dev/design` → `http://localhost:9910/showcase/index.html` (vitrin; iframe'ler `../<ekran>.html` yükler, bu yüzden klasörü `design/` kökünden sunun).
 
 | Dosya | Ne |
 |---|---|

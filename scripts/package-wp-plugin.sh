@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # WordPress plugin ZIP builder.
-# - Copies working tree (including untracked runtime vendor files) to a temp dir
+# - Copies working tree to a temp dir
 # - Applies exclude rules from .distignore (single source of truth)
 # - Creates build/woo-donation-popup.zip
 set -euo pipefail
@@ -68,8 +68,18 @@ if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.
   php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin/products.css" "$DEST/assets/css/list.css" || true
 fi
 
-# Keep only README.md as markdown in distribution root.
-find "$DEST" -type f -name "*.md" ! -name "README.md" -delete
+# Dagitim koku YALNIZ izinli girdiler (ayrintisi: .distignore basligi); digerleri silinir.
+ALLOWED_TOP=(woo-donation-popup.php uninstall.php readme.txt src assets templates blocks languages)
+for entry in "$DEST"/* "$DEST"/.[!.]*; do
+  [[ -e "$entry" ]] || continue
+  name="$(basename "$entry")"
+  keep=0
+  for a in "${ALLOWED_TOP[@]}"; do [[ "$name" == "$a" ]] && keep=1; done
+  [[ $keep -eq 1 ]] || rm -rf "$entry"
+done
+# Calisma zamani disi dosyalar (belge/test/kaynak haritasi) paketten cikar.
+find "$DEST" -type f \( -name "*.md" -o -name "*.map" -o -name "*.test.*" \) -delete
+find "$DEST" -type d \( -name tests -o -name __tests__ \) -prune -exec rm -rf {} +
 
 cd "$TMP"
 rm -f "$OUT_ZIP"

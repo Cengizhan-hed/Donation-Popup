@@ -14,10 +14,13 @@ const ZIP = path.join(ROOT, 'build/woo-donation-popup.zip');
 const PLANT_DIR = path.join(ROOT, 'test-results');
 const PLANT = path.join(PLANT_DIR, '.last-run.json');
 
+// 12.0.0: dagitim koku YALNIZ bu girdiler (CLAUDE/GOREV-12-f). includes/ ve README.md pakette yok.
 const TOP_ALLOWED = new Set([
-  'woo-donation-popup.php', 'uninstall.php', 'readme.txt', 'README.md', 'LICENSE', 'license.txt',
-  'includes', 'src', 'assets', 'templates', 'blocks', 'languages',
+  'woo-donation-popup.php', 'uninstall.php', 'readme.txt',
+  'src', 'assets', 'templates', 'blocks', 'languages',
 ]);
+// src/ yalniz calisma zamani dosyalari: PHP + block.json (test/belge/kaynak haritasi yok).
+const SRC_EXT_ALLOWED = new Set(['php', 'json', 'js', 'css']);
 const EXT_ALLOWED = new Set([
   'php', 'js', 'css', 'json', 'mo', 'po', 'pot', 'txt', 'md', 'svg', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'woff', 'woff2', 'html', 'map',
 ]);
@@ -47,19 +50,28 @@ function checkEntries(entries) {
   assert.ok(files.includes('uninstall.php'));
 
   const bad = [];
+  const tops = new Set(files.map((f) => f.split('/')[0]));
+  for (const t of ['src', 'assets', 'templates', 'blocks', 'languages']) {
+    if (!tops.has(t)) bad.push(`eksik kok: ${t}/`);
+  }
   for (const f of files) {
     const parts = f.split('/');
     if (parts.some((p) => p.startsWith('.'))) bad.push(`gizli: ${f}`);
     if (!TOP_ALLOWED.has(parts[0])) bad.push(`izinsiz kok: ${f}`);
     const ext = path.extname(f).slice(1).toLowerCase();
     if (parts.length > 1 && !EXT_ALLOWED.has(ext)) bad.push(`izinsiz uzanti: ${f}`);
-    if (/(^|\/)(test-results|playwright-report|blob-report|node_modules|vendor|vendor-dev|tests|tools|scripts|docs|coverage|research|design)\//.test(f) || /^build\//.test(f)) {
+    if (/(^|\/)(test-results|playwright-report|blob-report|node_modules|vendor|vendor-dev|tests|tools|scripts|docs|coverage|research|design|dev)\//.test(f) || /^build\//.test(f)) {
       bad.push(`gelistirme klasoru: ${f}`);
     }
     if (/(package(-lock)?\.json|composer\.(json|lock)|phpunit|phpcs|phpstan|eslint|\.zip$|\.log$)/i.test(path.basename(f))) {
       bad.push(`gelistirme dosyasi: ${f}`);
     }
     if (f.startsWith('assets/src/')) bad.push(`kaynak: ${f}`);
+    if (f.startsWith('languages/parts/')) bad.push(`ceviri parcasi: ${f}`);
+    if (f.startsWith('src/')) {
+      if (!SRC_EXT_ALLOWED.has(ext)) bad.push(`src calisma zamani degil: ${f}`);
+      if (/(^|\/)(tests?|__tests__)\//i.test(f) || /\.(test|spec)\./i.test(f)) bad.push(`src icinde test: ${f}`);
+    }
     if (/(^|\/)CHANGELOG\.md$/i.test(f)) bad.push(`changelog (readme.txt yeterli): ${f}`);
   }
   assert.deepEqual(bad, []);

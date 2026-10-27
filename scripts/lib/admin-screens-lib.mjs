@@ -25,7 +25,6 @@ export const SCREENS = Object.freeze([
   { id: 'dp-settings-new', path: '/wp-admin/admin.php?page=donation-panel', note: 'Yeni ayar ekranı (Donation Panel)', optional: true },
   { id: 'dp-guide', path: '/wp-admin/admin.php?page=donation-panel-guide', note: 'Donation Panel rehberi', optional: true },
   { id: 'dp-setup', path: '/wp-admin/options.php?page=donation-panel-setup', note: 'Kurulum Sihirbazı (menüde görünmez)', optional: true },
-  { id: 'dp-settings-legacy', path: '/wp-admin/admin.php?page=wdp-popup-settings', note: 'Eski ayar ekranı (Donation Popup settings)', optional: true },
   { id: 'privacy-settings', path: '/wp-admin/options-privacy.php', note: 'Ayarlar › Gizlilik' },
   { id: 'privacy-guide', path: '/wp-admin/privacy-policy-guide.php', note: 'Gizlilik Politikası Kılavuzu (eklenti bölümü var mı)', sectionProbe: true },
   { id: 'export-personal', path: '/wp-admin/export-personal-data.php', note: 'Araçlar › Kişisel Veriyi Dışa Aktar' },
@@ -213,19 +212,18 @@ export function compareDocPaths(docPaths, data) {
 /**
  * Sol menüden eklentinin hangi ayar ekranını sunduğunu belirler.
  * @param {{ label: string, subs: { label: string, slug?: string }[], slug?: string }[]} menu Menü.
- * @returns {{ uiMode: 'new'|'legacy'|'both'|'none', slugs: string[] }}
+ * @returns {{ uiMode: 'new'|'none', slugs: string[] }}
  */
 export function detectUiMode(menu) {
   const slugs = [];
   for (const m of menu || []) {
     for (const x of [m, ...(m.subs || [])]) {
-      if (x.slug && /^(donation-panel|wdp-popup-settings)/.test(x.slug)) slugs.push(x.slug);
+      if (x.slug && /^donation-panel/.test(x.slug)) slugs.push(x.slug);
     }
   }
   const uniq = [...new Set(slugs)];
   const hasNew = uniq.some((s) => s.startsWith('donation-panel'));
-  const hasOld = uniq.includes('wdp-popup-settings');
-  return { uiMode: hasNew && hasOld ? 'both' : hasNew ? 'new' : hasOld ? 'legacy' : 'none', slugs: uniq };
+  return { uiMode: hasNew ? 'new' : 'none', slugs: uniq };
 }
 
 /**

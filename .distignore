@@ -1,47 +1,54 @@
-# Files and directories excluded from distribution ZIPs (see scripts/package-wp-plugin.sh).
-# Also reference for manual packaging — do NOT ship node_modules or VCS metadata.
+# Dagitim paketi dislama listesi (scripts/package-wp-plugin.sh, wp dist-archive, deploy rsync icin TEK kaynak).
+# Paket koku YALNIZ: woo-donation-popup.php, uninstall.php, readme.txt, src/, assets/ (derlenmis), templates/, blocks/, languages/ (parts/ haric).
+# Paketleyici ayrica izinli listede olmayan her kok girdisini siler; test:package bunu sikica denetler.
 
-node_modules/
+# --- Surum kontrol / arac / IDE
 .git/
 .git
-.cursorignore
-phpstan-src.neon
-phpcs-src.xml.dist
-.claude/
-CLAUDE.md
-.cursor/
-.vscode/
-.github/
 .gitignore
 .distignore
+.cursorignore
+.cursor/
+.claude/
+.vscode/
+.github/
+.idea/
 .DS_Store
-*.zip
-*.tar.gz
-*.log
+CLAUDE.md
+node_modules/
+vendor/
+vendor-dev/
+/build/
+dev/
+research/
+/includes/
+tests/
+tools/
+scripts/
+docs/
+test-results/
+playwright-report/
+blob-report/
+coverage/
+graphify-out/
+
+# --- Gizli / ortam
 .env
 .env.*
-.env.e2e
-.env.e2e.example
-.env.deploy
-.env.deploy.example
+
+# --- Gelistirme yapilandirmasi
 package.json
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
-docs/
-vendor/
-vendor-dev/
 composer.json
 composer.lock
 composer.phar
 composer-setup.php
 phpunit.xml
 phpunit.xml.dist
-.phpunit.result.cache
 phpcs.xml.dist
-phpcs-src.xml.dist
 phpstan.neon
-phpstan.verify.neon
 phpstan.dead.neon
 psalm-taint.xml
 rector.php
@@ -49,46 +56,24 @@ eslint.config.mjs
 .stylelintrc.json
 .jscpd.json
 .lintstagedrc.json
-tests/
-tools/
-scripts/
-
-# Translation part files are merged locally; only compiled catalog ships.
-languages/parts/
-
-# Removed: intl-tel-input (replaced by WDP custom phone field)
-assets/vendor/intl-tel-input/
-
-tools/graphify-venv
-graphify-out
-scripts/graph-update.mjs
-research/
-design/
-
-# Faz 7: modern JS kaynagi pakete girmez; derleme ciktisi assets/build/ girer.
-/assets/src/
-.gitkeep
-
-# E8P: kok-sabitli; assets/css/build, assets/js/build, assets/build (derleme ciktilari) pakete GIRER.
-# E8M: gelistirme/test ciktilari (Plugin Check hidden_files: test-results/.last-run.json).
-/test-results/
-/playwright-report/
-/blob-report/
-/coverage/
-/build/
-.cursor*
-.claude*
-# E8X: changelog readme.txt icinde; CHANGELOG.md pakete girmez.
-CHANGELOG.md
-.last-run.json
-.env*
 .phpunit.cache/
-.phpcs.xml
+.phpunit.result.cache
 .eslintcache
 .stylelintcache
-.idea/
-*.map.bak
+
+# --- Belgeler / cikti
+README.md
+CHANGELOG.md
+*.zip
+*.tar.gz
+*.log
 *.orig
 *.rej
 *.swp
-phpstan-src.neon
+*.map.bak
+.last-run.json
+
+# --- Kaynaklar (derleme ciktisi assets/build/ girer)
+/assets/src/
+languages/parts/
+.gitkeep

@@ -18,7 +18,6 @@
 >
     <projectFiles>
         <directory name="src" />
-        <directory name="includes" />
         <ignoreFiles allowMissingFiles="true">
             <directory name="vendor-dev" />
             <directory name="vendor" />
