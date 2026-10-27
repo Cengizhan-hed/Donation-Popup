@@ -156,7 +156,7 @@ class Addon_Product_Visibility {
 			}
 			$out[] = array(
 				'parent_id' => $parent_id,
-				'addon_id' => $sid,
+				'addon_id'  => $sid,
 			);
 		}
 		return $out;

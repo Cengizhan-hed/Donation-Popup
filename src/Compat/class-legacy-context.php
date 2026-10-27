@@ -23,13 +23,13 @@ final class Legacy_Context {
 	 * Yeni iç anahtar => eski dışa açık anahtar (form bağlamı).
 	 */
 	const CONTEXT_ALIASES = array(
-		'enable_addon_donation'  => 'enable_sadaka_donation',
-		'addon_donation_message' => 'sadaka_donation_message',
-		'addon_min_price'        => 'sadaka_min_price',
-		'addon_fixed_price'      => 'sadaka_fixed_price',
-		'addon_is_fixed_price'   => 'sadaka_is_fixed_price',
-		'addon_wc_product_id'    => 'sadaka_wc_product_id',
-		'addon_toggle_label'     => 'sadaka_toggle_label',
+		'enable_addon_donation'   => 'enable_sadaka_donation',
+		'addon_donation_message'  => 'sadaka_donation_message',
+		'addon_min_price'         => 'sadaka_min_price',
+		'addon_fixed_price'       => 'sadaka_fixed_price',
+		'addon_is_fixed_price'    => 'sadaka_is_fixed_price',
+		'addon_wc_product_id'     => 'sadaka_wc_product_id',
+		'addon_toggle_label'      => 'sadaka_toggle_label',
 		'addon_price_placeholder' => 'sadaka_price_placeholder',
 	);
 

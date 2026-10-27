@@ -206,12 +206,12 @@ final class Product_Data_Tab {
 			'enable_dedication'         => $tristate( '_enable_dedication' ),
 			'dedication_placeholder'    => $meta( '_dedication_placeholder' ),
 			'enable_anonymous'          => $tristate( '_enable_anonymous' ),
-			'enable_addon_donation'    => $flag( '_enable_addon_donation' ),
-			'addon_toggle_label'       => $meta( '_addon_toggle_label' ),
-			'addon_wc_product_id'      => ( '' !== $addon_id && '0' !== $addon_id ) ? $addon_id : '',
-			'addon_min_price'          => '' !== $meta( '_addon_min_price' ) ? $meta( '_addon_min_price' ) : '0',
-			'addon_fixed_price'        => ( (float) $addon_fix > 0 ) ? $addon_fix : '',
-			'addon_donation_message'   => $meta( '_addon_donation_message' ),
+			'enable_addon_donation'     => $flag( '_enable_addon_donation' ),
+			'addon_toggle_label'        => $meta( '_addon_toggle_label' ),
+			'addon_wc_product_id'       => ( '' !== $addon_id && '0' !== $addon_id ) ? $addon_id : '',
+			'addon_min_price'           => '' !== $meta( '_addon_min_price' ) ? $meta( '_addon_min_price' ) : '0',
+			'addon_fixed_price'         => ( (float) $addon_fix > 0 ) ? $addon_fix : '',
+			'addon_donation_message'    => $meta( '_addon_donation_message' ),
 		);
 	}
 
