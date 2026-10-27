@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { expect } from '@playwright/test';
 import path from 'node:path';
 import { SEL, DP_SEL } from './selectors.mjs';
-import { setChecked } from './dp-form.mjs';
+import { isStepShown, setChecked } from './dp-form.mjs';
 import { formatMoney, formatMinPlaceholder, formatFillAmount } from './currency.mjs';
 import { withCacheBust } from './env.mjs';
 import {
@@ -241,7 +241,10 @@ async function fillAmountStep(form, store, amount) {
  */
 async function advanceToDetails(form) {
   const details = form.locator(DP_SEL.detailsStep).first();
-  if (await details.isVisible()) return;
+  if (await isStepShown(details)) {
+    await details.waitFor({ state: 'visible', timeout: CHECK_MS });
+    return;
+  }
   await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS });
   await details.waitFor({ state: 'visible', timeout: CHECK_MS });
 }

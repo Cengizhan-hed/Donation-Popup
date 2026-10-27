@@ -18,6 +18,16 @@ export function formOf(shell) {
 }
 
 /**
+ * Adım gösteriliyor mu: `hidden` özniteliğine bakar (DOM durumu). `isVisible()` açılış/adım geçiş animasyonunda
+ * boyut sıfırken anlık `false` verip yarış yaratır; eylemler (fill/click) zaten görünürlüğü kendileri bekler.
+ * @param {import('@playwright/test').Locator} step
+ * @returns {Promise<boolean>}
+ */
+export async function isStepShown(step) {
+  return (await step.count()) > 0 && (await step.first().evaluate((el) => !el.hidden));
+}
+
+/**
  * Görsel olarak gizli (özel) onay kutusu / anahtar: koordinat tıklaması yanlış öğeye (ör. alt eylem çubuğu)
  * düşebildiği için DOM click() ile işaretlenir; `change` olayı normal yoldan tetiklenir.
  * @param {import('@playwright/test').Locator} input
@@ -36,7 +46,10 @@ export async function setChecked(input, on = true) {
  */
 export async function advanceToDetails(form, timeout = CHECK_MS) {
   const details = form.locator(DP_SEL.detailsStep).first();
-  if (await details.isVisible()) return;
+  if (await isStepShown(details)) {
+    await details.waitFor({ state: 'visible', timeout });
+    return;
+  }
   await form.locator(DP_SEL.submit).first().click({ timeout });
   try {
     await details.waitFor({ state: 'visible', timeout });
@@ -133,7 +146,7 @@ export async function fillDonationForm(shell, spec) {
     return;
   }
   const amountStep = form.locator('[data-dp-step="amount"]').first();
-  if ((await amountStep.count()) > 0 && (await amountStep.isVisible())) {
+  if (await isStepShown(amountStep)) {
     await fillAmountStep(form, spec.fill);
     const toggle = form.locator(DP_SEL.dediToggle).first();
     if ((await toggle.count()) > 0) {

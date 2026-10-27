@@ -785,6 +785,8 @@ export async function emptyCartViaPageHtml(page, baseUrl) {
  * @param {string} baseUrl
  */
 export async function emptyCart(page, baseUrl) {
+  // Form başarıyla gönderince sayfa ödemeye yönlenir: yarım kalan gezinme bitmeden bağlam yok olabilir.
+  await page.waitForLoadState('domcontentloaded');
   const tryStore = async () => {
     if (!pageHasSiteOrigin(page.url(), baseUrl)) return false;
     const globals = await readStoreApiNonceGlobals(page);

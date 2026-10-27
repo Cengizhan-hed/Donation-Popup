@@ -53,7 +53,7 @@ import {
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks, resolveDonationFillAmount } from './donation-flow.mjs';
-import { advanceToDetails, fillAmountStep, fillDonorDetails, formOf, setChecked } from './dp-form.mjs';
+import { advanceToDetails, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
 import {
   probeSimilarDonations,
@@ -315,6 +315,20 @@ html, body {
   -webkit-backdrop-filter: none !important;
 }
 `;
+
+/**
+ * Zaman aşımı yarışı için reddeden söz. Zamanlayıcı `unref`: iş erken bitince süreç dakikalarca (420 sn)
+ * boşuna ayakta tutulmaz.
+ * @param {number} ms
+ * @param {string} message
+ * @returns {Promise<never>}
+ */
+function rejectAfter(ms, message) {
+  return new Promise((_, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    timer.unref();
+  });
+}
 
 /** Boş catch yerine: temizlik dışı yutulursa log + fırlat. */
 function catchFail(label, err) {
@@ -891,7 +905,7 @@ async function triggerShellValidationErrors(page, mode) {
   await form.waitFor({ state: 'visible', timeout: CHECK_MS });
   // Zengin hata ekranı: geçerli tutarla bilgi adımına geç, alanlar boşken gönder.
   const amountStep = form.locator('[data-dp-step="amount"]').first();
-  if ((await amountStep.count()) > 0 && (await amountStep.isVisible())) {
+  if (await isStepShown(amountStep)) {
     const hasCustom = (await form.locator(DP_SEL.amount).count()) > 0;
     const picked = hasCustom ? await resolveDonationFillAmount(shell, getActiveProfile()?.currency) : { fill: '' };
     await fillAmountStep(form, picked.fill);
@@ -1315,7 +1329,7 @@ async function fillDonorFields(root, opts = {}) {
   const form = formOf(root);
   await form.waitFor({ state: 'visible', timeout: CHECK_MS });
   const amountStep = form.locator('[data-dp-step="amount"]').first();
-  if (!opts.skipAmount && (await amountStep.count()) > 0 && (await amountStep.isVisible())) {
+  if (!opts.skipAmount && (await isStepShown(amountStep))) {
     await fillAmountStep(form, opts.amountFill);
   }
   await advanceToDetails(form);
@@ -2449,7 +2463,7 @@ export async function runAddonScenario({
 
     timeline.mark('fill-amount');
     const amountStep = form.locator('[data-dp-step="amount"]').first();
-    if ((await amountStep.count()) > 0 && (await amountStep.isVisible())) {
+    if (await isStepShown(amountStep)) {
       let fill;
       if (productKey === 'custom') fill = '250';
       else if ((await form.locator(DP_SEL.amount).count()) > 0) {
@@ -2457,7 +2471,6 @@ export async function runAddonScenario({
       }
       await fillAmountStep(form, fill);
     }
-
     timeline.mark('open-addon');
     await setChecked(toggle, true);
     const fixedAddon = Number(await form.getAttribute('data-addon-fixed')) || 0;
@@ -4426,9 +4439,7 @@ export async function captureAll({
                     stats: functionalStats,
                     knownFindings: a11yFindings,
                   }),
-                  new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('mobile-a11y 90s zaman aşımı')), 90000)
-                  ),
+                  rejectAfter(90000, 'mobile-a11y 90s zaman aşımı'),
                 ]);
               }
               if (want('checkout-flow')) {
@@ -4447,12 +4458,7 @@ export async function captureAll({
                     offlineGateway: checkoutEnv?.offline || null,
                     skipOrderReason: checkoutEnv?.skipOrderReason || '',
                   }),
-                  new Promise((_, reject) =>
-                    setTimeout(
-                      () => reject(new Error('checkout-flow 420s zaman aşımı')),
-                      420000
-                    )
-                  ),
+                  rejectAfter(420000, 'checkout-flow 420s zaman aşımı'),
                 ]);
               }
             } catch (e) {
@@ -4555,9 +4561,7 @@ export async function captureAll({
     try {
       const cleaned = await Promise.race([
         cleanupE2EData({ guardOrderId: guardOrder?.id, envId: profile.id }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('cleanup 120s zaman aşımı')), 120000)
-        ),
+        rejectAfter(120000, 'cleanup 120s zaman aşımı'),
       ]);
       debugFiles.push(`cleanup:${JSON.stringify(cleaned)}`);
       if (canaryBefore) {
