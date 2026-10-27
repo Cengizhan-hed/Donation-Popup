@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 08:27+0300\n"
+"POT-Creation-Date: 2026-10-27 09:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1528,7 +1528,7 @@ msgstr ""
 msgid "How the donation form looks and where the donate button appears."
 msgstr ""
 
-#: src/Admin/class-pages.php:285 src/Admin/class-status.php:161
+#: src/Admin/class-pages.php:285 src/Admin/class-status.php:158
 msgid "Fix"
 msgstr ""
 
@@ -1541,7 +1541,7 @@ msgid "Guest checkout is off: donors must create an account to give"
 msgstr ""
 
 #: src/Admin/class-pages.php:287 src/Admin/class-pages.php:307
-#: src/Admin/class-pages.php:309 src/Admin/class-status.php:195
+#: src/Admin/class-pages.php:309 src/Admin/class-status.php:192
 msgid "Open WooCommerce settings"
 msgstr ""
 
@@ -1604,7 +1604,7 @@ msgstr ""
 msgid "Privacy policy page is not set in WordPress"
 msgstr ""
 
-#: src/Admin/class-pages.php:328 src/Admin/class-status.php:185
+#: src/Admin/class-pages.php:328 src/Admin/class-status.php:182
 msgid "Set it"
 msgstr ""
 
@@ -1921,66 +1921,66 @@ msgid "Checkout page ready (classic checkout)"
 msgstr ""
 
 #. translators: %s: currency name and symbol.
-#: src/Admin/class-status.php:167
+#: src/Admin/class-status.php:164
 #, php-format
 msgid "Currency: %s"
 msgstr ""
 
-#: src/Admin/class-status.php:169
+#: src/Admin/class-status.php:166
 msgid "Change in WooCommerce"
 msgstr ""
 
 #. translators: %d: number of donation products.
-#: src/Admin/class-status.php:175
+#: src/Admin/class-status.php:172
 #, php-format
 msgid "%d donation product is live"
 msgid_plural "%d donation products are live"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/class-status.php:177
+#: src/Admin/class-status.php:174
 msgid "Products"
 msgstr ""
 
-#: src/Admin/class-status.php:183
+#: src/Admin/class-status.php:180
 msgid "Privacy policy page is set"
 msgstr ""
 
-#: src/Admin/class-status.php:183
+#: src/Admin/class-status.php:180
 msgid "Privacy policy page is not set"
 msgstr ""
 
-#: src/Admin/class-status.php:192
+#: src/Admin/class-status.php:189
 msgid "Guest checkout is on: donors do not need an account"
 msgstr ""
 
-#: src/Admin/class-status.php:193
+#: src/Admin/class-status.php:190
 msgid ""
 "Guest checkout is off: donors must create an account to give. Turn on guest "
 "checkout in WooCommerce."
 msgstr ""
 
-#: src/Admin/class-status.php:211
+#: src/Admin/class-status.php:208
 msgid "prepare the checkout page"
 msgstr ""
 
-#: src/Admin/class-status.php:216
+#: src/Admin/class-status.php:213
 msgid "publish a donation product"
 msgstr ""
 
-#: src/Admin/class-status.php:221
+#: src/Admin/class-status.php:218
 msgid "finish the quick setup"
 msgstr ""
 
-#: src/Admin/class-status.php:226
+#: src/Admin/class-status.php:223
 msgid "link your privacy page"
 msgstr ""
 
-#: src/Admin/class-status.php:231
+#: src/Admin/class-status.php:228
 msgid "allow guest checkout"
 msgstr ""
 
-#: src/Admin/class-status.php:236
+#: src/Admin/class-status.php:233
 msgid "create your first campaign"
 msgstr ""
 
