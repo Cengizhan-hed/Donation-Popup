@@ -174,17 +174,18 @@ final class E8ESecurityTest extends TestCase {
 		$this->assertStringNotContainsString( 'wp_ajax_nopriv_wdp_save', $legacy );
 	}
 
-	public function test_admin_ajax_handlers_all_call_guard(): void {
+	public function test_admin_settings_are_saved_only_through_guarded_rest_routes(): void {
 		$root = dirname( __DIR__, 3 );
-		$src  = (string) file_get_contents( $root . '/includes/class-woo-donation-popup-admin.php' );
-		preg_match_all( '/public function ((?:save_[a-z_]+)|apply_style_preset|export_style_preset|import_style_preset)\(\)/', $src, $m, PREG_OFFSET_CAPTURE );
-		$this->assertNotEmpty( $m[1] );
-		foreach ( $m[1] as $i => $hit ) {
-			$start = (int) $m[0][ $i ][1];
-			$body  = substr( $src, $start, 400 );
-			$this->assertStringContainsString( 'guard_admin_settings_ajax()', $body, $hit[0] );
-		}
-		$this->assertStringContainsString( "check_ajax_referer( 'wdp_admin_nonce', 'nonce' )", $src );
-		$this->assertStringContainsString( "current_user_can( 'manage_woocommerce' )", $src );
+		$hooks = (string) file_get_contents( $root . '/includes/class-admin-hooks.php' );
+		$this->assertStringNotContainsString( 'wp_ajax_wdp_save', $hooks, 'Eski ayar kaydetme AJAX uclari kaldirildi' );
+		$legacy = (string) file_get_contents( $root . '/includes/class-woo-donation-popup-admin.php' );
+		$this->assertStringNotContainsString( 'function save_', $legacy );
+
+		$src = (string) file_get_contents( $root . '/src/Admin/class-admin-controller.php' );
+		$this->assertSame( 4, substr_count( $src, 'register_rest_route(' ) );
+		$this->assertSame( 4, substr_count( $src, "'permission_callback' => \$permission" ) );
+		$this->assertStringContainsString( "permission_for( Admin_Bootstrap::CAPABILITY )", $src );
+		$this->assertSame( 3, substr_count( $src, '$this->guard( $request )' ), 'Yazma uclari nonce + hiz siniri ister' );
+		$this->assertStringContainsString( "verify_nonce( \$request )", $src );
 	}
 }

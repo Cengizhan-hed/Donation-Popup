@@ -76,12 +76,34 @@ add_action(
 			delete_metadata( 'user', 0, 'donation_panel_ui_notice_dismissed', '', true );
 			wp_send_json( array( 'ok' => true, 'ui' => $ui ) );
 		}
+		if ( isset( $_GET['dp_ad_opt'] ) ) {
+			// Yalnız yerel test işçisi (uzak siteye gitmez): dar bir izin listesindeki yerel örnek seçeneklerini ayarlar/siler.
+			nocache_headers();
+			$allowed = array( 'woocommerce_enable_guest_checkout', 'woocommerce_enable_myaccount_registration', 'wp_page_for_privacy_policy', 'wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall' );
+			$name    = sanitize_key( (string) $_GET['dp_ad_opt'] );
+			if ( ! in_array( $name, $allowed, true ) ) {
+				wp_send_json( array( 'ok' => false ), 400 );
+			}
+			if ( isset( $_GET['del'] ) ) {
+				delete_option( $name );
+			} else {
+				$raw = isset( $_GET['val'] ) ? wp_unslash( (string) $_GET['val'] ) : '';
+				$dec = json_decode( $raw, true );
+				update_option( $name, null === $dec ? $raw : $dec );
+			}
+			wp_send_json( array( 'ok' => true, 'value' => get_option( $name, null ) ) );
+		}
 		if ( isset( $_GET['dp_ad_state'] ) ) {
 			nocache_headers();
 			$count = wp_count_posts( 'product' );
 			wp_send_json(
 				array(
 					'settings' => get_option( 'donation_panel_settings', array() ),
+					'options'  => array(
+						'button'    => get_option( 'wdp_button_settings', null ),
+						'placement' => get_option( 'wdp_placement_settings', null ),
+						'delete'    => get_option( 'wdp_delete_data_on_uninstall', null ),
+					),
 					'legacy'   => wdp_ad_legacy_hashes(),
 					'products' => (int) array_sum( array_map( 'intval', (array) $count ) ),
 				)

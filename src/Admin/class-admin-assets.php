@@ -1,6 +1,7 @@
 <?php
 /**
  * Yönetici varlıkları: CSS/JS yalnız Donation Panel'in kendi ekranlarında yüklenir (Y6 kuralı).
+ * Derleme çıktısı (`wp-scripts`): `assets/build/admin/index.js|.css` + `index.asset.php`. jQuery kullanılmaz.
  *
  * @package DonationPanel
  */
@@ -15,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
 final class Admin_Assets {
 
 	const HANDLE = 'donation-panel-admin';
+	const SCRIPT = 'assets/build/admin/index.js';
+	const STYLE  = 'assets/build/admin/index.css';
 
 	/**
 	 * Eklenti kök dizini.
@@ -51,13 +54,22 @@ final class Admin_Assets {
 	/**
 	 * Kendi ekran kancasını kaydeder.
 	 *
-	 * @param string $hook_suffix add_submenu_page dönüşü.
+	 * @param string|false $hook_suffix add_submenu_page dönüşü.
 	 * @return void
 	 */
 	public function own( $hook_suffix ) {
 		if ( is_string( $hook_suffix ) && '' !== $hook_suffix ) {
 			$this->hooks[] = $hook_suffix;
 		}
+	}
+
+	/**
+	 * Kendi ekran kancaları.
+	 *
+	 * @return string[]
+	 */
+	public function hooks() {
+		return $this->hooks;
 	}
 
 	/**
@@ -70,17 +82,46 @@ final class Admin_Assets {
 		if ( ! in_array( (string) $hook_suffix, $this->hooks, true ) ) {
 			return;
 		}
-		$css = 'src/Admin/assets/admin.css';
-		$js  = 'src/Admin/assets/admin.js';
-		$ver = defined( 'WDP_ASSET_VERSION' ) ? (string) WDP_ASSET_VERSION : '1';
-		if ( is_readable( $this->plugin_dir . $css ) ) {
-			$ver .= '.' . (string) filemtime( $this->plugin_dir . $css );
+		$js_path = $this->plugin_dir . self::SCRIPT;
+		if ( ! is_readable( $js_path ) ) {
+			return;
+		}
+		$asset = array(
+			'dependencies' => array(),
+			'version'      => (string) filemtime( $js_path ),
+		);
+		$meta  = $this->plugin_dir . 'assets/build/admin/index.asset.php';
+		if ( is_readable( $meta ) ) {
+			$loaded = include $meta;
+			if ( is_array( $loaded ) ) {
+				$asset = array_merge( $asset, $loaded );
+			}
 		}
 
-		wp_enqueue_style( self::HANDLE, $this->plugin_url . $css, array(), $ver );
-		wp_enqueue_script( self::HANDLE, $this->plugin_url . $js, array(), $ver, true );
-		if ( function_exists( 'wp_script_add_data' ) ) {
-			wp_script_add_data( self::HANDLE, 'strategy', 'defer' );
+		if ( is_readable( $this->plugin_dir . self::STYLE ) ) {
+			wp_enqueue_style( self::HANDLE, $this->plugin_url . self::STYLE, array(), $asset['version'] );
+			wp_style_add_data( self::HANDLE, 'rtl', 'replace' );
 		}
+		wp_enqueue_script( self::HANDLE, $this->plugin_url . self::SCRIPT, $asset['dependencies'], $asset['version'], true );
+		wp_script_add_data( self::HANDLE, 'strategy', 'defer' );
+		wp_add_inline_script(
+			self::HANDLE,
+			'window.donationPanelAdmin = ' . wp_json_encode(
+				array(
+					'rest'  => esc_url_raw( rest_url( 'donation-panel/v1/' ) ),
+					'nonce' => wp_create_nonce( 'wp_rest' ),
+					'i18n'  => array(
+						'saved'     => __( 'Saved', 'woo-donation-popup' ),
+						'saving'    => __( 'Saving...', 'woo-donation-popup' ),
+						'unsaved'   => __( 'You have unsaved changes', 'woo-donation-popup' ),
+						'error'     => __( 'Something went wrong. Please try again.', 'woo-donation-popup' ),
+						'copied'    => __( 'Copied', 'woo-donation-popup' ),
+						'imported'  => __( 'Settings imported. Reloading...', 'woo-donation-popup' ),
+						'badImport' => __( 'The file does not look like a Donation Panel settings export.', 'woo-donation-popup' ),
+					),
+				)
+			) . ';',
+			'before'
+		);
 	}
 }

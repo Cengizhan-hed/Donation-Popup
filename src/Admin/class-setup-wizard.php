@@ -1,7 +1,8 @@
 <?php
 /**
- * Kurulum sihirbazı (E7): isteğe bağlı, atlanabilir, dört adım. Ürün OLUŞTURMAZ; mevcut ürüne yönlendirir.
- * Mağaza değerleri (para birimi, ülke) WooCommerce'ten okunur; koda gömülmez.
+ * Kurulum sihirbazı: beş adım (Sayfalar, Görünüm, Bağış formu, Modüller, Bitir). İsteğe bağlı ve atlanabilir.
+ * Her adımın seçimi REST ile kaydedilir ve ilerleme kalıcıdır (kaldığı adımdan devam eder).
+ * Ürün, sayfa ya da WooCommerce ayarı OLUŞTURMAZ/DEĞİŞTİRMEZ; mağaza değerleri WooCommerce'ten okunur.
  *
  * @package DonationPanel
  */
@@ -17,36 +18,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Setup_Wizard {
 
-	const ACTION       = 'donation_panel_wizard';
-	const NONCE_ACTION = 'donation_panel_wizard';
-
-	/**
-	 * Amaç => modül varsayılanları (yalnız burada adı geçen modüller değişir).
-	 *
-	 * @return array<string, array<string, bool>>
-	 */
-	public static function goal_defaults() {
-		return array(
-			'simple'   => array(
-				'campaign'      => false,
-				'impact'        => false,
-				'thanks'        => true,
-				'donor_account' => false,
-			),
-			'campaign' => array(
-				'campaign'      => true,
-				'impact'        => true,
-				'thanks'        => true,
-				'donor_account' => false,
-			),
-			'regular'  => array(
-				'campaign'      => true,
-				'impact'        => false,
-				'thanks'        => true,
-				'donor_account' => true,
-			),
-		);
-	}
+	const STEP_COUNT = 5;
 
 	/**
 	 * Ayarlar.
@@ -56,86 +28,99 @@ final class Setup_Wizard {
 	private $settings;
 
 	/**
+	 * Ayar deposu.
+	 *
+	 * @var Settings_Store
+	 */
+	private $store;
+
+	/**
 	 * Kurucu.
 	 *
-	 * @param Settings $settings Ayarlar.
+	 * @param Settings       $settings Ayarlar.
+	 * @param Settings_Store $store    Ayar deposu.
 	 */
-	public function __construct( Settings $settings ) {
+	public function __construct( Settings $settings, Settings_Store $store ) {
 		$this->settings = $settings;
+		$this->store    = $store;
 	}
 
 	/**
-	 * Gönderimi işler: yetki + nonce, sonra ayarları yazar ve ayar ekranına döner.
+	 * Adım etiketleri.
 	 *
-	 * @return void
+	 * @return string[]
 	 */
-	public function handle() {
-		if ( ! current_user_can( Admin_Bootstrap::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to do this.', 'woo-donation-popup' ), '', array( 'response' => 403 ) );
-		}
-		check_admin_referer( self::NONCE_ACTION );
-
-		$result = isset( $_POST['wizard_result'] ) ? sanitize_key( wp_unslash( $_POST['wizard_result'] ) ) : 'skipped'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer yukarıda.
-		$goal   = isset( $_POST['goal'] ) ? sanitize_key( wp_unslash( $_POST['goal'] ) ) : 'simple'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$try    = ! empty( $_POST['try_new_form'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-		$result = $this->apply( $result, $goal, $try );
-
-		wp_safe_redirect( add_query_arg( 'wizard', $result, Admin_View::url( Admin_Bootstrap::SLUG_SETTINGS ) ) );
-		exit;
+	public static function step_labels() {
+		return array(
+			1 => __( 'Pages', 'woo-donation-popup' ),
+			2 => __( 'Appearance', 'woo-donation-popup' ),
+			3 => __( 'Donation form', 'woo-donation-popup' ),
+			4 => __( 'Modules', 'woo-donation-popup' ),
+			5 => __( 'Finish', 'woo-donation-popup' ),
+		);
 	}
 
 	/**
-	 * Seçimleri ayara yazar (yetki/nonce çağıranda denetlenir).
-	 *
-	 * @param string $result `done` ya da başka (= atlandı).
-	 * @param string $goal   Amaç kimliği.
-	 * @param bool   $try_new_form Yeni formu dene.
-	 * @return string `done` ya da `skipped`.
-	 */
-	public function apply( $result, $goal, $try_new_form ) {
-		$patch = array( 'admin' => array( 'wizard' => 'skipped' ) );
-
-		if ( 'done' === $result ) {
-			$goals = self::goal_defaults();
-			$goal  = isset( $goals[ $goal ] ) ? $goal : 'simple';
-
-			$patch['admin']['wizard'] = 'done';
-			$patch['modules']         = $goals[ $goal ];
-			unset( $try_new_form );
-		}
-
-		$this->settings->update( $patch );
-		return 'done' === $result ? 'done' : 'skipped';
-	}
-
-	/**
-	 * Mağaza özeti (yalnız WooCommerce'ten okunan değerler).
-	 *
-	 * @return array<int, array{0: string, 1: string}>
-	 */
-	private function store_facts() {
-		$facts = array();
-		if ( function_exists( 'get_woocommerce_currency' ) ) {
-			$symbol  = function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( (string) get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '';
-			$facts[] = array( __( 'Currency', 'woo-donation-popup' ), trim( get_woocommerce_currency() . ' ' . $symbol ) );
-		}
-		if ( function_exists( 'wc_get_base_location' ) ) {
-			$base    = wc_get_base_location();
-			$facts[] = array( __( 'Store country', 'woo-donation-popup' ), isset( $base['country'] ) ? (string) $base['country'] : '' );
-		}
-		$facts[] = array( __( 'Decimals and separators', 'woo-donation-popup' ), __( 'Follow your WooCommerce settings', 'woo-donation-popup' ) );
-		$facts[] = array( __( 'Colors and fonts', 'woo-donation-popup' ), __( 'Inherited from your theme', 'woo-donation-popup' ) );
-		return $facts;
-	}
-
-	/**
-	 * Bağış ürünü sayısı (WooCommerce ürünleri; oluşturma yok).
+	 * Kayıtlı adım (1..5).
 	 *
 	 * @return int
 	 */
-	private function donation_product_count() {
-		return class_exists( '\\WDP_Donation_Scope' ) ? (int) \WDP_Donation_Scope::count() : 0;
+	public function current_step() {
+		return max( 1, min( self::STEP_COUNT, (int) $this->settings->get( 'admin.wizard_step', 1 ) ) );
+	}
+
+	/**
+	 * Adım başlığı ve açıklaması.
+	 *
+	 * @return array<int, array{0: string, 1: string}>
+	 */
+	private function step_text() {
+		return array(
+			1 => array( __( 'Is your store ready?', 'woo-donation-popup' ), __( 'Donation Panel reads your WooCommerce settings as they are. Nothing is created or changed here.', 'woo-donation-popup' ) ),
+			2 => array( __( 'How should the donation form open?', 'woo-donation-popup' ), __( 'Choose how the form looks when a donor taps "Donate". You can still change it for each product later.', 'woo-donation-popup' ) ),
+			3 => array( __( 'What should the form ask?', 'woo-donation-popup' ), __( 'Keep it short: fewer fields mean more completed gifts. You can change this any time.', 'woo-donation-popup' ) ),
+			4 => array( __( 'Which extras do you want?', 'woo-donation-popup' ), __( 'Modules that are off load nothing, so they never slow your site down.', 'woo-donation-popup' ) ),
+			5 => array( __( 'You are ready', 'woo-donation-popup' ), __( 'Your choices are saved. Place the donate button with the shortcode below, with the block, or let automatic placement do it.', 'woo-donation-popup' ) ),
+		);
+	}
+
+	/**
+	 * Adım gövdesi.
+	 *
+	 * @param int $step Adım.
+	 * @return string
+	 */
+	private function step_body( $step ) {
+		$fields = Field_Registry::fields();
+		switch ( $step ) {
+			case 1:
+				$list = '<ul class="dpa-statuses">';
+				foreach ( ( new Status( $this->settings ) )->items() as $item ) {
+					$list .= Admin_View::status_row( $item['ok'], $item['text'], $item['url'], $item['link'] );
+				}
+				return $list . '</ul><p class="dpa-row__help">' . esc_html__( 'Donation Panel works on your existing WooCommerce products. Open a product and use its Donation tab to turn it into a donation product.', 'woo-donation-popup' ) . '</p>';
+			case 2:
+				$html   = Admin_View::cards( 'display.mode', $fields['display.mode']['options'], (string) $this->store->get( 'display.mode' ), $fields['display.mode']['label'] );
+				$colors = (string) $this->store->get( 'design.colors' );
+				$html  .= '<fieldset class="dpa-radios"><legend class="dpa-radios__legend">' . esc_html__( 'Colors', 'woo-donation-popup' ) . '</legend>';
+				$html  .= '<label class="dpa-radio" for="dpa-w-colors-theme"><input type="radio" name="design.colors" id="dpa-w-colors-theme" value="theme" data-dpa-field="design.colors"' . checked( $colors, 'theme', false ) . '><span><b>' . esc_html__( 'Use my theme colors', 'woo-donation-popup' ) . '</b><small>' . esc_html__( 'The form follows your site colors and font automatically', 'woo-donation-popup' ) . '</small></span></label>';
+				$html  .= '<label class="dpa-radio" for="dpa-w-colors-custom"><input type="radio" name="design.colors" id="dpa-w-colors-custom" value="custom" data-dpa-field="design.colors"' . checked( $colors, 'custom', false ) . '><span><b>' . esc_html__( 'Choose my own colors', 'woo-donation-popup' ) . '</b><small>' . esc_html__( 'Main color and button color', 'woo-donation-popup' ) . '</small></span></label></fieldset>';
+				$html  .= '<div data-dpa-when="design.colors=custom">' . Admin_View::field( 'design.brand', $fields['design.brand'], $this->store->get( 'design.brand' ) ) . Admin_View::field( 'design.accent', $fields['design.accent'], $this->store->get( 'design.accent' ) ) . '</div>';
+				return $html;
+			case 3:
+				$html = '';
+				foreach ( array( 'form.presets_enabled', 'form.presets', 'form.donor_email', 'form.dedication', 'form.anonymous' ) as $id ) {
+					$html .= Admin_View::field( $id, $fields[ $id ], $this->store->get( $id ) );
+				}
+				return $html;
+			case 4:
+				$html = '<div class="dpa-mods">';
+				foreach ( Settings_Store::module_definitions() as $slug => $def ) {
+					$html .= Admin_View::module_row( $slug, $def[0], $def[1], $this->store->module_enabled( $slug ) );
+				}
+				return $html . '</div>';
+		}
+		return Admin_View::code( '[wdp_donation_button_panel]' ) . '<p class="dpa-row__help">' . esc_html__( 'On a product page the shortcode finds its own product. No ID needed.', 'woo-donation-popup' ) . '</p>';
 	}
 
 	/**
@@ -147,73 +132,33 @@ final class Setup_Wizard {
 		if ( ! current_user_can( Admin_Bootstrap::CAPABILITY ) ) {
 			wp_die( esc_html__( 'You do not have permission to open this page.', 'woo-donation-popup' ), '', array( 'response' => 403 ) );
 		}
+		$labels = self::step_labels();
+		$text   = $this->step_text();
+		$cur    = $this->current_step();
 
-		$steps = array(
-			__( 'Goal', 'woo-donation-popup' ),
-			__( 'Defaults', 'woo-donation-popup' ),
-			__( 'First product', 'woo-donation-popup' ),
-			__( 'Done', 'woo-donation-popup' ),
-		);
-
-		echo '<div class="wrap dpa" id="dpa-wizard">';
-		echo '<h1 class="dpa-title">' . esc_html__( 'Quick setup', 'woo-donation-popup' ) . '</h1>';
-		echo '<p class="dpa-sub">' . esc_html__( 'Four short steps. You can change everything later in Settings.', 'woo-donation-popup' ) . '</p>';
-
-		echo '<ol class="dpa-stepper" aria-label="' . esc_attr__( 'Progress', 'woo-donation-popup' ) . '">';
-		foreach ( $steps as $i => $label ) {
-			echo '<li data-dpa-stepper="' . (int) $i . '"' . ( 0 === $i ? ' class="cur" aria-current="step"' : '' ) . '><i></i><span>' . esc_html( $label ) . '</span></li>';
+		$html  = '<div class="wrap dpa dpa-wizard" id="dpa-wizard" data-dpa-page="wizard" data-dpa-step="' . (int) $cur . '" data-dpa-steps="' . (int) self::STEP_COUNT . '" data-dpa-overview="' . esc_url( Admin_View::url( Admin_Bootstrap::SLUG_OVERVIEW ) ) . '">';
+		$html .= '<h1 class="screen-reader-text">' . esc_html__( 'Quick setup', 'woo-donation-popup' ) . '</h1>';
+		$html .= '<ol class="dpa-stepper" aria-label="' . esc_attr__( 'Setup progress', 'woo-donation-popup' ) . '">';
+		foreach ( $labels as $n => $label ) {
+			$html .= '<li class="dpa-stepper__item" data-dpa-stepper="' . (int) $n . '"><span class="dpa-stepper__dot" aria-hidden="true">' . (int) $n . '</span><span class="dpa-stepper__label">' . esc_html( $label ) . '</span></li>';
 		}
-		echo '</ol>';
+		$html .= '</ol><div class="dpa-notices" data-dpa-notices role="status" aria-live="polite"></div>';
 
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="dpa-form" data-dpa-wizard>';
-		wp_nonce_field( self::NONCE_ACTION );
-		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '">';
-
-		// Adım 1: amaç.
-		echo '<section class="dpa-card dpa-step" data-dpa-step="0"><h2>' . esc_html__( 'What do you want to achieve?', 'woo-donation-popup' ) . '</h2>';
-		echo '<p class="dpa-note">' . esc_html__( 'Pick the closest one. It only sets which optional features start switched on.', 'woo-donation-popup' ) . '</p><div class="dpa-opts">';
-		$goal_labels = array(
-			'simple'   => array( __( 'Simple donations', 'woo-donation-popup' ), __( 'A clean donate button and a thank-you screen. Nothing else.', 'woo-donation-popup' ) ),
-			'campaign' => array( __( 'A fundraising campaign', 'woo-donation-popup' ), __( 'Adds a goal and progress bar, and short impact phrases next to amounts.', 'woo-donation-popup' ) ),
-			'regular'  => array( __( 'Regular supporters', 'woo-donation-popup' ), __( 'Adds donor accounts so supporters can see their gifts and give again.', 'woo-donation-popup' ) ),
-		);
-		$first       = true;
-		foreach ( $goal_labels as $value => $text ) {
-			echo '<label class="dpa-pill"><input type="radio" name="goal" value="' . esc_attr( $value ) . '"' . ( $first ? ' checked' : '' ) . '><span><strong>' . esc_html( $text[0] ) . '</strong><small>' . esc_html( $text[1] ) . '</small></span></label>';
-			$first = false;
+		$html .= '<div class="dpa-wizard__card"><div class="dpa-wizard__main">';
+		foreach ( $labels as $n => $label ) {
+			$html .= '<section class="dpa-step" data-dpa-wstep="' . (int) $n . '"' . ( $n === $cur ? '' : ' hidden' ) . ' aria-labelledby="dpa-ws-h' . (int) $n . '"><h2 class="dpa-step__title" id="dpa-ws-h' . (int) $n . '">' . esc_html( $text[ $n ][0] ) . '</h2><p class="dpa-step__sub">' . esc_html( $text[ $n ][1] ) . '</p>' . $this->step_body( $n ) . '</section>';
 		}
-		echo '</div></section>';
+		$html .= '<div class="dpa-wizard__nav"><button type="button" class="dpa-btn dpa-btn--ghost" data-dpa-back>' . esc_html__( 'Back', 'woo-donation-popup' ) . '</button>'
+			. '<button type="button" class="dpa-link" data-dpa-skip>' . esc_html__( 'Skip for now', 'woo-donation-popup' ) . '</button>'
+			. '<button type="button" class="dpa-btn dpa-btn--accent" data-dpa-next>' . esc_html__( 'Continue', 'woo-donation-popup' ) . '</button>'
+			. '<button type="button" class="dpa-btn dpa-btn--accent" data-dpa-finish hidden>' . esc_html__( 'Finish', 'woo-donation-popup' ) . '</button></div>';
+		$html .= '</div>';
 
-		// Adım 2: akıllı varsayılanlar.
-		echo '<section class="dpa-card dpa-step" data-dpa-step="1" hidden><h2>' . esc_html__( 'Smart defaults', 'woo-donation-popup' ) . '</h2>';
-		echo '<p class="dpa-note">' . esc_html__( 'Donation Panel reads your WooCommerce settings as they are. There is nothing for you to do.', 'woo-donation-popup' ) . '</p><ul class="dpa-facts">';
-		foreach ( $this->store_facts() as $fact ) {
-			echo '<li><span class="dpa-tick" aria-hidden="true">&#10003;</span><span><strong>' . esc_html( $fact[0] ) . '</strong> ' . esc_html( $fact[1] ) . '</span></li>';
-		}
-		echo '</ul>';
-		echo '<label class="dpa-pill"><input type="checkbox" name="try_new_form" value="1"><span><strong>' . esc_html__( 'Try the new donation form', 'woo-donation-popup' ) . '</strong><small>' . esc_html__( 'Optional. Off keeps the classic form, which is the safe default.', 'woo-donation-popup' ) . '</small></span></label>';
-		echo '</section>';
+		$html .= '<aside class="dpa-wizard__preview" aria-label="' . esc_attr__( 'Live preview', 'woo-donation-popup' ) . '"><span class="dpa-eyebrow">' . esc_html__( 'LIVE PREVIEW', 'woo-donation-popup' ) . '</span>'
+			. '<div class="dpa-phone" aria-hidden="true" data-dpa-phone><div class="dpa-phone__sheet"><span class="dpa-phone__grip"></span><span class="dpa-phone__title"></span><span class="dpa-phone__bar"><i></i></span>'
+			. '<span class="dpa-phone__chips"><i></i><i></i><i class="is-on"></i><i></i></span><span class="dpa-phone__cta"></span></div></div></aside>';
+		$html .= '</div></div>';
 
-		// Adım 3: ilk bağış ürünü (oluşturma yok).
-		$count = $this->donation_product_count();
-		echo '<section class="dpa-card dpa-step" data-dpa-step="2" hidden><h2>' . esc_html__( 'Your first donation product', 'woo-donation-popup' ) . '</h2>';
-		echo '<p class="dpa-note">' . esc_html__( 'Donation Panel works on your existing WooCommerce products. This wizard does not create products.', 'woo-donation-popup' ) . '</p>';
-		/* translators: %d: number of products that currently act as donation products. */
-		echo '<p>' . esc_html( sprintf( _n( '%d product currently works as a donation product.', '%d products currently work as donation products.', $count, 'woo-donation-popup' ), $count ) ) . '</p>';
-		echo '<p><a class="button" target="_blank" rel="noopener" href="' . esc_url( admin_url( 'edit.php?post_type=product' ) ) . '">' . esc_html__( 'Open your products', 'woo-donation-popup' ) . '</a></p>';
-		echo '<p class="dpa-row__help">' . esc_html__( 'Open a product, then use the Donation tab in the product data box to turn it into a donation product.', 'woo-donation-popup' ) . '</p></section>';
-
-		// Adım 4: bitti.
-		echo '<section class="dpa-card dpa-step" data-dpa-step="3" hidden><h2>' . esc_html__( 'You are ready', 'woo-donation-popup' ) . '</h2>';
-		echo '<p>' . esc_html__( 'We will save these choices. Place the button with the shortcode below, with the block, or let automatic placement do it.', 'woo-donation-popup' ) . '</p>';
-		echo Admin_View::code( '[wdp_donation_button_panel]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin_View kaçışlıdır.
-		echo '<p class="dpa-row__help">' . esc_html__( 'On a product page the shortcode finds its own product. No ID needed.', 'woo-donation-popup' ) . '</p></section>';
-
-		echo '<div class="dpa-wizard-nav">';
-		echo '<button type="button" class="button" data-dpa-back hidden>' . esc_html__( 'Back', 'woo-donation-popup' ) . '</button>';
-		echo '<button type="button" class="button button-primary" data-dpa-next>' . esc_html__( 'Continue', 'woo-donation-popup' ) . '</button>';
-		echo '<button type="submit" name="wizard_result" value="done" class="button button-primary" data-dpa-finish hidden>' . esc_html__( 'Save and finish', 'woo-donation-popup' ) . '</button>';
-		echo '<button type="submit" name="wizard_result" value="skipped" class="button-link dpa-skip" data-dpa-skip>' . esc_html__( 'Skip for now', 'woo-donation-popup' ) . '</button>';
-		echo '</div></form></div>';
+		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Admin_View ve esc_* kullanıldı.
 	}
 }

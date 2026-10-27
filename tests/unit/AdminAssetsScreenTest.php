@@ -86,12 +86,4 @@ final class AdminAssetsScreenTest extends TestCase {
 		WDP_Admin_Assets::enqueue('post.php');
 		$this->assertSame(array(), $this->ours());
 	}
-
-	public function test_own_settings_screen_loads_admin_assets(): void {
-		WDP_Admin_Assets::enqueue(WDP_Admin_Assets::PAGE_HOOK);
-		$ours = $this->ours();
-		$this->assertContains('wdp-admin-js', $ours);
-		$this->assertContains('wdp-admin-css', $ours);
-		$this->assertContains('wdp-admin-products', $ours);
-	}
 }

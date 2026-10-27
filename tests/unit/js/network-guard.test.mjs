@@ -407,8 +407,9 @@ describe('uzak POST varsayılan-red', () => {
       'wdp_export_style_preset',
       'wdp_recalculate_product_total',
     ];
+    // 12.0.0: eski ayar kaydetme AJAX uçları kaldırıldı (REST'e taşındı); koruma listesi yine de reddeder.
+    assert.ok(adminOnly.includes('wdp_recalculate_product_total'));
     for (const n of mustBlock) {
-      assert.ok(adminOnly.includes(n), n);
       assert.equal(
         isRemoteWriteAllowed({
           method: 'POST',

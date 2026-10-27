@@ -65,7 +65,7 @@ node "$PLUGIN_ROOT/scripts/lib/remote-guard.mjs" --exec --local-pack -- rsync "$
 # Minify admin CSS in the distribution copy only (source stays readable).
 if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.php" ]]; then
   echo "Minifying admin CSS for distribution..."
-  php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin-style.css" "$DEST/assets/css/admin/products.css" "$DEST/assets/css/list.css" || true
+  php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin/products.css" "$DEST/assets/css/list.css" || true
 fi
 
 # Keep only README.md as markdown in distribution root.

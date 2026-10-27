@@ -174,24 +174,6 @@ final class AmountOptionsTest extends TestCase {
 		$this->assertSame('', $off['_amount_preset_recommended']);
 	}
 
-	public function test_global_normalizer_drops_recommended_key(): void {
-		WDP_Test_State::$options['wdp_button_settings'] = array('amount_presets' => '100, 250');
-		$bad = WDP_Admin_Settings_Normalizer::normalize_normal_form_settings(
-			array_merge(WDP_Test_State::$options['wdp_button_settings'], array('amount_presets' => '100, 1.000'))
-		);
-		$this->assertNotSame('', WDP_Admin_Settings_Normalizer::$last_validation_error);
-		$this->assertStringContainsString('1.000', WDP_Admin_Settings_Normalizer::$last_validation_error);
-		$this->assertSame('100, 250', $bad['amount_presets']);
-		$this->assertArrayNotHasKey('amount_preset_recommended', $bad);
-
-		$ok = WDP_Admin_Settings_Normalizer::normalize_normal_form_settings(
-			array('amount_presets' => '', 'amount_preset_recommended' => '250')
-		);
-		$this->assertSame('', WDP_Admin_Settings_Normalizer::$last_validation_error);
-		$this->assertSame(WDP_Form_Modules::default_amount_presets_csv(), $ok['amount_presets']);
-		$this->assertArrayNotHasKey('amount_preset_recommended', $ok);
-	}
-
 	public function test_steps_include_10_29_0_and_10_29_1(): void {
 		$this->assertArrayHasKey('10.29.0', \DonationPanel\Core\Version_Migrations::steps());
 		$this->assertArrayHasKey('10.29.1', \DonationPanel\Core\Version_Migrations::steps());

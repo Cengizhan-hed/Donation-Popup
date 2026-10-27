@@ -31,9 +31,9 @@ describe('test:affected örnek diff', () => {
   });
 
   it('Admin PHP -> e2e:admin-e7 + Admin PHPUnit', () => {
-    const r = computeAffected(['src/Admin/class-settings-page.php'], ctx);
+    const r = computeAffected(['src/Admin/class-pages.php'], ctx);
     assert.ok(r.e2e.has('e2e:admin-e7'));
-    assert.ok(r.phpunit.files.has('tests/unit/Admin/E7AdminTest.php'));
+    assert.ok(r.phpunit.files.has('tests/unit/Admin/AdminTest.php'));
     assert.equal(r.phpunit.all, false);
   });
 
