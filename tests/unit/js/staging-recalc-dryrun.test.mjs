@@ -21,7 +21,7 @@ const OK_RESULT = {
   base_currency: 'TRY',
   differs: 1,
   unconverted: 2,
-  rows: [{ product_id: 7, title: 'A|B', old_total: 10, new_total: 12.5, delta: 2.5, old_donors: 1, new_donors: 2, orders: 2, unconverted: 2, diff: -2.5, suggested_manual: 0, display_after: 12.5, display_increases: true, reason: 'currency', breakdown: { durum: 0, iade: 0 } }],
+  rows: [{ product_id: 7, title: 'A|B', stored: 10, computed: 12.5, diff: 2.5, carried: 10, start: 1780000000, orders: 2, unconverted: 2, differs: true }],
 };
 
 function fakeRemote(result) {
@@ -80,12 +80,12 @@ describe('ortam koruması', () => {
 describe('Markdown', () => {
   it('yeni sütunlar, uyarı ve | kaçışı', () => {
     const md = toMarkdown(OK_RESULT);
-    assert.match(md, /Saklanan \| Yeni hesaplanan \| Fark \| Önerilen elle eklenen \| Göç sonrası gösterilecek \| Olası neden/);
-    assert.match(md, /\| 7 \| A\/B \| 10 \| 12.5 \| -2.5 \| 0 \| 12.5 \| para birimi \| 1 \/ 2 \| 2 \| kur bulunamadı \(2\); gösterilen toplam artar \|/);
+    assert.match(md, /Saklanan \| Hesaplanan \| Fark \| Devreden \| Başlangıç/);
+    assert.match(md, /\| 7 \| A\/B \| 10 \| 12.5 \| 2.5 \| 10 \| 2026-\d\d-\d\d \| 2 \| kur bulunamadı \(2\) \|/);
   });
   it('--detail yalnız istenen ürünün ayrıntısını yazar', () => {
-    assert.doesNotMatch(toMarkdown(OK_RESULT), /ayrıştırma ayrıntısı/);
-    assert.match(toMarkdown(OK_RESULT, { detail: [7] }), /ürün 7: \{"durum":0,"iade":0\}/);
+    assert.doesNotMatch(toMarkdown(OK_RESULT), /Ayrıntı \(yalnız sayı\)/);
+    assert.match(toMarkdown(OK_RESULT, { detail: [7] }), /ürün 7: \{"devreden":10/);
     assert.doesNotMatch(toMarkdown(OK_RESULT, { detail: [8] }), /ürün 7:/);
   });
   it('parseDetailArg iki biçimi okur', () => {

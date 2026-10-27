@@ -185,6 +185,7 @@ final class Admin_Bootstrap {
 	public function add_rest_controller( $controllers ) {
 		$controllers   = (array) $controllers;
 		$controllers[] = new Admin_Controller( $this->container->get( Rate_Limiter::class ), $this->container->get( Settings::class ), $this->store() );
+		$controllers[] = new Campaign_Totals_Controller( $this->container->get( Rate_Limiter::class ) );
 		return $controllers;
 	}
 

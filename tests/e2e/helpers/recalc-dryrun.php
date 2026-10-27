@@ -25,7 +25,7 @@ function wdp_recalc_dry_only( $calc, array $ids, $dry_run ) {
 	if ( defined( 'WDP_DRY_RUN_ONLY' ) && true !== $dry_run ) {
 		throw new RuntimeException( 'dry-run-only: yazma modu reddedildi' );
 	}
-	return $calc->run( $ids, true );
+	return $calc->run( $ids );
 }
 
 /**
@@ -62,7 +62,6 @@ try {
 	$result = $ids ? wdp_recalc_dry_only( $calc, $ids, true ) : array(
 		'rows'        => array(),
 		'changed'     => 0,
-		'written'     => 0,
 		'unconverted' => 0,
 	);
 
@@ -72,22 +71,14 @@ try {
 		$rows[] = array(
 			'product_id'  => (int) $row['product_id'],
 			'title'       => wp_strip_all_tags( (string) get_the_title( $row['product_id'] ) ),
-			'old_total'   => $row['old_total'],
-			'new_total'   => $row['new_total'],
-			'delta'       => null === $row['old_total'] ? null : round( (float) $row['new_total'] - (float) $row['old_total'], 2 ),
-			'old_donors'  => $row['old_donors'],
-			'new_donors'  => $row['new_donors'],
+			'stored'      => $row['stored'],
+			'computed'    => $row['computed'],
+			'diff'        => $row['diff'],
+			'carried'     => $row['carried'],
+			'start'       => $row['start'],
 			'orders'      => $row['orders'],
 			'unconverted' => $row['unconverted'],
 			'differs'     => (bool) $row['changed'],
-			// K2: gocu onerisi (uygulanmaz) + neden ayristirma; yalniz sayi/etiket.
-			'diff'              => $row['diff'],
-			'manual_existing'   => $row['manual_existing'],
-			'suggested_manual'  => $row['suggested_manual'],
-			'display_after'     => $row['display_after'],
-			'display_increases' => (bool) $row['display_increases'],
-			'reason'            => (string) $row['reason'],
-			'breakdown'         => $row['breakdown'],
 		);
 		if ( $row['unconverted'] > 0 ) {
 			$warnings[] = array(
@@ -101,7 +92,7 @@ try {
 	$out = array(
 		'ok'            => true,
 		'dry_run'       => true,
-		'written'       => (int) $result['written'],
+		'written'       => 0,
 		'base_currency' => (string) get_option( 'woocommerce_currency' ),
 		'products'      => count( $rows ),
 		'differs'       => (int) $result['changed'],
