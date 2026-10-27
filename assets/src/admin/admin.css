@@ -979,3 +979,9 @@
 		inline-size: 100%;
 	}
 }
+
+.dpa-recalc__result {
+	display: grid;
+	gap: 12px;
+	justify-items: start;
+}
