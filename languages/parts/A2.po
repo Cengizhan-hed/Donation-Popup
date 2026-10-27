@@ -857,10 +857,6 @@ msgstr "Hızlı tutar"
 msgid "Quick amount buttons"
 msgstr "Hızlı tutar düğmeleri"
 
-#: includes/class-admin-product-settings-ajax.php:45
-msgid "Recalculated the total for \"%1$s\": %2$s (%3$d orders)."
-msgstr "\"%1$s\" toplamı yeniden hesaplandı: %2$s (%3$d sipariş)."
-
 #: includes/class-admin-assets.php:122
 msgid "Recalculating the total…"
 msgstr "Toplam yeniden hesaplanıyor…"
