@@ -120,11 +120,11 @@ final class E2CDonationTypesTest extends TestCase {
 				array(
 					'enable_cover_fee'       => true,
 					'cover_fee_percent'      => 2.5,
-					'enable_sadaka_donation' => true,
-					'sadaka_wc_product_id'   => '55',
-					'sadaka_toggle_label'    => 'Sadaka ekle',
-					'sadaka_is_fixed_price'  => false,
-					'sadaka_min_price'       => '20',
+					'enable_addon_donation' => true,
+					'addon_wc_product_id'   => '55',
+					'addon_toggle_label'    => 'Sadaka ekle',
+					'addon_is_fixed_price'  => false,
+					'addon_min_price'       => '20',
 				)
 			)
 		);
@@ -170,7 +170,7 @@ final class E2CDonationTypesTest extends TestCase {
 	}
 
 	public function test_addon_amount_rules(): void {
-		$model = Form_Context::from_legacy( $this->legacy( array( 'enable_sadaka_donation' => true, 'sadaka_wc_product_id' => '55', 'sadaka_min_price' => '20' ) ) );
+		$model = Form_Context::from_legacy( $this->legacy( array( 'enable_addon_donation' => true, 'addon_wc_product_id' => '55', 'addon_min_price' => '20' ) ) );
 		$base  = array( 'amount' => '100', 'donation_full_name' => 'A B', 'donation_phone' => '5551234567', 'addon_active' => '1' );
 
 		$low = Field_Validator::validate( $model, $base + array( 'addon_amount' => '5' ) );
@@ -257,16 +257,16 @@ final class E2CDonationTypesTest extends TestCase {
 
 	public function test_addon_line_contract_matches_legacy(): void {
 		$main = array( 'full_name' => 'Ayşe Yılmaz', 'phone' => '555', 'note' => 'Not', 'email' => 'x@y.org' );
-		$this->assertSame( array( 'is_sadaka' => true, 'full_name' => 'Ayşe Yılmaz', 'phone' => '555', 'note' => 'Not' ), Addon_Line::donation_data( $main ) );
+		$this->assertSame( array( 'is_addon' => true, 'full_name' => 'Ayşe Yılmaz', 'phone' => '555', 'note' => 'Not' ), Addon_Line::donation_data( $main ) );
 
 		$shares = array( 'share_count' => 2, 'shareholders' => array( 1 => array( 'name' => 'Öznur', 'phone' => '1' ), 2 => array( 'name' => 'B' ) ) );
-		$this->assertSame( array( 'is_sadaka' => true, 'full_name' => 'Öznur', 'phone' => '1' ), Addon_Line::donation_data( $shares ) );
+		$this->assertSame( array( 'is_addon' => true, 'full_name' => 'Öznur', 'phone' => '1' ), Addon_Line::donation_data( $shares ) );
 
 		$item = Addon_Line::cart_item_data( 7, 55, $main, 25.0, 'sub', 'parentkey' );
 		$this->assertTrue( $item['wdp_sadaka_donation'] );
 		$this->assertSame( 7, $item['wdp_parent_product_id'] );
 		$this->assertSame( 'parentkey', $item['wdp_parent_cart_item_key'] );
-		$this->assertSame( 'sub-sadaka', $item['unique_submission_key'] );
+		$this->assertSame( 'sub-addon', $item['unique_submission_key'] );
 		$this->assertSame( 25.0, $item['custom_price'] );
 		$this->assertTrue( $item['wdp_sadaka_linked_wc_product'] );
 	}

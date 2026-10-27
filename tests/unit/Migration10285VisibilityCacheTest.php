@@ -20,7 +20,7 @@ final class Migration10285VisibilityCacheTest extends TestCase {
 		// Geçerli denetim satırı korunmalı (yeniden silinmez).
 		WDP_Test_State::$options[ \DonationPanel\Domain\Addon_Product_Visibility::AUDIT_OPTION ] = array(
 			'rows' => array(
-				array('status' => 'valid', 'parent_id' => 10, 'sadaka_id' => 20),
+				array('status' => 'valid', 'parent_id' => 10, 'addon_id' => 20),
 			),
 		);
 
@@ -31,7 +31,7 @@ final class Migration10285VisibilityCacheTest extends TestCase {
 		$this->assertArrayNotHasKey(\DonationPanel\Domain\Addon_Product_Visibility::TRANSIENT, WDP_Test_State::$transients);
 		$audit = WDP_Test_State::$options[ \DonationPanel\Domain\Addon_Product_Visibility::AUDIT_OPTION ];
 		$this->assertSame('valid', $audit['rows'][0]['status']);
-		$this->assertSame(20, (int) $audit['rows'][0]['sadaka_id']);
+		$this->assertSame(20, (int) $audit['rows'][0]['addon_id']);
 
 		// İkinci çağrı: liste önbelleği tekrar artmaz.
 		$summary2 = \DonationPanel\Core\Version_Migrations::step_10_28_5(false);

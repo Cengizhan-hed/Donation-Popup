@@ -7,6 +7,7 @@
 
 namespace DonationPanel\Domain;
 
+use DonationPanel\Compat\Legacy_Context;
 use DonationPanel\Support\Price;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -104,18 +105,18 @@ class Product_Context {
 			'total_donation'            => $total_donation,
 			'enable_product_note'       => $product->get_meta( '_enable_product_note' ) === 'yes',
 			'product_note_text'         => trim( (string) $product->get_meta( '_product_note_text' ) ),
-			'enable_sadaka_donation'    => Addon_Product_Visibility::get_meta( $product, '_enable_addon_donation' ) === 'yes',
-			'sadaka_donation_message'   => trim( (string) Addon_Product_Visibility::get_meta( $product, '_addon_donation_message' ) ),
-			'sadaka_min_price'          => $addon_min_price,
-			'sadaka_fixed_price'        => $addon_is_fixed_price ? wc_format_decimal( $addon_fixed_float ) : '',
-			'sadaka_is_fixed_price'     => $addon_is_fixed_price,
-			'sadaka_wc_product_id'      => $addon_wc_product_id,
-			'sadaka_toggle_label'       => $addon_toggle_label,
+			'enable_addon_donation'    => Addon_Product_Visibility::get_meta( $product, '_enable_addon_donation' ) === 'yes',
+			'addon_donation_message'   => trim( (string) Addon_Product_Visibility::get_meta( $product, '_addon_donation_message' ) ),
+			'addon_min_price'          => $addon_min_price,
+			'addon_fixed_price'        => $addon_is_fixed_price ? wc_format_decimal( $addon_fixed_float ) : '',
+			'addon_is_fixed_price'     => $addon_is_fixed_price,
+			'addon_wc_product_id'      => $addon_wc_product_id,
+			'addon_toggle_label'       => $addon_toggle_label,
 			'currency_symbol'           => Price::get_display_currency_symbol(),
 			'custom_price_placeholder'  => ( (float) ( $enable_progress_bar ? $progress_min_price : $min_price ) > 0 )
 				? Price::format_min_placeholder( $enable_progress_bar ? $progress_min_price : $min_price )
 				: '',
-			'sadaka_price_placeholder'  => $addon_is_fixed_price
+			'addon_price_placeholder'  => $addon_is_fixed_price
 				? ''
 				: ( ( (float) $addon_min_price > 0 )
 					? Price::format_min_placeholder( $addon_min_price )
@@ -155,7 +156,8 @@ class Product_Context {
 			'goal_closed'               => Campaign_Goal::should_block_new_donations( $product ),
 		);
 
-		return apply_filters( 'wdp_form_context', $context, $product ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
+		// `wdp_form_context` süzgeci eski (sadaka_*) anahtar adlarıyla çalışır; bkz. Compat\Legacy_Context.
+		return Legacy_Context::filter_form_context( $context, $product );
 	}
 
 	/**

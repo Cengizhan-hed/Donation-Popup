@@ -10,6 +10,8 @@
 
 namespace DonationPanel\WooCommerce;
 
+use DonationPanel\Compat\Legacy_Context;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -185,7 +187,7 @@ final class Cart_Data {
 	 * @return bool
 	 */
 	public static function same_donor( array $a, array $b ) {
-		if ( ! empty( $a['is_sadaka'] ) || ! empty( $b['is_sadaka'] ) || isset( $a['share_count'] ) || isset( $b['share_count'] ) ) {
+		if ( Legacy_Context::is_addon_data( $a ) || Legacy_Context::is_addon_data( $b ) || isset( $a['share_count'] ) || isset( $b['share_count'] ) ) {
 			return false;
 		}
 		// Kimliği belirleyen alan yoksa (ad/telefon alanları kapalı) "aynı bağışçı" denemez: hiçbir satır ezilmez.

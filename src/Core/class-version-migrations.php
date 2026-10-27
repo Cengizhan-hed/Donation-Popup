@@ -730,8 +730,8 @@ class Version_Migrations {
 				$rows[] = array(
 					'parent_id'    => $parent_id,
 					'parent_label' => $parent_label,
-					'sadaka_id'    => $raw_id,
-					'sadaka_label' => $addon_label,
+					'addon_id'    => $raw_id,
+					'addon_label' => $addon_label,
 					'status'       => 'cleaned',
 					'reason'       => $reason,
 				);
@@ -742,8 +742,8 @@ class Version_Migrations {
 			$rows[] = array(
 				'parent_id'    => $parent_id,
 				'parent_label' => $parent_label,
-				'sadaka_id'    => $raw_id,
-				'sadaka_label' => $addon_label,
+				'addon_id'    => $raw_id,
+				'addon_label' => $addon_label,
 				'status'       => 'valid',
 				'reason'       => '',
 			);
@@ -756,8 +756,8 @@ class Version_Migrations {
 			$rows[] = array(
 				'parent_id'    => 0,
 				'parent_label' => __( 'General default (Success tab)', 'woo-donation-popup' ),
-				'sadaka_id'    => $default,
-				'sadaka_label' => Addon_Product_Visibility::product_label( $default ),
+				'addon_id'    => $default,
+				'addon_label' => Addon_Product_Visibility::product_label( $default ),
 				'status'       => $ok ? 'valid' : 'invalid_default',
 				'reason'       => $ok ? '' : 'missing_or_invalid',
 			);

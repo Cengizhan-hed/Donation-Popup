@@ -124,7 +124,7 @@ class Addon_Product_Visibility {
 		}
 
 		foreach ( self::collect_enabled_parent_links() as $link ) {
-			$sid    = (int) $link['sadaka_id'];
+			$sid    = (int) $link['addon_id'];
 			$parent = (int) $link['parent_id'];
 			if ( $sid <= 0 || $sid === $parent ) {
 				continue;
@@ -138,7 +138,7 @@ class Addon_Product_Visibility {
 	/**
 	 * Etkin ("Alt bağış ekle" açık) ürün → alt bağış ID eşlemeleri.
 	 *
-	 * @return array<int, array{parent_id:int,sadaka_id:int}>
+	 * @return array<int, array{parent_id:int,addon_id:int}>
 	 */
 	public static function collect_enabled_parent_links() {
 		$out = array();
@@ -156,7 +156,7 @@ class Addon_Product_Visibility {
 			}
 			$out[] = array(
 				'parent_id' => $parent_id,
-				'sadaka_id' => $sid,
+				'addon_id' => $sid,
 			);
 		}
 		return $out;
@@ -194,7 +194,7 @@ class Addon_Product_Visibility {
 		}
 
 		foreach ( self::collect_enabled_parent_links() as $link ) {
-			if ( (int) $link['sadaka_id'] !== $addon_id ) {
+			if ( (int) $link['addon_id'] !== $addon_id ) {
 				continue;
 			}
 			$labels[] = self::product_label( (int) $link['parent_id'] );
@@ -392,7 +392,7 @@ class Addon_Product_Visibility {
 	 * @return void
 	 */
 	public static function render_product_search_field( array $args ) {
-		$id          = isset( $args['id'] ) ? (string) $args['id'] : 'sadaka_wc_product_id';
+		$id          = isset( $args['id'] ) ? (string) $args['id'] : 'addon_wc_product_id';
 		$name        = isset( $args['name'] ) ? (string) $args['name'] : $id;
 		$value       = isset( $args['value'] ) ? absint( $args['value'] ) : 0;
 		$label       = isset( $args['label'] ) ? (string) $args['label'] : __( 'Add-on donation product', 'woo-donation-popup' );
