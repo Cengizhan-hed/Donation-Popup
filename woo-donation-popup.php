@@ -23,11 +23,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WDP_* sabitleri dışa açık sözleşmedir (geriye dönük uyum), yeniden adlandırılamaz.
 define( 'WDP_PLUGIN_FILE', __FILE__ );
 define( 'WDP_VERSION', '12.0.0' );
 define( 'WDP_PLUGIN_DIR', plugin_dir_path( WDP_PLUGIN_FILE ) );
 define( 'WDP_PLUGIN_URL', plugin_dir_url( WDP_PLUGIN_FILE ) );
 define( 'WDP_ASSET_VERSION', get_option( 'wdp_cache_version', WDP_VERSION ) );
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
 require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
 \DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );

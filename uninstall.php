@@ -15,6 +15,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 require_once __DIR__ . '/src/Core/class-autoloader.php';
 \DonationPanel\Core\Autoloader::register( __DIR__ . '/src' );
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- uninstall.php geçici değişkenleri (kendi dosya kapsamı).
 if ( is_multisite() && function_exists( 'get_sites' ) ) {
 	$wdp_site_ids = get_sites(
 		array(

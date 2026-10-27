@@ -65,7 +65,7 @@ final class Checkout_Prefill {
 			return;
 		}
 		$wc = WC();
-		if ( ! $wc || empty( $wc->cart ) || empty( $wc->customer ) ) {
+		if ( ! $wc || ! $wc->cart instanceof \WC_Cart || ! $wc->customer instanceof \WC_Customer ) {
 			return;
 		}
 		self::apply( $wc->customer, $wc->cart->get_cart() );
