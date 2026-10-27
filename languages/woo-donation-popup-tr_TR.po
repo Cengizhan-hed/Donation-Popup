@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 20:17:27+0000\n"
-"PO-Revision-Date: 2026-10-26 20:17:27+0000\n"
+"POT-Creation-Date: 2026-10-27 03:56:54+0000\n"
+"PO-Revision-Date: 2026-10-27 03:56:54+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -22,6 +22,10 @@ msgstr "“Tümü” sekmesi"
 #: includes/class-product-settings-service.php:666
 msgid "«%s» must be a valid color (#RGB or #RRGGBB)."
 msgstr "«%s» geçerli bir renk olmalıdır (#RGB veya #RRGGBB)."
+
+#: src/Admin/
+msgid "(no title)"
+msgstr "(başlıksız)"
 
 #: includes/class-admin-products-list-table.php:253
 msgid "(opens in a new tab)"
@@ -40,6 +44,10 @@ msgstr "[%s] Önceki bağışlarınızı bağlamak için onaylayın"
 msgid "{donors} people donated"
 msgstr "{donors} kişi bağış yaptı"
 
+#: src/Admin/
+msgid "%1$d of %2$d setup steps done"
+msgstr "%2$d kurulum adımından %1$d tanesi tamam"
+
 #: assets/js/src/form/validate.js:555
 #, php-format
 msgid "%1$d. share %2$s"
@@ -52,6 +60,12 @@ msgstr "%1$s / %2$s"
 #: includes/class-donations-list.php:838
 msgid "%1$s / %2$s raised"
 msgstr "%1$s / %2$s toplandı"
+
+#: src/Admin/
+msgid "%d donation product is live"
+msgid_plural "%d donation products are live"
+msgstr[0] "%d bağış ürünü yayında"
+msgstr[1] "%d bağış ürünü yayında"
 
 #: src/Modules/SideCart/class-side-cart-renderer.php
 #, php-format
@@ -71,6 +85,10 @@ msgid_plural "%d orders could not be converted"
 msgstr[0] "%d sipariş dönüştürülemedi"
 msgstr[1] "%d sipariş dönüştürülemedi"
 
+#: src/Admin/
+msgid "%d percent of the goal"
+msgstr "Hedefin yüzde %d'i"
+
 #: includes/class-progress-form.php:62
 msgid "%d person"
 msgid_plural "%d people"
@@ -88,11 +106,23 @@ msgstr[1] "Şu anda %d ürün bağış ürünü olarak çalışıyor."
 msgid "%d products are currently donation products."
 msgstr "Şu an %d ürün bağış ürünü."
 
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "%d%%"
+msgstr "%%%d"
+
 #. translators: %s: time span, e.g. "3 hours"
 #: src/Modules/SocialProof/class-donation-feed.php
 #, php-format
 msgid "%s ago"
 msgstr "%s önce"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "%s day left"
+msgid_plural "%s days left"
+msgstr[0] "%s gün kaldı"
+msgstr[1] "%s gün kaldı"
 
 #: assets/js/src/modal.js:498
 #, php-format
@@ -222,8 +252,16 @@ msgid "A second, smaller donation row added to the form"
 msgstr "Forma eklenen ikinci, küçük bağış satırı"
 
 #: src/Admin/
+msgid "A sentence or two explaining the declaration."
+msgstr "Beyanı açıklayan bir iki cümle."
+
+#: src/Admin/
 msgid "A sentence or two explaining the declaration. Link to your privacy page from your site, not here."
 msgstr "Beyanı açıklayan bir iki cümle. Gizlilik sayfanıza buradan değil, kendi sitenizden bağlantı verin."
+
+#: src/Admin/
+msgid "A short reassurance line under the donate button."
+msgstr "Bağış düğmesinin altında kısa bir güven cümlesi."
 
 #: src/Admin/
 msgid "A short, gentle animation. It switches off by itself for visitors who prefer reduced motion."
@@ -236,6 +274,10 @@ msgstr "Basitleştirilmiş bir taslak. Renk ve yazı temanızdan gelir. Mobilde 
 #: src/Admin/
 msgid "A slide-in cart so donors can review their gift without leaving the page."
 msgstr "Bağışçılar sayfadan ayrılmadan bağışlarını gözden geçirebilsin diye kayarak açılan sepet."
+
+#: src/Admin/
+msgid "A warm confirmation after the order"
+msgstr "Siparişten sonra sıcak bir onay"
 
 #: src/Admin/
 msgid "A warm confirmation after the order, with an optional share button."
@@ -262,6 +304,10 @@ msgstr "İşlemler"
 msgid "Add %1$s %2$s to your basket"
 msgstr "%1$s için %2$s sepetinize ekleyin"
 
+#: templates/donation-panel/experiences/form.php
+msgid "Add a dedication note"
+msgstr "İthaf notu ekleyin"
+
 #: assets/js/src/cart/ui.js:245
 msgid "Add a donation to continue to checkout."
 msgstr "Bağış ekleyerek buradan ödeme adımına geçebilirsiniz."
@@ -269,6 +315,14 @@ msgstr "Bağış ekleyerek buradan ödeme adımına geçebilirsiniz."
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Add a gift and it will be summarised here."
 msgstr "Bir bağış ekleyin; sepet burada özetlenir."
+
+#: templates/donation-panel/experiences/form.php
+msgid "Add a note (optional)"
+msgstr "Not ekle (isteğe bağlı)"
+
+#: src/Admin/
+msgid "Add a product"
+msgstr "Ürün ekle"
 
 #: includes/class-admin-form-tabs-renderer.php:207
 #: includes/class-admin-settings-normalizer.php:377
@@ -288,6 +342,10 @@ msgstr "Başka bağış ekle"
 msgid "Add extra donation"
 msgstr "Alt Bağış Ekle"
 
+#: src/Admin/
+msgid "Add id=\"123\" to point at a specific product. Without an ID the shortcode finds the product it is placed in. The \"Donation Panel\" block does the same in the block editor."
+msgstr "Belirli bir ürünü göstermek için id=\"123\" ekleyin. Numara verilmezse kısa kod bulunduğu ürünü kendisi bulur. Blok düzenleyicideki \"Bağış Paneli\" bloğu da aynı şekilde çalışır."
+
 #: includes/class-admin-product-data-tab.php:920
 msgid "Add row"
 msgstr "Satır ekle"
@@ -306,6 +364,10 @@ msgstr "Sepete Ekle Butonu"
 #: includes/class-admin-design-studio-renderer.php:327
 msgid "Add to cart icon"
 msgstr "Sepete Ekle ikonu"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Add to cart, choose another"
+msgstr "Sepete ekle, başka bağış seç"
 
 #: includes/class-donation-product-context-service.php:120
 msgid "Add-on amount"
@@ -335,6 +397,18 @@ msgstr "Alt Bağış Toggle Metni"
 msgid "Add-on donation WooCommerce product was not found. Enter a valid product ID in Success & Mini Cart or the product settings."
 msgstr "Alt bağış WC ürünü bulunamadı. Başarı & Mini Sepet veya ürün ayarında geçerli bir ürün ID girin."
 
+#: src/Admin/
+msgid "Add-on label"
+msgstr "Ek bağış etiketi"
+
+#: src/Admin/
+msgid "Add-on product ID"
+msgstr "Ek bağış ürünü numarası"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Added to your cart."
+msgstr "Sepetinize eklendi."
+
 #: assets/js/src/form/wizard.js:29
 msgid "Additional donation"
 msgstr "Alt bağış"
@@ -346,6 +420,14 @@ msgstr "WooCommerce ürünlerine açılır pencere, yan panel veya sayfa içi fo
 #: src/Admin/
 msgid "Adds a goal and progress bar, and short impact phrases next to amounts."
 msgstr "Hedef ve ilerleme çubuğu ekler, tutarların yanına kısa etki ifadeleri koyar."
+
+#: src/Admin/
+msgid "Adds a sign-in icon, a sign-in and register panel, and a \"My donations\" tab in My Account with receipts and a quick way to give again."
+msgstr "Giriş simgesi, giriş ve kayıt paneli ile Hesabım'da makbuzlu ve tekrar bağış yapmayı kolaylaştıran \"Bağışlarım\" sekmesi ekler."
+
+#: src/Admin/
+msgid "Adds an optional email field for each shareholder."
+msgstr "Her hissedar için isteğe bağlı e-posta alanı ekler."
 
 #: src/Admin/
 msgid "Adds donor accounts so supporters can see their gifts and give again."
@@ -376,6 +458,10 @@ msgstr "Tüm form yüzeylerinde boşluk, input ve CTA yüksekliğini etkiler."
 msgid "Afghanistan"
 msgstr "Afganistan"
 
+#: src/Admin/
+msgid "After the short description"
+msgstr "Kısa açıklamanın altı"
+
 #: includes/class-phone-field.php:26
 msgid "Albania"
 msgstr "Arnavutluk"
@@ -400,6 +486,10 @@ msgstr "Tüm kategoriler"
 msgid "All donation types"
 msgstr "Tüm bağış tipleri"
 
+#: src/Admin/
+msgid "All plugin settings and product options will be deleted when the plugin is deleted. Orders are not affected. This cannot be undone. Have you made a backup?"
+msgstr "Eklenti silindiğinde tüm eklenti ayarları ve ürün seçenekleri silinecek. Siparişler etkilenmez. Geri alınamaz. Yedek aldınız mı?"
+
 #: includes/class-admin-page-renderer.php:138
 msgid "All product settings and plugin options are deleted. Orders and order records are not touched. This cannot be undone."
 msgstr "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz."
@@ -409,6 +499,14 @@ msgstr "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Sipari
 msgid "All product settings and plugin options will be deleted. Orders and order records are not affected. This cannot be undone. Have you made a backup?"
 msgstr "Eklentinin tüm ürün ayarları ve eklenti seçenekleri silinir. Siparişlere ve sipariş kayıtlarına dokunulmaz. Bu işlem geri alınamaz. Yedek aldınız mı?"
 
+#: src/Admin/
+msgid "All products"
+msgstr "Tüm ürünler"
+
+#: src/Admin/
+msgid "All products, only chosen categories, or only products you mark on the product page."
+msgstr "Tüm ürünler, yalnız seçili kategoriler ya da yalnız ürün sayfasında işaretlediğiniz ürünler."
+
 #: includes/class-admin-placement-tab-renderer.php:47
 msgid "All simple products"
 msgstr "Tüm basit ürünler"
@@ -416,6 +514,10 @@ msgstr "Tüm basit ürünler"
 #: includes/elementor/class-widget-donations-list.php:124
 msgid "All tab label"
 msgstr "Tümü etiketi"
+
+#: src/Admin/
+msgid "allow guest checkout"
+msgstr "misafir ödemeye izin ver"
 
 #: includes/class-admin-placement-tab-renderer.php:103
 msgid "Always show"
@@ -437,6 +539,10 @@ msgstr "Ödeme sonrası onaylanan tutar."
 #: includes/class-admin-product-data-tab.php:670
 msgid "Amount options"
 msgstr "Tutar seçenekleri"
+
+#: src/Admin/
+msgid "Amount raised includes any amount you added by hand on the product."
+msgstr "Toplanan tutar, üründe elle eklediğiniz tutarı da içerir."
 
 #: includes/class-admin-product-data-tab.php:675
 msgid "Amounts"
@@ -482,6 +588,14 @@ msgstr "Anonim"
 msgid "Anonymous donation"
 msgstr "Anonim bağış"
 
+#: src/Admin/
+msgid "Anonymous option"
+msgstr "Anonim seçeneği"
+
+#: src/Admin/
+msgid "Appearance"
+msgstr "Görünüm"
+
 #: includes/class-admin-product-data-tab.php:846
 msgid "Appearance for this product"
 msgstr "Bu ürüne özel görünüm"
@@ -505,6 +619,10 @@ msgstr "Arjantin"
 #: includes/class-phone-field.php:114
 msgid "Armenia"
 msgstr "Ermenistan"
+
+#: src/Admin/
+msgid "Asks for an email address so the donor can get a receipt."
+msgstr "Bağışçı makbuz alabilsin diye e-posta adresi ister."
 
 #: includes/class-admin-product-data-tab.php:703
 msgid "Asks the donor for an email address; \"Use general setting\" applies the choice on the Design tab."
@@ -554,6 +672,10 @@ msgid "Back to log in"
 msgstr "Girişe dön"
 
 #: src/Admin/
+msgid "Back to overview"
+msgstr "Genel Bakış'a dön"
+
+#: src/Admin/
 msgid "Back to settings"
 msgstr "Ayarlara dön"
 
@@ -600,6 +722,10 @@ msgstr "Belarus"
 #: includes/class-phone-field.php:30
 msgid "Belgium"
 msgstr "Belçika"
+
+#: src/Admin/
+msgid "Below the product summary"
+msgstr "Ürün özetinin altı"
 
 #: src/Admin/
 msgid "Block: in the block editor, add the \"Donation Panel\" block. Like the shortcode, it finds its own product when you give no ID."
@@ -690,6 +816,10 @@ msgstr "Buton Hover"
 msgid "Button hover color"
 msgstr "Buton Hover Rengi"
 
+#: src/Admin/
+msgid "Button in product lists"
+msgstr "Ürün listelerindeki düğme"
+
 #: includes/class-admin-form-tabs-renderer.php:514
 msgid "Button labels"
 msgstr "Buton Metinleri"
@@ -722,9 +852,18 @@ msgstr "Butonlar ve ürün satırı"
 msgid "Buttons below the form"
 msgstr "Form altı butonları"
 
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "By continuing you confirm you have read the %s."
+msgstr "Devam ederek %s okuduğunuzu kabul edersiniz."
+
 #: src/Admin/
 msgid "By default amounts are shown and charged in the active WooCommerce currency; nothing is converted."
 msgstr "Varsayılan olarak tutarlar WooCommerce'in etkin para biriminde gösterilir ve tahsil edilir; hiçbir şey dönüştürülmez."
+
+#: src/Admin/
+msgid "By default the form follows your theme. Pick your own colors only if you need to."
+msgstr "Form varsayılan olarak temanızı izler. Kendi renklerinizi yalnız gerekirse seçin."
 
 #: includes/class-phone-field.php:77
 msgid "Cambodia"
@@ -733,6 +872,10 @@ msgstr "Kamboçya"
 #: includes/class-admin-product-data-tab.php:854
 msgid "Campaign"
 msgstr "Kampanya"
+
+#: src/Admin/
+msgid "Campaign and progress bars"
+msgstr "Kampanya ve ilerleme çubukları"
 
 #: includes/class-admin-product-data-tab.php:722
 msgid "Campaign blocks"
@@ -751,6 +894,10 @@ msgstr "İlerleme çubuğunun %100 sayılacağı kampanya hedefi (mağaza ana pa
 msgid "Campaign media"
 msgstr "Kampanya medyası"
 
+#: src/Admin/
+msgid "Campaign products"
+msgstr "Kampanya ürünleri"
+
 #: src/Modules/DonorAccount/class-account-renderer.php
 msgid "Campaign progress"
 msgstr "Kampanya ilerlemesi"
@@ -768,6 +915,10 @@ msgstr "Kampanya ilerlemesi: %s"
 #: src/Admin/
 msgid "Campaign: goal, amount raised and donor count. Impact: short equivalents next to amounts. Social proof: totals only, never personal details."
 msgstr "Kampanya: hedef, toplanan tutar ve bağışçı sayısı. Etki ifadeleri: tutarların yanında kısa karşılıklar. Sosyal kanıt: yalnız toplu sayılar, asla kişi bilgisi."
+
+#: src/Admin/
+msgid "Campaigns"
+msgstr "Kampanyalar"
 
 #: includes/class-phone-field.php:117
 msgid "Canada"
@@ -796,6 +947,10 @@ msgstr "Kart Radius (px)"
 #: includes/class-icon-library.php:53
 msgid "Cart"
 msgstr "Sepet"
+
+#: src/Admin/
+msgid "Cart and checkout"
+msgstr "Sepet ve Ödeme"
 
 #: assets/js/src/cart/ui.js:160
 #, php-format
@@ -832,6 +987,10 @@ msgid "Category"
 msgstr "Kategori"
 
 #: src/Admin/
+msgid "Category IDs"
+msgstr "Kategori numaraları"
+
+#: src/Admin/
 msgid "Celebration animation"
 msgstr "Kutlama animasyonu"
 
@@ -843,9 +1002,17 @@ msgstr "Orta"
 msgid "Centered popup"
 msgstr "Ortada açılan"
 
+#: src/Admin/
+msgid "Centered window"
+msgstr "Ortada pencere"
+
 #: includes/class-phone-field.php:136
 msgid "Chad"
 msgstr "Çad"
+
+#: src/Admin/
+msgid "Change in WooCommerce"
+msgstr "WooCommerce'te değiştir"
 
 #: includes/traits/trait-wdp-ajax-cart-query.php:144 includes/traits/trait-wdp-ajax-cart-query.php:146
 msgid "Charity donation"
@@ -863,6 +1030,10 @@ msgstr "Ürünün bağış ürünü olarak ayarlandığını (ürün verisi kutu
 msgid "Check your email"
 msgstr "E-postanızı kontrol edin"
 
+#: src/Admin/
+msgid "Checkbox wording"
+msgstr "Onay kutusu metni"
+
 #: includes/class-admin-design-studio-renderer.php:115
 msgid "Checkout"
 msgstr "Ödeme"
@@ -870,6 +1041,18 @@ msgstr "Ödeme"
 #: includes/class-icon-library.php:54
 msgid "Checkout / Shield"
 msgstr "Ödeme / Kalkan"
+
+#: src/Admin/
+msgid "Checkout page is missing or not published"
+msgstr "Ödeme sayfası yok ya da yayında değil"
+
+#: src/Admin/
+msgid "Checkout page ready (block checkout)"
+msgstr "Ödeme sayfası hazır (blok ödeme)"
+
+#: src/Admin/
+msgid "Checkout page ready (classic checkout)"
+msgstr "Ödeme sayfası hazır (klasik ödeme)"
 
 #: includes/class-phone-field.php:78
 msgid "China"
@@ -879,9 +1062,25 @@ msgstr "Çin"
 msgid "Choose a view, copy the shortcode, and paste it into a page or post."
 msgstr "Görünümü seçin, kısa kodu kopyalayıp sayfa veya yazıya yapıştırın."
 
+#: src/Admin/
+msgid "Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later."
+msgstr "Bağışçı bağış düğmesine dokunduğunda formun nasıl görüneceğini seçin. Telefonlarda form her zaman alttan açılır. Sonradan her ürün için ayrıca değiştirebilirsiniz."
+
+#: src/Admin/
+msgid "Choose how the form looks when a donor taps \"Donate\". You can still change it for each product later."
+msgstr "Bağışçı \"Bağış yap\"a dokunduğunda formun nasıl görüneceğini seçin. Sonradan her ürün için ayrıca değiştirebilirsiniz."
+
 #: includes/class-admin-product-data-tab.php:565
 msgid "Choose how this product’s donation form works; only the selected type’s settings appear below."
 msgstr "Bu ürünün bağış formunun nasıl çalışacağını seçin; altta yalnızca seçili tipin ayarları görünür."
+
+#: src/Admin/
+msgid "Choose my own colors"
+msgstr "Kendi renklerimi seçeyim"
+
+#: src/Admin/
+msgid "Choose one of the listed options."
+msgstr "Listedeki seçeneklerden birini seçin."
 
 #: includes/class-admin-product-data-tab.php:853
 msgid "Classic"
@@ -964,6 +1163,10 @@ msgid "Color used when the mouse is over the button; if empty, it is derived fro
 msgstr "Fare düğmenin üzerindeyken kullanılan renk; boşsa ana renkten türetilir."
 
 #: src/Admin/
+msgid "Colors"
+msgstr "Renkler"
+
+#: src/Admin/
 msgid "Colors and fonts"
 msgstr "Renk ve yazı"
 
@@ -992,6 +1195,10 @@ msgstr "Kompakt"
 #: includes/class-admin-settings-normalizer.php:365
 msgid "Complete donation"
 msgstr "Bağışı Tamamla"
+
+#: src/Admin/
+msgid "Complete several gifts in one go"
+msgstr "Birden fazla bağışı tek seferde tamamlama"
 
 #: src/Modules/DonorAccount/
 msgid "Confirm and link"
@@ -1064,6 +1271,10 @@ msgstr "Bağışa devam et"
 msgid "Continue icon"
 msgstr "Devam ikonu"
 
+#: src/Admin/
+msgid "Continue the quick setup"
+msgstr "Hızlı kuruluma devam et"
+
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Continue to checkout"
 msgstr "Ödemeye geç"
@@ -1083,6 +1294,14 @@ msgstr "Kopyala"
 #: includes/class-admin-form-tabs-renderer.php:161
 msgid "Copy button"
 msgstr "Kopya Butonu"
+
+#: src/Admin/
+msgid "Copy for support"
+msgstr "Destek için kopyala"
+
+#: src/Admin/
+msgid "Copy shareholder button"
+msgstr "Hissedar kopyalama düğmesi"
 
 #: includes/class-admin-products-list-table.php:298
 msgid "Copy shortcode: %s"
@@ -1117,6 +1336,10 @@ msgstr "Gönderilemedi"
 msgid "Count"
 msgstr "Adet"
 
+#: templates/donation-panel/experiences/form.php
+msgid "Country code"
+msgstr "Ülke kodu"
+
 #: includes/class-form-modules.php:733
 msgid "Cover processing costs (+%%%s)"
 msgstr "İşlem maliyetini karşıla (+%%%s)"
@@ -1143,6 +1366,10 @@ msgstr "Hesap oluşturun"
 msgid "Create an account with the box below to track your gifts, download receipts and give again in one tap. Earlier guest gifts are linked only after email verification."
 msgstr "Aşağıdaki kutuyla hesap oluşturup bağışlarınızı takip edebilir, makbuz alabilir ve tek dokunuşla tekrar bağış yapabilirsiniz. Önceki misafir bağışları yalnız e-posta doğrulamasından sonra bağlanır."
 
+#: src/Admin/
+msgid "create your first campaign"
+msgstr "ilk kampanyanı oluştur"
+
 #: includes/class-admin-form-tabs-renderer.php:160
 msgid "Create-copy button"
 msgstr "Kopya Oluştur Butonu"
@@ -1162,6 +1389,10 @@ msgstr "Para birimi"
 #: src/Admin/
 msgid "Currency adapter active"
 msgstr "Para birimi bağdaştırıcısı etkin"
+
+#: src/Admin/
+msgid "Currency: %s"
+msgstr "Para birimi: %s"
 
 #: includes/elementor/class-widget-donation-form.php:82
 msgid "Current product"
@@ -1189,6 +1420,10 @@ msgstr "Çekya"
 #: includes/class-admin-design-studio-renderer.php:113
 msgid "Dark"
 msgstr "Koyu"
+
+#: src/Admin/
+msgid "Data"
+msgstr "Veri"
 
 #: includes/class-admin-page-renderer.php:129
 msgid "Data and removal"
@@ -1229,6 +1464,10 @@ msgstr "İthaf / anonim"
 msgid "Dedication field"
 msgstr "İthaf alanı"
 
+#: src/Admin/
+msgid "Dedication field hint"
+msgstr "İthaf alanı ipucu"
+
 #: includes/class-admin-design-studio-renderer.php:267
 #: includes/class-admin-product-data-tab.php:705
 msgid "Dedication placeholder"
@@ -1254,6 +1493,10 @@ msgstr "Eklenti silinince verileri sil"
 #: includes/class-admin-page-renderer.php:135
 msgid "Delete data when the plugin is removed"
 msgstr "Eklenti kaldırılınca verileri sil"
+
+#: src/Admin/
+msgid "Delete plugin data when the plugin is deleted"
+msgstr "Eklenti silindiğinde eklenti verilerini sil"
 
 #: includes/class-admin-product-data-tab.php:954
 #: includes/class-admin-product-data-tab.php:954
@@ -1301,6 +1544,10 @@ msgstr "Masaüstü Modal İç Boşluk (Padding) Ayarları"
 msgid "Desktop popup width settings"
 msgstr "Masaüstü Modal Genişlik Ayarları"
 
+#: src/Admin/
+msgid "Diagnostics"
+msgstr "Tanılama"
+
 #: includes/elementor/class-widget-donations-list.php:92
 msgid "Direction"
 msgstr "Yön"
@@ -1335,6 +1582,19 @@ msgstr "Cibuti"
 #: includes/class-admin-settings-normalizer.php:63
 msgid "Donate"
 msgstr "Bağış Yap"
+
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "Donate %s"
+msgstr "%s bağışla"
+
+#: src/Admin/
+msgid "Donate button text"
+msgstr "Bağış düğmesi metni"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Donate on behalf of someone"
+msgstr "Birinin adına bağışla"
 
 #: includes/class-admin-product-data-tab.php:65
 msgid "Donation"
@@ -1387,6 +1647,11 @@ msgstr "%s için bağış formu"
 msgid "Donation form opened"
 msgstr "Bağış formu açıldı"
 
+#: templates/donation-panel/experiences/form.php
+msgctxt "Donation form: next step button"
+msgid "Continue"
+msgstr "Devam et"
+
 #: includes/templates/class-modal-shell-renderer.php:198
 msgid "Donation form: product #%d was not found. Check the product ID in the shortcode."
 msgstr "Bağış formu: #%d numaralı ürün bulunamadı. Kısa koddaki ürün ID'sini kontrol edin."
@@ -1436,8 +1701,16 @@ msgid "Donation Panel preview: exit"
 msgstr "Bağış Paneli önizlemesi: çık"
 
 #: src/Admin/
+msgid "Donation Panel reads your WooCommerce settings as they are. Nothing is created or changed here."
+msgstr "Bağış Paneli WooCommerce ayarlarınızı olduğu gibi okur. Burada hiçbir şey oluşturulmaz ya da değiştirilmez."
+
+#: src/Admin/
 msgid "Donation Panel reads your WooCommerce settings as they are. There is nothing for you to do."
 msgstr "Bağış Paneli, WooCommerce ayarlarınızı olduğu gibi okur. Sizin yapmanız gereken bir şey yok."
+
+#: src/Admin/
+msgid "Donation Panel works on your existing WooCommerce products. Open a product and use its Donation tab to turn it into a donation product."
+msgstr "Bağış Paneli mevcut WooCommerce ürünlerinizle çalışır. Bir ürünü açıp Bağış sekmesinden bağış ürününe çevirin."
 
 #: src/Admin/
 msgid "Donation Panel works on your existing WooCommerce products. This wizard does not create products."
@@ -1467,6 +1740,10 @@ msgstr "Bağış ürünü"
 msgid "Donation products"
 msgstr "Bağış ürünleri"
 
+#: src/Admin/
+msgid "Donation products usually have no fixed price to show."
+msgstr "Bağış ürünlerinin genelde gösterilecek sabit fiyatı yoktur."
+
 #: includes/class-progress-form.php:89
 msgid "Donation progress"
 msgstr "Bağış ilerleme durumu"
@@ -1478,6 +1755,10 @@ msgstr "Bağış ayarları"
 #: includes/class-admin-product-data-tab.php:564
 msgid "Donation type"
 msgstr "Bağış tipi"
+
+#: src/Admin/
+msgid "donation_panel_convert_amount converts amounts for a multi-currency plugin. donation_panel_amount_presets changes the quick amounts. donation_panel_rest_controllers adds REST controllers. The full list with examples is in docs/HOOKS.md in the plugin folder."
+msgstr "donation_panel_convert_amount çok para birimli eklenti için tutarları dönüştürür. donation_panel_amount_presets hızlı tutarları değiştirir. donation_panel_rest_controllers REST denetleyicileri ekler. Örneklerle tam liste eklenti klasöründeki docs/HOOKS.md dosyasındadır."
 
 #: src/Privacy/class-privacy-tools.php
 msgid "Donations"
@@ -1522,6 +1803,18 @@ msgstr "Bağışçı iletişim bilgileri"
 msgid "Donor details (dedication, on-behalf-of name, phone, email) are saved on the order exactly as typed. Orders, exports and erasure are handled by WooCommerce and the WordPress privacy tools."
 msgstr "Bağışçı bilgileri (ithaf, kim adına, telefon, e-posta) siparişe yazıldığı gibi kaydedilir. Siparişler, dışa aktarma ve silme WooCommerce ve WordPress gizlilik araçlarıyla yönetilir."
 
+#: src/Admin/
+msgid "Donor details are handled with the WordPress privacy tools."
+msgstr "Bağışçı bilgileri WordPress gizlilik araçlarıyla yönetilir."
+
+#: src/Admin/
+msgid "Donor details are not part of \"Erase personal data\""
+msgstr "Bağışçı bilgileri \"Kişisel verileri sil\" kapsamında değil"
+
+#: src/Admin/
+msgid "Donor details are not part of \"Export personal data\""
+msgstr "Bağışçı bilgileri \"Kişisel verileri dışa aktar\" kapsamında değil"
+
 #: includes/class-order-meta-keys.php:80
 msgid "Donor email"
 msgstr "Bağışçı E-posta"
@@ -1535,6 +1828,10 @@ msgstr "Bağışçı alanları"
 msgid "Donor name"
 msgstr "Bağışçı Adı"
 
+#: src/Admin/
+msgid "Donor name, dedication, phone and email are saved on the order exactly as typed. Write your privacy text on your own site."
+msgstr "Bağışçı adı, ithaf, telefon ve e-posta siparişe yazıldığı gibi kaydedilir. Gizlilik metnini kendi sitenizde yazın."
+
 #: includes/class-order-meta-keys.php:79
 msgid "Donor phone"
 msgstr "Bağışçı Telefonu"
@@ -1542,6 +1839,10 @@ msgstr "Bağışçı Telefonu"
 #: src/Modules/SocialProof/class-social-proof-renderer.php
 msgid "donors"
 msgstr "bağışçı"
+
+#: src/Admin/
+msgid "Draft"
+msgstr "Taslak"
 
 #: src/Privacy/class-privacy-tools.php
 msgid "E-mail to confirm"
@@ -1679,9 +1980,21 @@ msgstr "Etkin"
 msgid "End date"
 msgstr "Bitiş tarihi"
 
+#: src/Admin/
+msgid "Enter a color like #12305A."
+msgstr "#12305A gibi bir renk girin."
+
 #: src/Modules/DonorAccount/
 msgid "Enter a valid email address."
 msgstr "Geçerli bir e-posta adresi yazın."
+
+#: templates/donation-panel/experiences/form.php
+msgid "Enter an amount"
+msgstr "Bir tutar yazın"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Enter another amount"
+msgstr "Başka bir tutar yazın"
 
 #: includes/elementor/class-widget-donation-form.php:84
 msgid "Enter ID or slug"
@@ -1695,6 +2008,10 @@ msgstr "E-postanızı yazın, bağlantı gönderelim."
 msgid "Enter your password."
 msgstr "Şifrenizi yazın."
 
+#: src/Admin/
+msgid "Erase personal data"
+msgstr "Kişisel verileri sil"
+
 #: includes/class-phone-field.php:37
 msgid "Estonia"
 msgstr "Estonya"
@@ -1702,6 +2019,10 @@ msgstr "Estonya"
 #: includes/class-phone-field.php:132
 msgid "Ethiopia"
 msgstr "Etiyopya"
+
+#: src/Admin/
+msgid "Everything is in place. You can change any setting later."
+msgstr "Her şey yerinde. Her ayarı sonradan değiştirebilirsiniz."
 
 #: includes/elementor/class-widget-donations-list.php:126
 msgid "Excerpt"
@@ -1719,9 +2040,29 @@ msgstr "Hariç kategoriler"
 msgid "Exclude IDs"
 msgstr "Hariç ID’ler"
 
+#: src/Admin/
+msgid "Explanation"
+msgstr "Açıklama"
+
+#: src/Admin/
+msgid "Export and import"
+msgstr "Dışa ve içe aktarma"
+
 #: includes/class-admin-design-studio-renderer.php:164
 msgid "Export current appearance"
 msgstr "Mevcut görünümü dışa aktar"
+
+#: src/Admin/
+msgid "Export downloads your plugin settings as a file. Import reads such a file. Orders, donors and products are not included."
+msgstr "Dışa aktarma eklenti ayarlarınızı dosya olarak indirir. İçe aktarma böyle bir dosyayı okur. Sipariş, bağışçı ve ürünler dahil değildir."
+
+#: src/Admin/
+msgid "Export personal data"
+msgstr "Kişisel verileri dışa aktar"
+
+#: src/Admin/
+msgid "Export settings"
+msgstr "Ayarları dışa aktar"
 
 #: includes/class-style-presets.php:226
 msgid "Exported from current settings"
@@ -1797,6 +2138,14 @@ msgstr "Kategoriye göre filtrele"
 msgid "Filter by donation type"
 msgstr "Bağış tipine göre filtrele"
 
+#: src/Admin/
+msgid "Finish"
+msgstr "Bitir"
+
+#: src/Admin/
+msgid "finish the quick setup"
+msgstr "hızlı kurulumu bitir"
+
 #: includes/class-phone-field.php:38
 msgid "Finland"
 msgstr "Finlandiya"
@@ -1804,6 +2153,10 @@ msgstr "Finlandiya"
 #: src/Admin/
 msgid "First product"
 msgstr "İlk ürün"
+
+#: src/Admin/
+msgid "Fix"
+msgstr "Düzelt"
 
 #: includes/class-donation-type.php:62 includes/class-form-matrix.php:103
 msgid "Fixed amount"
@@ -1829,6 +2182,14 @@ msgstr "Liste için:"
 msgid "For button and field corners, %1$s–%2$s px; if empty, the general setting is used."
 msgstr "Düğme ve alan köşeleri için %1$s–%2$s px; boşsa genel ayar kullanılır."
 
+#: src/Admin/
+msgid "For developers: filters"
+msgstr "Geliştiriciler için: süzgeçler"
+
+#: src/Admin/
+msgid "For short forms."
+msgstr "Kısa formlar için."
+
 #: src/Modules/DonorAccount/
 msgid "Forgot password?"
 msgstr "Şifremi unuttum"
@@ -1853,6 +2214,10 @@ msgstr "Form font stack"
 msgid "Form steps"
 msgstr "Form adımları"
 
+#: src/Admin/
+msgid "Form style"
+msgstr "Form biçimi"
+
 #: includes/class-admin-form-tabs-renderer.php:164
 msgctxt "form tab title"
 msgid "Email field"
@@ -1865,6 +2230,10 @@ msgstr "Form test sayfası"
 #: includes/class-admin-page-renderer.php:55
 msgid "Forms"
 msgstr "Formlar"
+
+#: src/Admin/
+msgid "Forms and appearance"
+msgstr "Formlar ve Görünüm"
 
 #: src/Admin/
 msgid "Four short steps. You can change everything later in Settings."
@@ -1931,6 +2300,10 @@ msgstr "Ad Soyad Placeholder"
 #: includes/elementor/class-widget-donations-list.php:120
 msgid "Full-width button"
 msgstr "Buton tam genişlik"
+
+#: src/Admin/
+msgid "Full-width donate button"
+msgstr "Tam genişlikte bağış düğmesi"
 
 #: src/Modules/Campaign/class-progress-renderer.php
 msgid "funded"
@@ -2035,6 +2408,11 @@ msgstr "Hedef"
 msgid "Goal / Raised"
 msgstr "Hedef / Toplanan"
 
+#: templates/donation-panel/experiences/form.php
+#, php-format
+msgid "Goal %s"
+msgstr "Hedef %s"
+
 #: includes/class-admin-product-data-tab.php:610
 msgid "Goal amount (%s)"
 msgstr "Hedef tutar (%s)"
@@ -2052,6 +2430,10 @@ msgid "Goal-based campaign"
 msgstr "Hedefli kampanya"
 
 #: src/Admin/
+msgid "Goal, amount raised and days left"
+msgstr "Hedef, toplanan tutar ve kalan gün"
+
+#: src/Admin/
 msgid "Goal, amount raised and donors"
 msgstr "Hedef, toplanan tutar ve bağışçılar"
 
@@ -2060,8 +2442,44 @@ msgid "Greece"
 msgstr "Yunanistan"
 
 #: src/Admin/
+msgid "Guest checkout"
+msgstr "Misafir ödeme"
+
+#: src/Admin/
+msgid "Guest checkout is off: donors must create an account to give"
+msgstr "Misafir ödeme kapalı: bağışçılar bağış yapmak için hesap açmak zorunda"
+
+#: src/Admin/
+msgid "Guest checkout is off: donors must create an account to give. Turn on guest checkout in WooCommerce."
+msgstr "Misafir ödeme kapalı: bağışçılar bağış yapmak için hesap açmak zorunda. WooCommerce'te misafir ödemeyi açın."
+
+#: src/Admin/
+msgid "Guest checkout is off: every donor must create an account"
+msgstr "Misafir ödeme kapalı: her bağışçı hesap açmak zorunda"
+
+#: src/Admin/
+msgid "Guest checkout is on"
+msgstr "Misafir ödeme açık"
+
+#: src/Admin/
+msgid "Guest checkout is on: donors can give without an account"
+msgstr "Misafir ödeme açık: bağışçılar hesapsız bağış yapabilir"
+
+#: src/Admin/
+msgid "Guest checkout is on: donors do not need an account"
+msgstr "Misafir ödeme açık: bağışçıların hesap açması gerekmez"
+
+#: src/Admin/
+msgid "Guide"
+msgstr "Rehber"
+
+#: src/Admin/
 msgid "Guide sections"
 msgstr "Rehber bölümleri"
+
+#: src/Admin/
+msgid "Heading"
+msgstr "Başlık"
 
 #: includes/class-admin-form-tabs-renderer.php:442
 msgid "Heading and close"
@@ -2099,6 +2517,10 @@ msgstr "Başlık Metin"
 msgid "Heading, placeholders, copy button, and field layout."
 msgstr "Başlık, placeholder’lar, kopya butonu ve alan düzeni."
 
+#: src/Admin/
+msgid "Headings, selected amounts and progress bars. Used only when you choose your own colors."
+msgstr "Başlıklar, seçili tutarlar ve ilerleme çubukları. Yalnız kendi renklerinizi seçtiğinizde kullanılır."
+
 #: includes/class-icon-library.php:56
 msgid "Heart"
 msgstr "Kalp"
@@ -2115,6 +2537,14 @@ msgstr "Gizle"
 msgid "Hide password"
 msgstr "Şifreyi gizle"
 
+#: src/Admin/
+msgid "Hide the product price"
+msgstr "Ürün fiyatını gizle"
+
+#: src/Admin/
+msgid "Hides the donor name on public lists. The order keeps the real name."
+msgstr "Herkese açık listelerde bağışçı adını gizler. Sipariş gerçek adı korur."
+
 #: includes/class-phone-field.php:80
 msgid "Hong Kong"
 msgstr "Hong Kong"
@@ -2130,6 +2560,18 @@ msgstr "Hover gölge rengi (hex)"
 #: includes/class-admin-form-tabs-renderer.php:563
 msgid "Hover shadow: X/Y/blur/spread (px)"
 msgstr "Hover gölge: X/Y/bulanık/yayılım (px)"
+
+#: src/Admin/
+msgid "How should the donation form open?"
+msgstr "Bağış formu nasıl açılsın?"
+
+#: src/Admin/
+msgid "How should the form open?"
+msgstr "Form nasıl açılsın?"
+
+#: src/Admin/
+msgid "How the donation form looks and where the donate button appears."
+msgstr "Bağış formunun görünümü ve bağış düğmesinin göründüğü yerler."
 
 #: includes/class-phone-field.php:42
 msgid "Hungary"
@@ -2313,6 +2755,10 @@ msgstr "Etki metni"
 msgid "Import pack"
 msgstr "Paket içe aktar"
 
+#: src/Admin/
+msgid "Import settings"
+msgstr "Ayarları içe aktar"
+
 #: includes/class-style-presets.php:242
 msgid "Imported pack"
 msgstr "İçe aktarılan paket"
@@ -2325,6 +2771,10 @@ msgstr "Ithaf: %s"
 #: assets/js/src/progress-bar.js:321
 msgid "In progress"
 msgstr "Devam ediyor"
+
+#: src/Admin/
+msgid "In the page"
+msgstr "Sayfa içinde"
 
 #: assets/js/src/form/validate.js:581
 #, php-format
@@ -2422,6 +2872,10 @@ msgid "Ireland"
 msgstr "İrlanda"
 
 #: src/Admin/
+msgid "Is your store ready?"
+msgstr "Mağazanız hazır mı?"
+
+#: src/Admin/
 msgid "It picks sensible defaults for what you want to achieve. Nothing is created and you can change everything later."
 msgstr "Ne yapmak istediğinize göre akıllı varsayılanlar seçer. Hiçbir şey oluşturulmaz ve her şeyi sonra değiştirebilirsiniz."
 
@@ -2444,6 +2898,10 @@ msgstr "Kazakistan"
 #: includes/class-admin-product-data-tab.php:644
 msgid "Keep accepting donations (no message)"
 msgstr "Bağış almaya devam et (mesaj yok)"
+
+#: src/Admin/
+msgid "Keep it short: fewer fields mean more completed gifts. You can change this any time."
+msgstr "Kısa tutun: daha az alan, daha çok tamamlanan bağış demektir. Bunu istediğiniz zaman değiştirebilirsiniz."
 
 #: includes/class-cart.php:539 includes/templates/class-form-fields-renderer.php:586
 msgid "Keep my name private"
@@ -2497,6 +2955,22 @@ msgstr "Düzen, renkler, köşe yuvarlaklığı ve medya"
 msgid "Leave a field empty to use the built-in wording. The built-in wording is translated for you."
 msgstr "Yerleşik metni kullanmak için alanı boş bırakın. Yerleşik metin sizin için çevrilmiştir."
 
+#: src/Admin/
+msgid "Leave empty for the built-in secure payment sentence."
+msgstr "Hazır güvenli ödeme cümlesi için boş bırakın."
+
+#: src/Admin/
+msgid "Leave empty for the built-in wording."
+msgstr "Hazır metin için boş bırakın."
+
+#: src/Admin/
+msgid "Leave empty to use the built-in, translated wording."
+msgstr "Boş bırakırsanız hazır, çevrilmiş metin kullanılır."
+
+#: src/Admin/
+msgid "Leave empty to use the privacy policy page set in WordPress."
+msgstr "WordPress'te atanmış gizlilik politikası sayfasını kullanmak için boş bırakın."
+
 #: includes/class-admin-placement-tab-renderer.php:138
 msgid "Leave the setting above On. You do not need to do anything else; the Shop page and product pages become donation pages automatically."
 msgstr "Yukarıdaki ayarı Açık bırakın. Başka bir şey yapmanız gerekmez; Mağaza sayfası ve ürün sayfaları otomatik olarak bağış sayfasına dönüşür."
@@ -2521,6 +2995,18 @@ msgstr "Ad Soyad satırının sol ikonu."
 #: includes/class-admin-layout-tabs-renderer.php:264
 msgid "Left spacing (px)"
 msgstr "Sol Boşluk (px)"
+
+#: src/Admin/
+msgid "Let's finish setting up"
+msgstr "Kurulumu tamamlayalım"
+
+#: src/Admin/
+msgid "Lets donors give in someone's name or memory."
+msgstr "Bağışçıların birinin adına ya da anısına bağış yapmasını sağlar."
+
+#: src/Admin/
+msgid "Lets donors repeat the first shareholder's details quickly."
+msgstr "Bağışçıların ilk hissedarın bilgilerini hızlıca tekrarlamasını sağlar."
 
 #: src/Admin/
 msgid "Lets donors share the campaign after giving."
@@ -2550,6 +3036,10 @@ msgstr "Satır tutarı"
 msgid "Link"
 msgstr "Bağlantı"
 
+#: src/Admin/
+msgid "Link address"
+msgstr "Bağlantı adresi"
+
 #: templates/donation-panel/thanks/summary.php
 msgid "Link copied"
 msgstr "Bağlantı kopyalandı"
@@ -2562,6 +3052,10 @@ msgstr "Bağlantının bitiş zamanı"
 msgid "Link label"
 msgstr "Bağlantı etiketi"
 
+#: src/Admin/
+msgid "Link text"
+msgstr "Bağlantı metni"
+
 #: includes/class-admin-design-studio-renderer.php:283
 msgid "Link URL"
 msgstr "Bağlantı adresi"
@@ -2569,6 +3063,14 @@ msgstr "Bağlantı adresi"
 #: src/Modules/DonorAccount/
 msgid "Link your earlier gifts"
 msgstr "Önceki bağışlarınızı bağlayın"
+
+#: src/Admin/
+msgid "link your privacy page"
+msgstr "gizlilik sayfasını bağla"
+
+#: src/Admin/
+msgid "Links to the product page"
+msgstr "Ürün sayfasına bağlanır"
 
 #. YENI-SARMA block.json
 msgid "Lists donation products in a grid."
@@ -2578,9 +3080,17 @@ msgstr "Bağış ürünlerini ızgara olarak listeler."
 msgid "Lithuania"
 msgstr "Litvanya"
 
+#: src/Admin/
+msgid "Live"
+msgstr "Yayında"
+
 #: includes/class-admin-renderer-helpers.php:66
 msgid "Live preview"
 msgstr "Canlı önizleme"
+
+#: src/Admin/
+msgid "LIVE PREVIEW"
+msgstr "CANLI ÖNİZLEME"
 
 #: assets/js/src/form/ajax.js:308
 msgid "Loading cart contents..."
@@ -2618,6 +3128,14 @@ msgstr "Bağışçı tutarı kendisi yazarken uygulanacak alt sınır."
 msgid "Luxembourg"
 msgstr "Lüksemburg"
 
+#: src/Admin/
+msgid "Main color"
+msgstr "Ana renk"
+
+#: src/Admin/
+msgid "Main color and button color"
+msgstr "Ana renk ve düğme rengi"
+
 #: includes/class-admin-bulk-actions.php:39
 #: includes/class-admin-products-list-table.php:354
 msgid "Make donation product"
@@ -2631,6 +3149,10 @@ msgstr "Normal ürün yap"
 #: src/Modules/DonorAccount/
 msgid "Make your next gift even quicker."
 msgstr "Bir sonraki bağış daha da hızlı olsun."
+
+#: src/Admin/
+msgid "Makes the shortcode donate button as wide as its container. Handy on phones."
+msgstr "Kısa kodla eklenen bağış düğmesini bulunduğu alan kadar geniş yapar. Telefonda kullanışlıdır."
 
 #: includes/class-phone-field.php:91
 msgid "Malaysia"
@@ -2785,6 +3307,10 @@ msgid "Modules"
 msgstr "Modüller"
 
 #: src/Admin/
+msgid "Modules on"
+msgstr "Açık modüller"
+
+#: src/Admin/
 msgid "Modules that are off load nothing, so they never slow your site down."
 msgstr "Kapalı modüller hiçbir şey yüklemez, bu yüzden sitenizi asla yavaşlatmaz."
 
@@ -2811,6 +3337,10 @@ msgstr "Ek"
 #: includes/class-phone-field.php:126
 msgid "Morocco"
 msgstr "Fas"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Most popular"
+msgstr "En çok seçilen"
 
 #: includes/class-admin-design-studio-renderer.php:227
 msgid "Motion"
@@ -2839,6 +3369,10 @@ msgstr "Ürün sayfam özel bir sayfa oluşturucu şablonu kullanıyor"
 #: includes/class-phone-field.php:94
 msgid "Myanmar"
 msgstr "Myanmar"
+
+#: src/Admin/
+msgid "Needs attention:"
+msgstr "Dikkat gerekiyor:"
 
 #: includes/class-phone-field.php:95
 msgid "Nepal"
@@ -2888,6 +3422,14 @@ msgstr "Nijerya"
 msgid "No"
 msgstr "Hayır"
 
+#: src/Admin/
+msgid "No button"
+msgstr "Düğme yok"
+
+#: src/Admin/
+msgid "No campaigns yet. Open a product, choose the Donation tab and set a goal amount."
+msgstr "Henüz kampanya yok. Bir ürünü açın, Bağış sekmesini seçin ve hedef tutarı girin."
+
 #: includes/class-admin-products-list-table.php:266
 msgid "No category"
 msgstr "Kategori yok"
@@ -2907,6 +3449,10 @@ msgstr "Henüz bağış yok"
 #: includes/class-admin-products-list-table.php:314
 msgid "No goal"
 msgstr "Hedef yok"
+
+#: src/Admin/
+msgid "No personal or order data is included."
+msgstr "Kişisel veri ya da sipariş verisi içermez."
 
 #: includes/class-admin-products-list-table.php:81
 msgid "No products match these filters."
@@ -2968,6 +3514,10 @@ msgstr "Not metni"
 msgid "Number of shares"
 msgstr "Hisse Adedi"
 
+#: src/Admin/
+msgid "Numbers separated by commas, for example 25, 50, 100. At most six; leave empty for the store default."
+msgstr "Virgülle ayrılmış sayılar, örneğin 25, 50, 100. En çok altı; mağaza varsayılanı için boş bırakın."
+
 #. translators: %s: formatted goal amount
 #: src/Modules/Campaign/class-progress-renderer.php
 #, php-format
@@ -2984,6 +3534,10 @@ msgstr "Kapalı"
 msgid "Off by default because the product page already has a title."
 msgstr "Ürün sayfasında zaten başlık olduğu için varsayılan kapalıdır."
 
+#: src/Admin/
+msgid "Offer one extra donation product next to the main gift."
+msgstr "Ana bağışın yanında bir ek bağış ürünü önerir."
+
 #: includes/class-admin-product-data-tab.php:685
 msgid "Offers the donor the option to also cover the payment processing cost (on all donation types)."
 msgstr "Bağışçıya ödeme işlem maliyetini de üstlenme seçeneği sunar (tüm bağış tiplerinde)."
@@ -2991,6 +3545,10 @@ msgstr "Bağışçıya ödeme işlem maliyetini de üstlenme seçeneği sunar (t
 #: assets/js/src/core/utils.js:831
 msgid "Offline"
 msgstr "Çevrimdışı"
+
+#: src/Admin/
+msgid "OK:"
+msgstr "Tamam:"
 
 #: includes/class-admin-product-data-tab.php:763
 msgid "Old text: %s — no longer used; the real number is used."
@@ -3012,6 +3570,10 @@ msgstr "Hedefli kampanyada alt bağış formda gösterilmez; ayarlar diğer tipl
 #: src/Admin/
 msgid "On a product page the shortcode finds its own product. No ID needed."
 msgstr "Ürün sayfasında kısa kod kendi ürününü bulur. ID gerekmez."
+
+#: src/Admin/
+msgid "On behalf of / dedication"
+msgstr "Adına / ithaf"
 
 #: src/Modules/SideCart/class-side-cart-renderer.php
 #, php-format
@@ -3054,6 +3616,14 @@ msgstr "Tek Sütun"
 msgid "One per line: amount = phrase. Add \"singular|plural\" for two forms. Example: 25 = 1 food parcel|food parcels"
 msgstr "Her satıra bir tane: tutar = ifade. İki biçim için \"tekil|çoğul\" ekleyin. Örnek: 25 = 1 gıda kolisi|gıda kolisi"
 
+#: src/Admin/
+msgid "One question at checkout. Only used when the Tax relief module is on."
+msgstr "Ödemede tek bir soru. Yalnız Vergi indirimi modülü açıkken kullanılır."
+
+#: src/Admin/
+msgid "One question; a yes saves name and address on the order"
+msgstr "Tek soru; evet denirse ad ve adres siparişe kaydedilir"
+
 #: includes/class-admin-form-tabs-renderer.php:457
 msgid "One radius for the popup, inputs, buttons, and cards (default 10)."
 msgstr "Modal, input, buton ve kartlar için tek radius (varsayılan 10)."
@@ -3062,9 +3632,17 @@ msgstr "Modal, input, buton ve kartlar için tek radius (varsayılan 10)."
 msgid "One-click buttons such as $100 / $250 above the amount box."
 msgstr "Tutar kutusunun üstünde 100 ₺ / 250 ₺ gibi tek tıkla seçilen düğmeler."
 
+#: src/Modules/Experiences/class-form-context.php
+msgid "One-time donation"
+msgstr "Tek seferlik bağış"
+
 #: assets/js/src/core/utils.js:841
 msgid "Online"
 msgstr "Çevrimiçi"
+
+#: src/Admin/
+msgid "Only for the \"In the page\" style."
+msgstr "Yalnız \"Sayfa içinde\" biçimi için."
 
 #: includes/class-admin-form-tabs-renderer.php:580
 msgid "Only on the shortcode trigger; use it for readability on a light background."
@@ -3073,6 +3651,10 @@ msgstr "Yalnızca shortcode tetikleyicide; açık arka planda okunabilirlik içi
 #: includes/class-admin-product-data-tab.php:634
 msgid "Only orders with confirmed payment (processing/completed) are counted; processing fees and on-hold are not included. Amounts are converted to the store’s main currency. The refresh icon recalculates the total from scratch."
 msgstr "Yalnız ödemesi onaylanan siparişler (processing/completed) sayılır; işlem ücreti ve on-hold dahil değildir. Tutarlar mağaza ana para birimine çevrilir. Yenile simgesi toplamı baştan hesaplar."
+
+#: src/Admin/
+msgid "Only products I mark"
+msgstr "Yalnız işaretlediğim ürünler"
 
 #: src/Admin/
 msgid "Open a product, then use the Donation tab in the product data box to turn it into a donation product."
@@ -3093,6 +3675,10 @@ msgstr "Panel aç"
 #: includes/class-form-matrix.php:143
 msgid "Open popup"
 msgstr "Popup aç"
+
+#: src/Admin/
+msgid "Open preview"
+msgstr "Önizlemeyi aç"
 
 #: src/Admin/
 msgid "Open quick setup"
@@ -3116,12 +3702,32 @@ msgid "Open this link while logged in to add the gifts you made as a guest with 
 msgstr "Bu e-posta adresiyle misafir olarak yaptığınız bağışları hesabınıza eklemek için oturum açıkken bu bağlantıyı açın:\n\n%1$s\n\nBağlantı yalnız bir kez çalışır ve %2$d dakika sonra geçerliliğini yitirir. Bunu siz istemediyseniz bu e-postayı yok sayın."
 
 #: src/Admin/
+msgid "Open WooCommerce settings"
+msgstr "WooCommerce ayarlarını aç"
+
+#: src/Admin/
 msgid "Open your products"
 msgstr "Ürünlerinizi açın"
 
 #: src/Admin/
+msgid "Opens a centered window"
+msgstr "Ortada pencere açar"
+
+#: src/Admin/
+msgid "Opens the form panel"
+msgstr "Form panelini açar"
+
+#: src/Admin/
+msgid "Optional fields the donor can fill in. Whatever donors type is saved on the order exactly as typed."
+msgstr "Bağışçının doldurabileceği isteğe bağlı alanlar. Bağışçının yazdığı her şey siparişe yazıldığı gibi kaydedilir."
+
+#: src/Admin/
 msgid "Optional sign-in, a \"My donations\" panel and a quick way to give again."
 msgstr "İsteğe bağlı giriş, \"Bağışlarım\" paneli ve tekrar bağış için hızlı yol."
+
+#: src/Admin/
+msgid "Optional. Off by default; donors can always give as guests."
+msgstr "İsteğe bağlı. Varsayılan kapalı; bağışçılar her zaman misafir olarak bağış yapabilir."
 
 #: src/Admin/
 msgid "Optional. Off keeps the classic form, which is the safe default."
@@ -3141,9 +3747,17 @@ msgstr "Sıralama"
 msgid "Order number"
 msgstr "Sipariş numarası"
 
+#: src/Admin/
+msgid "Order storage"
+msgstr "Sipariş depolama"
+
 #: includes/elementor/class-widget-donations-list.php:115
 msgid "Original"
 msgstr "Orijinal"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Other amount"
+msgstr "Başka bir tutar"
 
 #: includes/class-admin-design-studio-renderer.php:232
 msgid "Outline"
@@ -3161,6 +3775,10 @@ msgstr "Overlay rengi"
 msgid "Overlay opacity (%)"
 msgstr "Overlay opaklığı (%)"
 
+#: src/Admin/
+msgid "Overview"
+msgstr "Genel Bakış"
+
 #: includes/class-admin-design-studio-renderer.php:80
 msgid "Pack and surface settings apply on the front end after you save. Product overrides come from the product card."
 msgstr "Paket ve yüzey ayarları kaydedildikten sonra ön yüzde uygulanır. Ürün override’ları ürün kartından gelir."
@@ -3177,6 +3795,10 @@ msgstr "Padding, modal içeriğinin kenarlardan boşluğudur; renk veya buton st
 #: includes/class-admin-placement-tab-renderer.php:144
 msgid "Page builder: open the product template, add a Shortcode (or Code) element, paste it, and save."
 msgstr "Sayfa oluşturucu: ürün şablonunu açın, bir Kısa Kod (Shortcode) ya da Kod öğesi ekleyin, yapıştırın ve kaydedin."
+
+#: src/Admin/
+msgid "Pages"
+msgstr "Sayfalar"
 
 #: includes/class-phone-field.php:97
 msgid "Pakistan"
@@ -3210,9 +3832,17 @@ msgstr "Ödeme Yap Butonu Hover Rengi"
 msgid "Payment method and any taxes are shown at checkout."
 msgstr "Ödeme yöntemi ve varsa vergiler ödeme sayfasında görünür."
 
+#: src/Admin/
+msgid "Payment methods, taxes and currency are set in WooCommerce. Donation Panel works with both the block and the classic checkout."
+msgstr "Ödeme yöntemleri, vergiler ve para birimi WooCommerce'te ayarlanır. Bağış Paneli hem blok hem klasik ödeme sayfasıyla çalışır."
+
 #: includes/class-admin-design-studio-renderer.php:116
 msgid "Pending"
 msgstr "Bekleyen"
+
+#: src/Admin/
+msgid "Pending review"
+msgstr "İnceleme bekliyor"
 
 #: includes/class-admin-layout-tabs-renderer.php:143
 msgid "Percent badge background"
@@ -3259,6 +3889,10 @@ msgstr "Telefon numarası zorunludur."
 #: includes/class-admin-form-tabs-renderer.php:158
 msgid "Phone placeholder"
 msgstr "Telefon Placeholder"
+
+#: src/Admin/
+msgid "PHP"
+msgstr "PHP"
 
 #: includes/class-admin-design-studio-renderer.php:309
 msgid "Pick from the built-in SVG set or upload your own icon from the Media Library."
@@ -3461,8 +4095,20 @@ msgid "Portugal"
 msgstr "Portekiz"
 
 #: src/Admin/
+msgid "Position"
+msgstr "Konum"
+
+#: src/Admin/
+msgid "prepare the checkout page"
+msgstr "ödeme sayfasını hazırla"
+
+#: src/Admin/
 msgid "Preview"
 msgstr "Önizleme"
+
+#: src/Admin/
+msgid "Preview, move your settings, and check that everything is working."
+msgstr "Önizleyin, ayarlarınızı taşıyın ve her şeyin çalıştığını kontrol edin."
 
 #: includes/compat/class-builder-detect.php:82
 msgid "Preview: «%s» is shown. That product’s form appears on the product page."
@@ -3501,8 +4147,20 @@ msgid "Primary color (hover)"
 msgstr "Ana renk (üzerine gelince)"
 
 #: src/Admin/
+msgid "Privacy"
+msgstr "Gizlilik"
+
+#: src/Admin/
 msgid "Privacy and data protection"
 msgstr "Gizlilik ve veri koruma"
+
+#: src/Admin/
+msgid "Privacy link under the form"
+msgstr "Formun altında gizlilik bağlantısı"
+
+#: templates/donation-panel/experiences/form.php
+msgid "privacy notice"
+msgstr "aydınlatma metnini"
 
 #: includes/class-admin-settings-normalizer.php:157
 msgid "Privacy notice about the processing of personal data"
@@ -3515,6 +4173,26 @@ msgstr "Aydınlatma metni bağlantısı"
 #: includes/class-admin-design-studio-renderer.php:277
 msgid "Privacy notice on the processing of personal data"
 msgstr "Kişisel verilerin işlenmesine ilişkin aydınlatma metni"
+
+#: src/Admin/
+msgid "Privacy policy page is not set"
+msgstr "Gizlilik politikası sayfası atanmamış"
+
+#: src/Admin/
+msgid "Privacy policy page is not set in WordPress"
+msgstr "WordPress'te gizlilik politikası sayfası atanmamış"
+
+#: src/Admin/
+msgid "Privacy policy page is set"
+msgstr "Gizlilik politikası sayfası atanmış"
+
+#: src/Admin/
+msgid "Privacy policy page is set in WordPress"
+msgstr "WordPress'te gizlilik politikası sayfası atanmış"
+
+#: src/Admin/
+msgid "Private"
+msgstr "Özel"
 
 #: includes/class-cart.php:564 includes/class-order-meta-keys.php:84
 msgid "Processing fee"
@@ -3587,6 +4265,10 @@ msgstr "Ürün sayfası ve liste"
 msgid "Product page and list settings saved."
 msgstr "Ürün sayfası ve liste ayarları kaydedildi."
 
+#: src/Admin/
+msgid "Product pages and lists"
+msgstr "Ürün sayfaları ve listeler"
+
 #: includes/elementor/class-widget-donation-form.php:78
 msgid "Product source"
 msgstr "Ürün kaynağı"
@@ -3594,6 +4276,14 @@ msgstr "Ürün kaynağı"
 #: includes/class-admin-page-renderer.php:51
 msgid "Products"
 msgstr "Ürünler"
+
+#: src/Admin/
+msgid "Products in chosen categories"
+msgstr "Seçili kategorilerdeki ürünler"
+
+#: src/Admin/
+msgid "Products with a goal. Set a goal on the product's Donation tab."
+msgstr "Hedefi olan ürünler. Hedefi ürünün Bağış sekmesinde belirleyin."
 
 #: includes/elementor/class-widget-donations-list.php:127
 msgid "Progress"
@@ -3619,6 +4309,10 @@ msgstr "Progress ikonu"
 #: includes/class-admin-product-data-tab.php:198
 msgid "Progress toward goal"
 msgstr "Hedefe ulaşma oranı"
+
+#: src/Admin/
+msgid "publish a donation product"
+msgstr "bir bağış ürünü yayınla"
 
 #: includes/class-phone-field.php:100
 msgid "Qatar"
@@ -3668,6 +4362,10 @@ msgstr "Hızlı tutar düğmeleri"
 msgid "Quick amount buttons must be whole numbers only; invalid value: \"%s\". Separate amounts with commas, spaces, or semicolons (e.g. 100, 250, 500)."
 msgstr "Hızlı tutar düğmeleri yalnız tam sayı olmalı; geçersiz değer: \"%s\". Tutarları virgül, boşluk veya noktalı virgülle ayırın (ör. 100, 250, 500)."
 
+#: src/Admin/
+msgid "Quick amount buttons shown above the free amount field."
+msgstr "Serbest tutar alanının üstünde gösterilen hızlı tutar düğmeleri."
+
 #: includes/class-admin-product-data-tab.php:670
 msgid "Quick amount buttons, quantity, and processing fee"
 msgstr "Hızlı tutar düğmeleri, adet ve işlem ücreti"
@@ -3693,6 +4391,10 @@ msgstr "Rastgele"
 msgid "Read the guide"
 msgstr "Rehberi oku"
 
+#: src/Admin/
+msgid "Real donor counts, no personal details"
+msgstr "Gerçek bağışçı sayısı, kişi bilgisi olmadan"
+
 #: includes/class-admin-product-data-tab.php:202
 msgid "Recalculate total"
 msgstr "Toplamı yeniden hesapla"
@@ -3709,9 +4411,21 @@ msgstr "Toplam yeniden hesaplanıyor…"
 msgid "Receipt"
 msgstr "Makbuz"
 
+#: src/Admin/
+msgid "Recommended. Opens from the bottom on phones."
+msgstr "Önerilen. Telefonda alttan açılır."
+
 #: assets/js/src/form/ajax.js:239
 msgid "Redirecting you to checkout."
 msgstr "Ödeme adımına yönlendiriliyorsunuz."
+
+#: src/Admin/
+msgid "Registration on My Account is off: donors cannot create an account themselves"
+msgstr "Hesabım'da kayıt kapalı: bağışçılar kendileri hesap açamaz"
+
+#: src/Admin/
+msgid "Registration on My Account is on"
+msgstr "Hesabım'da kayıt açık"
 
 #: includes/class-admin-product-data-tab.php:528
 #: includes/class-admin-product-data-tab.php:541
@@ -3729,6 +4443,10 @@ msgstr "Normal gölge: X/Y/bulanık/yayılım (px)"
 #: src/Admin/
 msgid "Regular supporters"
 msgstr "Düzenli destekçiler"
+
+#: src/Admin/
+msgid "Remaining: %s."
+msgstr "Kalan: %s."
 
 #: src/Modules/DonorAccount/class-account-renderer.php
 msgid "Remember me"
@@ -3751,9 +4469,17 @@ msgstr "Sepetten Kaldır"
 msgid "Removed from your basket."
 msgstr "Sepetinizden kaldırıldı."
 
+#: src/Admin/
+msgid "Removes the plugin's settings and product options. Orders and order records are never touched. This cannot be undone."
+msgstr "Eklentinin ayarlarını ve ürün seçeneklerini siler. Siparişlere ve sipariş kayıtlarına asla dokunulmaz. Geri alınamaz."
+
 #. YENI-SARMA block.json
 msgid "Renders the donation form for the current or selected product."
 msgstr "Mevcut ürünün veya seçilen ürünün bağış formunu basar."
+
+#: src/Admin/
+msgid "Replace \"Add to cart\" with the donate button"
+msgstr "\"Sepete ekle\" yerine bağış düğmesi göster"
 
 #: includes/class-admin-design-studio-renderer.php:388
 msgid "Reset"
@@ -3762,6 +4488,10 @@ msgstr "Sıfırla"
 #: src/Modules/DonorAccount/
 msgid "Reset password"
 msgstr "Şifreyi sıfırla"
+
+#: src/Admin/
+msgid "REST API address"
+msgstr "REST API adresi"
 
 #: includes/class-admin-bulk-actions.php:41
 #: includes/class-admin-products-list-table.php:356
@@ -3835,6 +4565,14 @@ msgstr "Yerleşim ayarlarını kaydet"
 msgid "Save settings"
 msgstr "Ayarları Kaydet"
 
+#: src/Admin/
+msgid "Saved"
+msgstr "Kaydedildi"
+
+#: src/Admin/
+msgid "Saving..."
+msgstr "Kaydediliyor..."
+
 #: includes/class-admin-product-data-tab.php:202
 msgid "Scans paid orders and recalculates the total."
 msgstr "Ödemesi alınmış siparişleri tarayıp toplamı yeniden hesaplar."
@@ -3868,6 +4606,10 @@ msgstr "Güvenli ödeme · Anında onay"
 msgid "Secure payment · SSL-protected transaction"
 msgstr "Güvenli ödeme · SSL korumalı işlem"
 
+#: templates/donation-panel/experiences/form.php
+msgid "Secure payment · Your details are encrypted"
+msgstr "Güvenli ödeme · Bilgileriniz şifrelenir"
+
 #: includes/class-lazy-modal.php
 msgid "Security check failed. Please refresh and try again."
 msgstr "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyip tekrar deneyin."
@@ -3883,6 +4625,10 @@ msgstr "Her ürünün bağış tipini, kısa kodunu ve hedefli kampanyalarda top
 #: templates/donation-panel/thanks/summary.php
 msgid "See every donation and receipt in one place."
 msgstr "Tüm bağışlarınızı ve makbuzlarınızı tek yerde görün."
+
+#: src/Admin/
+msgid "See every module on your site as visitors would, without changing any setting. Only you can see it, and it never saves anything."
+msgstr "Hiçbir ayarı değiştirmeden her modülü ziyaretçiler gibi sitenizde görün. Yalnız siz görürsünüz ve hiçbir şey kaydedilmez."
 
 #: includes/templates/class-campaign-header-renderer.php:59
 msgid "See more"
@@ -3971,6 +4717,10 @@ msgstr "beklenmeyen bir hata"
 msgid "Set as a percentage of the screen width; min/max values prevent overflow."
 msgstr "Ekran genişliğinin yüzdesi olarak ayarlanır; min/max değerler taşmayı önler."
 
+#: src/Admin/
+msgid "Set it"
+msgstr "Ata"
+
 #: includes/class-admin-product-data-tab.php:614
 msgid "Set the donation amount on this tab. The WooCommerce General price field is not required for these types and may be left empty; the plugin does not change the General price by itself."
 msgstr "Bağış tutarını bu sekmeden belirleyin. WooCommerce Genel fiyat alanı bu türlerde zorunlu değildir ve boş bırakılabilir; eklenti Genel fiyatı kendiliğinden değiştirmez."
@@ -3982,6 +4732,10 @@ msgstr "Ayarlar"
 #: includes/class-migrations.php:994
 msgid "Settings → Product page and list"
 msgstr "Ayarlar → Ürün sayfası ve liste"
+
+#: src/Admin/
+msgid "Settings imported. Reloading..."
+msgstr "Ayarlar içe aktarıldı. Sayfa yenileniyor..."
 
 #: includes/class-admin-assets.php:77
 msgid "Settings saved successfully."
@@ -4018,6 +4772,18 @@ msgstr "Kurulum"
 msgid "Setup guide"
 msgstr "Kurulum rehberi"
 
+#: src/Admin/
+msgid "Setup is almost complete"
+msgstr "Kurulum neredeyse tamam"
+
+#: src/Admin/
+msgid "Setup is complete"
+msgstr "Kurulum tamam"
+
+#: src/Admin/
+msgid "Setup progress"
+msgstr "Kurulum ilerlemesi"
+
 #: templates/donation-panel/thanks/summary.php
 msgid "Share"
 msgstr "Paylaş"
@@ -4037,6 +4803,10 @@ msgstr "Kampanyayı paylaş"
 #: includes/class-admin-page-renderer.php:58
 msgid "Share-based"
 msgstr "Hisseli"
+
+#: src/Admin/
+msgid "Share-based donations"
+msgstr "Hisseli bağışlar"
 
 #: includes/class-admin-form-tabs-renderer.php:183
 msgid "Share-based form preview"
@@ -4080,6 +4850,10 @@ msgstr "Hissedar kartı, başlık şeridi ve alan arka planı."
 msgid "Shareholder details"
 msgstr "Hissedar Bilgileri"
 
+#: src/Admin/
+msgid "Shareholder email"
+msgstr "Hissedar e-postası"
+
 #: assets/js/src/form/validate.js:830
 #, php-format
 msgid "Shareholder form %d is incomplete."
@@ -4089,6 +4863,10 @@ msgstr "%d. hissedar formu eksik."
 #. YENI-SARMA
 msgid "Shareholder form status"
 msgstr "Hissedar Form Durumu"
+
+#: src/Admin/
+msgid "Shareholder heading"
+msgstr "Hissedar başlığı"
 
 #: includes/class-admin-form-tabs-renderer.php:156
 msgid "Shareholder heading text"
@@ -4113,6 +4891,10 @@ msgstr "En sık sorulan soruların kısa yanıtları."
 #: src/Admin/
 msgid "Short equivalents next to amounts, such as \"1 food parcel\"."
 msgstr "Tutarların yanında \"1 gıda kolisi\" gibi kısa karşılıklar."
+
+#: src/Admin/
+msgid "Short equivalents shown next to amounts. Only used when the Impact phrases module is on."
+msgstr "Tutarların yanında gösterilen kısa karşılıklar. Yalnız Etki ifadeleri modülü açıkken kullanılır."
 
 #: includes/class-admin-product-data-tab.php:710
 msgid "Short info shown to the donor (maximum 400 characters)."
@@ -4139,10 +4921,22 @@ msgstr "Shortcode buton boyutu"
 msgid "Shortcode: works in every page editor. Without an ID it finds the product it is placed in. Add id to point at a specific product."
 msgstr "Kısa kod: her sayfa düzenleyicisinde çalışır. ID vermezseniz bulunduğu ürünü kendisi bulur. Belirli bir ürün için id ekleyin."
 
+#: src/Admin/
+msgid "Shortcodes and block"
+msgstr "Kısa kodlar ve blok"
+
 #: includes/class-admin-form-tabs-renderer.php:161
 #: includes/class-admin-form-tabs-renderer.php:164
 msgid "Show"
 msgstr "Göster"
+
+#: src/Admin/
+msgid "Show a privacy link under the form"
+msgstr "Formun altında gizlilik bağlantısı göster"
+
+#: src/Admin/
+msgid "Show a title above the in-page form"
+msgstr "Sayfa içi formun üstünde başlık göster"
 
 #: includes/class-admin-design-studio-renderer.php:261
 msgid "Show email on the regular form"
@@ -4189,8 +4983,20 @@ msgid "Show trust text under the CTA"
 msgstr "CTA altında güven metnini göster"
 
 #: src/Admin/
+msgid "Shown after the order. Only used when the Thank-you screen module is on."
+msgstr "Siparişten sonra gösterilir. Yalnız Teşekkür ekranı modülü açıkken kullanılır."
+
+#: src/Admin/
 msgid "Shown on the thank-you screen after a donation."
 msgstr "Bağıştan sonra teşekkür ekranında gösterilir."
+
+#: src/Admin/
+msgid "Shown on the thank-you screen after a donation. Leave empty for the built-in wording."
+msgstr "Bağıştan sonra teşekkür ekranında gösterilir. Hazır metin için boş bırakın."
+
+#: src/Admin/
+msgid "Shown only when the form asks for email, dedication or shareholder details."
+msgstr "Yalnız form e-posta, ithaf ya da hissedar bilgisi istediğinde gösterilir."
 
 #: includes/class-admin-product-data-tab.php:704
 msgid "Shows a field to write who the donation is on behalf of."
@@ -4220,6 +5026,10 @@ msgstr "Yalnız \"Bağışçı belirler\" ve \"Hedefli kampanya\" formlarında, 
 msgid "Shows quantity plus/minus buttons on a fixed-amount form. If off, the quantity is always 1."
 msgstr "Sabit tutarlı formda adet artırma/azaltma düğmelerini gösterir. Kapalıysa adet her zaman 1 olur."
 
+#: src/Admin/
+msgid "Shows ready-made amounts. A product can switch them off for itself."
+msgstr "Hazır tutarları gösterir. Bir ürün kendisi için kapatabilir."
+
 #: includes/class-admin-product-data-tab.php:711
 msgid "Shows the form step by step as donor info and amount. \"Use general setting\" applies the choice on the Regular tab."
 msgstr "Formu bağışçı bilgisi ve tutar olarak adım adım gösterir. \"Genel ayarı kullan\" Normal sekmesindeki seçimi uygular."
@@ -4233,12 +5043,24 @@ msgid "Shows trust messages under the form. If the general setting is off, they 
 msgstr "Formun altında güven mesajları gösterir. Genel ayar kapalıysa bu ürün için açık olsa da gösterilmez."
 
 #: src/Admin/
+msgid "Shows what an amount will do"
+msgstr "Tutarların ne işe yarayacağını gösterir"
+
+#: src/Admin/
 msgid "Side cart"
 msgstr "Yan sepet"
 
 #: includes/class-admin-product-data-tab.php:1053
 msgid "Side panel"
 msgstr "Sağ panel"
+
+#: src/Admin/
+msgid "Side panel button: [wdp_donation_button_panel]. Centered window button: [wdp_donation_button]. Form that stays on the page: [wdp_donation_form]. List of donation products: [wdp_donations]."
+msgstr "Sağ panel düğmesi: [wdp_donation_button_panel]. Ortada pencere düğmesi: [wdp_donation_button]. Sayfada açık duran form: [wdp_donation_form]. Bağış ürünleri listesi: [wdp_donations]."
+
+#: src/Admin/
+msgid "Side panel is recommended: it opens from the right on desktop and from the bottom on phones."
+msgstr "Sağ panel önerilir: masaüstünde sağdan, telefonda alttan açılır."
 
 #: includes/class-admin-layout-tabs-renderer.php:177
 msgid "Side panel width"
@@ -4252,9 +5074,17 @@ msgstr "Sağ Panel Genişliği (Bağış Yap)"
 msgid "Sign in to see My donations"
 msgstr "Bağışlarımı görmek için giriş yapın"
 
+#: src/Admin/
+msgid "Sign in, register and My donations"
+msgstr "Giriş, kayıt ve Bağışlarım paneli"
+
 #: src/Modules/DonorAccount/
 msgid "Sign up"
 msgstr "Kayıt ol"
+
+#: src/Admin/
+msgid "Sign-in, registration and password reset use WordPress and WooCommerce. The plugin never stores passwords. Account options are set in WooCommerce."
+msgstr "Giriş, kayıt ve şifre sıfırlama WordPress ve WooCommerce ile yapılır. Eklenti şifre saklamaz. Hesap seçenekleri WooCommerce'te ayarlanır."
 
 #: src/Admin/
 msgid "Simple donations"
@@ -4343,6 +5173,10 @@ msgstr "Geniş"
 msgid "Spain"
 msgstr "İspanya"
 
+#: src/Admin/
+msgid "Splits the form into amount first, details second."
+msgstr "Formu önce tutar, sonra bilgiler olarak ikiye böler."
+
 #: includes/class-admin-form-tabs-renderer.php:555
 #: includes/class-admin-form-tabs-renderer.php:567
 msgid "Spread"
@@ -4372,6 +5206,10 @@ msgstr "Yıldız"
 msgid "Start quick setup"
 msgstr "Hızlı kurulumu başlat"
 
+#: src/Admin/
+msgid "Status"
+msgstr "Durum"
+
 #: assets/js/src/form/wizard.js:528
 msgid "Step"
 msgstr "Adım"
@@ -4379,7 +5217,11 @@ msgstr "Adım"
 #: templates/donation-panel/experiences/form.php
 #, php-format
 msgid "Step %1$d of %2$d"
-msgstr "Adım %1$d/%2$d"
+msgstr "Adım %1$d / %2$d"
+
+#: src/Admin/
+msgid "Step title"
+msgstr "Adım başlığı"
 
 #: src/Admin/
 msgid "Still stuck? Place the shortcode in the product description or in a text block. It works in any page editor."
@@ -4654,14 +5496,26 @@ msgstr "Bitiş tarihi geçerli bir takvim günü olmalıdır."
 msgid "The end date must be in Y-m-d format (e.g. 2026-12-31)."
 msgstr "Bitiş tarihi Y-m-d biçiminde olmalıdır (örn. 2026-12-31)."
 
+#: src/Admin/
+msgid "The file does not look like a Donation Panel settings export."
+msgstr "Dosya bir Bağış Paneli ayar dışa aktarımına benzemiyor."
+
 #: assets/js/src/modal.js:35
 msgid "The form did not finish loading. Please check your details."
 msgstr "Form tam yüklenemedi, lütfen bilgilerinizi kontrol edin."
+
+#: src/Admin/
+msgid "The form follows your site colors and font automatically"
+msgstr "Form sitenizin renk ve yazı tipine kendiliğinden uyar"
 
 #: assets/js/src/bootstrap/event-manager.js:245
 #: assets/js/src/form/cta-ready.js:144
 msgid "The form is not ready yet. Please wait a few seconds and try again."
 msgstr "Form henüz yüklenemedi. Lütfen birkaç saniye bekleyip tekrar deneyin."
+
+#: src/Admin/
+msgid "The form stays open on the page."
+msgstr "Form sayfada açık durur."
 
 #: includes/class-form-matrix.php:48
 msgid "The form test page could not be rendered. See the error log for details."
@@ -4695,6 +5549,10 @@ msgstr "Hedef tutar geçerli bir sayı olmalıdır."
 msgid "The highest number of shares the donor can select at once (maximum 50)."
 msgstr "Bağışçının tek seferde seçebileceği en yüksek hisse adedi (en fazla 50)."
 
+#: src/Admin/
+msgid "The hint inside the dedication field. Leave empty for the built-in wording."
+msgstr "İthaf alanının içindeki ipucu. Hazır metin için boş bırakın."
+
 #: includes/class-admin-layout-tabs-renderer.php:184
 msgid "The inner background color and inner corner radius of the popup box are in the “Inner popup box” section on the “Regular form” tab (this tab is sizes only)."
 msgstr "Modal kutusunun iç arka plan rengi ve iç köşe yuvarlaklığı “Normal Form” sekmesinde “Modal içi kutu” bölümündedir (bu sekme yalnızca ölçüler)."
@@ -4702,6 +5560,10 @@ msgstr "Modal kutusunun iç arka plan rengi ve iç köşe yuvarlaklığı “Nor
 #: includes/class-admin-product-data-tab.php:620
 msgid "The lowest amount the donor can enter. This field is the single source (the WooCommerce General price is for fallback/compatibility; the minimum is not calculated from it)."
 msgstr "Bağışçının yazabileceği en düşük tutar. Tek kaynak bu alandır (WooCommerce Genel fiyat yedek/uyumluluk içindir, min hesaplanmaz)."
+
+#: src/Admin/
+msgid "The main donate button. Choose a color that keeps white text easy to read."
+msgstr "Ana bağış düğmesi. Beyaz yazının rahat okunacağı bir renk seçin."
 
 #: includes/class-product-settings-service.php:362
 msgid "The maximum number of shares can be 50."
@@ -4730,6 +5592,14 @@ msgstr "Paket içe aktarıldı ve uygulandı."
 #: src/Privacy/class-privacy-tools.php
 msgid "The plugin does not set its own cookies and does not use tracking or advertising services. Cart and checkout cookies are set by WooCommerce. Request limits use a one-way hash of the visitor address and are kept for a few minutes."
 msgstr "Eklenti kendi çerezlerini kullanmaz; izleme ya da reklam hizmeti kullanmaz. Sepet ve ödeme çerezlerini WooCommerce ayarlar. İstek sınırları ziyaretçi adresinin tek yönlü karmasını kullanır ve birkaç dakika saklanır."
+
+#: src/Admin/
+msgid "The plugin does not write privacy text. It only shows a short link to the page you wrote on your site."
+msgstr "Eklenti gizlilik metni yazmaz. Yalnız sitenizde yazdığınız sayfaya kısa bir bağlantı gösterir."
+
+#: src/Admin/
+msgid "The plugin sets no cookie of its own"
+msgstr "Eklenti kendi çerezini yerleştirmez"
 
 #: includes/class-admin-form-tabs-renderer.php:217
 msgid "The preview on the right shows colors and texts live."
@@ -4800,9 +5670,17 @@ msgstr "WooCommerce Donation Modal Popup eklentisi için WooCommerce eklentisini
 msgid "The WooCommerce Donation Popup plugin is not active."
 msgstr "WooCommerce Donation Popup eklentisi aktif değil."
 
+#: src/Admin/
+msgid "The WooCommerce product ID of the extra donation. Leave 0 to offer none. A product can set its own add-on."
+msgstr "Ek bağışın WooCommerce ürün numarası. Hiç önermemek için 0 bırakın. Bir ürün kendi ek bağışını belirleyebilir."
+
 #: includes/class-admin-form-tabs-renderer.php:250
 msgid "The WooCommerce product used when the product card has no custom ID."
 msgstr "Ürün kartında özel ID yoksa kullanılan WC ürünü."
+
+#: src/Admin/
+msgid "The wording of the switch donors see. Leave empty for the built-in wording."
+msgstr "Bağışçının gördüğü anahtarın metni. Hazır metin için boş bırakın."
 
 #: includes/class-donations-list.php:495
 msgid "There are no donations to show right now."
@@ -4885,6 +5763,10 @@ msgstr "Üç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar �
 msgid "Title"
 msgstr "Başlık"
 
+#: src/Admin/
+msgid "Title above the shareholder name fields. Leave empty for the built-in wording."
+msgstr "Hissedar ad alanlarının üstündeki başlık. Hazır metin için boş bırakın."
+
 #: includes/class-admin-design-studio-renderer.php:332
 msgid "Title/icon area of the extra donation (sadaqah) block."
 msgstr "Alt bağış (sadaka) bloğu başlık/ikon alanı."
@@ -4908,6 +5790,10 @@ msgstr "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.
 #: assets/js/src/form/ajax.js:28
 msgid "Too many requests. Please wait a moment and try again."
 msgstr "Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin."
+
+#: src/Admin/
+msgid "Tools"
+msgstr "Araçlar"
 
 #: includes/class-admin-layout-tabs-renderer.php:233
 #: includes/class-admin-layout-tabs-renderer.php:261
@@ -4945,6 +5831,14 @@ msgstr "Güven rozetleri"
 #: includes/class-admin-design-studio-renderer.php:294
 msgid "Trust badges (JSON, max 3)"
 msgstr "Güven rozetleri (JSON, max 3)"
+
+#: src/Admin/
+msgid "Trust line"
+msgstr "Güven satırı"
+
+#: src/Admin/
+msgid "Trust line wording"
+msgstr "Güven satırı metni"
 
 #: includes/class-admin-design-studio-renderer.php:347
 msgid "Trust strip"
@@ -4990,6 +5884,10 @@ msgstr "İki Sütun"
 msgid "Two groups: (1) shortcode/trigger buttons on the page — CSS `--wdp-plugin-btn-shadow-sc`; (2) all other plugin buttons inside the popup and inline form — `--wdp-plugin-btn-shadow-modal`. Close (X) and quick amount buttons are excluded."
 msgstr "İki grup: (1) sayfadaki shortcode/tetikleyici düğmeler — CSS `--wdp-plugin-btn-shadow-sc`; (2) popup ve sayfa içi form içindeki Tüm diğer eklenti butonları — `--wdp-plugin-btn-shadow-modal`. Kapama (X) ve hızlı tutar düğmeleri hariç."
 
+#: src/Admin/
+msgid "Two steps"
+msgstr "İki adım"
+
 #: includes/elementor/class-widget-donations-list.php:75
 msgid "Type"
 msgstr "Tip"
@@ -5025,6 +5923,14 @@ msgstr "İngiltere"
 msgid "United States"
 msgstr "Amerika Birleşik Devletleri"
 
+#: src/Admin/
+msgid "Unknown module."
+msgstr "Bilinmeyen modül."
+
+#: src/Admin/
+msgid "Unknown setting."
+msgstr "Bilinmeyen ayar."
+
 #: includes/class-admin-bulk-actions.php:70
 msgid "Updated the donation flag for %d products."
 msgstr "%d ürünün bağış işareti güncellendi."
@@ -5053,9 +5959,25 @@ msgstr "WooCommerce sayfalarında “Sepete Ekle” yerine “Bağış Yap”"
 msgid "Use a step-by-step flow in the popup and inline forms"
 msgstr "Popup ve gömülü formlarda adım adım akış kullan"
 
+#: src/Admin/
+msgid "Use at most six amounts."
+msgstr "En çok altı tutar kullanın."
+
 #: includes/class-admin-product-data-tab.php:474
 msgid "Use general setting"
 msgstr "Genel ayarı kullan"
+
+#: src/Admin/
+msgid "Use my theme colors"
+msgstr "Temamın renklerini kullan"
+
+#: src/Admin/
+msgid "Use my theme colors: the form follows your site colors and font automatically."
+msgstr "Temamın renklerini kullan: form sitenizin renk ve yazı tipine kendiliğinden uyar."
+
+#: src/Admin/
+msgid "Use plain numbers separated by commas, for example 25, 50, 100."
+msgstr "Virgülle ayrılmış düz sayılar kullanın, örneğin 25, 50, 100."
 
 #: includes/class-admin-products-list-table.php:239
 msgid "Used as an add-on donation (%d)"
@@ -5065,6 +5987,10 @@ msgstr "Alt bağış olarak kullanılıyor (%d)"
 msgid "Used when scope is “selected categories”. Child categories are included automatically."
 msgstr "Kapsam “seçili kategoriler” iken kullanılır. Alt kategoriler otomatik dahildir."
 
+#: src/Admin/
+msgid "Used with \"chosen categories\". Category IDs separated by commas (see Products > Categories)."
+msgstr "\"Seçili kategoriler\" ile kullanılır. Virgülle ayrılmış kategori numaraları (Ürünler > Kategoriler)."
+
 #: includes/class-icon-library.php:49
 msgid "User"
 msgstr "Kullanıcı"
@@ -5072,6 +5998,10 @@ msgstr "Kullanıcı"
 #: includes/class-admin-product-data-tab.php:858
 msgid "Uses the product’s featured image as the campaign image at the top of the form."
 msgstr "Ürünün öne çıkan görselini formun üst kısmında kampanya görseli olarak kullanır."
+
+#: src/Admin/
+msgid "Uses the standard WooCommerce spots on product pages. If your page layout has no such spot, a fallback button is drawn."
+msgstr "Ürün sayfalarında WooCommerce'in standart yerlerini kullanır. Sayfa düzeninizde böyle bir yer yoksa yedek düğme çizilir."
 
 #: includes/class-phone-field.php:111
 msgid "Uzbekistan"
@@ -5110,6 +6040,10 @@ msgstr "Hedefimize ulaştık, desteğiniz için teşekkür ederiz. Bu kampanyaya
 msgid "We sent a verification link to your account email."
 msgstr "Hesap e-postanıza bir doğrulama bağlantısı gönderdik."
 
+#: templates/donation-panel/experiences/form.php
+msgid "We use this number to keep you updated about your donation."
+msgstr "Bu numarayı bağışınızla ilgili sizi bilgilendirmek için kullanırız."
+
 #: src/Modules/DonorAccount/
 msgid "We will email a verification link to your account address. Only after you confirm are earlier guest gifts added here."
 msgstr "Hesap adresinize bir doğrulama bağlantısı e-postalayacağız. Misafir bağışlarınız yalnız siz onayladıktan sonra buraya eklenir."
@@ -5133,8 +6067,16 @@ msgid "What do you want to achieve?"
 msgstr "Ne yapmak istiyorsunuz?"
 
 #: src/Admin/
+msgid "What donors see after they choose an amount."
+msgstr "Bağışçının tutarı seçtikten sonra gördükleri."
+
+#: src/Admin/
 msgid "What each module does"
 msgstr "Her modül ne yapar"
+
+#: src/Admin/
+msgid "What happens to plugin data when you delete the plugin."
+msgstr "Eklenti silindiğinde eklenti verilerine ne olacağı."
 
 #: includes/class-admin-design-studio-renderer.php:262
 msgid "What it does: Asks the donor for an email. When on, an extra row appears on the form. If “Email field” is off on the product card, it is hidden for that product. Not shown on share-based forms."
@@ -5204,6 +6146,14 @@ msgstr "Ne işe yarar: Sitenizin ana kimlik rengidir. Kaydettiğinizde Sepete Ek
 msgid "What it does: Turns the small icons to the left of form rows on or off. When off, the fields look simpler. A Use general / On / Off choice on the product card overrides this per product."
 msgstr "Ne işe yarar: Form satırlarının solundaki küçük ikonları aç/kapatır. Kapalıysa alanlar daha sade görünür. Ürün kartında Genel/Açık/Kapalı seçimi ürün bazında ezer."
 
+#: src/Admin/
+msgid "What should the form ask?"
+msgstr "Form ne sormalı?"
+
+#: src/Admin/
+msgid "What the button does in shop and category lists."
+msgstr "Mağaza ve kategori listelerinde düğmenin ne yaptığı."
+
 #: includes/class-admin-form-tabs-renderer.php:549
 msgid "When off, no box-shadow output is generated for this group."
 msgstr "Kapalıyken bu grup için box-shadow çıktısı üretilmez."
@@ -5245,8 +6195,28 @@ msgid "When you donate, we store the details you enter on the donation form with
 msgstr "Bağış yaptığınızda, bağış formuna yazdığınız bilgileri sipariş ile birlikte saklarız: adınız, e-posta ve telefon numaranız, isteğe bağlı ithaf ya da not, yazdığınız hissedarların adları ve iletişim bilgileri ve anonim kalmak isteyip istemediğiniz. Bu veri, sipariş saklandığı sürece (muhasebe ve yasal yükümlülükler) sipariş üzerinde tutulur."
 
 #: src/Admin/
+msgid "Where on the product page the donate button goes."
+msgstr "Bağış düğmesinin ürün sayfasındaki yeri."
+
+#: src/Admin/
+msgid "Where the add-to-cart button was"
+msgstr "Sepete ekle düğmesinin olduğu yer"
+
+#: src/Admin/
 msgid "Where the donate button appears"
 msgstr "Bağış düğmesi nerede görünür"
+
+#: src/Admin/
+msgid "Where the donate button appears. Shortcodes and blocks always work anywhere."
+msgstr "Bağış düğmesinin göründüğü yerler. Kısa kodlar ve bloklar her yerde çalışır."
+
+#: src/Admin/
+msgid "Which extras do you want?"
+msgstr "Hangi ekstralar olsun?"
+
+#: src/Admin/
+msgid "Which products are donation products"
+msgstr "Hangi ürünler bağış ürünü"
 
 #: includes/class-admin-placement-tab-renderer.php:45
 msgid "Which simple products use the donation form."
@@ -5298,6 +6268,14 @@ msgid "Please enter a valid phone number."
 msgstr "Geçerli bir telefon girin."
 
 #: src/Admin/
+msgid "WooCommerce"
+msgstr "WooCommerce"
+
+#: src/Admin/
+msgid "WooCommerce account settings"
+msgstr "WooCommerce hesap ayarları"
+
+#: src/Admin/
 msgid "WooCommerce active currency only"
 msgstr "Yalnız WooCommerce'in etkin para birimi"
 
@@ -5322,6 +6300,26 @@ msgstr "Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan (#%d) ku
 #: includes/class-admin-product-data-tab.php:831
 msgid "WooCommerce product to add to the cart; if empty, the general default is used, and if that is also missing the row is not added."
 msgstr "Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez."
+
+#: src/Admin/
+msgid "Wording for products where donors buy shares and enter shareholder names."
+msgstr "Bağışçının hisse alıp hissedar adı girdiği ürünler için metinler."
+
+#: src/Admin/
+msgid "WordPress"
+msgstr "WordPress"
+
+#: src/Admin/
+msgid "WordPress \"Erase personal data\" covers donor details on orders"
+msgstr "WordPress \"Kişisel verileri sil\" siparişlerdeki bağışçı bilgilerini kapsar"
+
+#: src/Admin/
+msgid "WordPress \"Export personal data\" includes donor details on orders"
+msgstr "WordPress \"Kişisel verileri dışa aktar\" siparişlerdeki bağışçı bilgilerini içerir"
+
+#: src/Admin/
+msgid "WordPress privacy tools"
+msgstr "WordPress gizlilik araçları"
 
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Would you like to add to your donation?"
@@ -5413,6 +6411,10 @@ msgstr "Sepetiniz boş"
 msgid "Your cart is empty"
 msgstr "Sepetiniz boş"
 
+#: src/Admin/
+msgid "Your choices are saved. Place the donate button with the shortcode below, with the block, or let automatic placement do it."
+msgstr "Seçimleriniz kaydedildi. Bağış düğmesini aşağıdaki kısa kodla, blokla yerleştirin ya da otomatik yerleşime bırakın."
+
 #: assets/js/src/progress-bar.js:324
 msgid "Your contribution is being added"
 msgstr "Katınız ekleniyor"
@@ -5484,3 +6486,7 @@ msgstr "Kişisel verileriniz Aydınlatma Metni kapsamında işlenir."
 #: templates/donation-panel/thanks/summary.php
 msgid "Your tax relief declaration has been recorded with this donation."
 msgstr "Vergi indirimi beyanınız bu bağışla birlikte kaydedildi."
+
+#: src/Admin/
+msgid "Your whole donation experience in one place."
+msgstr "Bağış deneyiminizin tamamı tek yerde."

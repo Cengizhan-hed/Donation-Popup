@@ -34,7 +34,7 @@ msgstr "Bağış sıklığı"
 #: templates/donation-panel/experiences/form.php
 #, php-format
 msgid "Step %1$d of %2$d"
-msgstr "Adım %1$d/%2$d"
+msgstr "Adım %1$d / %2$d"
 
 #: templates/donation-panel/experiences/form.php
 #, php-format

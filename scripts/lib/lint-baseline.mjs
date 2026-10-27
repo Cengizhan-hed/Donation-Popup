@@ -61,8 +61,12 @@ export function changedPhpLines(root, baseRef = '') {
   const r = spawnSync(
     'git',
     ['diff', '-U0', '--no-color', '--relative', base, '--', ...SCOPE_PATHS],
-    { cwd: root, encoding: 'utf8' }
+    { cwd: root, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }
   );
+  if (r.error) {
+    // Varsayılan 1 MB tamponu aşan diff sessizce atlanıyordu; artık hata açıkça yükseltilir.
+    throw new Error(`git diff okunamadı (${r.error.message})`);
+  }
   const raw = `${r.stdout || ''}${r.stderr || ''}`;
   const lines = new Map();
   let current = '';
