@@ -53,7 +53,7 @@ import {
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks, resolveDonationFillAmount } from './donation-flow.mjs';
-import { advanceToDetails, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
+import { advanceToDetails, advanceToFinalStep, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
 import {
   probeSimilarDonations,
@@ -1239,6 +1239,7 @@ async function runSubmitFaultChecks({ browser, contextOpts, env, productPath, gu
         const root = await openFreshForm(page);
         await fillDonorFields(root, { amountFill: '25' });
         const form = formOf(root);
+        await advanceToFinalStep(form);
         const t0 = Date.now();
         await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS, noWaitAfter: true });
         const summary = form.locator('[data-dp-summary].is-visible').first();
@@ -1296,7 +1297,9 @@ async function runSubmitFaultChecks({ browser, contextOpts, env, productPath, gu
         (await custom.count()) > 0
           ? custom
           : form
-              .locator('input[type="text"]:not([disabled]), input[type="tel"]:not([disabled])')
+              // Sabit tutarlı üründe özel tutar kutusu yok; telefon alanı biçimlendirme/maske uygulayabilir,
+              // bu yüzden yazılabilirlik yoklaması düz metin alanıyla (ad) yapılır.
+              .locator('input[type="text"]:not([disabled]):not([name="amount"]), input:not([type]):not([disabled])')
               .filter({ visible: true })
               .first();
       await probeInput.fill('7');
@@ -1850,7 +1853,22 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     if (surfaceKind === 'product') {
       const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,.fusion-title,.fusion-title-heading'));
       const benzer = headings.find((h) => benzerRe.test(h.textContent || ''));
+      // Önce WooCommerce standart ilgili-ürünler kökleri; yoksa başlıktan yukarı çıkıp kartları içeren en yakın kap
+      // (sayfa oluşturucular başlığı ve ürün ızgarasını farklı kaplarda tutabilir).
+      let genericRoot = document.querySelector(
+        '.related.products, .upsells.products, section.related, .wp-block-woocommerce-related-products'
+      );
+      if (!genericRoot && benzer) {
+        let n = benzer.parentElement;
+        for (let depth = 0; n && depth < 8; depth += 1, n = n.parentElement) {
+          if (n.querySelector(cardSel)) {
+            genericRoot = n;
+            break;
+          }
+        }
+      }
       const root =
+        genericRoot ||
         (benzer &&
           (benzer.closest(
             '.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
@@ -3304,6 +3322,13 @@ export async function captureAll({
           ? page.locator(SEL.sidePanelTrigger).first()
           : page.locator(SEL.centeredPopupTrigger).first();
     }
+    // Yeni motorda tek kabuk: popup beklenen üründe sağ panel/satır içi tür tanımlıysa, ürünün kendi açma düğmesi kullanılır.
+    if ((await trigger.count()) === 0 && mode !== 'panel') {
+      const anyKind = productId
+        ? page.locator(`[data-dp-exp][data-dp-product="${productId}"] [data-dp-open]`)
+        : page.locator('[data-dp-exp] [data-dp-open]');
+      if ((await anyKind.count()) > 0) trigger = anyKind.first();
+    }
     if ((await trigger.count()) === 0) {
       const ids = await page
         .locator('[data-dp-exp][data-dp-product], .wdp-card__cta[data-wdp-form]')
@@ -3890,6 +3915,7 @@ export async function captureAll({
             'fixed-cart'
           );
           // "Sepete ekle": son adımda görünen ikincil düğme (ödemeye yönlendirmez, katmanı kapatır).
+          await advanceToFinalStep(formOf(shell));
           const addBtn = formOf(shell).locator(SEL.addOnly).first();
           await startDomMutationProbe(page).catch((e) => catchFail('startDomMutationProbe', e));
           const tClick = Date.now();

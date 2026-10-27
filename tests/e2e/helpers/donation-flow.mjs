@@ -76,7 +76,10 @@ export async function resolveDonationFillAmount(shell, currency) {
   const form = formOf(shell);
   await form.waitFor({ state: 'visible', timeout: checkMs() });
   const bounds = await form.evaluate((f) => {
-    const rec = f.querySelector('button.dp-amount[aria-checked="true"][data-dp-preset]');
+    // Serbest tutar formunda (ör. Zekat) önerilen yoksa ilk hazır tutar geçerli bir tutardır.
+    const rec =
+      f.querySelector('button.dp-amount[aria-checked="true"][data-dp-preset]') ||
+      f.querySelector('button.dp-amount[data-dp-preset]');
     const custom = f.querySelector('input.dp-custom__in[name="amount"]');
     return {
       min: f.getAttribute('data-min') || '',
