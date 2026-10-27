@@ -14,6 +14,7 @@ use DonationPanel\Core\Plugin;
 use DonationPanel\Core\Settings;
 use DonationPanel\Modules\SideCart\Side_Cart_Lines;
 use DonationPanel\Modules\SideCart\Side_Cart_Renderer;
+use DonationPanel\Modules\SideCart\Side_Cart_Suggestion;
 use PHPUnit\Framework\TestCase;
 
 if ( ! function_exists( '_n' ) ) {
@@ -98,7 +99,41 @@ final class E4SideCartTest extends TestCase {
 		$this->assertStringContainsString( 'data-dp-sc-key="abc123"', $html );
 		$this->assertStringContainsString( 'data-dp-sc-qty="-1"', $html );
 		$this->assertStringContainsString( 'href="https://example.test/checkout/"', $html );
-		$this->assertStringContainsString( '1 gift in your basket', $html );
+		$this->assertStringContainsString( 'data-dp-sc-go', $html );
+		$this->assertStringContainsString( 'dpx-btn--link" data-dp-sc-close', $html );
+		$this->assertSame( '1 gift in your basket', Side_Cart_Renderer::count_text( 1 ) );
+	}
+
+	public function test_body_renders_suggestion_card_with_amount_buttons(): void {
+		$suggestion = Side_Cart_Suggestion::sanitize(
+			array(
+				'product_id' => 42,
+				'amounts'    => array( '50', 100, 'x', -5, 50, 200, 300 ),
+				'title'      => '<b>Sadaka</b>',
+				'hint'       => 'Küçük bir katkı',
+			)
+		);
+		$this->assertSame( 42, $suggestion['product_id'] );
+		$this->assertSame( array( 50.0, 100.0, 200.0 ), $suggestion['amounts'] );
+		$this->assertSame( 'Sadaka', $suggestion['title'] );
+		$line = array( 'key' => 'k', 'name' => 'Su', 'quantity' => 1, 'can_quantity' => false, 'total_html' => '10' );
+		$html = Side_Cart_Renderer::body( array( $line ), '10', '/c', $suggestion );
+		$this->assertStringContainsString( 'data-dp-sc-suggest', $html );
+		$this->assertStringContainsString( 'data-product="42"', $html );
+		$this->assertStringContainsString( 'data-amount="100"', $html );
+		$this->assertStringContainsString( 'Küçük bir katkı', $html );
+		$this->assertStringNotContainsString( 'data-dp-sc-suggest', Side_Cart_Renderer::body( array( $line ), '10', '/c' ) );
+	}
+
+	public function test_suggestion_without_product_or_amounts_is_empty(): void {
+		$this->assertSame( array(), Side_Cart_Suggestion::sanitize( array( 'product_id' => 0, 'amounts' => array( 5 ) ) ) );
+		$this->assertSame( array(), Side_Cart_Suggestion::sanitize( array( 'product_id' => 5, 'amounts' => array() ) ) );
+		$this->assertSame( array(), Side_Cart_Suggestion::sanitize( 'x' ) );
+	}
+
+	public function test_drawer_head_holds_count_text(): void {
+		$html = Side_Cart_Renderer::drawer( '<p>x</p>', array(), '3 gifts in your basket' );
+		$this->assertStringContainsString( 'data-dp-sc-sub>3 gifts in your basket<', $html );
 	}
 
 	public function test_line_without_quantity_control_has_only_remove(): void {

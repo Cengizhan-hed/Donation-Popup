@@ -21,6 +21,109 @@ defined( 'ABSPATH' ) || exit;
 final class Donation_History {
 
 	/**
+	 * Siparişe bağlı video bağlantısı meta anahtarı (bağışçıya iletilen video; yoksa Video düğmesi çizilmez).
+	 */
+	const META_VIDEO_URL = '_donation_panel_video_url';
+
+	/**
+	 * Durum -> ton (hap rengi): ok | wait | bad.
+	 *
+	 * @param string $status Durum slug'ı (`wc-` öneksiz).
+	 * @return string
+	 */
+	public static function tone( $status ) {
+		$status = (string) $status;
+		if ( in_array( $status, array( 'completed', 'processing' ), true ) ) {
+			return 'ok';
+		}
+		if ( in_array( $status, array( 'cancelled', 'failed', 'refunded' ), true ) ) {
+			return 'bad';
+		}
+		return 'wait';
+	}
+
+	/**
+	 * Siparişin video bağlantısı (yalnız http/https; `donation_panel_donation_video_url` filtresiyle özelleştirilir).
+	 *
+	 * @param object $order WC_Order.
+	 * @return string
+	 */
+	public static function video_url( $order ) {
+		$url = method_exists( $order, 'get_meta' ) ? (string) $order->get_meta( self::META_VIDEO_URL, true ) : '';
+		/**
+		 * Bağışçıya iletilen videonun bağlantısı.
+		 *
+		 * @param string $url   Sipariş meta alanından okunan bağlantı (yoksa boş).
+		 * @param object $order Sipariş.
+		 */
+		$url = (string) apply_filters( 'donation_panel_donation_video_url', $url, $order );
+		return preg_match( '#^https?://#i', $url ) ? $url : '';
+	}
+
+	/**
+	 * Üst özet (toplam, bağış sayısı, bu yıl): yalnız ödenmiş/işlenen siparişlerin mağaza birimindeki bağışları.
+	 *
+	 * @param array<int, object> $orders         Siparişler (kullanıcının).
+	 * @param string             $store_currency Mağaza para birimi.
+	 * @param int                $year           Yıl (bu yıl).
+	 * @return array{total: float, count: int, year: float}
+	 */
+	public static function aggregate( array $orders, $store_currency, $year ) {
+		$out = array(
+			'total' => 0.0,
+			'count' => 0,
+			'year'  => 0.0,
+		);
+		foreach ( $orders as $order ) {
+			if ( ! is_object( $order ) || 'ok' !== self::tone( (string) $order->get_status() ) ) {
+				continue;
+			}
+			$created = method_exists( $order, 'get_date_created' ) ? $order->get_date_created() : null;
+			$in_year = $created && method_exists( $created, 'format' ) && (int) $created->format( 'Y' ) === (int) $year;
+			foreach ( self::rows_for_order( $order ) as $row ) {
+				++$out['count'];
+				if ( (string) $order->get_currency() !== (string) $store_currency ) {
+					continue;
+				}
+				$out['total'] += (float) $row['amount'];
+				if ( $in_year ) {
+					$out['year'] += (float) $row['amount'];
+				}
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Kullanıcının üst özeti (en çok 200 sipariş taranır; WooCommerce sipariş API'si, HPOS uyumlu).
+	 *
+	 * @param int $user_id Kullanıcı.
+	 * @return array{total: float, count: int, year: float}
+	 */
+	public static function summary( $user_id ) {
+		$empty = array(
+			'total' => 0.0,
+			'count' => 0,
+			'year'  => 0.0,
+		);
+		if ( (int) $user_id <= 0 || ! function_exists( 'wc_get_orders' ) ) {
+			return $empty;
+		}
+		$orders = wc_get_orders(
+			array(
+				'customer_id' => (int) $user_id,
+				'limit'       => 200,
+				'orderby'     => 'date',
+				'order'       => 'DESC',
+				'type'        => 'shop_order',
+				'status'      => array( 'wc-completed', 'wc-processing' ),
+			)
+		);
+		$store  = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
+		return self::aggregate( array_filter( (array) $orders, 'is_object' ), $store, (int) gmdate( 'Y' ) );
+	}
+
+	/**
 	 * Bir sayfa sipariş döndürür.
 	 *
 	 * @param int           $user_id  Kullanıcı (0 ise boş).
@@ -111,9 +214,28 @@ final class Donation_History {
 			}
 			$product_id = method_exists( $item, 'get_product_id' ) ? (int) $item->get_product_id() : 0;
 			$status     = (string) $order->get_status();
-			$created    = method_exists( $order, 'get_date_created' ) ? $order->get_date_created() : null;
-			$rows[]     = array(
+			$image      = '';
+			$campaign   = null;
+			if ( $product_id > 0 ) {
+				if ( function_exists( 'get_the_post_thumbnail_url' ) ) {
+					$image = (string) get_the_post_thumbnail_url( $product_id, 'thumbnail' );
+				}
+				if ( class_exists( '\\DonationPanel\\Modules\\Campaign\\Progress_Data' ) ) {
+					$progress = \DonationPanel\Modules\Campaign\Progress_Data::for_product( $product_id );
+					$campaign = is_array( $progress ) && isset( $progress['percent'] ) ? (float) $progress['percent'] : null;
+				}
+			}
+			$store_currency = function_exists( 'get_woocommerce_currency' ) ? (string) get_woocommerce_currency() : '';
+			$created        = method_exists( $order, 'get_date_created' ) ? $order->get_date_created() : null;
+			$rows[]         = array(
 				'order_id'    => (int) $order->get_id(),
+				'product_id'  => $product_id,
+				'image'       => $image,
+				'amount'      => round( (float) $item->get_total(), 6 ),
+				'tone'        => self::tone( $status ),
+				'video_url'   => self::video_url( $order ),
+				'campaign'    => $campaign,
+				'can_repeat'  => '' !== $store_currency && $store_currency === (string) $order->get_currency(),
 				'date'        => ( $created && function_exists( 'wc_format_datetime' ) ) ? (string) wc_format_datetime( $created ) : '',
 				'project'     => (string) $item->get_name(),
 				'type'        => self::type_label( $product_id ),

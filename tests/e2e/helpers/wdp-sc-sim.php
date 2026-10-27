@@ -25,6 +25,10 @@ add_action(
 			$id     = (int) $_GET['dp_sc_add']; // phpcs:ignore
 			$amount = isset( $_GET['amount'] ) ? (float) $_GET['amount'] : 50.0; // phpcs:ignore
 			$data   = array();
+			if ( ! empty( $_GET['name'] ) ) { // phpcs:ignore
+				$data['full_name'] = sanitize_text_field( wp_unslash( (string) $_GET['name'] ) ); // phpcs:ignore
+				$data['phone']     = '+447700900123';
+			}
 			if ( ! empty( $_GET['dedication'] ) ) { // phpcs:ignore
 				$data['dedication'] = sanitize_text_field( wp_unslash( (string) $_GET['dedication'] ) ); // phpcs:ignore
 			}
@@ -72,5 +76,34 @@ add_action(
 		wp_footer();
 		echo '</body></html>';
 		exit;
+	}
+);
+
+/**
+ * Ek bağış önerisi (yalnız e2e): sepette olmayan ilk yayımlanmış ürün, 50 / 100 tutarlarıyla.
+ */
+add_filter(
+	'donation_panel_side_cart_suggestion',
+	static function () {
+		$in_cart = array();
+		if ( function_exists( 'WC' ) && WC() && WC()->cart ) {
+			foreach ( WC()->cart->get_cart() as $item ) {
+				$in_cart[] = (int) $item['product_id'];
+			}
+		}
+		$ids = get_posts(
+			array(
+				'post_type'      => 'product',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'post__not_in'   => $in_cart ? $in_cart : array( 0 ),
+			)
+		);
+		return $ids ? array(
+			'product_id' => (int) $ids[0],
+			'amounts'    => array( 50, 100 ),
+			'hint'       => 'Küçük bir katkı, büyük bir dua',
+		) : array();
 	}
 );

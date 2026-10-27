@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-26 16:44:12+0000\n"
-"PO-Revision-Date: 2026-10-26 16:44:12+0000\n"
+"POT-Creation-Date: 2026-10-26 20:17:27+0000\n"
+"PO-Revision-Date: 2026-10-26 20:17:27+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -130,6 +130,12 @@ msgstr[1] "%s destekçi"
 msgid "%s today"
 msgstr "bugün %s"
 
+#. translators: %s: percentage number, for example 62.
+#: templates/donation-panel/thanks/summary.php
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "%s%%"
+msgstr "%%%s"
+
 #: assets/js/src/progress-bar.js:139
 #, php-format
 msgid "%s%% of the goal completed"
@@ -251,6 +257,11 @@ msgstr "Aksiyon butonu ve ürün satırı renkleri."
 msgid "Actions"
 msgstr "İşlemler"
 
+#. translators: 1: suggested donation name, 2: amount with currency.
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Add %1$s %2$s to your basket"
+msgstr "%1$s için %2$s sepetinize ekleyin"
+
 #: assets/js/src/cart/ui.js:245
 msgid "Add a donation to continue to checkout."
 msgstr "Bağış ekleyerek buradan ödeme adımına geçebilirsiniz."
@@ -268,6 +279,10 @@ msgstr "Alt Bağış Ekle"
 #: includes/class-admin-product-data-tab.php:801
 msgid "Add an extra donation"
 msgstr "Alt bağış ekle"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Add another donation"
+msgstr "Başka bağış ekle"
 
 #: includes/class-admin-product-data-tab.php:802
 msgid "Add extra donation"
@@ -735,6 +750,20 @@ msgstr "İlerleme çubuğunun %100 sayılacağı kampanya hedefi (mağaza ana pa
 #. YENI-SARMA
 msgid "Campaign media"
 msgstr "Kampanya medyası"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Campaign progress"
+msgstr "Kampanya ilerlemesi"
+
+#. translators: 1: percentage before this gift, 2: percentage after this gift.
+#: templates/donation-panel/thanks/summary.php
+msgid "Campaign progress rose from %1$s to %2$s"
+msgstr "Kampanya ilerlemesi %1$s değerinden %2$s değerine yükseldi"
+
+#. translators: %s: percentage, for example 62%.
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Campaign progress: %s"
+msgstr "Kampanya ilerlemesi: %s"
 
 #: src/Admin/
 msgid "Campaign: goal, amount raised and donor count. Impact: short equivalents next to amounts. Social proof: totals only, never personal details."
@@ -1370,6 +1399,10 @@ msgstr "Bağış formu: ürün bulunamadı (id/slug/sku verilmedi veya bu sayfa 
 msgid "Donation frequency"
 msgstr "Bağış sıklığı"
 
+#: templates/donation-panel/thanks/summary.php
+msgid "Donation no."
+msgstr "Bağış no"
+
 #: includes/class-cart.php:546 includes/class-order-meta-keys.php:81
 msgid "Donation note"
 msgstr "Bağış Notu"
@@ -1780,6 +1813,10 @@ msgstr "Sabit tutar"
 msgid "Fixed amount (%s)"
 msgstr "Sabit tutar (%s)"
 
+#: templates/donation-panel/thanks/summary.php
+msgid "Follow your donations"
+msgstr "Bağışlarınızı takip edin"
+
 #: src/Admin/
 msgid "Follow your WooCommerce settings"
 msgstr "WooCommerce ayarlarınıza göre"
@@ -1936,6 +1973,10 @@ msgstr "Hediye"
 msgid "Gifts made as a guest?"
 msgstr "Misafir olarak bağış mı yaptınız?"
 
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Gifts you made earlier with this email are added to your account automatically once you verify your email."
+msgstr "Daha önce bu e-postayla yaptığınız bağışlar, e-postanızı doğruladığınızda hesabınıza otomatik eklenir."
+
 #: templates/donation-panel/thanks/summary.php
 msgid "Give again"
 msgstr "Tekrar bağış yap"
@@ -2069,6 +2110,10 @@ msgstr "Hex veya rgba kabul edilir."
 #: includes/class-migrations.php:995
 msgid "Hide"
 msgstr "Gizle"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Hide password"
+msgstr "Şifreyi gizle"
 
 #: includes/class-phone-field.php:80
 msgid "Hong Kong"
@@ -2557,6 +2602,10 @@ msgstr "Giriş yap"
 msgid "Log in or sign up"
 msgstr "Giriş yap veya kayıt ol"
 
+#: src/Modules/DonorAccount/class-donor-account-module.php
+msgid "Log in to see your donations, receipts and videos in one place."
+msgstr "Giriş yapın; bağışlarınızı, makbuzlarınızı ve videolarınızı tek yerden görün."
+
 #: src/Modules/DonorAccount/
 msgid "Log in to your account"
 msgstr "Hesabınıza girin"
@@ -3028,6 +3077,10 @@ msgstr "Yalnız ödemesi onaylanan siparişler (processing/completed) sayılır;
 #: src/Admin/
 msgid "Open a product, then use the Donation tab in the product data box to turn it into a donation product."
 msgstr "Bir ürünü açın, sonra ürün verisi kutusundaki Bağış sekmesiyle onu bağış ürününe çevirin."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Open an account in one tap; all your donations in one place."
+msgstr "Tek dokunuşla hesap açın, tüm bağışlarınız bir yerde."
 
 #: src/Admin/
 msgid "Open classic settings"
@@ -3677,6 +3730,10 @@ msgstr "Normal gölge: X/Y/bulanık/yayılım (px)"
 msgid "Regular supporters"
 msgstr "Düzenli destekçiler"
 
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Remember me"
+msgstr "Beni hatırla"
+
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Remove"
 msgstr "Kaldır"
@@ -3822,6 +3879,10 @@ msgstr "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip te
 #: includes/class-admin-page-renderer.php:162
 msgid "See each product’s donation type, shortcode, and the amount raised on goal campaigns at a glance."
 msgstr "Her ürünün bağış tipini, kısa kodunu ve hedefli kampanyalarda toplanan tutarı tek bakışta görürsünüz."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "See every donation and receipt in one place."
+msgstr "Tüm bağışlarınızı ve makbuzlarınızı tek yerde görün."
 
 #: includes/templates/class-campaign-header-renderer.php:59
 msgid "See more"
@@ -3969,6 +4030,10 @@ msgstr "Paylaş düğmesi"
 msgid "Share count"
 msgstr "Hisse Sayısı"
 
+#: templates/donation-panel/thanks/summary.php
+msgid "Share the campaign"
+msgstr "Kampanyayı paylaş"
+
 #: includes/class-admin-page-renderer.php:58
 msgid "Share-based"
 msgstr "Hisseli"
@@ -4098,6 +4163,10 @@ msgstr "Daha fazla göster"
 #: includes/class-admin-placement-tab-renderer.php:102
 msgid "Show on fixed-amount and share-based products, hide on others"
 msgstr "Sabit ve hisseli üründe göster, diğerlerinde gizle"
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Show password"
+msgstr "Şifreyi göster"
 
 #: includes/class-admin-design-studio-renderer.php:278
 msgid "Show privacy notice link"
@@ -4804,6 +4873,10 @@ msgstr "Bu sitede kuruşlu tutar girilemez, örn. %s"
 msgid "This step is optional. You can continue without ticking the box."
 msgstr "Bu adım isteğe bağlıdır. Kutuyu işaretlemeden devam edebilirsiniz."
 
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "This year"
+msgstr "Bu yıl"
+
 #: includes/class-admin-layout-tabs-renderer.php:102
 msgid "Three layers: confirmed (after payment), cart pending, typed-amount preview. The goal amount is in the “Goal amount” field on the product card."
 msgstr "Üç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Hedef tutar” alanındadır."
@@ -5012,6 +5085,10 @@ msgstr "v%s"
 msgid "Very close to the goal"
 msgstr "Hedefe çok yakın"
 
+#: src/Modules/DonorAccount/class-account-renderer.php
+msgid "Video"
+msgstr "Video"
+
 #: includes/class-phone-field.php:112
 msgid "Vietnam"
 msgstr "Vietnam"
@@ -5040,6 +5117,11 @@ msgstr "Hesap adresinize bir doğrulama bağlantısı e-postalayacağız. Misafi
 #: src/Admin/
 msgid "We will save these choices. Place the button with the shortcode below, with the block, or let automatic placement do it."
 msgstr "Bu seçimleri kaydedeceğiz. Düğmeyi aşağıdaki kısa kodla, blokla yerleştirin ya da otomatik yerleşime bırakın."
+
+#: src/Modules/DonorAccount/class-account-renderer.php
+#: src/Modules/DonorAccount/class-donor-account-module.php
+msgid "Welcome"
+msgstr "Hoş geldiniz"
 
 #: includes/class-admin-layout-tabs-renderer.php:102
 #: includes/class-admin-layout-tabs-renderer.php:184
@@ -5241,6 +5323,10 @@ msgstr "Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan (#%d) ku
 msgid "WooCommerce product to add to the cart; if empty, the general default is used, and if that is also missing the row is not added."
 msgstr "Sepete eklenecek WooCommerce ürünü; boşsa genel varsayılan kullanılır, o da yoksa satır eklenmez."
 
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Would you like to add to your donation?"
+msgstr "Bağışınıza eklemek ister misiniz?"
+
 #: src/Admin/
 msgid "Write your privacy text on your own site. The plugin only shows a link under the form."
 msgstr "Gizlilik metninizi kendi sitenizde yazın. Eklenti yalnız formun altında bir bağlantı gösterir."
@@ -5331,9 +5417,17 @@ msgstr "Sepetiniz boş"
 msgid "Your contribution is being added"
 msgstr "Katınız ekleniyor"
 
+#: templates/donation-panel/thanks/summary.php
+msgid "Your contribution to the campaign"
+msgstr "Kampanyaya katkınız"
+
 #: assets/js/src/form/wizard.js:26
 msgid "Your details"
 msgstr "Bilgileriniz"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Your donation basket"
+msgstr "Bağış sepetiniz"
 
 #: assets/js/src/cart/ui.js:154
 msgid "Your donation cart"
@@ -5386,3 +5480,7 @@ msgstr "Kişisel verileriniz bağışınızın gerçekleştirilmesi için işlen
 #: includes/class-migrations.php:271 includes/class-migrations.php:302 includes/class-migrations.php:381
 msgid "Your personal data is processed under the privacy notice."
 msgstr "Kişisel verileriniz Aydınlatma Metni kapsamında işlenir."
+
+#: templates/donation-panel/thanks/summary.php
+msgid "Your tax relief declaration has been recorded with this donation."
+msgstr "Vergi indirimi beyanınız bu bağışla birlikte kaydedildi."

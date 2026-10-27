@@ -127,6 +127,22 @@ final class E6ThanksTaxReliefTest extends TestCase {
 		$this->assertSame( '', Thanks_Summary::share_text( array() ) );
 	}
 
+	public function test_contribution_counted_order_splits_current_percent(): void {
+		$c = Thanks_Summary::contribution( 63.0, 100000.0, 1000.0, true );
+		$this->assertSame( 62.0, $c['before'] );
+		$this->assertSame( 63.0, $c['after'] );
+		$this->assertSame( 1.0, $c['share'] );
+	}
+
+	public function test_contribution_pending_order_adds_to_current_percent_and_is_clamped(): void {
+		$pending = Thanks_Summary::contribution( 62.0, 100000.0, 1000.0, false );
+		$this->assertSame( 62.0, $pending['before'] );
+		$this->assertSame( 63.0, $pending['after'] );
+		$over = Thanks_Summary::contribution( 99.5, 1000.0, 900.0, false );
+		$this->assertSame( 100.0, $over['after'] );
+		$this->assertSame( array( 'before' => 0.0, 'after' => 0.0, 'share' => 0.0 ), Thanks_Summary::contribution( 0.0, 0.0, 50.0, true ) );
+	}
+
 	public function test_summary_totals_multiple_donation_lines(): void {
 		$summary = Thanks_Summary::build(
 			$this->order( array( $this->item( 1, 'A', 10.5, array( '_custom_price' => 10.5 ) ), $this->item( 2, 'B', 4.25, array( '_custom_price' => 4.25 ) ) ) )

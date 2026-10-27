@@ -94,4 +94,31 @@ final class Thanks_Summary {
 		/* translators: %s: project (campaign) name. */
 		return sprintf( __( 'I just donated to %s.', 'woo-donation-popup' ), (string) $summary['lines'][0]['project'] );
 	}
+
+	/**
+	 * Bu bağışın kampanyadaki payı (saf mantık): önceki/sonraki yüzde ve bu bağışın dilimi.
+	 *
+	 * @param float $percent_now Kampanyanın şu anki onaylı yüzdesi (0-100).
+	 * @param float $goal        Hedef tutar (aynı para biriminde).
+	 * @param float $amount      Bu bağışın tutarı.
+	 * @param bool  $counted     Bu bağış şu anki yüzdeye zaten dahil mi (onaylı sipariş).
+	 * @return array{before: float, after: float, share: float}
+	 */
+	public static function contribution( $percent_now, $goal, $amount, $counted ) {
+		$goal  = (float) $goal;
+		$now   = max( 0.0, min( 100.0, (float) $percent_now ) );
+		$share = $goal > 0 ? min( 100.0, max( 0.0, ( (float) $amount / $goal ) * 100.0 ) ) : 0.0;
+		if ( $counted ) {
+			$after  = $now;
+			$before = max( 0.0, $now - $share );
+		} else {
+			$before = $now;
+			$after  = min( 100.0, $now + $share );
+		}
+		return array(
+			'before' => round( $before, 1 ),
+			'after'  => round( $after, 1 ),
+			'share'  => round( max( 0.0, $after - $before ), 1 ),
+		);
+	}
 }

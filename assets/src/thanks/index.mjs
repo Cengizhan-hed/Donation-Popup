@@ -2,6 +2,7 @@
  * Donation Panel — teşekkür ekranı: kutlama (sade konfeti) ve paylaşım. Yalnız ilgili öğe olan sayfada yüklenir.
  */
 import '../campaign/base.css';
+import '../ui2-shared/tokens.css';
 import './thanks.css';
 import { prefersReducedMotion, confettiSpec, shareOrCopy } from './logic.mjs';
 
