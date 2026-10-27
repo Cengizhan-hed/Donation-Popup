@@ -1,0 +1,244 @@
+/*
+ * Donation Panel — bağış listesi ([wdp_donations], blok, Elementor ince katmanı). Onaylı tasarım: Liste.
+ * Yalnız liste bulunan sayfada yüklenir. Belirteçler (--dp-*) form deneyimi stilinden gelir; her biri yedek değerli.
+ * Tema/oluşturucuya özel seçici yok; yazı tipi devralınır; mantıksal özellikler (RTL).
+ */
+.wdp-list-wrap {
+  --wdp-cols: 3;
+  --wdp-cols-t: 2;
+  --wdp-cols-m: 1;
+  --wdp-gap: 24px;
+  --wdp-ratio: 7 / 3;
+  --wdp-card-radius: 22px;
+  --_surface: var(--dp-color-surface, #fff);
+  --_text: var(--dp-color-text, #14213d);
+  --_muted: var(--dp-color-text-muted, #5b6475);
+  --_brand: var(--dp-color-primary, #12305a);
+  --_on-brand: var(--dp-color-on-primary, #fff);
+  --_action: var(--dp-color-accent-solid, #c2511c);
+  --_border: var(--dp-color-border-strong, #d5d9e0);
+  --_track: var(--dp-color-surface-3, #ede7df);
+  --_ph: var(--dp-color-surface-2, #e9e2d8);
+  inline-size: 100%;
+  max-inline-size: 100%;
+  color: var(--_text);
+}
+
+.wdp-list-wrap--left { text-align: left; }
+.wdp-list-wrap a { color: inherit; text-decoration: none; }
+.wdp-list-wrap a:hover { color: var(--dp-color-primary-strong, var(--_brand)); }
+.wdp-list-wrap a:focus-visible {
+  outline: 3px solid var(--dp-color-primary-strong, var(--_brand));
+  outline-offset: 2px;
+}
+
+.wdp-list__title {
+  margin: 0 0 14px;
+  font-size: 1.625rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--_text);
+}
+
+/* Kategori sekmeleri */
+.wdp-list__tabs {
+  display: flex;
+  gap: 8px;
+  margin-block-end: 16px;
+  padding-block-end: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.wdp-list__tabs::-webkit-scrollbar { display: none; }
+
+.wdp-list-wrap a.wdp-list__tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 16px;
+  border: 1.5px solid var(--_border);
+  border-radius: 999px;
+  background: var(--_surface);
+  color: var(--_text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background-color 0.16s, border-color 0.16s, color 0.16s;
+}
+.wdp-list-wrap a.wdp-list__tab:hover { border-color: var(--_brand); color: var(--_text); }
+.wdp-list-wrap a.wdp-list__tab.is-active,
+.wdp-list-wrap a.wdp-list__tab[aria-current="true"] {
+  border-color: var(--_brand);
+  background: var(--_brand);
+  color: var(--_on-brand);
+  font-weight: 700;
+}
+
+/* Izgara */
+.wdp-list {
+  display: grid;
+  grid-template-columns: repeat(var(--wdp-cols), minmax(0, 1fr));
+  gap: var(--wdp-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wdp-list__item { min-inline-size: 0; margin: 0; padding: 0; }
+.wdp-list__item[hidden] { display: none; }
+
+/* Kart ortak */
+.wdp-card {
+  display: flex;
+  block-size: 100%;
+  overflow: hidden;
+  border-radius: var(--wdp-card-radius);
+  background: var(--_surface);
+  box-shadow: 0 1px 2px rgb(20 33 61 / 0.06), 0 8px 24px rgb(20 33 61 / 0.06);
+  text-align: start;
+}
+.wdp-card__media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--_ph);
+}
+.wdp-card__media img,
+.wdp-card__img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.wdp-card__body { display: flex; flex-direction: column; min-inline-size: 0; }
+.wdp-card__title {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--_text);
+  overflow-wrap: anywhere;
+}
+.wdp-card__cat {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--_muted);
+}
+.wdp-card__sub {
+  margin: 0;
+  font-size: 0.78125rem;
+  line-height: 1.4;
+  color: var(--_muted);
+}
+
+/* Düğme: ürün bağlantısı olarak çizilir, JS varken formu açar */
+.wdp-list-wrap a.wdp-card__cta {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 44px;
+  padding-inline: 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--_action);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: filter 0.16s, transform 0.16s;
+}
+.wdp-list-wrap a.wdp-card__cta:hover { color: #fff; filter: brightness(1.08); }
+.wdp-list-wrap a.wdp-card__cta:active { transform: scale(0.97); }
+.wdp-list-wrap a.wdp-card__cta.is-loading { opacity: 0.7; pointer-events: none; }
+.wdp-list-wrap a.wdp-card__cta:focus-visible { outline-color: var(--_text); }
+
+/* Kampanya kartı: dikey */
+.wdp-card--campaign { flex-direction: column; }
+.wdp-card--campaign .wdp-card__media { aspect-ratio: var(--wdp-ratio); }
+.wdp-card--campaign .wdp-card__body { flex: 1 1 auto; gap: 10px; padding: 14px 16px 16px; }
+.wdp-card--campaign .wdp-card__title { font-size: 1.0625rem; }
+.wdp-card__badge {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-start: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--_action);
+  color: #fff;
+  font-size: 0.71875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.wdp-card__badge--inline { position: static; align-self: flex-start; }
+.wdp-card__progress-wrap { display: flex; flex-direction: column; gap: 6px; margin-block-start: auto; }
+.wdp-card__progress {
+  block-size: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--_track);
+}
+.wdp-card__progress-bar { display: block; block-size: 100%; border-radius: 4px; background: var(--_brand); }
+.wdp-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 0.78125rem;
+  line-height: 1.4;
+  color: var(--_muted);
+  font-variant-numeric: tabular-nums;
+}
+.wdp-card__stats b { font-weight: 700; color: var(--_text); }
+.wdp-card--campaign a.wdp-card__cta { min-block-size: 50px; border-radius: 14px; font-size: 0.9375rem; }
+.wdp-card--campaign a.wdp-card__cta--full { inline-size: 100%; }
+
+/* Sabit / hisseli / serbest tutar kartı: yatay */
+.wdp-card--row { flex-direction: row; }
+.wdp-card--row .wdp-card__media { flex: none; inline-size: 116px; min-block-size: 112px; }
+.wdp-card--row .wdp-card__body { flex: 1 1 auto; gap: 6px; padding: 14px; }
+.wdp-card--row .wdp-card__title { font-size: 1rem; }
+.wdp-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-block-start: auto;
+  padding-block-start: 4px;
+}
+.wdp-card__price {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--_text);
+  font-variant-numeric: tabular-nums;
+}
+.wdp-card__price--any { font-size: 0.875rem; font-weight: 600; color: var(--_muted); }
+.wdp-card__price .woocommerce-Price-amount { font-weight: inherit; }
+
+.wdp-list__empty { margin: 0; padding: 24px 0; color: var(--_muted); text-align: center; }
+
+/* Katman kabı ana belgeye eklenir; açma düğmesi gizli (liste düğmesi açar). */
+.wdp-form-host { display: contents; }
+.wdp-form-host .dp-trigger { display: none; }
+
+@media (max-width: 1024px) {
+  .wdp-list { grid-template-columns: repeat(var(--wdp-cols-t), minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .wdp-list {
+    grid-template-columns: repeat(var(--wdp-cols-m), minmax(0, 1fr));
+    gap: min(var(--wdp-gap), 14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wdp-list-wrap a { transition: none !important; }
+}

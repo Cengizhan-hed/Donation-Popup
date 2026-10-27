@@ -27,6 +27,9 @@ function init() {
   document.querySelectorAll('[data-dp-exp]').forEach(mount);
 }
 
+// Sonradan eklenen formlar (ör. bağış listesi kartı) `dp:scan` olayıyla bağlanır.
+document.addEventListener('dp:scan', init);
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
