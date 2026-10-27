@@ -27,6 +27,7 @@ abstract class WDP_Integration_Test_Case extends TestCase {
 			wc_load_cart();
 		}
 		$this->empty_cart();
+		$this->reset_rate_limits();
 		wp_set_current_user( 0 );
 	}
 
@@ -53,6 +54,19 @@ abstract class WDP_Integration_Test_Case extends TestCase {
 		\DonationPanel\Domain\Donation_Scope::flush();
 		\DonationPanel\Domain\Placement_Settings::flush();
 		parent::tearDown();
+	}
+
+	/**
+	 * Eklentinin hız sınırı sayaçlarını (yalnız bu yerel entegrasyon WP'sinde) sıfırlar.
+	 */
+	protected function reset_rate_limits(): void {
+		global $wpdb;
+		foreach ( array( 'donation_panel_rl_', 'donation_panel_rt_' ) as $prefix ) {
+			foreach ( array( '_transient_', '_transient_timeout_' ) as $kind ) {
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $kind . $prefix ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			}
+		}
+		wp_cache_flush();
 	}
 
 	protected function empty_cart(): void {
