@@ -195,6 +195,7 @@ class Uninstall {
 			'donation_panel_rt_',
 			'dp_progress_',
 			'dp_social_stats_',
+			'dp_social_page_',
 			'wdp_list_',
 			'wdp_addon_line_ids',
 			'wdp_sadaka_line_ids',

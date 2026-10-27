@@ -45,6 +45,16 @@ final class Donation_Feed {
 	const STATS_TTL = 300;
 
 	/**
+	 * Sayfa listesi önbellek süresi (sn); liste önbellek sürümü değişince de geçersiz olur.
+	 */
+	const PAGE_TTL = 60;
+
+	/**
+	 * Erişilebilecek en büyük sayfa (taramayı sınırlar).
+	 */
+	const MAX_PAGE = 50;
+
+	/**
 	 * "Ayşe Yılmaz" -> "Ayşe Y." (tek sözcük: olduğu gibi; boşsa boş).
 	 *
 	 * @param string $full_name Tam ad.
@@ -101,12 +111,34 @@ final class Donation_Feed {
 	 */
 	public static function page( $product_id, $page, $per_page ) {
 		$product_id = absint( $product_id );
-		$page       = max( 1, (int) $page );
+		$page       = max( 1, min( self::MAX_PAGE, (int) $page ) );
 		$per_page   = self::clamp_per_page( $per_page );
-		$skip       = ( $page - 1 ) * $per_page;
-		$items      = array();
-		$matched    = 0;
-		$has_more   = false;
+
+		// Genel uç: sipariş taraması pahalı olduğundan sonuç kısa süre önbelleğe alınır (anahtar kümesi sınırlı:
+		// ürün x sayfa<=50 x sayfa boyutu<=20 x para birimi; liste önbellek sürümü bağış verisi değişince artar).
+		$cache_key = 'dp_social_page_' . md5( implode( '|', array( $product_id, $page, $per_page, Progress_Currency::get_active_currency(), (int) get_option( 'wdp_list_cache_version', 1 ) ) ) );
+		$cached    = get_transient( $cache_key );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+		$result = self::build_page( $product_id, $page, $per_page );
+		set_transient( $cache_key, $result, self::PAGE_TTL );
+		return $result;
+	}
+
+	/**
+	 * Sayfayı siparişlerden üretir (önbelleksiz).
+	 *
+	 * @param int $product_id Ürün (0 = tümü).
+	 * @param int $page       Sayfa.
+	 * @param int $per_page   Sayfa başına.
+	 * @return array{items: array<int, array<string, mixed>>, page: int, per_page: int, has_more: bool}
+	 */
+	private static function build_page( $product_id, $page, $per_page ) {
+		$skip     = ( $page - 1 ) * $per_page;
+		$items    = array();
+		$matched  = 0;
+		$has_more = false;
 
 		foreach ( self::paid_orders( self::MAX_SCAN ) as $order ) {
 			$amount = self::order_amount( $order, $product_id );
