@@ -300,15 +300,22 @@ class Order_Privacy {
 		}
 
 		if ( isset( $wpdb ) && is_object( $wpdb ) ) {
-			list( $key_sql, $key_args ) = self::key_filter( 'email' );
+			$key_args = self::key_args( 'email' );
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- siparis kalemi meta aramasi: WooCommerce'in bunun icin API'si yok; KVKK disa aktarma/silme istegi, onbellege alinmamali (taze veri).
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT DISTINCT oi.order_id, im.meta_key
 					FROM {$wpdb->prefix}woocommerce_order_itemmeta im
 					INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = im.order_item_id
-					WHERE im.meta_value = %s AND " . $key_sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $key_sql yalnız sabit "im.meta_key IN (%s,..) OR im.meta_key LIKE %s" parçalarından üretilir; değerler prepare'e bağlanır.
-					...array_merge( array( $email ), $key_args )
+					WHERE im.meta_value = %s
+					AND ( im.meta_key IN (%s, %s, %s) OR im.meta_key LIKE %s OR im.meta_key LIKE %s OR im.meta_key LIKE %s )",
+					$email,
+					$key_args[0],
+					$key_args[1],
+					$key_args[2],
+					$key_args[3],
+					$key_args[4],
+					$key_args[5]
 				)
 			);
 			if ( is_array( $rows ) ) {
@@ -330,26 +337,17 @@ class Order_Privacy {
 	}
 
 	/**
-	 * `meta_key` daraltma koşulu ve bağlı değerleri (indeksli sütun; tüm tabloyu `meta_value` ile taramaz).
+	 * `meta_key` daraltma değerleri (sabit 3 tam anahtar + 3 LIKE kalıbı; eksikler tekrarlanarak doldurulur).
+	 * İndeksli sütunla daraltır; tüm tabloyu `meta_value` ile taramaz.
 	 *
 	 * @param string $field 'email' | 'phone'.
-	 * @return array{0: string, 1: string[]} SQL parçası ve değerler.
+	 * @return string[] 6 değer: 3 tam anahtar, 3 LIKE kalıbı.
 	 */
-	private static function key_filter( $field ) {
-		global $wpdb;
+	private static function key_args( $field ) {
 		$patterns = Order_Meta_Keys::lookup_key_patterns( $field );
-		$parts    = array();
-		$args     = array();
-		if ( $patterns['exact'] ) {
-			$parts[] = 'im.meta_key IN (' . implode( ',', array_fill( 0, count( $patterns['exact'] ), '%s' ) ) . ')';
-			$args    = array_merge( $args, $patterns['exact'] );
-		}
-		foreach ( $patterns['like'] as $like ) {
-			$parts[] = 'im.meta_key LIKE %s';
-			$args[]  = $like;
-		}
-		unset( $wpdb );
-		return array( '(' . implode( ' OR ', $parts ) . ')', $args );
+		$exact    = array_slice( array_pad( array_values( $patterns['exact'] ), 3, end( $patterns['exact'] ) ), 0, 3 );
+		$like     = array_slice( array_pad( array_values( $patterns['like'] ), 3, end( $patterns['like'] ) ), 0, 3 );
+		return array_merge( $exact, $like );
 	}
 
 	/**
@@ -398,7 +396,7 @@ class Order_Privacy {
 		}
 
 		if ( isset( $wpdb ) && is_object( $wpdb ) ) {
-			list( $key_sql, $key_args ) = self::key_filter( 'phone' );
+			$key_args = self::key_args( 'phone' );
 			foreach ( $phones as $phone ) {
 				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- siparis kalemi meta aramasi: WooCommerce'in bunun icin API'si yok; KVKK disa aktarma/silme istegi, onbellege alinmamali (taze veri).
 				$rows = $wpdb->get_results(
@@ -406,8 +404,15 @@ class Order_Privacy {
 						"SELECT DISTINCT oi.order_id, im.meta_key
 						FROM {$wpdb->prefix}woocommerce_order_itemmeta im
 						INNER JOIN {$wpdb->prefix}woocommerce_order_items oi ON oi.order_item_id = im.order_item_id
-						WHERE im.meta_value = %s AND " . $key_sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $key_sql yalnız sabit "im.meta_key IN (%s,..) OR im.meta_key LIKE %s" parçalarından üretilir; değerler prepare'e bağlanır.
-						...array_merge( array( $phone ), $key_args )
+						WHERE im.meta_value = %s
+					AND ( im.meta_key IN (%s, %s, %s) OR im.meta_key LIKE %s OR im.meta_key LIKE %s OR im.meta_key LIKE %s )",
+						$phone,
+						$key_args[0],
+						$key_args[1],
+						$key_args[2],
+						$key_args[3],
+						$key_args[4],
+						$key_args[5]
 					)
 				);
 				if ( is_array( $rows ) ) {

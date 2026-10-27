@@ -40,7 +40,8 @@ final class Fix24PrivacyLookupNarrowingTest extends TestCase {
 		Order_Privacy::find_order_ids_by_phone( 'ayse@example.com', array( '+90 532 111 22 33' ) );
 		$this->assertNotEmpty( $GLOBALS['wpdb']->sql );
 		foreach ( $GLOBALS['wpdb']->sql as $sql ) {
-			$this->assertStringContainsString( 'im.meta_key IN', $sql );
+			$this->assertStringContainsString( 'im.meta_key IN (%s, %s, %s)', $sql );
+			$this->assertStringContainsString( 'im.meta_key LIKE %s', $sql );
 			$this->assertStringContainsString( 'woocommerce_order_itemmeta', $sql );
 		}
 	}
