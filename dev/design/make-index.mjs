@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 const names = { popup:'Popup', rtl:'RTL (Arapça)', panel:'Yan panel', inline:'Sayfa içi form', sheet:'Alt panel (mobil)', sheetkb:'Alt panel, klavye açık', cart:'Yan sepet', campaign:'Kampanya + ilerleme', list:'Bağış listesi + durumlar', thanks:'Teşekkür', social:'Sosyal kanıt', tax:'Vergi indirimi beyanı', account:'Bağışçı hesabı (giriş)', mydonations:'Bağışlarım', wizard:'Kurulum sihirbazı', settings:'Ayarlar' };
 const tn = { avada:'Avada*', blocksy:'Blocksy*', tt25:'Twenty Twenty-Five*', storefront:'Storefront*', neutral:'Nötr' };
-const files = fs.readdirSync('design/showcase').filter(f => f.endsWith('.png')).sort();
+const files = fs.readdirSync('dev/design/showcase').filter(f => f.endsWith('.png')).sort();
 const items = files.map(f => { const m = f.match(/^(\w+)-(\w+)-(mobil|masaustu)(-koyu)?\.png$/); return m && { f, s: m[1], t: m[2], v: m[3], d: !!m[4] }; }).filter(Boolean);
 const html = `<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Donation Panel · Tasarım vitrini</title>
 <style>:root{color-scheme:light dark;--bg:#f4f5f7;--fg:#161b22;--card:#fff;--mut:#5b6573;--ac:#0f766e}@media(prefers-color-scheme:dark){:root{--bg:#0e1116;--fg:#eef1f5;--card:#171c23;--mut:#98a1ad;--ac:#5eead4}}
@@ -28,5 +28,5 @@ const l=items.filter(i=>(st.s==='all'||i.s===st.s)&&(st.t==='all'||i.t===st.t)&&
 grid.style.setProperty('--w',st.v==='masaustu'?'440px':'230px');
 grid.innerHTML=l.length?l.map(i=>'<figure><a href="showcase/'+i.f+'" target="_blank" rel="noopener"><img loading="lazy" src="'+i.f+'" alt="'+names[i.s]+' · '+tn[i.t]+' · '+i.v+'"></a><figcaption><b>'+names[i.s]+'</b><span>'+tn[i.t]+' · '+(i.v==='mobil'?'mobil':'masaüstü')+'</span></figcaption></figure>').join(''):'<p class="empty">Bu süzgeçte görüntü yok.</p>';}
 bar.onclick=e=>{const b=e.target.closest('button.f');if(!b)return;st[b.dataset.k]=b.dataset.v;draw()};draw();</script></body></html>`;
-fs.writeFileSync('design/showcase/contact-sheet.html', html);
+fs.writeFileSync('dev/design/showcase/contact-sheet.html', html);
 console.log(items.length);

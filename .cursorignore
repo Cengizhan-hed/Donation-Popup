@@ -18,9 +18,9 @@ test-results/
 playwright-report/
 blob-report/
 build/
-research/
+dev/research/
 build/graph/
 graphify-out/
-design/showcase/
+dev/design/showcase/
 # Worktree klasörleri proje dışında (../wt-*); ana depo içinde oluşursa:
 wt-*/

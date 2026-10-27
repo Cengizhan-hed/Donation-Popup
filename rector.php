@@ -17,7 +17,7 @@ if ( is_readable( __DIR__ . '/tools/rector/rename-map.json' ) ) {
 }
 
 $config = RectorConfig::configure()
-	->withPaths( array( __DIR__ . '/includes', __DIR__ . '/templates', __DIR__ . '/blocks', __DIR__ . '/woo-donation-popup.php' ) )
+	->withPaths( array( __DIR__ . '/src', __DIR__ . '/templates', __DIR__ . '/blocks', __DIR__ . '/woo-donation-popup.php' ) )
 	->withSkip( array( __DIR__ . '/vendor', __DIR__ . '/vendor-dev', __DIR__ . '/tests', __DIR__ . '/build' ) )
 	->withBootstrapFiles( array( __DIR__ . '/tools/phpstan-bootstrap.php' ) )
 	->withCache( __DIR__ . '/build/lint/rector-cache' );

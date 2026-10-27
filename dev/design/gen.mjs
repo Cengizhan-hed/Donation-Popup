@@ -5,7 +5,7 @@ for (const [k, v] of Object.entries(titles)) {
   const admin = ['wizard', 'settings'].includes(k);
   const body = k === 'sheetkb' ? 'sheet' : k;
   const extra = k === 'sheetkb' ? "<script>if(!location.search.includes('kb'))history.replaceState(0,'','?'+location.search.slice(1)+(location.search?'&':'')+'kb=1')</script>" : '';
-  fs.writeFileSync(`design/${k}.html`, `<!doctype html>
+  fs.writeFileSync(`dev/design/${k}.html`, `<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark">
 <title>${v} · Donation Panel prototype</title>
 <link rel="stylesheet" href="tokens.css"><link rel="stylesheet" href="components.css"><link rel="stylesheet" href="mock.css">${admin ? '<link rel="stylesheet" href="admin.css">' : ''}
