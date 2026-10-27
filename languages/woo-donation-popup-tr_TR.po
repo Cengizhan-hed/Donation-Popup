@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 04:10:49+0000\n"
-"PO-Revision-Date: 2026-10-27 04:10:49+0000\n"
+"POT-Creation-Date: 2026-10-27 05:09:34+0000\n"
+"PO-Revision-Date: 2026-10-27 05:09:34+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -60,6 +60,11 @@ msgstr "%1$s / %2$s"
 #: includes/class-donations-list.php:838
 msgid "%1$s / %2$s raised"
 msgstr "%1$s / %2$s toplandı"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+#. translators: 1: button text (e.g. Donate), 2: donation product name
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
 
 #: src/Admin/
 msgid "%d donation product is live"
@@ -123,6 +128,13 @@ msgid "%s day left"
 msgid_plural "%s days left"
 msgstr[0] "%s gün kaldı"
 msgstr[1] "%s gün kaldı"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+#. translators: %s: number of donors (formatted)
+msgid "%s donor"
+msgid_plural "%s donors"
+msgstr[0] "%s bağışçı"
+msgstr[1] "%s bağışçı"
 
 #: assets/js/src/modal.js:498
 #, php-format
@@ -592,6 +604,10 @@ msgstr "Anonim bağış"
 msgid "Anonymous option"
 msgstr "Anonim seçeneği"
 
+#: src/Modules/EntryPoints/class-donations-list.php
+msgid "Any amount"
+msgstr "İstediğiniz tutar"
+
 #: src/Admin/
 msgid "Appearance"
 msgstr "Görünüm"
@@ -611,6 +627,15 @@ msgstr "Görünüm paketleri, cam/yüzey token’ları, ikonlar ve güven rozetl
 #: includes/class-admin-design-studio-renderer.php:167
 msgid "Apply pack now & save"
 msgstr "Paketi şimdi uygula & kaydet"
+
+msgid "Apply this total"
+msgstr "Bu toplamı uygula"
+
+msgid "Applying replaces the stored total with the calculated total and counts donations from the start date above."
+msgstr "Uygulamak, saklanan toplamı hesaplanan toplamla değiştirir ve bağışları yukarıdaki başlangıç tarihinden itibaren sayar."
+
+msgid "Applying..."
+msgstr "Uygulanıyor..."
 
 #: includes/class-phone-field.php:120
 msgid "Argentina"
@@ -865,6 +890,12 @@ msgstr "Varsayılan olarak tutarlar WooCommerce'in etkin para biriminde gösteri
 msgid "By default the form follows your theme. Pick your own colors only if you need to."
 msgstr "Form varsayılan olarak temanızı izler. Kendi renklerinizi yalnız gerekirse seçin."
 
+msgid "Calculated total"
+msgstr "Hesaplanan toplam"
+
+msgid "Calculating the preview..."
+msgstr "Önizleme hesaplanıyor..."
+
 #: includes/class-phone-field.php:77
 msgid "Cambodia"
 msgstr "Kamboçya"
@@ -872,6 +903,13 @@ msgstr "Kamboçya"
 #: includes/class-admin-product-data-tab.php:854
 msgid "Campaign"
 msgstr "Kampanya"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+#. translators: %d: days left in the campaign
+msgid "Campaign · %d day"
+msgid_plural "Campaign · %d days"
+msgstr[0] "Kampanya · %d gün"
+msgstr[1] "Kampanya · %d gün"
 
 #: src/Admin/
 msgid "Campaign and progress bars"
@@ -943,6 +981,12 @@ msgstr "Kart kenarlık rengi."
 #: includes/class-admin-form-tabs-renderer.php:177
 msgid "Card radius (px)"
 msgstr "Kart Radius (px)"
+
+msgid "Carried over"
+msgstr "Devreden"
+
+msgid "Carried-over amount for %s"
+msgstr "%s için devreden tutar"
 
 #: includes/class-icon-library.php:53
 msgid "Cart"
@@ -1336,6 +1380,12 @@ msgstr "Gönderilemedi"
 msgid "Count"
 msgstr "Adet"
 
+msgid "Count donations from"
+msgstr "Bağışları şu tarihten say"
+
+msgid "Counting since"
+msgstr "Sayım başlangıcı"
+
 #: templates/donation-panel/experiences/form.php
 msgid "Country code"
 msgstr "Ülke kodu"
@@ -1548,6 +1598,9 @@ msgstr "Masaüstü Modal Genişlik Ayarları"
 msgid "Diagnostics"
 msgstr "Tanılama"
 
+msgid "Difference"
+msgstr "Fark"
+
 #: includes/elementor/class-widget-donations-list.php:92
 msgid "Direction"
 msgstr "Yön"
@@ -1591,6 +1644,10 @@ msgstr "%s bağışla"
 #: src/Admin/
 msgid "Donate button text"
 msgstr "Bağış düğmesi metni"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+msgid "Donate now"
+msgstr "Bağış yap"
 
 #: templates/donation-panel/experiences/form.php
 msgid "Donate on behalf of someone"
@@ -3072,6 +3129,10 @@ msgstr "gizlilik sayfasını bağla"
 msgid "Links to the product page"
 msgstr "Ürün sayfasına bağlanır"
 
+#: blocks/donations/index.js
+msgid "List title"
+msgstr "Liste başlığı"
+
 #. YENI-SARMA block.json
 msgid "Lists donation products in a grid."
 msgstr "Bağış ürünlerini ızgara olarak listeler."
@@ -3751,6 +3812,9 @@ msgstr "Sipariş numarası"
 msgid "Order storage"
 msgstr "Sipariş depolama"
 
+msgid "Orders counted"
+msgstr "Sayılan sipariş"
+
 #: includes/elementor/class-widget-donations-list.php:115
 msgid "Original"
 msgstr "Orijinal"
@@ -3843,6 +3907,10 @@ msgstr "Bekleyen"
 #: src/Admin/
 msgid "Pending review"
 msgstr "İnceleme bekliyor"
+
+#: src/Modules/EntryPoints/class-donations-list.php
+msgid "Per share"
+msgstr "Hisse başı"
 
 #: includes/class-admin-layout-tabs-renderer.php:143
 msgid "Percent badge background"
@@ -4102,9 +4170,11 @@ msgstr "Konum"
 msgid "prepare the checkout page"
 msgstr "ödeme sayfasını hazırla"
 
-#: src/Admin/
 msgid "Preview"
 msgstr "Önizleme"
+
+msgid "Preview for \"%1$s\": the orders add up to %2$s (%3$d orders). Nothing was changed. To apply it, open Donation Panel > Campaigns."
+msgstr "\"%1$s\" önizlemesi: siparişler %2$s ediyor (%3$d sipariş). Hiçbir şey değişmedi. Uygulamak için Bağış Paneli > Kampanyalar ekranını açın."
 
 #: src/Admin/
 msgid "Preview, move your settings, and check that everything is working."
@@ -4383,6 +4453,9 @@ msgstr "toplandı"
 msgid "Raised"
 msgstr "Toplanan"
 
+msgid "Raised = carried-over amount + paid donations since the campaign started + any amount you added by hand on the product. Recalculating shows a preview first and changes nothing until you approve it."
+msgstr "Toplanan = devreden tutar + kampanya başladığından beri ödenmiş bağışlar + üründe elle eklediğiniz tutar. Yeniden hesap önce önizleme gösterir; onaylamadan hiçbir şey değişmez."
+
 #: includes/elementor/class-widget-donations-list.php:88
 msgid "Random"
 msgstr "Rastgele"
@@ -4395,13 +4468,15 @@ msgstr "Rehberi oku"
 msgid "Real donor counts, no personal details"
 msgstr "Gerçek bağışçı sayısı, kişi bilgisi olmadan"
 
+msgid "Recalculate"
+msgstr "Yeniden hesapla"
+
+msgid "Recalculate \"%s\": carried-over amount plus paid donations in the dates you choose. Nothing changes until you approve the preview."
+msgstr "\"%s\" yeniden hesabı: devreden tutar artı seçtiğiniz tarihlerdeki ödenmiş bağışlar. Önizlemeyi onaylayana kadar hiçbir şey değişmez."
+
 #: includes/class-admin-product-data-tab.php:202
 msgid "Recalculate total"
 msgstr "Toplamı yeniden hesapla"
-
-#: includes/class-admin-product-settings-ajax.php:45
-msgid "Recalculated the total for \"%1$s\": %2$s (%3$d orders)."
-msgstr "\"%1$s\" toplamı yeniden hesaplandı: %2$s (%3$d sipariş)."
 
 #: includes/class-admin-assets.php:122
 msgid "Recalculating the total…"
@@ -4544,6 +4619,9 @@ msgstr "San Marino"
 #: includes/class-phone-field.php:101
 msgid "Saudi Arabia"
 msgstr "Suudi Arabistan"
+
+msgid "Save"
+msgstr "Kaydet"
 
 #: includes/class-admin-page-renderer.php:142
 msgid "Save advanced settings"
@@ -5146,6 +5224,9 @@ msgstr "Solid"
 msgid "Somalia"
 msgstr "Somali"
 
+msgid "Some donations in another currency had no exchange rate and were left out."
+msgstr "Başka para birimindeki bazı bağışların kuru bulunamadı ve toplama katılmadı."
+
 #: includes/class-woo-donation-popup-admin.php:105
 #: includes/class-woo-donation-popup-admin.php:335
 #: includes/class-woo-donation-popup-admin.php:401
@@ -5230,6 +5311,9 @@ msgstr "Hâlâ olmadı mı? Kısa kodu ürün açıklamasına ya da bir metin bl
 #: src/Admin/
 msgid "Store country"
 msgstr "Mağaza ülkesi"
+
+msgid "Stored total"
+msgstr "Saklanan toplam"
 
 #: includes/class-admin-product-data-tab.php:855
 msgid "Story (side by side)"
@@ -5444,9 +5528,15 @@ msgstr "Ek bağış sepete eklenemedi."
 msgid "The add-on donation product cannot be the main product itself."
 msgstr "Alt bağış ürünü ana ürünün kendisi olamaz."
 
+msgid "The beginning"
+msgstr "Baştan"
+
 #: includes/class-admin-page-renderer.php:164
 msgid "The button shortcode opens a centered popup, the side panel shortcode opens a panel from the right, and the form shortcode shows an inline form."
 msgstr "Buton kısa kodu ortada açılan pencere, Sağ panel kısa kodu sağdan panel, Form kısa kodu sayfa içi form gösterir."
+
+msgid "The carried-over amount was saved."
+msgstr "Devreden tutar kaydedildi."
 
 #: includes/traits/trait-wdp-ajax-cart-query.php:237 includes/traits/trait-wdp-ajax-cart-query.php:254
 msgid "The cart item could not be removed."
@@ -5577,6 +5667,9 @@ msgstr "Yeni Bağış Paneli deneyimi hazır"
 msgid "The new form adds donation types and a calmer, mobile-first layout, and is the default. The classic form will be removed in a future version. On phones the form always opens as a bottom sheet."
 msgstr "Yeni form bağış türleri ve daha sakin, mobil öncelikli bir yerleşim sunar ve varsayılandır. Klasik form bir sonraki sürümde kaldırılacak. Telefonlarda form her zaman alttan panel olarak açılır."
 
+msgid "The numbers changed since the preview. Please preview again."
+msgstr "Önizlemeden sonra rakamlar değişti. Lütfen yeniden önizleyin."
+
 #: includes/class-admin-form-tabs-renderer.php:441
 msgid "The order below follows the flow the donor sees in the popup: heading and close first, then the box and fields, and finally the form buttons and the on-page trigger button."
 msgstr "Aşağıdaki sıra, popup’ta kullanıcının gördüğü akışa göredir: önce üst başlık ve kapat, sonra kutu ve alanlar, en sonda form butonları ve sayfadaki açan buton."
@@ -5637,6 +5730,9 @@ msgstr "Kayıtlı bitiş tarihi geçersiz; şerit süresiz görünür. Geçerli 
 msgid "The sentence next to the tick box. It is never ticked in advance."
 msgstr "Onay kutusunun yanındaki cümle. Hiçbir zaman önceden işaretli gelmez."
 
+msgid "The stored total already matches. Nothing to change."
+msgstr "Saklanan toplam zaten doğru. Değiştirilecek bir şey yok."
+
 #: includes/class-admin-product-data-tab.php:736
 msgid "The strip is shown until the end of this day (23:59:59) in the site time zone (Y-m-d). An invalid date is not saved."
 msgstr "Site saat diliminde bu günün sonuna (23:59:59) kadar şerit görünür (Y-m-d). Geçersiz tarih kaydedilmez."
@@ -5660,6 +5756,9 @@ msgstr "Önerilen tutar hızlı tutar listesinde olmalı; geçersiz değer: \"%s
 #: includes/class-admin-product-settings-ajax.php:61
 msgid "The total could not be calculated. Details are in the error log."
 msgstr "Toplam hesaplanamadı. Ayrıntı hata günlüğünde."
+
+msgid "The total was updated."
+msgstr "Toplam güncellendi."
 
 #: includes/bootstrap/class-plugin-bootstrap.php:69
 msgid "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be installed and active."
@@ -5930,6 +6029,9 @@ msgstr "Bilinmeyen modül."
 #: src/Admin/
 msgid "Unknown setting."
 msgstr "Bilinmeyen ayar."
+
+msgid "Until (optional)"
+msgstr "Bitiş (isteğe bağlı)"
 
 #: includes/class-admin-bulk-actions.php:70
 msgid "Updated the donation flag for %d products."

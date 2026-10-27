@@ -162,3 +162,14 @@ Sipariş kalemi meta (yeni): `wdp_donation_type` (`fixed|custom|shares|campaign`
 ## Ödeme sayfası otomatik doldurma (`Checkout_Prefill`)
 
 Yeni kanca yok. WooCommerce kancaları: `woocommerce_add_to_cart` (30) ve `template_redirect` (20; yalnız `is_checkout()`, order-received hariç). Oturum müşterisinin BOŞ fatura alanları (ad/soyad, telefon, e-posta) sepetteki en son bağışın verisinden doldurulur; dolu alana dokunulmaz. Ayrıntı: docs/MIMARI.md h-6.
+
+## REST uçları (12-int2 eklemeleri)
+
+| Uç | Yöntem | Yetki | Not |
+|---|---|---|---|
+| `donation-panel/v1/experience/{id}?kind=popup\|side_panel\|bottom_sheet` | GET | herkese açık (salt okunur) | Liste/döngü kartı için form kabı + form HTML'i (`src/Modules/EntryPoints/class-experience-controller.php`). Hız sınırı 60/dk, `Cache-Control: no-store`; gizli/taslak/bağış olmayan ürün 404. Yanıttaki nonce'lar taze. |
+| `donation-panel/v1/admin/campaigns/{id}/recalc/preview` | POST | `manage_woocommerce` + `X-WP-Nonce` | Kampanya toplamı önizlemesi (saklanan/hesaplanan/fark/sipariş sayısı); hiçbir şey yazmaz. 20/dk. |
+| `donation-panel/v1/admin/campaigns/{id}/recalc` | POST | `manage_woocommerce` + `X-WP-Nonce` | Önizlemedeki tutarı `expected` olarak gönderir; arada değiştiyse 409, bitiş tarihi geçmişteyse red. Her yazma `_wdp_totals_log` meta günlüğüne. 10/dk. |
+| `donation-panel/v1/admin/campaigns/{id}/carried` | POST | `manage_woocommerce` + `X-WP-Nonce` | Devreden tutarı (`_wdp_carried_amount`) düzenler. 30/dk. |
+
+Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (varsayılan boş). `wdp_donations_card_html` süzgeci korunur; `donation_panel_campaign_days_left` liste kartı rozetinde de kullanılır. Kaldırılan eylem: cron `wdp_recalculate_product_donation_total` (dışarıdan zamanlanmışsa işlevsiz kalır). WP-CLI `wp donation-panel recalc-totals` yalnız kuru çalıştırmadır.
