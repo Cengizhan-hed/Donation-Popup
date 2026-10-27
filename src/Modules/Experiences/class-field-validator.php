@@ -9,6 +9,7 @@
 
 namespace DonationPanel\Modules\Experiences;
 
+use DonationPanel\Domain\Amount_Limits;
 use DonationPanel\WooCommerce\Cart_Hooks;
 
 defined( 'ABSPATH' ) || exit;
@@ -177,8 +178,9 @@ final class Field_Validator {
 			// Minimum ürün ana biriminde tutulur; yazılan tutar ana birime çevrilerek kıyaslanır, ileti yazılan birimde gösterilir.
 			/* translators: %s: minimum amount. */
 			$errors['amount'] = sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), self::format_number( self::from_store_currency( $limit ) ) );
-		} elseif ( $amount > 99999999 ) {
-			$errors['amount'] = __( 'Please enter a donation amount.', 'woo-donation-popup' );
+		} elseif ( $amount > Amount_Limits::max() ) {
+			/* translators: %s: maximum amount. */
+			$errors['amount'] = sprintf( __( 'The maximum amount is %s.', 'woo-donation-popup' ), self::format_number( Amount_Limits::max() ) );
 		} else {
 			$decimals = isset( $model['decimals'] ) ? (int) $model['decimals'] : 2;
 			if ( $decimals < 2 && abs( $amount - round( $amount, $decimals ) ) > 0.000001 ) {
@@ -274,13 +276,14 @@ final class Field_Validator {
 		}
 		$amount = self::parse_amount( isset( $input['addon_amount'] ) ? $input['addon_amount'] : '' );
 		$min    = isset( $config['min'] ) ? (float) $config['min'] : 0.0;
-		if ( null === $amount || $amount <= 0 || $amount > 99999999 ) {
+		if ( null === $amount || $amount <= 0 || $amount > Amount_Limits::max() ) {
 			$errors['addon_amount'] = __( 'Please enter a valid add-on donation amount.', 'woo-donation-popup' );
 			return $off;
 		}
-		if ( $min > 0 && $amount + 0.0001 < $min ) {
+		// Asgari ana birimde tutulur; yazılan tutar ana birime çevrilerek kıyaslanır, ileti yazılan birimde gösterilir.
+		if ( $min > 0 && self::to_store_currency( $amount ) + 0.0001 < $min ) {
 			/* translators: %s: minimum amount. */
-			$errors['addon_amount'] = sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), self::format_number( $min ) );
+			$errors['addon_amount'] = sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), self::format_number( self::from_store_currency( $min ) ) );
 			return $off;
 		}
 		return array(

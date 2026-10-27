@@ -737,9 +737,10 @@ class Cart_Hooks {
 			return null;
 		}
 
-		$base = (float) $catalog->get_regular_price( 'edit' );
+		// Tek kural: formda gösterilen fiyatla aynı kaynak (geçerli/indirimli `get_price`); yoksa normal fiyat.
+		$base = (float) $catalog->get_price( 'edit' );
 		if ( $base <= 0 ) {
-			$base = (float) $catalog->get_price( 'edit' );
+			$base = (float) $catalog->get_regular_price( 'edit' );
 		}
 
 		return $base > 0 ? $base : null;
@@ -841,7 +842,7 @@ class Cart_Hooks {
 	 */
 	private static function sanitize_custom_price( $value ) {
 
-		return Security::sanitize_numeric( $value, 0, 999999 );
+		return Security::sanitize_numeric( $value, 0, \DonationPanel\Domain\Amount_Limits::max() );
 	}
 
 	/**
