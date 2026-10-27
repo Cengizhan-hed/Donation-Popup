@@ -62,6 +62,8 @@ test('liste: devreden tutar, başlangıç, Yeniden hesapla düğmesi; mobilde ta
   expect(box.height, 'dokunma alanı >= 44px').toBeGreaterThanOrEqual(43.5);
   const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(over, 'yatay taşma').toBeLessThanOrEqual(1);
+  // Sabit kayıt çubuğu sayfanın altında durur; eksen denetimi için düğmeler görünür alanın ortasına getirilir (kaydırılabilir sayfa).
+  await page.locator(`[data-dpa-manual-save="${PID}"]`).evaluate((el) => el.scrollIntoView({ block: 'center' }));
   expect(await axe(page)).toEqual([]);
   await shot(page, info, 'uygulama');
 });

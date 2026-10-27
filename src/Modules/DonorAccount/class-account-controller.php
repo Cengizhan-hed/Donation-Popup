@@ -325,16 +325,16 @@ class Account_Controller extends Rest_Controller {
 			if ( ! $item instanceof \WC_Order_Item_Product || (int) $item->get_product_id() !== $product_id ) {
 				continue;
 			}
-			$data  = \WDP_Order_Meta_Keys::get_item_donation_data( $item );
+			$data  = \DonationPanel\WooCommerce\Order_Meta_Keys::get_item_donation_data( $item );
 			$pick  = static function ( $key ) use ( $data ) {
 				return isset( $data[ $key ]['value'] ) && is_scalar( $data[ $key ]['value'] ) ? (string) $data[ $key ]['value'] : '';
 			};
 			$input = array(
 				'amount'              => (float) $item->get_total(),
-				'donation_full_name'  => $pick( \WDP_Order_Meta_Keys::DONOR_NAME ),
-				'donation_phone'      => $pick( \WDP_Order_Meta_Keys::DONOR_PHONE ),
-				'donation_email'      => $pick( \WDP_Order_Meta_Keys::DONOR_EMAIL ),
-				'donation_dedication' => $pick( \WDP_Order_Meta_Keys::DEDICATION ),
+				'donation_full_name'  => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_NAME ),
+				'donation_phone'      => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_PHONE ),
+				'donation_email'      => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DONOR_EMAIL ),
+				'donation_dedication' => $pick( \DonationPanel\WooCommerce\Order_Meta_Keys::DEDICATION ),
 				'submission_key'      => 'again-' . wp_generate_password( 12, false ),
 			);
 			break;

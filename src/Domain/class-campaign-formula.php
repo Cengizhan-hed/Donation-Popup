@@ -35,6 +35,24 @@ final class Campaign_Formula {
 	const META_TOTAL = '_wdp_total_donation_amount';
 
 	/**
+	 * Elle eklenen tutar (siteye sipariş olarak girmeyen bağışlar; hiçbir hesap bunu silmez).
+	 */
+	const META_MANUAL = '_wdp_manual_total';
+
+	/**
+	 * Toplamı hiç yazılmamış ama ödenmiş siparişi olan ürün işareti: artımlı güncelleme yazmaz, yönetici
+	 * Kampanyalar ekranında onaylı hesabı yapana kadar bekler.
+	 */
+	const META_PENDING = '_wdp_totals_pending';
+
+	/**
+	 * True: onaylı uygulama sırasında (sipariş sayımı bekleme işaretini yok sayar).
+	 *
+	 * @var bool
+	 */
+	public static $applying = false;
+
+	/**
 	 * Değişiklik günlüğü (kim, ne zaman, eski/yeni).
 	 */
 	const META_LOG = '_wdp_totals_log';
@@ -80,6 +98,94 @@ final class Campaign_Formula {
 	public static function get_stored_total( $product_id ) {
 		$raw = get_post_meta( absint( $product_id ), self::META_TOTAL, true );
 		return ( '' !== $raw && is_numeric( $raw ) ) ? max( 0.0, (float) $raw ) : null;
+	}
+
+	/**
+	 * Toplam hesabı bekliyor mu (hiç yazılmamış toplam + daha önce ödenmiş sipariş var).
+	 *
+	 * @param int $product_id Ürün.
+	 * @return bool
+	 */
+	public static function is_pending( $product_id ) {
+		return null === self::get_stored_total( $product_id ) && 'yes' === (string) get_post_meta( absint( $product_id ), self::META_PENDING, true );
+	}
+
+	/**
+	 * Ürün için, verilen sipariş dışında, ödenmiş ve bu ürünü içeren başka bir sipariş var mı (ilk bulunanda durur).
+	 * Salt okunur; Woo veri API'siyle. Yalnız toplamı hiç yazılmamış ürünün ilk sayımında bir kez çağrılır.
+	 *
+	 * @param int $product_id Ürün.
+	 * @param int $exclude_id Sayılmayacak sipariş.
+	 * @return bool
+	 */
+	public static function has_other_paid_orders( $product_id, $exclude_id = 0 ) {
+		$product_id = absint( $product_id );
+		if ( ! $product_id || ! function_exists( 'wc_get_orders' ) ) {
+			return false;
+		}
+		$statuses = array();
+		foreach ( Campaign_Totals::get_progress_paid_statuses() as $status ) {
+			$statuses[] = 'wc-' . $status;
+		}
+		if ( ! $statuses ) {
+			return false;
+		}
+		$page = 1;
+		do {
+			$query = wc_get_orders(
+				array(
+					'type'     => 'shop_order',
+					'status'   => $statuses,
+					'limit'    => 200,
+					'page'     => $page,
+					'paginate' => true,
+					'return'   => 'objects',
+				)
+			);
+			if ( empty( $query ) || empty( $query->orders ) ) {
+				return false;
+			}
+			foreach ( $query->orders as $order ) {
+				if ( ! is_object( $order ) || ( $exclude_id && (int) $order->get_id() === (int) $exclude_id ) ) {
+					continue;
+				}
+				$lines = Campaign_Totals::compute_order_progress_lines( $order, true, false, false );
+				if ( isset( $lines[ $product_id ] ) && (float) $lines[ $product_id ]['amount'] > 0 ) {
+					return true;
+				}
+			}
+			++$page;
+		} while ( $page <= (int) $query->max_num_pages );
+		return false;
+	}
+
+	/**
+	 * Elle eklenen tutarı yazar ve günlüğe düşer (toplam formülü bu değeri hesaplananın üstüne ekler).
+	 *
+	 * @param int   $product_id Ürün.
+	 * @param float $amount     Tutar (>= 0).
+	 * @param int   $user_id    İşlemi yapan kullanıcı.
+	 * @return array{old:float,new:float}
+	 */
+	public static function set_manual( $product_id, $amount, $user_id ) {
+		$product_id = absint( $product_id );
+		$old        = Campaign_Totals::get_manual_total( $product_id );
+		$new        = round( max( 0.0, (float) $amount ), 2 );
+		update_post_meta( $product_id, self::META_MANUAL, $new );
+		Campaign_Totals::invalidate_product_donation_caches( $product_id );
+		self::log(
+			$product_id,
+			array(
+				'type' => 'manual',
+				'user' => (int) $user_id,
+				'old'  => $old,
+				'new'  => $new,
+			)
+		);
+		return array(
+			'old' => $old,
+			'new' => $new,
+		);
 	}
 
 	/**
@@ -255,9 +361,12 @@ final class Campaign_Formula {
 		$old        = self::get_carried( $product_id );
 		$new        = round( max( 0.0, (float) $amount ), 2 );
 		$stored     = self::get_stored_total( $product_id );
-		$next       = null === $stored ? $new : max( 0.0, $stored + ( $new - $old ) );
+		$pending    = self::is_pending( $product_id );
+		$next       = null === $stored ? ( $pending ? 0.0 : $new ) : max( 0.0, $stored + ( $new - $old ) );
 		update_post_meta( $product_id, self::META_CARRIED, $new );
-		Campaign_Totals::update_product_donation_total( $product_id, $next, true );
+		if ( ! $pending ) {
+			Campaign_Totals::update_product_donation_total( $product_id, $next, true );
+		}
 		self::log(
 			$product_id,
 			array(
@@ -313,12 +422,18 @@ final class Campaign_Formula {
 			update_post_meta( $product_id, self::META_START, (int) $from );
 		}
 		// Aralıktaki ödenmiş ama henüz sayılmamış siparişleri sayılmış işaretle (sonraki iade/iptal tutarlı kalsın).
-		foreach ( $calc['orders_hit'] as $order ) {
-			if ( ! Campaign_Totals::is_order_counted_in_progress( $order ) ) {
-				Campaign_Totals::count_order_in_progress_totals( $order );
+		self::$applying = true;
+		try {
+			foreach ( $calc['orders_hit'] as $order ) {
+				if ( ! Campaign_Totals::is_order_counted_in_progress( $order ) ) {
+					Campaign_Totals::count_order_in_progress_totals( $order );
+				}
 			}
+		} finally {
+			self::$applying = false;
 		}
 		Campaign_Totals::update_product_donation_total( $product_id, $calc['computed'], true );
+		delete_post_meta( $product_id, self::META_PENDING );
 		self::log(
 			$product_id,
 			array(

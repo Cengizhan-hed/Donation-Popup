@@ -29,9 +29,9 @@ export function qualityMarkdown(s) {
   for (const r of [...rows.values()].sort((a, b) => (a.gate + a.theme).localeCompare(b.gate + b.theme))) {
     out.push(`| ${r.gate} | ${r.theme} | ${r.iphone || '-'} | ${r.android || '-'} | ${r.desktop || '-'} |`);
   }
-  out.push('', '## Lighthouse (mobil, simüle yavaş 4G; 3 koşu medyan; kontrol = eklenti pasif aynı sayfa)', '', '| tema | motor | sayfa | perf | kontrol | erişilebilirlik | LCP ms (kontrol) | CLS | durum |', '|---|---|---|---|---|---|---|---|---|');
+  out.push('', '## Lighthouse (mobil, simüle yavaş 4G; 3 koşu medyan; kontrol = eklenti pasif aynı sayfa)', '', '| tema | sayfa | perf | kontrol | erişilebilirlik | LCP ms (kontrol) | CLS | durum |', '|---|---|---|---|---|---|---|---|');
   for (const r of s.lighthouse || []) {
-    out.push(`| ${r.theme} | ${r.engine} | ${r.page} | ${r.performance} | ${r.controlPerformance} | ${r.accessibility} | ${r.lcpMs} (${r.controlLcpMs}) | ${r.cls} | ${r.perfStatus}${r.a11yFails.length ? ' · ' + r.a11yFails.join(',') : ''} |`);
+    out.push(`| ${r.theme} | ${r.page} | ${r.performance} | ${r.controlPerformance} | ${r.accessibility} | ${r.lcpMs} (${r.controlLcpMs}) | ${r.cls} | ${r.perfStatus}${r.a11yFails.length ? ' · ' + r.a11yFails.join(',') : ''} |`);
   }
   out.push('', '## Boyut bütçesi (gzip KB; ilk yük yolu: bütçe JS ≤ 60, CSS ≤ 30; ertelenen JS/CSS etkileşim/boşta yüklenir; CSS = satır içi kritik + engelleyici bağlantılar)', '', '| tema | sayfa | modüller | JS | ertelenen JS | CSS | ertelenen CSS | durum |', '|---|---|---|---|---|---|---|---|');
   for (const r of s.budget || []) {

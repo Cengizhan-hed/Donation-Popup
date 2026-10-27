@@ -170,16 +170,15 @@ final class E8ESecurityTest extends TestCase {
 				$this->assertGreaterThanOrEqual( $calls, substr_count( $code, "'permission_callback'" ) , $file->getPathname() );
 			}
 		}
-		$legacy = (string) file_get_contents( $root . '/includes/class-admin-hooks.php' );
-		$this->assertStringNotContainsString( 'wp_ajax_nopriv_wdp_save', $legacy );
+		$this->assertDirectoryDoesNotExist( $root . '/includes' );
 	}
 
 	public function test_admin_settings_are_saved_only_through_guarded_rest_routes(): void {
 		$root = dirname( __DIR__, 3 );
-		$hooks = (string) file_get_contents( $root . '/includes/class-admin-hooks.php' );
-		$this->assertStringNotContainsString( 'wp_ajax_wdp_save', $hooks, 'Eski ayar kaydetme AJAX uclari kaldirildi' );
-		$legacy = (string) file_get_contents( $root . '/includes/class-woo-donation-popup-admin.php' );
-		$this->assertStringNotContainsString( 'function save_', $legacy );
+		$tab = (string) file_get_contents( $root . '/src/Admin/Product/class-product-data-tab.php' );
+		$this->assertStringNotContainsString( 'wp_ajax_', $tab, 'Ürün sekmesi AJAX ucu açmaz (WooCommerce ürün kaydı + nonce)' );
+		$this->assertStringContainsString( 'wp_verify_nonce', $tab );
+		$this->assertStringContainsString( "current_user_can( self::CAPABILITY )", $tab );
 
 		$src = (string) file_get_contents( $root . '/src/Admin/class-admin-controller.php' );
 		$this->assertSame( 4, substr_count( $src, 'register_rest_route(' ) );

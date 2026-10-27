@@ -63,7 +63,7 @@ foreach (array(
     wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . $wdp_gone), 'Eski çekirdek kaldırıldı: ' . $wdp_gone);
 }
 
-wdp_smoke_assert(class_exists('Woo_Donation_Popup_Admin'), 'Woo_Donation_Popup_Admin loads through the admin bridge');
+wdp_smoke_assert(!is_dir(WDP_PLUGIN_DIR . 'includes'), 'includes/ directory is gone (12.0.0)');
 foreach (array(
     'DonationPanel\\Core\\Bootstrap',
     'DonationPanel\\Core\\Plugin',
@@ -132,39 +132,33 @@ wdp_smoke_assert(
     'Old data migrations and addon visibility cache clearing stay available'
 );
 
-// Admin: product "Bağış" tab + Settings → Ürünler table.
-wdp_smoke_assert(class_exists('DonationPanel\\Domain\\Donation_Type'), 'WDP_Donation_Type loads');
-wdp_smoke_assert(class_exists('WDP_Admin_Product_Data_Tab'), 'WDP_Admin_Product_Data_Tab loads');
+// Admin: ürün "Donation" sekmesi (src/Admin/Product), ürün listesi sütunu/toplu işlemleri.
+wdp_smoke_assert(class_exists('DonationPanel\\Domain\\Donation_Type'), 'Donation_Type loads');
+wdp_smoke_assert(class_exists('DonationPanel\\Admin\\Product\\Product_Data_Tab'), 'Product_Data_Tab loads');
+wdp_smoke_assert(class_exists('DonationPanel\\Admin\\Product\\Product_Settings'), 'Product_Settings loads');
 wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-admin-products-list-table.php', 'extends WP_List_Table'),
-    'Products list table extends WP_List_Table'
-);
-wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-admin-hooks.php', 'WDP_Admin_Product_Data_Tab::register()'),
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/Product/class-product-admin.php', 'Product_Data_Tab::register()')
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/class-admin-bootstrap.php', 'Product_Admin::init()'),
     'Product data tab hooks are registered'
 );
 wdp_smoke_assert(
-    !file_exists(WDP_PLUGIN_DIR . 'includes/class-admin-product-row-renderer.php'),
-    'Legacy product card renderer removed'
+    file_exists(WDP_PLUGIN_DIR . 'assets/src/admin-products/index.mjs') && file_exists(WDP_PLUGIN_DIR . 'assets/src/admin-products/products.css'),
+    'Product tab JS/CSS source exists (wp-scripts)'
+);
+wdp_smoke_assert(
+    !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/src/admin-products/index.mjs', 'jQuery'),
+    'Product tab JS does not use jQuery'
+);
+wdp_smoke_assert(
+    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/Product/class-product-assets.php', "'post.php'")
+        && wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'src/Admin/Product/class-product-assets.php', "'product' !== \$screen->post_type"),
+    'Product tab assets load only on the product edit screen'
 );
 foreach (array('assets/css/admin/products.css', 'assets/js/admin/products.js') as $rel) {
-    wdp_smoke_assert(file_exists(WDP_PLUGIN_DIR . $rel), 'Admin products asset: ' . $rel);
-    wdp_smoke_assert(wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'includes/class-admin-assets.php', $rel), 'Admin products asset enqueued: ' . $rel);
+    wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . $rel), 'Old product tab asset removed: ' . $rel);
 }
-wdp_smoke_assert(
-    wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'scripts/package-wp-plugin.sh', 'assets/css/admin/products.css'),
-    'Pack script minifies admin/products.css'
-);
-wdp_smoke_assert(
-    !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/css/admin-style.css', '.wdp-product-card')
-        && !wdp_smoke_file_contains(WDP_PLUGIN_DIR . 'assets/js/admin-script.js', 'wdp-product-card'),
-    'Legacy product card CSS/JS removed'
-);
 
 // 12.0.0: tek yönetici menüsü (src/Admin); eski ayar ekranı ve eski yönetici varlıkları kaldırıldı.
-foreach (array('class-admin-page-renderer', 'class-admin-form-tabs-renderer', 'class-admin-layout-tabs-renderer', 'class-admin-placement-tab-renderer', 'class-admin-design-studio-renderer', 'class-admin-settings-normalizer', 'class-admin-renderer-helpers') as $wdp_removed_admin) {
-    wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . 'includes/' . $wdp_removed_admin . '.php'), 'Old admin file removed: ' . $wdp_removed_admin);
-}
 foreach (array('src/Admin/class-ui-switch.php', 'src/Admin/class-settings-page.php') as $wdp_removed_rel) {
     wdp_smoke_assert(!file_exists(WDP_PLUGIN_DIR . $wdp_removed_rel), 'Old admin file removed: ' . $wdp_removed_rel);
 }

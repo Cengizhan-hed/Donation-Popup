@@ -125,6 +125,7 @@ final class Admin_Assets {
 						'rcNote'       => __( 'Applying replaces the stored total with the calculated total and counts donations from the start date above.', 'woo-donation-popup' ),
 						'rcNoRate'     => __( 'Some donations in another currency had no exchange rate and were left out.', 'woo-donation-popup' ),
 						'carriedSaved' => __( 'The carried-over amount was saved.', 'woo-donation-popup' ),
+						'manualSaved'  => __( 'The amount added by hand was saved.', 'woo-donation-popup' ),
 						'badImport'    => __( 'The file does not look like a Donation Panel settings export.', 'woo-donation-popup' ),
 					),
 				)

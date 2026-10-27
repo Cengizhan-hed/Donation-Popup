@@ -36,7 +36,7 @@ export function qualityConfigs() {
 
 /**
  * @param {string} wpDir İşçi WP.
- * @param {{engine?:string, modules?:string, override?:boolean}} state Durum.
+ * @param {{modules?:string, override?:boolean}} state Durum.
  */
 export function setQualityState(wpDir, state) {
   const merged = { ...state, ...(process.env.WDP_Q_NODEFER === '1' ? { nodefer: true } : {}), ...(process.env.WDP_Q_NOSPLIT === '1' ? { nosplit: true } : {}), ...(process.env.WDP_Q_NOSTYLEDEFER === '1' ? { nostyledefer: true } : {}) };
@@ -64,7 +64,7 @@ export async function bootQualityWorker(cfg, port, opts = {}) {
   restoreSqlite(wpDir, snap);
   const gateways = matrixEval(wpDir, ['enable-offline-gateways']);
   if (gateways && gateways.ok === false) throw new Error(`çevrimdışı ödeme açılamadı: ${gateways.error || ''}`);
-  setQualityState(wpDir, { engine: 'new', modules: 'all', override: true });
+  setQualityState(wpDir, { modules: 'all', override: true });
   const server = await startPhpServer({ wpDir, port });
   return { wpDir, server, base: `http://127.0.0.1:${port}`, probe, store, cfg };
 }

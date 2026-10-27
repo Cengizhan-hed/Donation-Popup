@@ -173,12 +173,10 @@ final class PublicContractTest extends TestCase {
 		}
 	}
 
-	public function test_admin_bridge_resolves_old_global_class_names_to_the_new_classes(): void {
-		$this->assertTrue( class_exists( 'WDP_Donation_Type' ) );
-		$this->assertSame( \DonationPanel\Domain\Donation_Type::FIXED, WDP_Donation_Type::FIXED );
-		$this->assertSame( \DonationPanel\Domain\Donation_Type::class, ( new ReflectionClass( 'WDP_Donation_Type' ) )->getName() );
-		$this->assertTrue( class_exists( 'WDP_Placement_Settings' ) );
-		$this->assertTrue( class_exists( 'WDP_Utils' ) );
-		$this->assertSame( '#ffffff', WDP_Utils::coerce_solid_hex_background( 'nonsense' ) );
+	public function test_legacy_includes_directory_and_global_class_bridge_are_gone(): void {
+		$this->assertDirectoryDoesNotExist(WDP_PLUGIN_DIR . 'includes');
+		foreach (array('WDP_Utils', 'WDP_Assets', 'WDP_Templates', 'WDP_Donation_Optional_Fields', 'WDP_Autoloader', 'Woo_Donation_Popup_Admin') as $name) {
+			$this->assertFalse(class_exists($name, false), $name . ' artık tanımlı olmamalı');
+		}
 	}
 }

@@ -54,7 +54,7 @@ async function main() {
       if (only.includes('axe')) {
         const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', 'quality-gates'];
         if (project) args.push('--project', project);
-        setQualityState(w.wpDir, { engine: 'new', modules: 'all', override: true });
+        setQualityState(w.wpDir, { modules: 'all', override: true });
         const r = spawnSync('npx', args, {
           cwd: ROOT,
           stdio: 'inherit',

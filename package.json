@@ -50,6 +50,7 @@
     "e2e:experiences": "node tests/e2e/run-experiences.mjs",
     "e2e:side-cart": "node tests/e2e/run-side-cart.mjs",
 
+    "e2e:campaign-totals": "node tests/e2e/run-campaign-totals.mjs",
     "e2e:campaign": "node tests/e2e/run-campaign.mjs",
     "e2e:e6": "node tests/e2e/run-e6.mjs",
 

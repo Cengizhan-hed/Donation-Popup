@@ -79,10 +79,7 @@ final class Status {
 	 * @return int
 	 */
 	public function donation_product_count() {
-		if ( class_exists( '\\DonationPanel\\WooCommerce\\Donation_Scope' ) ) {
-			return (int) \DonationPanel\WooCommerce\Donation_Scope::count();
-		}
-		return class_exists( '\\WDP_Donation_Scope' ) ? (int) \WDP_Donation_Scope::count() : 0;
+		return (int) \DonationPanel\Domain\Donation_Scope::count();
 	}
 
 	/**
@@ -251,7 +248,7 @@ final class Status {
 	 * Kampanya satırı verisi (ürün başına hedef/toplanan/durum). Toplanan = hesaplanan + elle eklenen.
 	 *
 	 * @param int $product_id Ürün.
-	 * @return array{id: int, title: string, goal: float, raised: float, percent: int, status: string, edit: string}
+	 * @return array{id: int, title: string, goal: float, raised: float, percent: int, carried: float, manual: float, pending: bool, start: int|null, status: string, edit: string}
 	 */
 	public function campaign_row( $product_id ) {
 		$product_id = (int) $product_id;
@@ -265,6 +262,8 @@ final class Status {
 			'raised'  => $raised,
 			'percent' => $percent,
 			'carried' => \DonationPanel\Domain\Campaign_Formula::get_carried( $product_id ),
+			'manual'  => \DonationPanel\Domain\Campaign_Totals::get_manual_total( $product_id ),
+			'pending' => \DonationPanel\Domain\Campaign_Formula::is_pending( $product_id ),
 			'start'   => \DonationPanel\Domain\Campaign_Formula::get_start( $product_id ),
 			'status'  => (string) get_post_status( $product_id ),
 			'edit'    => (string) get_edit_post_link( $product_id, 'raw' ),

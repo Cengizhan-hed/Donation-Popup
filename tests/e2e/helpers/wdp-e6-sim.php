@@ -18,7 +18,6 @@ add_filter(
 				'tax_relief' => !$off,
 				'impact'     => true,
 			),
-			'experiences' => array( 'engine' => isset($_COOKIE['dp_e6_legacy']) ? 'legacy' : 'new' ), // phpcs:ignore
 			'impact'      => array( 'map' => "25={count} food parcel|{count} food parcels\n100={count} water well|{count} water wells" ),
 			'tax_relief'  => array( 'text' => 'I declare e2e wording ğüşiöç.' ),
 		);

@@ -171,7 +171,28 @@ function bindForms(wrap) {
   });
 }
 
+/**
+ * Mağaza/arşiv döngüsü kartlarındaki düğmeler (`a.wdp-loop-donate[data-wdp-form]`): liste istemcisiyle aynı form açılışı.
+ * Düğmenin kendi `data-wdp-rest` / `data-wdp-kind` öznitelikleri kullanılır; form kapları sayfada bir kez önbelleğe alınır.
+ */
+function bindLoop() {
+  if (document.documentElement.dataset.wdpLoopBound === '1') {
+    return;
+  }
+  document.documentElement.dataset.wdpLoopBound = '1';
+  const hosts = new Map();
+  document.addEventListener('click', (event) => {
+    const cta = event.target.closest && event.target.closest('a.wdp-loop-donate[data-wdp-form]');
+    if (!cta || !shouldHandleClick(event) || !cta.getAttribute('data-wdp-rest')) {
+      return;
+    }
+    event.preventDefault();
+    openForm({ getAttribute: (name) => cta.getAttribute(name), wdpHosts: hosts }, cta);
+  });
+}
+
 function init() {
+  bindLoop();
   document.querySelectorAll('.wdp-list-wrap').forEach((wrap) => {
     if (wrap.dataset.wdpBound === '1') {
       return;

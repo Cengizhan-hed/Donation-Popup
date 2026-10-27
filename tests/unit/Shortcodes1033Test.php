@@ -191,7 +191,7 @@ final class Shortcodes1033Test extends TestCase {
 	}
 
 	public function test_shortcodes_column_has_three_escaped_codes(): void {
-		$list = WDP_Admin_Product_Data_Tab::get_shortcodes(12);
+		$list = \DonationPanel\Admin\Product\Product_Data_Tab::get_shortcodes(12);
 		$this->assertCount(3, $list);
 		$this->assertSame('[wdp_donation_button id="12"]', $list[0]['code']);
 		$this->assertSame('[wdp_donation_button_panel id="12"]', $list[1]['code']);
@@ -220,7 +220,7 @@ final class Shortcodes1033Test extends TestCase {
 			'_wdp_progress_amounts'  => array(1 => 10),
 		);
 
-		$settings = WDP_Product_Settings_Service::get_settings_meta_keys();
+		$settings = \DonationPanel\Admin\Product\Product_Settings::managed_meta_keys();
 		foreach ($settings as $key) {
 			$this->assertTrue(\DonationPanel\Core\Uninstall::should_delete_product_meta_key($key), $key);
 		}

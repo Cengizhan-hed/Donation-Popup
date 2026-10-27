@@ -32,7 +32,7 @@ export const PAGES = Object.freeze([
   { name: 'orders', path: '/wp-admin/admin.php?page=wc-orders', admin: true },
   { name: 'product-edit', path: '/wp-admin/post-new.php?post_type=product', admin: true },
   // Eklenti kapalıyken bu sayfa yok: kapalı taban olarak aynı türden mevcut yönetici sayfası (wc-settings) kullanılır.
-  { name: 'wdp-settings', path: '/wp-admin/admin.php?page=wdp-popup-settings', admin: true, offAs: 'wc-settings' },
+  { name: 'wdp-settings', path: '/wp-admin/admin.php?page=donation-panel', admin: true, offAs: 'wc-settings' },
 ]);
 
 /** Tohum betiğinin (seed) döndürdüğü Woo ön yüz sayfaları: ürün, sepet, ödeme, bağış sayfası/listesi. */

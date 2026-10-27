@@ -5,7 +5,8 @@
  *
  *   /?dp_ad_login=1&role=administrator|subscriber  -> test kullanıcısı olarak oturum açar (JSON)
  *   /?dp_ad_state=1                                 -> Core ayarları + eski `wdp_*` seçeneklerinin özeti + ürün sayısı (JSON)
- *   /?dp_ad_reset=1&ui=new|legacy                   -> Core ayar kaydını sıfırlar (admin.ui verilen değer)
+ *   /?dp_ad_meta=<ürün>&keys=a,b                    -> bir ürünün `_enable_*`/`_wdp_*` vb. meta değerleri (yalnız okur; JSON)
+ *   /?dp_ad_reset=1                                 -> Core ayar kaydını varsayılana sıfırlar
  *   çerez dp_ad_rtl=1                               -> yönetim arayüzü RTL
  */
 /**
@@ -14,9 +15,9 @@
  * @param string $ui admin.ui değeri.
  * @return void
  */
-function wdp_ad_write_settings( $ui ) {
+function wdp_ad_write_settings() {
 	delete_option( 'donation_panel_settings' );
-	add_option( 'donation_panel_settings', array( 'version' => 1, 'admin' => array( 'ui' => $ui ) ), '', false );
+	add_option( 'donation_panel_settings', array( 'version' => 1 ), '', false );
 }
 
 add_action(
@@ -29,7 +30,7 @@ add_action(
 			}
 		}
 		if ( false === get_option( 'dp_e7_seeded', false ) ) {
-			wdp_ad_write_settings( 'new' );
+			wdp_ad_write_settings();
 			add_option( 'dp_e7_seeded', '1' );
 		}
 	},
@@ -70,11 +71,10 @@ add_action(
 		}
 		if ( isset( $_GET['dp_ad_reset'] ) ) {
 			nocache_headers();
-			$ui = isset( $_GET['ui'] ) && 'legacy' === $_GET['ui'] ? 'legacy' : 'new';
-			wdp_ad_write_settings( $ui );
+			wdp_ad_write_settings();
 			// E8Q: "yeni ekranı dene" kutusunun kapatma işaretini de sıfırlar (yalnız yerel test işçisi).
 			delete_metadata( 'user', 0, 'donation_panel_ui_notice_dismissed', '', true );
-			wp_send_json( array( 'ok' => true, 'ui' => $ui ) );
+			wp_send_json( array( 'ok' => true ) );
 		}
 		if ( isset( $_GET['dp_ad_opt'] ) ) {
 			// Yalnız yerel test işçisi (uzak siteye gitmez): dar bir izin listesindeki yerel örnek seçeneklerini ayarlar/siler.
@@ -92,6 +92,19 @@ add_action(
 				update_option( $name, null === $dec ? $raw : $dec );
 			}
 			wp_send_json( array( 'ok' => true, 'value' => get_option( $name, null ) ) );
+		}
+		if ( isset( $_GET['dp_ad_meta'] ) ) {
+			// Yalnız okur: ürün sekmesinin yazdığı meta anahtarları (kayıt doğrulaması için).
+			nocache_headers();
+			$pid  = absint( $_GET['dp_ad_meta'] );
+			$keys = isset( $_GET['keys'] ) ? array_filter( array_map( 'trim', explode( ',', wp_unslash( (string) $_GET['keys'] ) ) ) ) : array();
+			$out  = array();
+			foreach ( $keys as $key ) {
+				if ( preg_match( '/^_(wdp_|enable_|allow_|min_|max_|progress_|goal_|amount_|cover_|dedication_|addon_|theme_|trust_|layout_)[a-z_]*$/', $key ) ) {
+					$out[ $key ] = get_post_meta( $pid, $key, true );
+				}
+			}
+			wp_send_json( $out );
 		}
 		if ( isset( $_GET['dp_ad_state'] ) ) {
 			nocache_headers();

@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import {
   isTrackerUrl,
@@ -376,8 +377,9 @@ describe('uzak POST varsayılan-red', () => {
     assert.equal(key.includes('?'), false);
   });
 
-  it('12.0.0: includes/ artık ziyaretçi (nopriv) AJAX içermez; emekli liste donmuş, yönetici uçları uzakta RED', () => {
-    const { nopriv, adminOnly } = listWdpAjaxFromIncludes(path.join(ROOT, 'includes'));
+  it('12.0.0: eklenti kaynağı (src/) hiç wdp AJAX ucu açmaz; emekli liste donmuş, yönetici uçları uzakta RED', () => {
+    assert.equal(fs.existsSync(path.join(ROOT, 'includes')), false, 'includes/ klasörü kalmamalı');
+    const { nopriv, adminOnly } = listWdpAjaxFromIncludes(path.join(ROOT, 'src'));
     assert.deepEqual(nopriv, []);
     for (const n of EXPECTED_WDP_NOPRIV_AJAX) {
       assert.equal(isWdpAjaxAction(n), true, n);
@@ -407,8 +409,8 @@ describe('uzak POST varsayılan-red', () => {
       'wdp_export_style_preset',
       'wdp_recalculate_product_total',
     ];
-    // 12.0.0: eski ayar kaydetme AJAX uçları kaldırıldı (REST'e taşındı); koruma listesi yine de reddeder.
-    assert.ok(adminOnly.includes('wdp_recalculate_product_total'));
+    // 12.0.0: eski AJAX uçları (ayar kaydetme, toplam yeniden hesaplama) kaldırıldı; koruma listesi yine de reddeder.
+    assert.deepEqual(adminOnly, []);
     for (const n of mustBlock) {
       assert.equal(
         isRemoteWriteAllowed({

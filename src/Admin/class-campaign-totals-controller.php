@@ -67,6 +67,16 @@ final class Campaign_Totals_Controller extends Rest_Controller {
 				'args'                => $id_arg,
 			)
 		);
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/admin/campaigns/(?P<id>\d+)/manual',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'set_manual' ),
+				'permission_callback' => $permission,
+				'args'                => $id_arg,
+			)
+		);
 	}
 
 	/**
@@ -127,7 +137,7 @@ final class Campaign_Totals_Controller extends Rest_Controller {
 			}
 			return $this->error( 'donation_panel_stale_preview', 'The numbers changed since the preview. Preview again.', 409, array( 'preview' => $this->present( $done['result'] ) ) );
 		}
-		return rest_ensure_response( $this->present( $done['result'] ) );
+		return rest_ensure_response( $this->present( $done['result'] ) + $this->raised( $product_id ) );
 	}
 
 	/**
@@ -156,7 +166,48 @@ final class Campaign_Totals_Controller extends Rest_Controller {
 				'carried_text' => $this->money( $res['new'] ),
 				'stored'       => $res['stored'],
 				'stored_text'  => $this->money( $res['stored'] ),
-			)
+			) + $this->raised( $product_id )
+		);
+	}
+
+	/**
+	 * POST .../manual: elle eklenen tutarı yazar (günlüklü; saklanan toplamı değiştirmez, gösterilen toplama eklenir).
+	 *
+	 * @param \WP_REST_Request $request Istek.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function set_manual( $request ) {
+		$guard = $this->guard( $request, 'campaign_manual', 30 );
+		if ( is_wp_error( $guard ) ) {
+			return $guard;
+		}
+		$product_id = $this->product_id( $request );
+		if ( is_wp_error( $product_id ) ) {
+			return $product_id;
+		}
+		$amount = $request->get_param( 'amount' );
+		if ( ! is_numeric( $amount ) || (float) $amount < 0 || (float) $amount > 1000000000000 ) {
+			return $this->error( 'donation_panel_bad_amount', 'Enter a number that is zero or more.', 400 );
+		}
+		$res = Campaign_Formula::set_manual( $product_id, (float) $amount, (int) get_current_user_id() );
+		return rest_ensure_response(
+			array(
+				'manual'      => $res['new'],
+				'manual_text' => $this->money( $res['new'] ),
+			) + $this->raised( $product_id )
+		);
+	}
+
+	/**
+	 * Gösterilen toplam (saklanan + elle eklenen) ve bekleme durumu.
+	 *
+	 * @param int $product_id Ürün.
+	 * @return array<string, mixed>
+	 */
+	private function raised( $product_id ) {
+		return array(
+			'raised_text' => $this->money( (float) \DonationPanel\Domain\Campaign_Totals::get_total_donation_amount( $product_id ) ),
+			'pending'     => Campaign_Formula::is_pending( $product_id ),
 		);
 	}
 

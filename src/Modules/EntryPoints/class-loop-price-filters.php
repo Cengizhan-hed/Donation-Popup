@@ -83,6 +83,18 @@ class Loop_Price_Filters {
 		$attrs = ' href="' . esc_url( $url ) . '" class="' . esc_attr( $cls ) . '"';
 		if ( $goal_closed ) {
 			$attrs .= ' aria-disabled="true" title="' . esc_attr( Campaign_Goal::resolve_message( $product ) ) . '"';
+		} elseif ( in_array( $mode, array( 'popup', 'panel' ), true ) ) {
+			$product_id = (int) $product->get_id();
+			// Gerçek bağlantı kalır (JS yokken ürün sayfasına gider); JS varken form katmanı açılır.
+			// Aynı istekte bu ürün için başka bir giriş (form/düğme) çizildiyse yalnız bağlantı olarak kalır.
+			if ( ! Render_Registry::has_product_ui( $product_id ) ) {
+				Render_Registry::mark_trigger( $product_id );
+				Donations_List::enqueue_assets( true );
+				$attrs .= ' data-wdp-form="' . esc_attr( (string) $product_id ) . '"'
+					. ' data-wdp-kind="' . esc_attr( 'popup' === $mode ? 'popup' : 'side_panel' ) . '"'
+					. ' data-wdp-rest="' . esc_url( rest_url( 'donation-panel/v1/' ) ) . '"'
+					. ' aria-haspopup="dialog"';
+			}
 		}
 		return '<a' . $attrs . '>' . esc_html( $text ) . '</a>';
 	}

@@ -1076,6 +1076,11 @@ if (!function_exists('wp_create_nonce')) {
 if (!function_exists('wp_script_add_data')) {
 	function wp_script_add_data(...$args) {}
 }
+if (!function_exists('rest_url')) {
+	function rest_url($path = '') {
+		return 'https://example.test/wp-json/' . ltrim((string) $path, '/');
+	}
+}
 if (!function_exists('home_url')) {
 	function home_url($path = '') {
 		return 'https://example.test' . $path;
@@ -1186,7 +1191,5 @@ if (!function_exists('get_terms')) {
 require_once __DIR__ . '/support/fakes.php';
 $GLOBALS['wpdb'] = new WDP_Fake_Wpdb();
 
-require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
-WDP_Autoloader::register();
 require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
 \DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );

@@ -2,19 +2,16 @@
 /**
  * Yalnız yerel e2e: yeni nesil form motorunu açar ve her kabı tek başına gösteren boş test sayfası sunar (mu-plugin).
  *
- *   /?dp_exp_test=popup|side_panel|inline|bottom_sheet[&dp_product=ID][&dp_engine=legacy]
+ *   /?dp_exp_test=popup|side_panel|inline|bottom_sheet[&dp_product=ID]
  *
  * Tema/sayfa oluşturucu adı yok; yalnız standart WordPress kancaları.
  */
-$wdp_exp_legacy = isset($_GET['dp_engine']) && 'legacy' === $_GET['dp_engine']; // phpcs:ignore
-
 add_filter(
 	'pre_option_donation_panel_settings',
-	static function () use ($wdp_exp_legacy) {
+	static function () {
 		return array(
 			'version'     => 1,
 			'modules'     => array(),
-			'experiences' => array( 'engine' => $wdp_exp_legacy ? 'legacy' : 'new' ),
 		);
 	}
 );
