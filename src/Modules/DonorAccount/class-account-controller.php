@@ -177,6 +177,12 @@ class Account_Controller extends Rest_Controller {
 		if ( '' === $login || '' === $password ) {
 			return $fail;
 		}
+		// Hesap başına sınır: dağıtık IP'lerle tek hesaba parola denemesini durdurur. Aşımda yanıt hesabın var olup
+		// olmadığını belirtmez (her giriş adı için aynı sınır uygulanır). WordPress'in kendi başarısız giriş
+		// kancaları (`wp_login_failed`) wp_signon ile çalışmaya devam eder.
+		if ( ! $this->allow_target( 'account_login', $login, 10, 900 ) ) {
+			return $this->error( 'donation_panel_rate_limited', 'Too many requests. Please try again shortly.', 429 );
+		}
 		$user = wp_signon(
 			array(
 				'user_login'    => $login,
