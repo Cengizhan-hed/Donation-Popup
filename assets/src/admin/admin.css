@@ -912,3 +912,76 @@
 		transition: none !important;
 	}
 }
+
+/* Kampanyalar: devreden tutar + yeniden hesapla */
+.dpa-carried {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+.dpa-recalc-slot {
+	display: inline-block;
+	margin-inline-start: 8px;
+}
+.dpa-recalc-row[hidden] {
+	display: none;
+}
+.dpa-recalc-row > td {
+	background: var(--dpa-sel);
+}
+.dpa-recalc {
+	display: grid;
+	gap: 14px;
+	padding-block: 6px;
+}
+.dpa-recalc__form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: end;
+	gap: 12px;
+}
+.dpa-recalc__form label {
+	display: grid;
+	gap: 4px;
+	font-size: 13px;
+	font-weight: 600;
+}
+.dpa-recalc__list {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 12px;
+	margin: 0;
+}
+.dpa-recalc__list dt {
+	font-size: 12px;
+	color: var(--dpa-muted);
+}
+.dpa-recalc__list dd {
+	margin: 2px 0 0;
+	font-size: 16px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+@media (max-width: 782px) {
+	.dpa-recalc-row {
+		display: block;
+	}
+	.dpa-recalc-row[hidden] {
+		display: none;
+	}
+	.dpa-recalc-row > td {
+		display: block;
+	}
+	.dpa-recalc__form label,
+	.dpa-recalc__form .dpa-btn,
+	.dpa-recalc .dpa-btn--primary {
+		inline-size: 100%;
+	}
+}
+
+.dpa-recalc__result {
+	display: grid;
+	gap: 12px;
+	justify-items: start;
+}

@@ -10,7 +10,6 @@ namespace DonationPanel\Core;
 use DonationPanel\Domain\Addon_Product_Visibility;
 use DonationPanel\Domain\Addon_Settings;
 use DonationPanel\Domain\Amount_Presets;
-use DonationPanel\Domain\Campaign_Totals;
 use DonationPanel\Domain\Placement_Settings;
 use DonationPanel\Modules\EntryPoints\Donations_List;
 
@@ -335,32 +334,8 @@ class Version_Migrations {
 			$privacy_action = 'updated_default';
 		}
 
+		// 12.0.0: otomatik toplam yeniden hesabı kaldırıldı; toplamlar yalnız yöneticinin onayıyla (Kampanyalar ekranı) yazılır.
 		$scheduled = 0;
-		if ( ! $is_fresh && function_exists( 'get_posts' ) ) {
-			$ids = get_posts(
-				array(
-					'post_type'              => 'product',
-					'post_status'            => 'any',
-					'posts_per_page'         => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- tek seferlik göç; yalnız kimlik listesi, sayfalı çalışır.
-					'fields'                 => 'ids',
-					'no_found_rows'          => true,
-					'update_post_meta_cache' => false,
-					'update_post_term_cache' => false,
-					'meta_key'               => '_enable_progress_bar', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- meta sorgusu tek seferlik/yönetici işlemi; kimlik listesi, sayfalanır.
-					'meta_value'             => 'yes', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- meta sorgusu tek seferlik/yönetici işlemi; kimlik listesi, sayfalanır.
-				)
-			);
-			if ( is_array( $ids ) ) {
-				foreach ( $ids as $pid ) {
-					$pid = absint( $pid );
-					if ( ! $pid ) {
-						continue;
-					}
-					Campaign_Totals::schedule_product_donation_total_recalc( $pid );
-					++$scheduled;
-				}
-			}
-		}
 
 		update_option( $flag, '1', false );
 		return sprintf(

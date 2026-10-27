@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-CLI: `wp donation-panel recalc-totals [--product=<id>|--all] [--dry-run]`.
+ * WP-CLI: `wp donation-panel recalc-totals [--product=<id>|--all] [--dry-run]` (yalnız kuru çalıştırma).
  *
  * Yalnız `WP_CLI` tanımlıyken kaydedilir (bkz. `Bootstrap::run`).
  *
@@ -29,12 +29,12 @@ final class Cli_Command {
 	}
 
 	/**
-	 * Ürün bağış toplamlarını ödenmiş siparişlerden baştan hesaplar (siparişleri değiştirmez).
+	 * Kampanya toplamlarını formülle hesaplar ve saklanan toplamla karşılaştırır. SALT OKUNUR: hiçbir şey yazmaz.
 	 *
-	 * Tanım: yalnız ödenmiş siparişler (varsayılan completed, processing), iade düşülmüş, sipariş anındaki kurla ana
-	 * para birimine çevrilmiş, varsa kampanya dönemiyle sınırlı. VARSAYILAN HER ZAMAN KURU ÇALIŞTIRMADIR: hiçbir şey
-	 * yazılmaz. Yazmak için `--apply --i-understand` birlikte verilmelidir; yazma elle eklenen tutara dokunmaz.
-	 * Döviz kuru bulunamayan siparişler toplama katılmaz ve uyarı olarak listelenir.
+	 * Formül: devreden tutar + kampanya başlangıcından sonra ödenmiş siparişlerdeki bağış tutarları (iade düşülmüş,
+	 * sipariş anındaki kurla ana para birimine çevrilmiş). Döviz kuru bulunamayan siparişler toplama katılmaz ve uyarı
+	 * olarak listelenir. Toplamı değiştirmek için Bağış Paneli > Kampanyalar ekranındaki "Yeniden hesapla" düğmesi
+	 * (önizleme + yönetici onayı) kullanılır; komut satırından yazma yoktur.
 	 *
 	 * ## OPTIONS
 	 *
@@ -45,22 +45,12 @@ final class Cli_Command {
 	 * : Tüm bağış ürünleri.
 	 *
 	 * [--dry-run]
-	 * : Varsayılan davranış (açıkça yazmasanız da): hiçbir şey yazılmaz.
-	 *
-	 * [--apply]
-	 * : Hesaplanan toplamı yazar. Yalnız `--i-understand` ile birlikte çalışır.
-	 *
-	 * [--i-understand]
-	 * : `--apply` için açık onay bayrağı.
-	 *
-	 * [--detail=<ids>]
-	 * : Virgülle ayrılmış ürün kimlikleri için neden ayrıştırma ayrıntısını yazdırır.
+	 * : Kabul edilir; komut zaten her zaman kuru çalıştırmadır.
 	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp donation-panel recalc-totals --all --dry-run
-	 *     wp donation-panel recalc-totals --product=123 --detail=123
-	 *     wp donation-panel recalc-totals --product=123 --apply --i-understand
+	 *     wp donation-panel recalc-totals --product=123 --dry-run
 	 *
 	 * @subcommand recalc-totals
 	 *
@@ -70,14 +60,12 @@ final class Cli_Command {
 	 */
 	public function recalc_totals( $args, $assoc_args ) {
 		unset( $args );
-		$all     = ! empty( $assoc_args['all'] );
-		$product = isset( $assoc_args['product'] ) ? absint( $assoc_args['product'] ) : 0;
-		$apply   = ! empty( $assoc_args['apply'] ) && ! empty( $assoc_args['i-understand'] ) && empty( $assoc_args['dry-run'] );
-		$dry_run = ! $apply;
-		if ( ! empty( $assoc_args['apply'] ) && empty( $assoc_args['i-understand'] ) ) {
-			\WP_CLI::error( '--apply requires --i-understand; nothing was written.' );
+		if ( isset( $assoc_args['apply'] ) || isset( $assoc_args['i-understand'] ) ) {
+			\WP_CLI::error( 'Writing from the command line was removed. Use Donation Panel > Campaigns > Recalculate (preview, then approve).' );
 			return;
 		}
+		$all     = ! empty( $assoc_args['all'] );
+		$product = isset( $assoc_args['product'] ) ? absint( $assoc_args['product'] ) : 0;
 
 		if ( ( $product > 0 ) === $all ) {
 			\WP_CLI::error( 'Give exactly one of --product=<id> or --all.' );
@@ -95,41 +83,27 @@ final class Cli_Command {
 			return;
 		}
 
-		$result = $calculator->run( $ids, $dry_run, $apply );
+		$result = $calculator->run( $ids );
 
 		$table = array();
 		foreach ( $result['rows'] as $row ) {
 			$table[] = array(
 				'product_id'  => $row['product_id'],
-				'old_total'   => null === $row['old_total'] ? '-' : (string) $row['old_total'],
-				'new_total'   => (string) $row['new_total'],
+				'stored'      => null === $row['stored'] ? '-' : (string) $row['stored'],
+				'computed'    => (string) $row['computed'],
 				'diff'        => null === $row['diff'] ? '-' : (string) $row['diff'],
-				'manual_sug'  => (string) $row['suggested_manual'],
-				'shown_after' => (string) $row['display_after'],
-				'reason'      => (string) $row['reason'],
-				'old_donors'  => null === $row['old_donors'] ? '-' : (string) $row['old_donors'],
-				'new_donors'  => (string) $row['new_donors'],
+				'carried'     => (string) $row['carried'],
+				'start'       => null === $row['start'] ? '-' : wp_date( 'Y-m-d', (int) $row['start'] ),
 				'orders'      => (string) $row['orders'],
 				'unconverted' => (string) $row['unconverted'],
-				'status'      => $row['written'] ? 'updated' : ( $row['changed'] ? 'differs' : 'same' ),
+				'status'      => $row['changed'] ? 'differs' : 'same',
 			);
 		}
-		\WP_CLI\Utils\format_items( 'table', $table, array( 'product_id', 'old_total', 'new_total', 'diff', 'manual_sug', 'shown_after', 'reason', 'old_donors', 'new_donors', 'orders', 'unconverted', 'status' ) );
-
-		$detail = isset( $assoc_args['detail'] ) ? array_filter( array_map( 'absint', explode( ',', (string) $assoc_args['detail'] ) ) ) : array();
-		foreach ( $result['rows'] as $row ) {
-			if ( in_array( (int) $row['product_id'], $detail, true ) ) {
-				\WP_CLI::log( sprintf( 'product %d breakdown: %s', (int) $row['product_id'], (string) wp_json_encode( $row['breakdown'] ) ) );
-			}
-		}
+		\WP_CLI\Utils\format_items( 'table', $table, array( 'product_id', 'stored', 'computed', 'diff', 'carried', 'start', 'orders', 'unconverted', 'status' ) );
 
 		if ( $result['unconverted'] > 0 ) {
 			\WP_CLI::warning( sprintf( '%d order line(s) had no usable exchange rate and were left out (not converted).', $result['unconverted'] ) );
 		}
-		if ( $dry_run ) {
-			\WP_CLI::success( sprintf( 'Dry run: %d of %d product(s) differ; nothing was written.', $result['changed'], count( $result['rows'] ) ) );
-			return;
-		}
-		\WP_CLI::success( sprintf( 'Updated %d of %d product(s); %d already correct.', $result['written'], count( $result['rows'] ), count( $result['rows'] ) - $result['written'] ) );
+		\WP_CLI::success( sprintf( 'Dry run: %d of %d product(s) differ; nothing was written.', $result['changed'], count( $result['rows'] ) ) );
 	}
 }

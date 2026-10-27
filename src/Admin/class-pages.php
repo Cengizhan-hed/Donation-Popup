@@ -172,28 +172,70 @@ final class Pages {
 		$this->guard();
 		$html = Admin_View::open( Admin_Bootstrap::SLUG_CAMPAIGNS, __( 'Campaigns', 'woo-donation-popup' ), __( 'Products with a goal. Set a goal on the product\'s Donation tab.', 'woo-donation-popup' ) );
 
-		$rows = '';
+		$rows     = '';
+		$symbol   = function_exists( 'get_woocommerce_currency_symbol' ) ? html_entity_decode( (string) get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ) : '';
+		$date_fmt = (string) get_option( 'date_format', 'Y-m-d' );
 		foreach ( $this->status->campaign_ids( 50 ) as $id ) {
 			$r     = $this->status->campaign_row( $id );
 			$goal  = function_exists( 'wc_price' ) ? wp_strip_all_tags( (string) wc_price( $r['goal'] ) ) : (string) $r['goal'];
 			$got   = function_exists( 'wc_price' ) ? wp_strip_all_tags( (string) wc_price( $r['raised'] ) ) : (string) $r['raised'];
-			$rows .= '<tr><th scope="row"><a href="' . esc_url( $r['edit'] ) . '">' . esc_html( '' !== $r['title'] ? $r['title'] : __( '(no title)', 'woo-donation-popup' ) ) . '</a></th>'
+			$title = '' !== $r['title'] ? $r['title'] : __( '(no title)', 'woo-donation-popup' );
+			$since = null === $r['start'] ? __( 'The beginning', 'woo-donation-popup' ) : wp_date( $date_fmt, (int) $r['start'] );
+			$cid   = 'dpa-carried-' . (int) $r['id'];
+			$rows .= '<tr><th scope="row"><a href="' . esc_url( $r['edit'] ) . '">' . esc_html( $title ) . '</a></th>'
 				. '<td data-label="' . esc_attr__( 'Goal', 'woo-donation-popup' ) . '">' . esc_html( html_entity_decode( $goal, ENT_QUOTES, 'UTF-8' ) ) . '</td>'
-				. '<td data-label="' . esc_attr__( 'Raised', 'woo-donation-popup' ) . '">' . esc_html( html_entity_decode( $got, ENT_QUOTES, 'UTF-8' ) ) . '</td>'
+				. '<td data-label="' . esc_attr__( 'Raised', 'woo-donation-popup' ) . '"><span data-dpa-stored="' . (int) $r['id'] . '">' . esc_html( html_entity_decode( $got, ENT_QUOTES, 'UTF-8' ) ) . '</span></td>'
+				. '<td data-label="' . esc_attr__( 'Carried over', 'woo-donation-popup' ) . '"><span class="dpa-carried">'
+				. '<label class="screen-reader-text" for="' . esc_attr( $cid ) . '">' . esc_html( sprintf( /* translators: %s: product name. */ __( 'Carried-over amount for %s', 'woo-donation-popup' ), $title ) ) . '</label>'
+				. ( '' !== $symbol ? '<span aria-hidden="true">' . esc_html( $symbol ) . '</span>' : '' )
+				. '<input class="dpa-input dpa-input--short" type="number" inputmode="decimal" min="0" step="0.01" id="' . esc_attr( $cid ) . '" value="' . esc_attr( (string) $r['carried'] ) . '" data-dpa-carried="' . (int) $r['id'] . '">'
+				. '<button type="button" class="dpa-btn dpa-btn--small" data-dpa-carried-save="' . (int) $r['id'] . '">' . esc_html__( 'Save', 'woo-donation-popup' ) . '</button></span></td>'
+				. '<td data-label="' . esc_attr__( 'Counting since', 'woo-donation-popup' ) . '">' . esc_html( $since ) . '</td>'
 				. '<td data-label="' . esc_attr__( 'Progress', 'woo-donation-popup' ) . '"><span class="dpa-bar" role="img" aria-label="' . esc_attr( sprintf( /* translators: %d: percent. */ __( '%d percent of the goal', 'woo-donation-popup' ), $r['percent'] ) ) . '"><i style="width:' . (int) $r['percent'] . '%"></i></span> <span class="dpa-bar__n">' . (int) $r['percent'] . '%</span></td>'
-				. '<td data-label="' . esc_attr__( 'Status', 'woo-donation-popup' ) . '">' . Admin_View::badge( $this->status_label( $r['status'] ), 'publish' === $r['status'] ? 'success' : 'neutral' ) . '<span class="dpa-recalc-slot" data-product="' . (int) $r['id'] . '" hidden></span></td></tr>';
+				. '<td data-label="' . esc_attr__( 'Status', 'woo-donation-popup' ) . '">' . Admin_View::badge( $this->status_label( $r['status'] ), 'publish' === $r['status'] ? 'success' : 'neutral' )
+				. '<span class="dpa-recalc-slot" data-product="' . (int) $r['id'] . '"><button type="button" class="dpa-btn dpa-btn--small" data-dpa-recalc-open="' . (int) $r['id'] . '" aria-expanded="false" aria-controls="dpa-recalc-' . (int) $r['id'] . '">' . esc_html__( 'Recalculate', 'woo-donation-popup' ) . '</button></span></td></tr>'
+				. $this->recalc_row( (int) $r['id'], $r['start'], $title );
 		}
 		if ( '' === $rows ) {
 			$body = '<p class="dpa-empty">' . esc_html__( 'No campaigns yet. Open a product, choose the Donation tab and set a goal amount.', 'woo-donation-popup' ) . '</p>';
 		} else {
-			$body = '<div class="dpa-tablewrap"><table class="dpa-table"><thead><tr><th scope="col">' . esc_html__( 'Product', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Goal', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Raised', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Progress', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Status', 'woo-donation-popup' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table></div>';
+			$body = '<div class="dpa-tablewrap"><table class="dpa-table"><thead><tr><th scope="col">' . esc_html__( 'Product', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Goal', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Raised', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Carried over', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Counting since', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Progress', 'woo-donation-popup' ) . '</th><th scope="col">' . esc_html__( 'Status', 'woo-donation-popup' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table></div>';
 		}
 		$body .= '<p><a class="dpa-btn dpa-btn--ghost" href="' . esc_url( admin_url( 'post-new.php?post_type=product' ) ) . '">' . esc_html__( 'Add a product', 'woo-donation-popup' ) . '</a></p>';
-		$html .= Admin_View::card( __( 'Campaign products', 'woo-donation-popup' ), $body, '', __( 'Amount raised includes any amount you added by hand on the product.', 'woo-donation-popup' ) );
+		$html .= Admin_View::card( __( 'Campaign products', 'woo-donation-popup' ), $body, '', __( 'Raised = carried-over amount + paid donations since the campaign started + any amount you added by hand on the product. Recalculating shows a preview first and changes nothing until you approve it.', 'woo-donation-popup' ) );
 		$html .= Admin_View::card( __( 'Modules', 'woo-donation-popup' ), '<div class="dpa-mods">' . $this->module_rows( array( 'campaign', 'impact', 'social_proof' ) ) . '</div>' );
 		$html .= $this->field_cards( Admin_Bootstrap::SLUG_CAMPAIGNS );
 		$html .= Admin_View::savebar() . Admin_View::close();
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * "Yeniden hesapla" paneli (gizli satır): tarih aralığı -> önizleme -> onay. Yazma yalnız onayla (REST).
+	 *
+	 * @param int      $id    Ürün.
+	 * @param int|null $start Kampanya başlangıcı (Unix) ya da null.
+	 * @param string   $title Ürün adı.
+	 * @return string
+	 */
+	private function recalc_row( $id, $start, $title ) {
+		$from = null === $start ? '' : wp_date( 'Y-m-d', (int) $start );
+		return '<tr class="dpa-recalc-row" id="dpa-recalc-' . (int) $id . '" data-dpa-recalc="' . (int) $id . '" hidden><td colspan="7"><div class="dpa-recalc">'
+			. '<p class="dpa-row__help">' . esc_html( sprintf( /* translators: %s: product name. */ __( 'Recalculate "%s": carried-over amount plus paid donations in the dates you choose. Nothing changes until you approve the preview.', 'woo-donation-popup' ), $title ) ) . '</p>'
+			. '<div class="dpa-recalc__form">'
+			. '<label>' . esc_html__( 'Count donations from', 'woo-donation-popup' ) . ' <input class="dpa-input" type="date" data-dpa-recalc-from value="' . esc_attr( $from ) . '"></label>'
+			. '<label>' . esc_html__( 'Until (optional)', 'woo-donation-popup' ) . ' <input class="dpa-input" type="date" data-dpa-recalc-to></label>'
+			. '<button type="button" class="dpa-btn dpa-btn--ghost" data-dpa-recalc-preview>' . esc_html__( 'Preview', 'woo-donation-popup' ) . '</button>'
+			. '</div>'
+			. '<div class="dpa-recalc__result" data-dpa-recalc-result aria-live="polite" hidden>'
+			. '<dl class="dpa-recalc__list">'
+			. '<div><dt>' . esc_html__( 'Stored total', 'woo-donation-popup' ) . '</dt><dd data-dpa-r="stored"></dd></div>'
+			. '<div><dt>' . esc_html__( 'Calculated total', 'woo-donation-popup' ) . '</dt><dd data-dpa-r="computed"></dd></div>'
+			. '<div><dt>' . esc_html__( 'Difference', 'woo-donation-popup' ) . '</dt><dd data-dpa-r="diff"></dd></div>'
+			. '<div><dt>' . esc_html__( 'Orders counted', 'woo-donation-popup' ) . '</dt><dd data-dpa-r="orders"></dd></div>'
+			. '</dl>'
+			. '<p class="dpa-row__help" data-dpa-r="note"></p>'
+			. '<button type="button" class="dpa-btn dpa-btn--primary" data-dpa-recalc-apply disabled>' . esc_html__( 'Apply this total', 'woo-donation-popup' ) . '</button>'
+			. '</div></div></td></tr>';
 	}
 
 	/**

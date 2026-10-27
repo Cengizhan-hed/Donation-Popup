@@ -264,6 +264,8 @@ final class Status {
 			'goal'    => $goal,
 			'raised'  => $raised,
 			'percent' => $percent,
+			'carried' => \DonationPanel\Domain\Campaign_Formula::get_carried( $product_id ),
+			'start'   => \DonationPanel\Domain\Campaign_Formula::get_start( $product_id ),
 			'status'  => (string) get_post_status( $product_id ),
 			'edit'    => (string) get_edit_post_link( $product_id, 'raw' ),
 		);

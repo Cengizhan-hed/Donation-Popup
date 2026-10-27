@@ -111,6 +111,8 @@ class WDP_Fake_Order extends WC_Abstract_Order {
 	public $status = 'processing';
 	/** @var int|null Oluşturma zamanı (Unix); null = tarih yok. */
 	public $created_ts = null;
+	/** @var int|null Ödeme zamanı (Unix); null = ödeme tarihi yok (çevrimdışı yöntem). */
+	public $paid_ts = null;
 
 	public function __construct(int $id, array $items = array()) {
 		$this->id    = $id;
@@ -119,6 +121,10 @@ class WDP_Fake_Order extends WC_Abstract_Order {
 
 	public function get_date_created() {
 		return null === $this->created_ts ? null : (new DateTimeImmutable('@' . $this->created_ts));
+	}
+
+	public function get_date_paid() {
+		return null === $this->paid_ts ? null : (new DateTimeImmutable('@' . $this->paid_ts));
 	}
 
 	public function get_id(): int {

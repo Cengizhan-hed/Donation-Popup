@@ -83,14 +83,6 @@ class WDP_Utils {
 	}
 
 	/**
-	 * @param int $product_id Ürün.
-	 * @return mixed
-	 */
-	public static function recalculate_product_donation_total( $product_id ) {
-		return Campaign_Totals::recalculate_product_donation_total( $product_id );
-	}
-
-	/**
 	 * Hex renk (tek renk) ya da bozuk değerden geçerli bir hex arka plan.
 	 *
 	 * @param mixed  $value    Kayıtlı veya gönderilmiş değer.

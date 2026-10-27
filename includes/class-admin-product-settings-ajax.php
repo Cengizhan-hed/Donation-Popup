@@ -1,6 +1,6 @@
 <?php
 /**
- * Ürün ilerleme toplamını yeniden hesaplayan AJAX ucu.
+ * Ürün ilerleme toplamının yeniden hesabını ÖNİZLEYEN (yazmayan) AJAX ucu.
  *
  * @package WooCommerce\Donation_Popup
  */
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WDP_Admin_Product_Settings_Ajax {
 	/**
-	 * Recalculate a product's progress total from all paid orders.
+	 * Preview a product's progress total from paid orders (read-only).
 	 *
 	 * @return void
 	 */
@@ -36,23 +36,23 @@ class WDP_Admin_Product_Settings_Ajax {
 				wc_set_time_limit( 0 );
 			}
 
-			$result     = WDP_Utils::recalculate_product_donation_total( $product_id );
-			$shown      = (float) $result['total'] + WDP_Utils::get_manual_total( $product_id );
+			// 12.0.0: bu uç YAZMAZ. Yalnız önizleme verir; toplamı değiştirmek Kampanyalar ekranında onayla yapılır.
+			$preview    = \DonationPanel\Domain\Campaign_Formula::preview( $product_id );
+			$shown      = (float) \DonationPanel\Domain\Campaign_Totals::get_total_donation_amount( $product_id );
 			$total_text = WDP_Utils::format_price_plain( $shown );
 
 			WDP_Admin_Request::json_success(
 				sprintf(
-				/* translators: 1: product name, 2: formatted total, 3: order count */
-					__( 'Recalculated the total for "%1$s": %2$s (%3$d orders).', 'woo-donation-popup' ),
+				/* translators: 1: product name, 2: calculated total, 3: order count */
+					__( 'Preview for "%1$s": the orders add up to %2$s (%3$d orders). Nothing was changed. To apply it, open Donation Panel > Campaigns.', 'woo-donation-popup' ),
 					wp_strip_all_tags( $product->get_name() ),
-					$total_text,
-					(int) $result['orders']
+					WDP_Utils::format_price_plain( (float) $preview['computed'] ),
+					(int) $preview['orders']
 				),
 				array(
 					'total'      => $shown,
 					'total_text' => $total_text,
-					'donors'     => (int) $result['donors'],
-					'orders'     => (int) $result['orders'],
+					'orders'     => (int) $preview['orders'],
 				)
 			);
 		} catch ( \Throwable $e ) {

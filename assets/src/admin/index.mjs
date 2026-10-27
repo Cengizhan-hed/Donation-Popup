@@ -6,6 +6,7 @@ import './admin.css';
 import { qsa, valueOf, whenMatches } from './dom.mjs';
 import { createApi } from './api.mjs';
 import { initWizard } from './wizard.mjs';
+import { initCampaigns } from './campaigns.mjs';
 
 const cfg = window.donationPanelAdmin || { rest: '', nonce: '', i18n: {} };
 const t = (key, fallback) => (cfg.i18n && cfg.i18n[key]) || fallback;
@@ -234,5 +235,6 @@ if (root) {
   } else {
     initFields(root);
     initTools(root);
+    initCampaigns(root, api, notify, t);
   }
 }

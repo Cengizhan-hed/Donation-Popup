@@ -2010,21 +2010,6 @@
     },
     {
       "function": "__",
-      "msgid": "\"%1$s\" toplamı yeniden hesaplandı: %2$s (%3$d sipariş).",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-settings-ajax.php",
-      "line": 45,
-      "arg_count": 2,
-      "placeholders": [
-        "%1$s",
-        "%2$s",
-        "%3$d"
-      ]
-    },
-    {
-      "function": "__",
       "msgid": "Toplam hesaplanamadı. Ayrıntı hata günlüğünde.",
       "plural": null,
       "context": null,

@@ -41,45 +41,38 @@ export function runRecalcDryRun(env, deps) {
   return res;
 }
 
-/** Makine etiketi -> Türkçe rapor etiketi. */
-const REASON_TR = { status: 'durum', period: 'dönem', refund: 'iade', manual: 'elle giriş', currency: 'para birimi', no_data: 'veri yok' };
-
-/** @param {string|undefined} r */
-function reasonLabel(r) {
-  return r ? REASON_TR[r] || r : '-';
-}
-
 /** @param {number|null|undefined} n */
 function num(n) {
   return n === null || n === undefined ? '-' : String(n);
 }
 
+/** @param {number|null|undefined} ts Unix zaman damgası. */
+function day(ts) {
+  return ts ? new Date(Number(ts) * 1000).toISOString().slice(0, 10) : '-';
+}
+
 /**
  * @param {{ rows: any[], base_currency?: string, differs?: number, unconverted?: number }} res
- * @param {{ detail?: Array<number|string> }} [opts] detail: neden ayrıştırma bloğu istenen ürün kimlikleri.
+ * @param {{ detail?: Array<number|string> }} [opts] detail: ayrıntı satırı istenen ürün kimlikleri.
  */
 export function toMarkdown(res, opts = {}) {
   const lines = [
     `Para birimi (ana): ${res.base_currency || '-'} | ürün: ${res.rows.length} | farklı: ${res.differs} | dönüştürülemeyen satır: ${res.unconverted}`,
     '',
-    '| Ürün | Başlık | Saklanan | Yeni hesaplanan | Fark | Önerilen elle eklenen | Göç sonrası gösterilecek | Olası neden | Eski/yeni bağışçı | Sipariş | Uyarı |',
-    '|---|---|---|---|---|---|---|---|---|---|---|',
+    '| Ürün | Başlık | Saklanan | Hesaplanan | Fark | Devreden | Başlangıç | Sipariş | Uyarı |',
+    '|---|---|---|---|---|---|---|---|---|',
   ];
   for (const r of res.rows) {
     const title = String(r.title || '').replace(/\|/g, '/');
-    const warn = [r.unconverted > 0 ? `kur bulunamadı (${r.unconverted})` : '', r.display_increases ? 'gösterilen toplam artar' : '']
-      .filter(Boolean)
-      .join('; ');
-    lines.push(
-      `| ${r.product_id} | ${title} | ${num(r.old_total)} | ${r.new_total} | ${num(r.diff)} | ${num(r.suggested_manual)} | ${num(r.display_after)} | ${reasonLabel(r.reason)} | ${r.old_donors ?? '-'} / ${r.new_donors} | ${r.orders} | ${warn} |`
-    );
+    const warn = r.unconverted > 0 ? `kur bulunamadı (${r.unconverted})` : '';
+    lines.push(`| ${r.product_id} | ${title} | ${num(r.stored)} | ${r.computed} | ${num(r.diff)} | ${num(r.carried)} | ${day(r.start)} | ${r.orders} | ${warn} |`);
   }
   const detail = new Set((opts.detail || []).map((x) => Number(x)).filter(Boolean));
   if (detail.size) {
-    lines.push('', 'Neden ayrıştırma ayrıntısı (yalnız sayı):');
+    lines.push('', 'Ayrıntı (yalnız sayı):');
     for (const r of res.rows) {
       if (!detail.has(Number(r.product_id))) continue;
-      lines.push(`- ürün ${r.product_id}: ${JSON.stringify(r.breakdown ?? {})}`);
+      lines.push(`- ürün ${r.product_id}: ${JSON.stringify({ devreden: r.carried, baslangic: day(r.start), siparis: r.orders, fark: r.diff })}`);
     }
   }
   return lines.join('\n');
