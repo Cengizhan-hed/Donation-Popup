@@ -169,21 +169,13 @@ class Assets {
 		if ( $added ) {
 			return;
 		}
-		$added    = true;
-		$settings = new Settings();
-		if ( 'custom' !== (string) $settings->get( 'design.colors', 'theme' ) ) {
-			return;
-		}
-		$declarations = '';
-		foreach ( array(
-			'design.brand'  => '--dp-color-primary',
-			'design.accent' => '--dp-accent',
-		) as $path => $variable ) {
-			$hex = trim( (string) $settings->get( $path, '' ) );
-			if ( 1 === preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', $hex ) ) {
-				$declarations .= $variable . ':' . $hex . ';';
-			}
-		}
+		$added        = true;
+		$settings     = new Settings();
+		$custom       = 'custom' === (string) $settings->get( 'design.colors', 'theme' );
+		$declarations = Theme_Colors::declarations(
+			$custom ? (string) $settings->get( 'design.brand', '' ) : '',
+			$custom ? (string) $settings->get( 'design.accent', '' ) : ''
+		);
 		if ( '' !== $declarations ) {
 			wp_add_inline_style( $handle, ':root .dp{' . $declarations . '}' );
 		}
