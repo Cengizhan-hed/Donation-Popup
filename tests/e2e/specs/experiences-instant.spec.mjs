@@ -190,7 +190,7 @@ test.describe('mobil form davranışı', () => {
     await expect(page.locator('[data-dp-submit-label]')).not.toHaveText(await form.getAttribute('data-label-choose'));
   });
 
-  test('klavye: alan odaktayken sabit alt bölüm gizlenir, odak kalkınca döner; alan görünür alanda', async ({ page }) => {
+  test('klavye: alan odaktayken alt bölüm akışa girer (görünür, tıklanabilir), odak kalkınca sabit alta döner; alan görünür alanda', async ({ page }) => {
     await page.goto(url('popup'));
     await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 20000 });
     const coarse = await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches);
@@ -213,7 +213,12 @@ test.describe('mobil form davranışı', () => {
     }, null, { polling: 'raf' });
     await custom.focus();
     await expect(page.locator('[data-dp-exp]')).toHaveAttribute('data-dp-kb', '1');
-    await expect(bar).toBeHidden();
+    // Akışa girer: gizlenmez, sabit değil (static) ve gönder düğmesi tıklanabilir (erişilebilir).
+    await expect(bar).toBeVisible();
+    expect(await bar.evaluate((el) => getComputedStyle(el).position)).toBe('static');
+    await bar.locator('[data-dp-submit]').scrollIntoViewIfNeeded();
+    await expect(bar.locator('[data-dp-submit]')).toBeVisible();
+    await custom.focus();
     const inView = await custom.evaluate((el) => {
       const r = el.getBoundingClientRect();
       const vv = window.visualViewport;
