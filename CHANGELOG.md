@@ -3,6 +3,24 @@
 All notable changes to Donation Panel for WooCommerce are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [12.1.1]
+
+### Security / caching
+- The plugin's page HTML is identical for every visitor, so page caches can store it safely.
+- Side cart content and the account icon state are read in the browser through REST.
+- No request is made when there is no WooCommerce cart cookie.
+- Campaign display counts only the confirmed total.
+
+### Changed
+- A page with no donation surface (form or shortcode) no longer shows the floating side cart button to visitors who have a cart cookie.
+
+### Test infrastructure (not shipped)
+- Adjustments for the disabled-button, ARIA tab and Gift Aid step tests; remote measurement scripts.
+
+### Rollback plan
+1. Reinstall the 12.1.0 plugin zip over the folder. Settings and orders are kept.
+2. 12.1.1 writes no new option or meta keys, so there is nothing to clean up.
+
 ## [12.1.0]
 
 ### Added

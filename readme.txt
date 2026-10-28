@@ -5,7 +5,7 @@ Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 12.1.0
+Stable tag: 12.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,9 @@ Write it on your site; the form only shows a link to the page you choose.
 
 == Upgrade Notice ==
 
+= 12.1.1 =
+Caching fix. The page HTML is now identical for every visitor, so page caches can store it safely; cart, account state and campaign totals load in the browser. Nothing new is written to the database; rolling back to 12.1.0 is safe. Back up before updating.
+
 = 12.1.0 =
 Performance and security release. Nothing loads on pages without a donation surface; direct donations, floating side cart button, theme colors. Settings and orders are kept. Back up before updating.
 
@@ -53,6 +56,11 @@ Performance and security release. Nothing loads on pages without a donation surf
 Major release. One experience, one menu: the previous form engine and settings screens were removed. Settings, orders, shortcodes and blocks are kept. Back up before updating.
 
 == Changelog ==
+
+= 12.1.1 =
+* Security/caching: the page HTML is the same for all visitors; side cart content and account icon state are read in the browser through REST; no request when there is no cart cookie; campaign display counts only the confirmed total.
+* Changed: a page with no donation surface (form or shortcode) no longer shows the floating side cart button to visitors with a cart cookie.
+* Rollback: 12.1.1 writes no new option or meta keys; returning to 12.1.0 with the zip is safe.
 
 = 12.1.0 =
 * Added: direct donation (no cart), instant open, theme color palette support, floating side cart button, trusted proxy setting, security hardening.
