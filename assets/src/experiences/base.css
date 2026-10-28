@@ -166,13 +166,17 @@
 .dp-iconbtn:active { transform: scale(.9); }
 .dp-ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 /* ---------- Katman (overlay) ve yüzeyler: popup / yan panel / alt panel ---------- */
-.dp-overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay); display: grid; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; transition: opacity var(--dp-dur-base) var(--dp-ease-out), visibility 0s linear var(--dp-dur-base); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.dp-overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay); display: grid; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 0; border: 0; color: inherit; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; overflow: hidden; transition: opacity var(--dp-dur-base) var(--dp-ease-out), visibility 0s linear var(--dp-dur-base); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+/* <dialog> üst katmanda (başka eklentinin yüzen öğeleri üste çıkamaz); kapalıyken hiç yerleşmez. */
+.dp-overlay:not([open]) { display: none; }
+.dp-overlay::backdrop { background: transparent; }
 .dp-overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
 .dp-overlay--modal { place-items: center; padding: var(--dp-space-6); }
 .dp-overlay--panel { justify-items: end; }
 .dp-overlay--sheet { align-items: end; }
 
 .dp-surface { position: relative; display: flex; flex-direction: column; background: var(--dp-color-surface); color: var(--dp-color-text); max-block-size: 100%; overflow: hidden; box-shadow: var(--dp-shadow-3); outline: none; }
+.dp-exp[data-dp-kb] .dp-actionbar { display: none; } /* ekran klavyesi açıkken sabit alt bölüm gizlenir; klavye kapanınca döner */
 .dp-surface__handle { display: none; inline-size: 100%; padding-block: 10px 4px; cursor: grab; touch-action: none; flex: none; }
 .dp-surface__handle::before { content: ""; display: block; inline-size: 44px; block-size: 5px; border-radius: 99px; margin-inline: auto; background: var(--dp-color-border-strong); }
 .dp-surface__head { display: flex; align-items: flex-start; gap: var(--dp-space-3); padding: var(--dp-space-5) var(--dp-gutter) var(--dp-space-3); flex: none; }

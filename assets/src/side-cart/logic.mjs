@@ -77,3 +77,14 @@ export function toCount(value) {
   const n = Number.parseInt(String(value), 10);
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
+
+/**
+ * WooCommerce sepet çerezinden kalem sayısı (`woocommerce_items_in_cart`: 0/1 ya da sayı). Çerez yoksa 0.
+ *
+ * @param {string} cookieString `document.cookie` değeri.
+ * @return {number} 0 ya da büyük.
+ */
+export function itemsInCart(cookieString) {
+  const match = /(?:^|;\s*)woocommerce_items_in_cart=([^;]*)/.exec(String(cookieString || ''));
+  return match ? toCount(decodeURIComponent(match[1])) : 0;
+}

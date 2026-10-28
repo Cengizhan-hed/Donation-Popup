@@ -8,7 +8,7 @@ import '../campaign/base.css';
 import '../ui2-shared/tokens.css';
 import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 import './side-cart.css';
-import { nextFocusIndex, nextQuantity, readNonce, shouldDismissOnDrag, toCount } from './logic.mjs';
+import { itemsInCart, nextFocusIndex, nextQuantity, readNonce, shouldDismissOnDrag, toCount } from './logic.mjs';
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -45,12 +45,47 @@ function mount(root) {
   const visibleFocusables = () =>
     Array.from(surface.querySelectorAll(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
 
+  const fab = root.querySelector('[data-dp-sc-fab]');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /**
+   * Yüzen düğme: yalnız sepette bağış varken görünür (boşken gizli, istek yok); animasyonla belirir.
+   *
+   * @param {boolean} visible Görünsün mü.
+   */
+  const showFab = (visible) => {
+    if (!fab) {
+      return;
+    }
+    if (visible && fab.hidden) {
+      fab.hidden = false;
+      if (!reduced.matches) {
+        fab.classList.add('is-entering');
+        window.setTimeout(() => fab.classList.remove('is-entering'), 600);
+      }
+    } else if (!visible) {
+      fab.hidden = true;
+    }
+  };
+
+  /** "Başka bağış ekle": düğme kısa süre vurgulanır. */
+  const pulseFab = () => {
+    if (!fab || fab.hidden || reduced.matches) {
+      return;
+    }
+    fab.classList.remove('is-pulse');
+    void fab.offsetWidth;
+    fab.classList.add('is-pulse');
+    window.setTimeout(() => fab.classList.remove('is-pulse'), 1400);
+  };
+
   const setCount = (count) => {
     const n = toCount(count);
     document.querySelectorAll('[data-dp-sc-count]').forEach((badge) => {
       badge.textContent = String(n);
       badge.hidden = n === 0;
     });
+    showFab(n > 0);
   };
 
   const showError = () => {
@@ -223,18 +258,44 @@ function mount(root) {
     }
   }
 
+  let pushed = false;
+  let closeTimer = 0;
+  const onPop = () => {
+    if (opened && pushed && !(window.history.state && window.history.state.dpScDrawer)) {
+      pushed = false;
+      close();
+    }
+  };
+
   function open(opener) {
     if (opened) {
       return;
     }
+    window.clearTimeout(closeTimer);
     opened = true;
     // WebKit düğmeye tıklayınca odak vermez: odak dönüşü için tıklanan öğe açıkça saklanır.
     lastFocus = opener || document.activeElement;
+    // <dialog> üst katmanı: başka eklentilerin yüzen öğeleri çekmecenin üstüne çıkamaz.
+    if (typeof overlay.showModal === 'function') {
+      if (!overlay.open) {
+        overlay.showModal();
+      }
+    } else {
+      overlay.setAttribute('open', '');
+    }
+    void overlay.offsetWidth;
     overlay.classList.add('is-open');
     lockPage('side-cart', root, 'dp-sc-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
     const first = visibleFocusables()[0];
     (first || surface).focus();
+    window.addEventListener('popstate', onPop);
+    try {
+      window.history.pushState({ ...(window.history.state || {}), dpScDrawer: true }, '');
+      pushed = true;
+    } catch {
+      pushed = false;
+    }
     refresh();
   }
 
@@ -247,11 +308,33 @@ function mount(root) {
     unlockPage('side-cart');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'false'));
     surface.style.removeProperty('--dp-sc-drag');
-    if (lastFocus && typeof lastFocus.focus === 'function' && lastFocus.isConnected) {
+    window.removeEventListener('popstate', onPop);
+    if (pushed) {
+      pushed = false;
+      if (window.history.state && window.history.state.dpScDrawer) {
+        window.history.back();
+      }
+    }
+    closeTimer = window.setTimeout(
+      () => {
+        if (overlay.open) {
+          overlay.close();
+        }
+        overlay.removeAttribute('open');
+      },
+      reduced.matches ? 0 : 260
+    );
+    if (lastFocus && typeof lastFocus.focus === 'function' && lastFocus.isConnected && !lastFocus.hidden) {
       lastFocus.focus();
     }
     lastFocus = null;
   }
+
+  // Esc: yerel kapatma yerine kendi akışımız (animasyon, odak dönüşü, geri tuşu).
+  overlay.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    close();
+  });
 
   document.addEventListener('keydown', (event) => {
     if (!opened || !isTopmost('side-cart')) {
@@ -286,7 +369,11 @@ function mount(root) {
       return;
     }
     if (el === overlay || el.closest('[data-dp-sc-close]')) {
+      const another = Boolean(el.closest('[data-dp-sc-close]')) && Boolean(el.closest('.dp-sc__bar'));
       close();
+      if (another) {
+        pulseFab();
+      }
       return;
     }
     const suggest = el.closest('[data-dp-sc-suggest]');
@@ -363,7 +450,10 @@ function mount(root) {
 
   // Sayfa önbelleğe alınmış olabilir: sayaç gösterge varsa taze değeri al. Store API isteği ilk boyamayı/LCP'yi
   // geciktirmesin diye sayfa yüklendikten sonra, tarayıcı boştayken yapılır.
-  if (triggers().length) {
+  // Sepet boşken (Woo sepet çerezi yok/0) hiçbir istek yapılmaz; yüzen düğme gizli kalır.
+  const inCart = itemsInCart(document.cookie);
+  showFab(inCart > 0);
+  if (triggers().length && inCart > 0) {
     whenIdle(refresh);
   }
 }

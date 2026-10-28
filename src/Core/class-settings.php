@@ -92,6 +92,13 @@ class Settings {
 					'default' => false,
 				),
 			),
+			// Yan sepet: sağ altta yüzen düğme (tema kendi sepet simgesini gösteriyorsa kapatılabilir).
+			'side_cart'  => array(
+				'floating' => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+			),
 			'impact'     => array(
 				'map' => array(
 					'type'    => 'text',

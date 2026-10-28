@@ -162,8 +162,16 @@ export function createForm(root, hooks = {}) {
     }
   };
 
+  // Tutar seçilmemişken (tutar adımında) ana düğme pasif ve "Tutar seçin"; "Toplam 0" gösterilmez.
+  const needsAmount = !derived && Boolean(form.querySelector('[data-dp-amounts]'));
+  const amountPending = () => {
+    const section = sections[state.step];
+    return needsAmount && Boolean(section && section.querySelector('[data-dp-amounts]')) && !(state.amount > 0);
+  };
+
   const paintSteps = () => {
     const last = state.step >= lastStep;
+    const pending = amountPending();
     const multi = sections.length > 1;
     sections.forEach((section, index) => {
       section.hidden = index !== state.step;
@@ -187,10 +195,13 @@ export function createForm(root, hooks = {}) {
       backButton.hidden = state.step === 0;
     }
     if (totalRow) {
-      totalRow.hidden = last;
+      totalRow.hidden = last || pending;
     }
     if (submitLabel) {
-      const label = last ? (form.dataset.labelSubmit || '').replace('%s', money(totals(state.fee).total)) : form.dataset.labelNext;
+      let label = last ? (form.dataset.labelSubmit || '').replace('%s', money(totals(state.fee).total)) : form.dataset.labelNext;
+      if (pending && form.dataset.labelChoose) {
+        label = form.dataset.labelChoose;
+      }
       submitLabel.textContent = label || submitLabel.textContent;
     }
     if (submitLock) {
@@ -287,8 +298,10 @@ export function createForm(root, hooks = {}) {
     paintErrors();
     if (submit) {
       const busy = state.status === 'submitting';
+      const pending = amountPending();
       submit.classList.toggle('is-loading', busy);
-      submit.setAttribute('aria-disabled', busy ? 'true' : 'false');
+      submit.classList.toggle('is-pending', pending);
+      submit.setAttribute('aria-disabled', busy || pending ? 'true' : 'false');
     }
   };
 
@@ -497,9 +510,9 @@ export function createForm(root, hooks = {}) {
     }
   };
 
+  // Adım değişince odak başlığa gider (alana değil): mobilde klavye kendiliğinden açılmaz, ekran okuyucu yeni adımı duyar.
   const focusStep = () => {
-    const section = sections[state.step];
-    const target = section && section.querySelector('[role="radio"][tabindex="0"], input:not([type="hidden"]):not(:disabled), textarea:not(:disabled), [data-dp-qty]:not(:disabled)');
+    const target = titleNode;
     const body = form.querySelector('.dp-surface__body');
     if (body) {
       body.scrollTop = 0;
