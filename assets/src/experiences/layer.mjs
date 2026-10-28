@@ -322,7 +322,7 @@ export function createLayer(root, hooks = {}) {
       build();
     }
   };
-  ['pointerenter', 'touchstart', 'focus'].forEach((name) => {
+  ['pointerenter', 'pointerdown', 'touchstart', 'focus'].forEach((name) => {
     trigger.addEventListener(name, warm, { passive: true, once: true });
   });
   const onTrigger = () => open();
