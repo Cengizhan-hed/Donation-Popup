@@ -32,6 +32,7 @@ class Account_Controller extends Rest_Controller {
 	 * @return void
 	 */
 	public function register_routes() {
+		$this->strip_cors_for( '/' . self::REST_NAMESPACE . '/account/session' );
 		$public = array( $this, 'permission_public' );
 		$member = array( $this, 'permission_member' );
 		$routes = array(
@@ -134,7 +135,15 @@ class Account_Controller extends Rest_Controller {
 	 *
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function session() {
+	public function session( $request = null ) {
+		if ( is_object( $request ) ) {
+			// Çerez kullanıcısı için nonce dönüyor: başka kökenden okunamasın (Origin / Sec-Fetch-Site).
+			$origin = $this->require_same_origin( $request );
+			if ( is_wp_error( $origin ) ) {
+				return $origin;
+			}
+		}
+		$this->remember_client( $request );
 		$limited = $this->throttle( 'account_session', 120 );
 		if ( is_wp_error( $limited ) ) {
 			return $limited;

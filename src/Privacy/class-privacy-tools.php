@@ -184,7 +184,7 @@ final class Privacy_Tools {
 		$html .= '<h2>' . esc_html__( 'Donor account', 'woo-donation-popup' ) . '</h2>';
 		$html .= '<p>' . esc_html__( 'If the donor account is enabled and you ask to link earlier guest donations, a short-lived confirmation request is stored with your user profile and is deleted as soon as it is used or expires.', 'woo-donation-popup' ) . '</p>';
 		$html .= '<h2>' . esc_html__( 'Cookies and tracking', 'woo-donation-popup' ) . '</h2>';
-		$html .= '<p>' . esc_html__( 'The plugin does not set its own cookies and does not use tracking or advertising services. Cart and checkout cookies are set by WooCommerce. Request limits use a one-way hash of the visitor address and are kept for a few minutes.', 'woo-donation-popup' ) . '</p>';
+		$html .= '<p>' . esc_html__( 'The plugin does not set its own cookies and does not use tracking or advertising services. Cart and checkout cookies are set by WooCommerce. Request limits use a salted one-way hash of the visitor address (and, where the address is not reliable, a random browser token kept in the browser\'s local storage); these counters are kept for at most one hour. When you start a donation without the cart, the unpaid order also stores such hashes so that the number of unpaid orders per visitor can be limited; they are removed from the order as soon as it is paid, put on hold or cancelled. A salted hash of the random browser token stays on the order to protect against duplicate submissions and is removed by the personal data eraser.', 'woo-donation-popup' ) . '</p>';
 		return $html;
 	}
 

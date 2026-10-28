@@ -729,8 +729,31 @@ async function readJson(response) {
 }
 
 /**
+ * Güvenli rastgele kimlik (yalnız [0-9a-f]): `crypto.randomUUID`, yoksa `crypto.getRandomValues`; ikisi de yoksa (çok eski
+ * tarayıcı) Math.random yedeği.
+ *
+ * @param {number} bytes Bayt sayısı (yedek yolda yaklaşık).
+ * @return {string} Onaltılık metin (2 x bayt karakter).
+ */
+function randomId(bytes) {
+  const cryptoApi = window.crypto;
+  if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+    return cryptoApi.randomUUID().replace(/-/g, '').slice(0, bytes * 2);
+  }
+  const values = new Uint8Array(bytes);
+  if (cryptoApi && typeof cryptoApi.getRandomValues === 'function') {
+    cryptoApi.getRandomValues(values);
+  } else {
+    for (let i = 0; i < bytes; i += 1) {
+      values[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  return Array.from(values, (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Tarayıcıya özel rastgele belirteç (çerez değil; yalnız doğrudan bağışta gönderilir): ortak IP'deki (mobil operatör, vekil)
- * bağışçıların sunucu tarafı kotasını ayırır. Saklama yoksa sayfa oturumu kullanılır.
+ * bağışçıların sunucu tarafı kotasını ayırır ve idempotency anahtarının sahibini belirler. Saklama yoksa sayfa oturumu kullanılır.
  *
  * @return {string} Belirteç.
  */
@@ -738,7 +761,7 @@ function clientToken() {
   try {
     let token = window.localStorage.getItem('donation_panel_client');
     if (!token) {
-      token = Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
+      token = randomId(16);
       window.localStorage.setItem('donation_panel_client', token);
     }
     return token;
@@ -748,7 +771,7 @@ function clientToken() {
 }
 
 /** Sayfa oturumu: doğrudan bağış anahtarının sabit parçası (sayfa yenilenince değişir). */
-const pageSession = Math.random().toString(36).slice(2, 10);
+const pageSession = randomId(8);
 
 /**
  * Kısa, kararlı içerik özeti (djb2; güvenlik amaçlı değil, yalnız aynı içeriği aynı anahtara bağlar).

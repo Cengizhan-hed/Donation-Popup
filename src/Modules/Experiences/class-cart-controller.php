@@ -13,6 +13,7 @@
 
 namespace DonationPanel\Modules\Experiences;
 
+use DonationPanel\Frontend\Front_Gate;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest_Controller;
 use DonationPanel\WooCommerce\Cart;
@@ -75,6 +76,7 @@ class Cart_Controller extends Rest_Controller {
 	 * @return void
 	 */
 	public function register_routes() {
+		$this->strip_cors_for( '/' . self::REST_NAMESPACE . '/nonce' );
 		register_rest_route(
 			self::REST_NAMESPACE,
 			'/cart/add',
@@ -102,6 +104,10 @@ class Cart_Controller extends Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function add( $request ) {
+		if ( Front_Gate::disabled() ) {
+			return $this->error( 'donation_panel_disabled', 'Donations are temporarily unavailable.', 503 );
+		}
+		$this->remember_client( $request );
 		$throttled = $this->throttle( 'experiences_cart_add', 20 );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
@@ -147,7 +153,15 @@ class Cart_Controller extends Rest_Controller {
 	 *
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function nonce() {
+	public function nonce( $request = null ) {
+		if ( is_object( $request ) ) {
+			// Çerez kullanıcısı için nonce dönüyor: başka kökenden okunamasın (Origin / Sec-Fetch-Site).
+			$origin = $this->require_same_origin( $request );
+			if ( is_wp_error( $origin ) ) {
+				return $origin;
+			}
+		}
+		$this->remember_client( $request );
 		$throttled = $this->throttle( 'experiences_nonce', 30 );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;

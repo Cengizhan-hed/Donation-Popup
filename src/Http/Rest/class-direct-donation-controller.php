@@ -12,6 +12,7 @@
 
 namespace DonationPanel\Http\Rest;
 
+use DonationPanel\Frontend\Front_Gate;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest_Controller;
 use DonationPanel\Modules\Experiences\Cart_Controller;
@@ -68,6 +69,10 @@ class Direct_Donation_Controller extends Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function create( $request ) {
+		if ( Front_Gate::disabled() ) {
+			return $this->error( 'donation_panel_disabled', 'Donations are temporarily unavailable.', 503 );
+		}
+		$this->remember_client( $request );
 		$throttled = $this->throttle( 'direct', 30 );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
