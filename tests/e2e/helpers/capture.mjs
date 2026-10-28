@@ -53,7 +53,7 @@ import {
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks, resolveDonationFillAmount } from './donation-flow.mjs';
-import { advanceToDetails, advanceToFinalStep, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
+import { waitForVisibleCandidate, advanceToDetails, advanceToFinalStep, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
 import {
   probeSimilarDonations,
@@ -3331,18 +3331,12 @@ export async function captureAll({
         : page.locator('[data-dp-exp] [data-dp-open]');
       const total = await anyKind.count();
       if (total > 0) {
-        // `.first()` gizli bir öğeye denk gelebilir; görünür ilk adayı seç.
-        let pickedIdx = -1;
-        for (let i = 0; i < total; i += 1) {
-          if (await anyKind.nth(i).isVisible()) {
-            pickedIdx = i;
-            break;
-          }
+        // Sayfa/oluşturucu hazır olana dek ilk görünür adayı bekle (anlık kontrol yarış yaratır).
+        const picked = await waitForVisibleCandidate(anyKind, CHECK_MS);
+        if (!picked.locator) {
+          return { ok: false, detail: `trigger-gorunmez ${picked.detail} (productId=${productId || 0})` };
         }
-        if (pickedIdx < 0) {
-          return { ok: false, detail: `trigger-gorunmez adaylar=${total} hepsi gizli (productId=${productId || 0})` };
-        }
-        trigger = anyKind.nth(pickedIdx);
+        trigger = picked.locator;
       }
     }
     if ((await trigger.count()) === 0) {

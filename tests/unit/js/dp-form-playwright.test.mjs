@@ -13,6 +13,7 @@ import {
   fillShareholders,
   formOf,
   setChecked,
+  waitForVisibleCandidate,
 } from '../../e2e/helpers/dp-form.mjs';
 import { classifyVisiblePluginEntry, collectVisiblePluginEntry } from '../../e2e/helpers/product-page-ui.mjs';
 import { collectPluginRuntime, collectShellDomState } from '../../e2e/helpers/flow-diag.mjs';
@@ -190,6 +191,58 @@ describe('advanceToDetails', () => {
       });
       await advanceToDetails(form, 1000);
       assert.equal(await page.locator('[data-dp-step="details"]').isVisible(), true);
+    });
+  });
+
+  // Gift Aid / vergi indirimi: isteğe bağlı adım araya girer (kutu işaretlenmeden "Devam").
+  const TAX_FLOW = (order) => `
+<form data-dp-form novalidate>
+  ${order === 'tax-first'
+    ? '<section data-dp-step="amount"><input name="amount" value="50"></section><section data-dp-step="tax_relief" hidden><input type="checkbox" name="donation_tax_relief"></section><section data-dp-step="details" hidden><input name="donation_full_name"></section>'
+    : '<section data-dp-step="amount"><input name="amount" value="50"></section><section data-dp-step="details" hidden><input name="donation_full_name"></section><section data-dp-step="tax_relief" hidden><input type="checkbox" name="donation_tax_relief"></section>'}
+  <button type="submit" data-dp-submit>Continue</button>
+</form>
+<script>
+  const f = document.querySelector('[data-dp-form]');
+  f.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const secs = Array.from(f.querySelectorAll('[data-dp-step]'));
+    const i = secs.findIndex((s) => !s.hidden);
+    if (i < secs.length - 1) { secs[i].hidden = true; secs[i + 1].hidden = false; } else { document.title = 'submitted'; }
+  });
+</script>`;
+
+  it('vergi indirimi adımı bilgiden önce gelirse kutu işaretlenmeden geçilir', async () => {
+    await withPage(TAX_FLOW('tax-first'), async (page) => {
+      await advanceToDetails(formOf(page.locator('body')), 3000);
+      assert.equal(await page.locator('[data-dp-step="details"]').isVisible(), true);
+      assert.equal(await page.locator('input[name="donation_tax_relief"]').isChecked(), false);
+      assert.notEqual(await page.title(), 'submitted');
+    });
+  });
+
+  it('negatif: vergi adımı bilgiden sonra geliyorsa formu göndermez, açık hata verir', async () => {
+    await withPage(TAX_FLOW('tax-last'), async (page) => {
+      await page.evaluate(() => {
+        document.querySelector('[data-dp-step="amount"]').hidden = true;
+        document.querySelector('[data-dp-step="tax_relief"]').hidden = false;
+      });
+      await assert.rejects(advanceToDetails(formOf(page.locator('body')), 1500), /vergi indirimi adımı bilgi adımından sonra/);
+      assert.notEqual(await page.title(), 'submitted');
+    });
+  });
+});
+
+describe('waitForVisibleCandidate', () => {
+  it('sayfa geç hazır olsa da görünür adayı bekler; zaman aşımında nedeni yazar', async () => {
+    await withPage('<div id="w" style="display:none"><button data-dp-open>x</button></div><script>setTimeout(()=>{document.getElementById("w").style.display="block"},600)</script>', async (page) => {
+      const r = await waitForVisibleCandidate(page.locator('[data-dp-open]'), 3000);
+      assert.ok(r.locator);
+    });
+    await withPage('<div hidden id="w"><button data-dp-open>x</button></div>', async (page) => {
+      const r = await waitForVisibleCandidate(page.locator('[data-dp-open]'), 500);
+      assert.equal(r.locator, null);
+      assert.match(r.detail, /adaylar=1 hepsi gizli .*size=0x0 ata=div/);
     });
   });
 });
