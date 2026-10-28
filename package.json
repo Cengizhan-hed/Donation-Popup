@@ -60,6 +60,7 @@
     "e2e:zero-load": "node tests/e2e/run-zero-load.mjs",
     "measure:load": "node scripts/measure-load.mjs",
     "measure:lighthouse": "node scripts/measure-lighthouse.mjs",
+    "measure:seo-debug": "node scripts/measure-seo-debug.mjs",
     "e2e:accept": "node tests/e2e/run-accept.mjs",
     "e2e:stability": "node tests/e2e/run-stability.mjs",
     "e2e:repeat": "node tests/e2e/run-repeat.mjs",
