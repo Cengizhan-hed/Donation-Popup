@@ -355,6 +355,15 @@ export function measurePanelCtaWhenShort() {
  * @param {import('@playwright/test').Page} page
  */
 export async function assertPanelCtaPinnedWhenShort(page) {
+  // Klavye açıkken alt bölüm bilerek akışa girer; sabit-dip ölçümü klavye kapalı durumda yapılır.
+  await page.evaluate(() => {
+    const a = document.activeElement;
+    if (a && typeof a.blur === 'function' && a.matches('input, textarea, select')) a.blur();
+  });
+  await page.waitForFunction(() => {
+    const bar = document.querySelector('[data-dp-exp][data-dp-kind="side_panel"] .donation-panel-actionbar');
+    return !bar || bar.parentElement.tagName === 'FORM';
+  }, null, { timeout: 3000 });
   const r = await page.evaluate(measurePanelCtaWhenShort);
   if (r.skipped) return { skipped: true, reason: r.skipped };
   if (r.gapToPanelBottom > MAX_PANEL_CTA_BOTTOM_GAP) {

@@ -55,6 +55,8 @@ export function createLayer(root, hooks = {}) {
   let keyboardWasUp = false;
   let keyboardDismissedFlag = false;
   let barHome = null;
+  let barTimer = 0;
+  const BAR_RESTORE_MS = 400;
 
   const present = () => {
     root.dataset.dpPresented = presentedAs(kind, media.matches);
@@ -126,6 +128,15 @@ export function createLayer(root, hooks = {}) {
     }
   };
 
+  const restoreActionBar = () => {
+    const bar = surface && surface.querySelector('.donation-panel-actionbar');
+    if (bar && (bar.contains(document.activeElement) || bar.matches(':active'))) {
+      barTimer = window.setTimeout(restoreActionBar, BAR_RESTORE_MS);
+      return;
+    }
+    placeActionBar(false);
+  };
+
   const syncKeyboard = () => {
     if (!opened || !surface) {
       return;
@@ -147,7 +158,14 @@ export function createLayer(root, hooks = {}) {
     } else {
       root.removeAttribute('data-dp-kb');
     }
-    placeActionBar(hide);
+    window.clearTimeout(barTimer);
+    if (hide) {
+      placeActionBar(true);
+    } else if (barHome) {
+      // Alandan düğmeye dokunma (blur → pointerup → click) sırasında DOM taşınırsa tıklama kaybolur:
+      // eski yerine dönüş kısa gecikmeyle ve odak/basış alt bölümdeyken ertelenir.
+      barTimer = window.setTimeout(restoreActionBar, BAR_RESTORE_MS);
+    }
     if (field && kb > 0 && typeof active.scrollIntoView === 'function') {
       active.scrollIntoView({ block: 'center' });
     }
@@ -275,6 +293,7 @@ export function createLayer(root, hooks = {}) {
     overlay.classList.remove('is-open');
     surface.style.removeProperty('--dp-drag');
     root.removeAttribute('data-dp-kb');
+    window.clearTimeout(barTimer);
     placeActionBar(false);
     trigger.setAttribute('aria-expanded', 'false');
     unlockPage(ownerId);
