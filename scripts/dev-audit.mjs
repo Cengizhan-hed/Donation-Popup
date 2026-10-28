@@ -66,7 +66,7 @@ if (mode === 'dup') {
 } else if (mode === 'dead') {
   const stan = path.join(ROOT, 'vendor-dev/bin/phpstan');
   if (!fs.existsSync(stan) || !fs.existsSync(path.join(ROOT, 'vendor-dev/shipmonk'))) { console.log('dead:php atlandı (phpstan/shipmonk yok)'); process.exit(0); }
-  const r = spawnSync('php', [stan, 'analyse', '-c', 'phpstan.dead.neon', '--memory-limit=2G', '--error-format=json', '--no-progress'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024 });
+  const r = spawnSync('php', [stan, 'analyse', '-c', 'tools/phpstan.dead.neon', '--memory-limit=2G', '--error-format=json', '--no-progress'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 128 * 1024 * 1024 });
   let res;
   try { res = JSON.parse(r.stdout); } catch { console.error('dead:php çıktısı okunamadı: ' + String(r.stderr).slice(0, 300)); process.exit(1); }
   const items = [];

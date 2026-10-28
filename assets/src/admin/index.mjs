@@ -160,7 +160,7 @@ function initCopy(root) {
       const text = btn.getAttribute('data-dpa-copy') || '';
       try {
         await navigator.clipboard.writeText(text);
-      } catch (e) {
+      } catch {
         const area = document.createElement('textarea');
         area.value = text;
         document.body.appendChild(area);

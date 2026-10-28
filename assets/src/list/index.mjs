@@ -135,7 +135,7 @@ async function openForm(wrap, cta) {
         }
       });
       cache.set(id, host);
-    } catch (error) {
+    } catch {
       window.location.assign(cta.href);
       return;
     } finally {

@@ -51,7 +51,6 @@ phpunit.xml
 phpunit.xml.dist
 phpcs.xml.dist
 phpstan.neon
-phpstan.dead.neon
 psalm-taint.xml
 rector.php
 eslint.config.mjs

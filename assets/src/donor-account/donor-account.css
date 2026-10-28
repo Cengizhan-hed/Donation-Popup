@@ -23,8 +23,8 @@ html.donation-panel-ac-lock { overflow: hidden; }
 .donation-panel-ac__handle::before { content: ""; display: block; inline-size: 44px; block-size: 5px; margin-inline: auto; border-radius: 99px; background: var(--dpx-line-strong); }
 .donation-panel-ac__head { display: flex; align-items: center; gap: 12px; padding: 22px 20px 0; flex: none; }
 .donation-panel-ac .donation-panel-ac__title { margin: 0; font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
-:root .donation-panel .donation-panel-ac__close { margin-inline-start: auto; margin-inline-end: -8px; inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .donation-panel-ac__close:hover { background: var(--dpx-chip); }
+:root .donation-panel .donation-panel-ac__close { margin-inline-start: auto; margin-inline-end: -8px; inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .donation-panel-ac__body { display: flex; flex-direction: column; gap: 16px; padding: 6px 20px calc(24px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; }
 .donation-panel-ac__lead { margin: 0; font-size: .875rem; line-height: 1.5; color: var(--dpx-muted); }
 

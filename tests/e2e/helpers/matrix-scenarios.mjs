@@ -893,6 +893,7 @@ export async function runDeviceScenarios({
     });
 
     await runOne('native-cart-hidden', async () => {
+      let failure = null;
       try {
         for (const display of DISPLAY_MODES) {
           const set = matrixEval(wpDir, ['placement-display', display]);
@@ -925,10 +926,12 @@ export async function runDeviceScenarios({
           }
           await shot(page, shotDir, `native-cart-hidden-${display}`);
         }
-      } finally {
-        const restore = matrixEval(wpDir, ['placement-display', 'inline']);
-        if (!restore.ok) throw new Error(`görünüm geri alınamadı: ${restore.error || ''}`);
+      } catch (error) {
+        failure = error;
       }
+      const restore = matrixEval(wpDir, ['placement-display', 'inline']);
+      if (!restore.ok) throw new Error(`görünüm geri alınamadı: ${restore.error || ''}`);
+      if (failure) throw failure;
     });
 
     await runOne('related-cards', async () => {
@@ -1004,6 +1007,7 @@ export async function runDeviceScenarios({
     await runOne('product-entry-button', async () => {
       const set = matrixEval(wpDir, ['product-content', 'custom', 'button_panel']);
       if (!set.ok) throw new Error(`kısa kod yazılamadı: ${set.error || ''}`);
+      let failure = null;
       try {
         await gotoPath(page, baseUrl, productPath);
         const ui = await entryCounts(page);
@@ -1023,10 +1027,12 @@ export async function runDeviceScenarios({
           throw new Error(`kabuk panel değil (${kind})`);
         }
         await shot(page, shotDir, 'product-entry-button');
-      } finally {
-        const clr = matrixEval(wpDir, ['product-content', 'custom', 'clear']);
-        if (!clr.ok) throw new Error(`kısa kod geri alınamadı: ${clr.error || ''}`);
+      } catch (error) {
+        failure = error;
       }
+      const clr = matrixEval(wpDir, ['product-content', 'custom', 'clear']);
+      if (!clr.ok) throw new Error(`kısa kod geri alınamadı: ${clr.error || ''}`);
+      if (failure) throw failure;
     });
 
     await runOne('appearance', async () => {
@@ -1064,6 +1070,7 @@ export async function runDeviceScenarios({
       if (missing.length) {
         throw new Error(`matris ürün eksik: ${missing.join(',')}`);
       }
+      let failure = null;
       try {
         for (const mode of modes) {
           const set = matrixEval(wpDir, ['placement-display', mode.display]);
@@ -1077,10 +1084,12 @@ export async function runDeviceScenarios({
             await shot(page, shotDir, `errors-${type}-${mode.id}`);
           }
         }
-      } finally {
-        const restore = matrixEval(wpDir, ['placement-display', 'inline']);
-        if (!restore.ok) throw new Error(`görünüm geri alınamadı: ${restore.error || ''}`);
+      } catch (error) {
+        failure = error;
       }
+      const restore = matrixEval(wpDir, ['placement-display', 'inline']);
+      if (!restore.ok) throw new Error(`görünüm geri alınamadı: ${restore.error || ''}`);
+      if (failure) throw failure;
     });
 
     await runOne('console', async () => {

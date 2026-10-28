@@ -608,11 +608,7 @@ ${EVAL_STATIC_OUTBOUND}
       assert.equal(blob.includes('FAKE_SNIPPET'), false);
       assert.equal('code' in sn27, false);
     } finally {
-      try {
-        fs.unlinkSync(tmp);
-      } catch (e) {
-        if (e && e.code !== 'ENOENT') throw e;
-      }
+      fs.rmSync(tmp, { force: true });
     }
   });
 
@@ -814,11 +810,7 @@ ${EVAL_STATIC_OUTBOUND}
       assert.equal(blob.includes('token=1'), false);
       assert.equal('code' in byId[27], false);
     } finally {
-      try {
-        fs.unlinkSync(tmp);
-      } catch (e) {
-        if (e && e.code !== 'ENOENT') throw e;
-      }
+      fs.rmSync(tmp, { force: true });
     }
   });
 });

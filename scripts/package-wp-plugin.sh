@@ -62,12 +62,6 @@ fi
 
 node "$PLUGIN_ROOT/scripts/lib/remote-guard.mjs" --exec --local-pack -- rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
 
-# Minify admin CSS in the distribution copy only (source stays readable).
-if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.php" ]]; then
-  echo "Minifying admin CSS for distribution..."
-  php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin/products.css" || true
-fi
-
 # Dagitim koku YALNIZ izinli girdiler (ayrintisi: .distignore basligi); digerleri silinir.
 ALLOWED_TOP=(woo-donation-popup.php uninstall.php readme.txt src assets templates blocks languages)
 for entry in "$DEST"/* "$DEST"/.[!.]*; do

@@ -9,23 +9,35 @@
  * @return {number|null} Tutar.
  */
 export function parseAmount(raw) {
-  let text = String(raw ?? '').replace(/\s/g, '');
+  const text = String(raw ?? '').replace(/\s/g, '');
   if (text === '' || !/^[0-9.,]+$/.test(text)) {
     return null;
   }
+  const value = Number(normalizeSeparators(text));
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+/**
+ * Binlik/ondalık ayırıcıları sezgiyle ayırıp ondalığı noktaya çevirir.
+ *
+ * @param {string} text Boşluksuz, yalnız rakam/nokta/virgül içeren metin.
+ * @return {string} Sayıya çevrilebilir metin.
+ */
+function normalizeSeparators(text) {
   const lastDot = text.lastIndexOf('.');
   const lastComma = text.lastIndexOf(',');
   if (lastDot > -1 && lastComma > -1) {
     const decimal = lastDot > lastComma ? '.' : ',';
     const thousand = decimal === '.' ? ',' : '.';
-    text = text.split(thousand).join('').replace(decimal, '.');
-  } else if (lastComma > -1) {
-    text = /,\d{1,2}$/.test(text) && text.indexOf(',') === lastComma ? text.replace(',', '.') : text.split(',').join('');
-  } else if (lastDot > -1 && !(/\.\d{1,2}$/.test(text) && text.indexOf('.') === lastDot)) {
-    text = text.split('.').join('');
+    return text.split(thousand).join('').replace(decimal, '.');
   }
-  const value = Number(text);
-  return Number.isFinite(value) && value > 0 ? value : null;
+  if (lastComma > -1) {
+    return /,\d{1,2}$/.test(text) && text.indexOf(',') === lastComma ? text.replace(',', '.') : text.split(',').join('');
+  }
+  if (lastDot > -1 && !(/\.\d{1,2}$/.test(text) && text.indexOf('.') === lastDot)) {
+    return text.split('.').join('');
+  }
+  return text;
 }
 
 /**

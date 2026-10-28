@@ -322,9 +322,6 @@
 	display: flex;
 	justify-content: flex-end;
 }
-.dpa .dpa-row__control .dpa-input {
-	inline-size: 100%;
-}
 .dpa .dpa-input {
 	min-block-size: 44px;
 	padding: 8px 12px;
@@ -335,6 +332,9 @@
 	background: #fff;
 	color: var(--dpa-text);
 	max-inline-size: 100%;
+}
+.dpa .dpa-row__control .dpa-input {
+	inline-size: 100%;
 }
 .dpa .dpa-input.dpa-input--short {
 	inline-size: 120px;
@@ -401,6 +401,24 @@
 }
 .dpa-choice:has(input:checked) .dpa-choice__art {
 	background: #dce3ec;
+}
+.dpa-bar i {
+	display: block;
+	block-size: 100%;
+	background: var(--dpa-brand);
+}
+.dpa-phone__bar i {
+	display: block;
+	inline-size: 62%;
+	block-size: 100%;
+	border-radius: 3px;
+	background: var(--dpa-pv-brand, var(--dpa-brand));
+}
+.dpa-phone__chips i {
+	display: block;
+	block-size: 34px;
+	border-radius: 9px;
+	border: 1.5px solid #dde1e7;
 }
 .dpa-choice__art i {
 	position: absolute;
@@ -561,11 +579,6 @@
 	vertical-align: middle;
 	overflow: hidden;
 }
-.dpa-bar i {
-	display: block;
-	block-size: 100%;
-	background: var(--dpa-brand);
-}
 .dpa-bar__n {
 	font-variant-numeric: tabular-nums;
 	font-weight: 700;
@@ -694,6 +707,12 @@
 	border-color: var(--dpa-ok-bg);
 	color: var(--dpa-ok);
 }
+.dpa-step__title {
+	margin: 0 0 6px;
+	padding: 0;
+	font-size: 26px;
+	font-weight: 800;
+}
 .dpa .dpa-step__title,
 .dpa .dpa-progress__text h2,
 .dpa .dpa-card__title {
@@ -713,12 +732,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: 22px;
-}
-.dpa-step__title {
-	margin: 0 0 6px;
-	padding: 0;
-	font-size: 26px;
-	font-weight: 800;
 }
 .dpa-step__sub {
 	margin: 0 0 20px;
@@ -799,23 +812,10 @@
 	background: #ede7df;
 	display: block;
 }
-.dpa-phone__bar i {
-	display: block;
-	inline-size: 62%;
-	block-size: 100%;
-	border-radius: 3px;
-	background: var(--dpa-pv-brand, var(--dpa-brand));
-}
 .dpa-phone__chips {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 6px;
-}
-.dpa-phone__chips i {
-	display: block;
-	block-size: 34px;
-	border-radius: 9px;
-	border: 1.5px solid #dde1e7;
 }
 .dpa-phone__chips i.is-on {
 	border: 2px solid var(--dpa-pv-brand, var(--dpa-brand));

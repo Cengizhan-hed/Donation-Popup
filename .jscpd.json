@@ -1,5 +1,5 @@
 {
-  "path": ["assets/js", "assets/css"],
+  "path": ["assets/src", "assets/critical", "blocks"],
   "format": ["javascript", "css"],
   "ignore": ["**/build/**", "**/vendor/**", "**/*.min.*"],
   "minLines": 6,

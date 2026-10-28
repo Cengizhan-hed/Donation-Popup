@@ -491,15 +491,6 @@ class Price {
 	}
 
 	/**
-	 * Tutar kabuğu CSS sınıfı (sembol konumu).
-	 *
-	 * @return string
-	 */
-	public static function currency_position_class() {
-		return 'wdp-currency-pos-' . self::currency_position();
-	}
-
-	/**
 	 * Para birimine duyarlı kullanıcı iletisi tutarı (WooCommerce biçimi; yoksa sayı + simge).
 	 *
 	 * @param float $amount     Tutar.

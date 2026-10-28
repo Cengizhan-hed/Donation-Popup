@@ -172,6 +172,7 @@
   cursor: pointer;
   transition: filter 0.16s, transform 0.16s;
 }
+.wdp-card--campaign a.wdp-card__cta { min-block-size: 50px; border-radius: 14px; font-size: 0.9375rem; }
 .wdp-list-wrap a.wdp-card__cta:hover { color: #fff; filter: brightness(1.08); }
 .wdp-list-wrap a.wdp-card__cta:active { transform: scale(0.97); }
 .wdp-list-wrap a.wdp-card__cta.is-loading { opacity: 0.7; pointer-events: none; }
@@ -215,7 +216,6 @@
   font-variant-numeric: tabular-nums;
 }
 .wdp-card__stats b { font-weight: 700; color: var(--_text); }
-.wdp-card--campaign a.wdp-card__cta { min-block-size: 50px; border-radius: 14px; font-size: 0.9375rem; }
 .wdp-card--campaign a.wdp-card__cta--full { inline-size: 100%; }
 
 /* Sabit / hisseli / serbest tutar kartı: aynı dikey düzen, fiyat + düğme altta */
