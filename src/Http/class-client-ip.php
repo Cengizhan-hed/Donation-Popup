@@ -3,7 +3,9 @@
  * İstemci IP'si: varsayılan REMOTE_ADDR; vekil başlıkları yalnız güvenilen vekilden gelirse okunur.
  *
  * Başlıklar (X-Forwarded-For, X-Real-IP) istemci tarafından yazılabildiği için varsayılan olarak güvenilmez.
- * Ters vekil/CDN arkasındaki siteler vekil adreslerini `donation_panel_trusted_proxies` süzgeciyle bildirir.
+ * Ters vekil/CDN arkasındaki siteler vekil adreslerini `donation_panel_trusted_proxies` süzgeciyle bildirir; bildirilmezse
+ * tüm ziyaretçiler vekilin IP'sinde toplanır ve IP başına hız sınırları (REST hız sınırı, doğrudan bağış bekleyen sipariş sınırı)
+ * ortak kota gibi davranır. Doğrudan bağışta kota ayrıca tarayıcıya özel rastgele belirteçle bölünür (IP tek başına anahtar değildir).
  *
  * @package DonationPanel
  */

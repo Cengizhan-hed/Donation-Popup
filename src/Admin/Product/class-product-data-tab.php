@@ -19,6 +19,7 @@ use DonationPanel\Domain\Donation_Type;
 use DonationPanel\Domain\Placement_Settings;
 use DonationPanel\Modules\EntryPoints\Donations_List;
 use DonationPanel\Support\Price;
+use DonationPanel\WooCommerce\Direct\Direct_Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -184,6 +185,7 @@ final class Product_Data_Tab {
 		return array(
 			'donation_product'          => Donation_Scope::product_flag( $product ),
 			'auto_place'                => 'no' === $meta( '_wdp_auto_place' ) ? 'no' : '',
+			'direct'                    => $tristate( '_donation_panel_direct' ),
 			'donation_type'             => Donation_Type::infer_from_meta(
 				array(
 					'_allow_custom_price'    => $meta( '_allow_custom_price' ),
@@ -457,6 +459,19 @@ final class Product_Data_Tab {
 				/* translators: %s: On / Off */
 				''   => sprintf( __( 'General setting (currently: %s)', 'woo-donation-popup' ), $auto_global ),
 				'no' => __( 'Off', 'woo-donation-popup' ),
+			)
+		);
+		$direct_global = Direct_Settings::global_default() ? __( 'On', 'woo-donation-popup' ) : __( 'Off', 'woo-donation-popup' );
+		self::select(
+			'direct',
+			$values['direct'],
+			__( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
+			__( 'If on, the donor goes from the form straight to payment and nothing is added to the cart.', 'woo-donation-popup' ),
+			array(
+				/* translators: %s: On / Off */
+				''    => sprintf( __( 'General setting (currently: %s)', 'woo-donation-popup' ), $direct_global ),
+				'yes' => __( 'On', 'woo-donation-popup' ),
+				'no'  => __( 'Off', 'woo-donation-popup' ),
 			)
 		);
 		echo '</div>';

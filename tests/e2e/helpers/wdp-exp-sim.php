@@ -86,3 +86,38 @@ add_action(
 		exit;
 	}
 );
+
+// Doğrudan (sepetsiz) bağış e2e: `dp_direct=1` çerezi gönderilen isteklerde özellik açılır; test kart geçidi kart verisi görmez.
+if (isset($_COOKIE['dp_direct'])) { // phpcs:ignore
+	add_filter('donation_panel_direct_enabled', '__return_true');
+	add_action(
+		'plugins_loaded',
+		static function () {
+			if (!class_exists('WC_Payment_Gateway') || class_exists('WDP_Sim_Card_Gateway')) {
+				return;
+			}
+			class WDP_Sim_Card_Gateway extends WC_Payment_Gateway {
+				public function __construct() {
+					$this->id           = 'wdp_sim_card';
+					$this->method_title = 'WDP sim card';
+					$this->title        = 'Test card';
+					$this->enabled      = 'yes';
+					$this->has_fields   = false;
+				}
+				public function process_payment($order_id) {
+					$order = wc_get_order($order_id);
+					$order->payment_complete('sim_txn');
+					return array('result' => 'success', 'redirect' => $this->get_return_url($order));
+				}
+			}
+			add_filter(
+				'woocommerce_payment_gateways',
+				static function ($gateways) {
+					$gateways[] = 'WDP_Sim_Card_Gateway';
+					return $gateways;
+				}
+			);
+		},
+		25
+	);
+}

@@ -14,8 +14,10 @@ use DonationPanel\Core\Module_Interface;
 use DonationPanel\Frontend\Assets;
 use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Http\Rate_Limiter;
+use DonationPanel\Http\Rest\Direct_Donation_Controller;
 use DonationPanel\Modules\EntryPoints\Product_Resolver;
 use DonationPanel\WooCommerce\Cart;
+use DonationPanel\WooCommerce\Direct\Direct_Cleanup;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -70,6 +72,8 @@ final class Experiences_Module implements Module_Interface {
 		$this->cart->register();
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
+		// Doğrudan (sepetsiz) bağış: yarım siparişleri temizleyen olay işleyicisi (zamanlama ilk siparişte kurulur).
+		Direct_Cleanup::register();
 		add_action( 'init', array( $this, 'register_shortcode' ) );
 	}
 
@@ -93,6 +97,7 @@ final class Experiences_Module implements Module_Interface {
 		$limiter       = $this->container->get( Rate_Limiter::class );
 		$controllers[] = new Form_Controller( $limiter, $this->renderer() );
 		$controllers[] = new Cart_Controller( $limiter, $this->cart ? $this->cart : new Cart() );
+		$controllers[] = new Direct_Donation_Controller( $limiter );
 		return $controllers;
 	}
 
