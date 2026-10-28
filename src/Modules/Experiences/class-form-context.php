@@ -116,7 +116,6 @@ final class Form_Context {
 			'cover_fee'      => self::cover_fee_percent( $legacy ),
 			'addon'          => self::addon( $legacy ),
 			'steps'          => self::steps( $product_id, $kind ),
-			'image'          => self::image_url( $product ),
 			'subtitle'       => '',
 			'badge'          => '',
 			'brand'          => self::custom_color( 'design.brand' ),
@@ -273,24 +272,6 @@ final class Form_Context {
 		}
 		$ids = array_column( $out, 'id' );
 		return ( in_array( 'details', $ids, true ) && ( $single || in_array( 'amount', $ids, true ) ) ) ? $out : $steps;
-	}
-
-	/**
-	 * Ürün görselinin adresi (yoksa boş).
-	 *
-	 * @param object|null $product Ürün.
-	 * @return string
-	 */
-	private static function image_url( $product ) {
-		if ( ! is_object( $product ) || ! method_exists( $product, 'get_image_id' ) || ! function_exists( 'wp_get_attachment_image_url' ) ) {
-			return '';
-		}
-		$id = (int) $product->get_image_id();
-		if ( $id < 1 ) {
-			return '';
-		}
-		$url = wp_get_attachment_image_url( $id, 'medium_large' );
-		return $url ? (string) $url : '';
 	}
 
 	/**

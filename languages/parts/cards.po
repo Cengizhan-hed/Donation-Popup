@@ -1,0 +1,18 @@
+# Turkish translations — 121-cards (kartlar, doğrudan bağış kabuğu).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgctxt "Donation form: last step button when the donor goes straight to the payment page"
+msgid "Continue to payment"
+msgstr "Ödemeye geç"
+
+msgid "We could not open the payment page. Nothing was charged. Please try again."
+msgstr "Ödeme sayfası açılamadı. Hesabınızdan hiçbir tutar çekilmedi. Lütfen tekrar deneyin."

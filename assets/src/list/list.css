@@ -8,7 +8,7 @@
   --wdp-cols-t: 2;
   --wdp-cols-m: 1;
   --wdp-gap: 24px;
-  --wdp-ratio: 7 / 3;
+  --wdp-ratio: 3 / 2;
   --wdp-card-radius: 22px;
   --_surface: var(--dp-color-surface, #fff);
   --_text: var(--dp-color-text, #14213d);
@@ -86,12 +86,15 @@
   padding: 0;
   list-style: none;
 }
-.wdp-list__item { min-inline-size: 0; margin: 0; padding: 0; align-self: start; }
+.wdp-list__item { display: flex; min-inline-size: 0; margin: 0; padding: 0; }
 .wdp-list__item[hidden] { display: none; }
 
-/* Kart ortak */
+/* Kart ortak: tüm kartlar DİKEY (görsel üstte, düğme altta); ızgarada eşit yükseklik. */
 .wdp-card {
   display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-inline-size: 0;
   overflow: hidden;
   border-radius: var(--wdp-card-radius);
   background: var(--_surface);
@@ -101,9 +104,22 @@
 .wdp-card__media {
   position: relative;
   display: block;
+  flex: none;
+  inline-size: 100%;
+  aspect-ratio: var(--wdp-ratio);
   overflow: hidden;
   background: var(--_ph);
 }
+/* Görseli olmayan ürün: markanın açık tonu + satır içi simge (gri kutu yok). */
+.wdp-card__media--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--_brand);
+  background: var(--_ph);
+  background: color-mix(in srgb, var(--_brand) 12%, var(--_surface));
+}
+.wdp-card__ph { inline-size: 40px; block-size: 40px; opacity: 0.55; }
 .wdp-card__media img,
 .wdp-card__img {
   position: absolute;
@@ -115,7 +131,7 @@
   margin: 0;
   object-fit: cover;
 }
-.wdp-card__body { display: flex; flex-direction: column; min-inline-size: 0; }
+.wdp-card__body { display: flex; flex: 1 1 auto; flex-direction: column; gap: 8px; min-inline-size: 0; padding: 14px 16px 16px; }
 .wdp-card__title {
   margin: 0;
   font-weight: 800;
@@ -161,10 +177,8 @@
 .wdp-list-wrap a.wdp-card__cta.is-loading { opacity: 0.7; pointer-events: none; }
 .wdp-list-wrap a.wdp-card__cta:focus-visible { outline-color: var(--_text); }
 
-/* Kampanya kartı: dikey */
-.wdp-card--campaign { flex-direction: column; }
-.wdp-card--campaign .wdp-card__media { aspect-ratio: var(--wdp-ratio); }
-.wdp-card--campaign .wdp-card__body { flex: 1 1 auto; gap: 10px; padding: 14px 16px 16px; }
+/* Kampanya kartı: ilerleme + tam genişlik düğme */
+.wdp-card--campaign .wdp-card__body { gap: 10px; }
 .wdp-card--campaign .wdp-card__title { font-size: 1.0625rem; }
 .wdp-card__badge {
   position: absolute;
@@ -204,18 +218,17 @@
 .wdp-card--campaign a.wdp-card__cta { min-block-size: 50px; border-radius: 14px; font-size: 0.9375rem; }
 .wdp-card--campaign a.wdp-card__cta--full { inline-size: 100%; }
 
-/* Sabit / hisseli / serbest tutar kartı: yatay */
-.wdp-card--row { flex-direction: row; }
-.wdp-card--row .wdp-card__media { flex: none; inline-size: 116px; min-block-size: 112px; }
-.wdp-card--row .wdp-card__body { flex: 1 1 auto; gap: 6px; padding: 14px; }
+/* Sabit / hisseli / serbest tutar kartı: aynı dikey düzen, fiyat + düğme altta */
+.wdp-card--row .wdp-card__body { gap: 6px; }
 .wdp-card--row .wdp-card__title { font-size: 1rem; }
 .wdp-card__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px 12px;
   margin-block-start: auto;
-  padding-block-start: 4px;
+  padding-block-start: 6px;
 }
 .wdp-card__price {
   font-size: 1.0625rem;
@@ -237,6 +250,8 @@
   .wdp-list { grid-template-columns: repeat(var(--wdp-cols-t), minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
+  /* Tek sütunda görsel ekranı kaplamasın (tasarım: ~150 px). */
+  .wdp-card__media { max-block-size: 176px; }
   .wdp-list {
     grid-template-columns: repeat(var(--wdp-cols-m), minmax(0, 1fr));
     gap: min(var(--wdp-gap), 14px);

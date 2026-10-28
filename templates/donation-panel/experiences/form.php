@@ -29,9 +29,15 @@ $donation_panel_decimals = (int) $donation_panel_model['decimals'];
 $donation_panel_currency = \DonationPanel\Support\Price::get_js_currency_settings();
 $donation_panel_fee_text = rtrim( rtrim( number_format( $donation_panel_fee, 2, '.', '' ), '0' ), '.' );
 $donation_panel_single   = 'amount' !== (string) $donation_panel_steps[0]['id'];
-$donation_panel_image    = isset( $donation_panel_model['image'] ) ? (string) $donation_panel_model['image'] : '';
-$donation_panel_camp     = isset( $donation_panel_model['campaign'] ) && is_array( $donation_panel_model['campaign'] ) ? $donation_panel_model['campaign'] : array();
-$donation_panel_impact   = array();
+$donation_panel_direct   = ! empty( $donation_panel_model['direct'] );
+if ( $donation_panel_direct ) {
+	$donation_panel_submit_label = _x( 'Continue to payment', 'Donation form: last step button when the donor goes straight to the payment page', 'woo-donation-popup' );
+} else {
+	/* translators: %s: formatted total amount. */
+	$donation_panel_submit_label = __( 'Donate %s', 'woo-donation-popup' );
+}
+$donation_panel_camp   = isset( $donation_panel_model['campaign'] ) && is_array( $donation_panel_model['campaign'] ) ? $donation_panel_model['campaign'] : array();
+$donation_panel_impact = array();
 if ( isset( $donation_panel_model['impact']['presets'] ) && is_array( $donation_panel_model['impact']['presets'] ) ) {
 	foreach ( $donation_panel_model['impact']['presets'] as $donation_panel_row ) {
 		$donation_panel_impact[ (string) (float) $donation_panel_row['amount'] ] = (string) $donation_panel_row['text'];
@@ -138,7 +144,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 	endif;
 };
 ?>
-<form class="dp-form" method="post" action="" novalidate data-dp-form<?php echo '' !== $donation_panel_style ? ' style="' . esc_attr( $donation_panel_style ) . '"' : ''; ?> data-product-id="<?php echo esc_attr( (string) (int) $donation_panel_model['product_id'] ); ?>" data-title="<?php echo esc_attr( (string) $donation_panel_model['title'] ); ?>" data-min="<?php echo esc_attr( (string) $donation_panel_model['min'] ); ?>" data-decimals="<?php echo esc_attr( (string) $donation_panel_decimals ); ?>" data-thousand-sep="<?php echo esc_attr( $donation_panel_currency['thousandSeparator'] ); ?>" data-decimal-sep="<?php echo esc_attr( $donation_panel_currency['decimalSeparator'] ); ?>" data-msg-amount-format="<?php echo esc_attr( \DonationPanel\Support\Price::get_ambiguous_amount_message( array( 'decimals' => $donation_panel_decimals ) ) ); ?>" data-kind="<?php echo esc_attr( $donation_panel_kind ); ?>"<?php echo ! empty( $donation_panel_model['direct'] ) ? ' data-direct="1"' : ''; ?> data-unit="<?php echo esc_attr( (string) $donation_panel_unit ); ?>" data-fee="<?php echo esc_attr( (string) $donation_panel_fee ); ?>" data-qty-max="<?php echo esc_attr( (string) (int) $donation_panel_qty['max'] ); ?>" data-addon-fixed="<?php echo esc_attr( (string) ( isset( $donation_panel_addon['fixed'] ) ? (float) $donation_panel_addon['fixed'] : 0 ) ); ?>" data-addon-min="<?php echo esc_attr( (string) ( isset( $donation_panel_addon['min'] ) ? (float) $donation_panel_addon['min'] : 0 ) ); ?>" data-msg-amount="<?php echo esc_attr__( 'Please enter a donation amount.', 'woo-donation-popup' ); ?>" data-label-choose="<?php echo esc_attr_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ); ?>" data-msg-min="<?php /* translators: %s: minimum amount. */ echo esc_attr( sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), $donation_panel_format( max( (float) $donation_panel_model['min'], 0.01 ) ) ) ); ?>" data-msg-addon="<?php echo esc_attr__( 'Please enter a valid add-on donation amount.', 'woo-donation-popup' ); ?>" data-msg-step="<?php /* translators: 1: current step, 2: number of steps. */ echo esc_attr__( 'Step %1$d of %2$d', 'woo-donation-popup' ); ?>" data-label-next="<?php echo esc_attr_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?>" data-label-submit="<?php /* translators: %s: formatted total amount. */ echo esc_attr__( 'Donate %s', 'woo-donation-popup' ); ?>" data-msg-added="<?php echo esc_attr__( 'Added to your cart.', 'woo-donation-popup' ); ?>">
+<form class="dp-form" method="post" action="" novalidate data-dp-form<?php echo '' !== $donation_panel_style ? ' style="' . esc_attr( $donation_panel_style ) . '"' : ''; ?> data-product-id="<?php echo esc_attr( (string) (int) $donation_panel_model['product_id'] ); ?>" data-title="<?php echo esc_attr( (string) $donation_panel_model['title'] ); ?>" data-min="<?php echo esc_attr( (string) $donation_panel_model['min'] ); ?>" data-decimals="<?php echo esc_attr( (string) $donation_panel_decimals ); ?>" data-thousand-sep="<?php echo esc_attr( $donation_panel_currency['thousandSeparator'] ); ?>" data-decimal-sep="<?php echo esc_attr( $donation_panel_currency['decimalSeparator'] ); ?>" data-msg-amount-format="<?php echo esc_attr( \DonationPanel\Support\Price::get_ambiguous_amount_message( array( 'decimals' => $donation_panel_decimals ) ) ); ?>" data-kind="<?php echo esc_attr( $donation_panel_kind ); ?>"<?php echo $donation_panel_direct ? ' data-direct="1" data-msg-failed-direct="' . esc_attr__( 'We could not open the payment page. Nothing was charged. Please try again.', 'woo-donation-popup' ) . '"' : ''; ?> data-unit="<?php echo esc_attr( (string) $donation_panel_unit ); ?>" data-fee="<?php echo esc_attr( (string) $donation_panel_fee ); ?>" data-qty-max="<?php echo esc_attr( (string) (int) $donation_panel_qty['max'] ); ?>" data-addon-fixed="<?php echo esc_attr( (string) ( isset( $donation_panel_addon['fixed'] ) ? (float) $donation_panel_addon['fixed'] : 0 ) ); ?>" data-addon-min="<?php echo esc_attr( (string) ( isset( $donation_panel_addon['min'] ) ? (float) $donation_panel_addon['min'] : 0 ) ); ?>" data-msg-amount="<?php echo esc_attr__( 'Please enter a donation amount.', 'woo-donation-popup' ); ?>" data-label-choose="<?php echo esc_attr_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ); ?>" data-msg-min="<?php /* translators: %s: minimum amount. */ echo esc_attr( sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), $donation_panel_format( max( (float) $donation_panel_model['min'], 0.01 ) ) ) ); ?>" data-msg-addon="<?php echo esc_attr__( 'Please enter a valid add-on donation amount.', 'woo-donation-popup' ); ?>" data-msg-step="<?php /* translators: 1: current step, 2: number of steps. */ echo esc_attr__( 'Step %1$d of %2$d', 'woo-donation-popup' ); ?>" data-label-next="<?php echo esc_attr_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?>" data-label-submit="<?php echo esc_attr( $donation_panel_submit_label ); ?>" data-msg-added="<?php echo esc_attr__( 'Added to your cart.', 'woo-donation-popup' ); ?>">
 	<div class="dp-head">
 		<button type="button" class="dp-iconbtn dp-head__back" data-dp-back aria-label="<?php esc_attr_e( 'Back', 'woo-donation-popup' ); ?>" hidden><svg class="dp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
 		<div class="dp-head__t">
@@ -154,11 +160,14 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 			<button type="button" class="dp-iconbtn dp-surface__close" data-dp-close aria-label="<?php esc_attr_e( 'Close popup', 'woo-donation-popup' ); ?>"><svg class="dp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 		<?php endif; ?>
 	</div>
-	<?php if ( ! $donation_panel_closed && count( $donation_panel_steps ) > 1 ) : ?>
+	<?php if ( ! $donation_panel_closed && count( $donation_panel_steps ) + ( $donation_panel_direct ? 1 : 0 ) > 1 ) : ?>
 		<div class="dp-steps" aria-hidden="true" data-dp-steps hidden>
 			<?php foreach ( $donation_panel_steps as $donation_panel_step ) : ?>
 				<i class="dp-steps__i"></i>
 			<?php endforeach; ?>
+			<?php if ( $donation_panel_direct ) : ?>
+				<i class="dp-steps__i dp-steps__i--pay"></i>
+			<?php endif; ?>
 		</div>
 	<?php endif; ?>
 	<div class="dp-surface__body">
@@ -183,10 +192,6 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 							<?php endforeach; ?>
 						</div>
 					</fieldset>
-					<?php endif; ?>
-
-					<?php if ( '' !== $donation_panel_image ) : ?>
-					<div class="dp-hero"><img src="<?php echo esc_url( $donation_panel_image ); ?>" alt="" loading="lazy" decoding="async" /></div>
 					<?php endif; ?>
 
 					<?php if ( $donation_panel_camp ) : ?>
@@ -289,9 +294,6 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 						<?php $donation_panel_extras(); ?>
 					<?php else : ?>
 					<div class="dp-summary" data-dp-recap>
-						<?php if ( '' !== $donation_panel_image ) : ?>
-							<img class="dp-summary__img" src="<?php echo esc_url( $donation_panel_image ); ?>" alt="" loading="lazy" decoding="async" />
-						<?php endif; ?>
 						<span class="dp-summary__t"><b><?php echo esc_html( (string) $donation_panel_model['title'] ); ?></b><small><?php echo esc_html( (string) $donation_panel_model['subtitle'] ); ?></small></span>
 						<strong class="dp-num" data-dp-recap-amount></strong>
 					</div>

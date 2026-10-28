@@ -129,7 +129,7 @@ async function openForm(wrap, cta) {
       template.innerHTML = data.html;
       host.appendChild(template.content);
       document.body.appendChild(host);
-      host.addEventListener('dp:close', () => {
+      host.addEventListener('dp:closed', () => {
         if (host.wdpCta) {
           host.wdpCta.focus({ preventScroll: true });
         }

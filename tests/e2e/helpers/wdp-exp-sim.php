@@ -59,7 +59,6 @@ if (isset($_GET['dp_demo'])) { // phpcs:ignore
 					$model['impact']['presets'][] = array( 'amount' => (float) $amount, 'text' => $texts[ $i % 5 ] );
 				}
 			}
-			$model['image']    = includes_url('images/crystal/default.png');
 			$model['badge']    = 'shares' === ($model['kind'] ?? '') ? '24 saat içinde kesim videosu' : '';
 			return $model;
 		},
