@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 10:27+0300\n"
+"POT-Creation-Date: 2026-10-28 11:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -580,7 +580,7 @@ msgstr ""
 #: src/Admin/class-admin-assets.php:117
 #: src/Modules/DonorAccount/class-donor-account-module.php:245
 #: src/Modules/DonorAccount/class-donor-account-module.php:279
-#: src/Modules/SideCart/class-side-cart-module.php:170
+#: src/Modules/SideCart/class-side-cart-module.php:200
 #: templates/donation-panel/experiences/bottom-sheet.php:16
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
@@ -1192,41 +1192,52 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-field-registry.php:476
-msgid "Show a privacy link under the form"
+msgid "Floating basket button"
 msgstr ""
 
 #: src/Admin/class-field-registry.php:477
 msgid ""
+"A round basket button in the bottom corner. It appears only after a gift is "
+"added and disappears when the basket is empty. Switch it off if your theme "
+"already shows its own cart icon."
+msgstr ""
+
+#: src/Admin/class-field-registry.php:484
+msgid "Show a privacy link under the form"
+msgstr ""
+
+#: src/Admin/class-field-registry.php:485
+msgid ""
 "Shown only when the form asks for email, dedication or shareholder details."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:488
+#: src/Admin/class-field-registry.php:496
 msgid "Link text"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:489
+#: src/Admin/class-field-registry.php:497
 msgid "Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:500
+#: src/Admin/class-field-registry.php:508
 msgid "Link address"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:501
+#: src/Admin/class-field-registry.php:509
 msgid "Leave empty to use the privacy policy page set in WordPress."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:513
+#: src/Admin/class-field-registry.php:521
 msgid "Delete plugin data when the plugin is deleted"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:514
+#: src/Admin/class-field-registry.php:522
 msgid ""
 "Removes the plugin's settings and product options. Orders and order records "
 "are never touched. This cannot be undone."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:516
+#: src/Admin/class-field-registry.php:524
 msgid ""
 "All plugin settings and product options will be deleted when the plugin is "
 "deleted. Orders are not affected. This cannot be undone. Have you made a "
@@ -3030,11 +3041,12 @@ msgstr ""
 msgid "Donation Panel preview: exit"
 msgstr ""
 
-#: src/Modules/SideCart/class-side-cart-module.php:171
+#: src/Modules/SideCart/class-side-cart-module.php:201
 msgid "Removed from your basket."
 msgstr ""
 
 #: src/Modules/SideCart/class-side-cart-renderer.php:51
+#: src/Modules/SideCart/class-side-cart-renderer.php:182
 msgid "Donation basket"
 msgstr ""
 
@@ -3109,11 +3121,11 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: src/Modules/SideCart/class-side-cart-renderer.php:191
+#: src/Modules/SideCart/class-side-cart-renderer.php:204
 msgid "Your donation basket"
 msgstr ""
 
-#: src/Modules/SideCart/class-side-cart-renderer.php:193
+#: src/Modules/SideCart/class-side-cart-renderer.php:206
 msgid "Close basket"
 msgstr ""
 
@@ -3923,6 +3935,10 @@ msgstr ""
 #: templates/donation-panel/experiences/form.php:106
 #, php-format
 msgid "Cover processing costs (+%%%s)"
+msgstr ""
+
+#: templates/donation-panel/experiences/form.php:139
+msgid "Choose an amount"
 msgstr ""
 
 #. translators: 1: current step, 2: number of steps.

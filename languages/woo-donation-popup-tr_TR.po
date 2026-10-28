@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 07:27:24+0000\n"
-"PO-Revision-Date: 2026-10-28 07:27:24+0000\n"
+"POT-Creation-Date: 2026-10-28 08:01:00+0000\n"
+"PO-Revision-Date: 2026-10-28 08:01:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -258,6 +258,9 @@ msgstr "Kapalı bir modül hiçbir kod ve stil yüklemez."
 #: src/Privacy/class-privacy-tools.php
 msgid "A pending request to link earlier guest donations to your account."
 msgstr "Önceki misafir bağışlarınızı hesabınıza bağlamak için bekleyen bir istek."
+
+msgid "A round basket button in the bottom corner. It appears only after a gift is added and disappears when the basket is empty. Switch it off if your theme already shows its own cart icon."
+msgstr "Sağ alt köşede yuvarlak bir sepet düğmesi. Yalnız sepete bağış eklenince görünür, sepet boşalınca kaybolur. Temanız zaten kendi sepet simgesini gösteriyorsa kapatın."
 
 #: includes/class-admin-product-data-tab.php:797
 msgid "A second, smaller donation row added to the form"
@@ -1729,6 +1732,10 @@ msgstr "Bağış formu gizlendi: #%d numaralı ürün bağış kapsamı dışın
 msgid "Donation form opened"
 msgstr "Bağış formu açıldı"
 
+msgctxt "Donation form: disabled button while no amount is chosen"
+msgid "Choose an amount"
+msgstr "Tutar seçin"
+
 #: templates/donation-panel/experiences/form.php
 msgctxt "Donation form: next step button"
 msgid "Continue"
@@ -2264,6 +2271,9 @@ msgstr "Sabit tutar"
 #: includes/class-admin-product-data-tab.php:836
 msgid "Fixed amount (%s)"
 msgstr "Sabit tutar (%s)"
+
+msgid "Floating basket button"
+msgstr "Yüzen sepet düğmesi"
 
 #: templates/donation-panel/thanks/summary.php
 msgid "Follow your donations"
