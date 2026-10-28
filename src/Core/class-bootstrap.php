@@ -56,11 +56,12 @@ final class Bootstrap {
 	}
 
 	/**
-	 * Devre dışı bırakma (temizlik gerekmez; veri korunur).
+	 * Devre dışı bırakma: veri korunur; yalnız zamanlanmış temizlik olayı kaldırılır (eklenti kapalıyken boş çalışmasın).
 	 *
 	 * @return void
 	 */
 	public static function deactivate() {
+		\DonationPanel\WooCommerce\Direct\Direct_Cleanup::unschedule();
 	}
 
 	/**

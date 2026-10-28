@@ -67,10 +67,32 @@ class Front_Gate {
 		$uri        = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- yalnız alt dize karşılaştırması.
 		$rest_route = isset( $_GET['rest_route'] ) ? (string) wp_unslash( $_GET['rest_route'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- yalnız alt dize karşılaştırması.
 		$prefix     = function_exists( 'rest_get_url_prefix' ) ? rest_get_url_prefix() : 'wp-json';
-		if ( '' !== $rest_route || false !== strpos( $uri, '/' . $prefix . '/' ) ) {
+		if ( '' !== $rest_route || self::is_rest_path( $uri, $prefix ) ) {
 			return false;
 		}
 		return self::disabled();
+	}
+
+	/**
+	 * İstek yolu REST önekiyle (site yolundan sonra, yolun BAŞINDA) başlıyor mu. Sayfa yolunun ortasındaki `/wp-json/`
+	 * (ör. kullanıcı içeriği `/blog/wp-json/x`) kapıyı atlatmaz.
+	 *
+	 * @param string $uri    REQUEST_URI.
+	 * @param string $prefix REST öneki (`wp-json`).
+	 * @return bool
+	 */
+	private static function is_rest_path( $uri, $prefix ) {
+		$path  = (string) wp_parse_url( $uri, PHP_URL_PATH );
+		$bases = array();
+		foreach ( array( home_url(), site_url() ) as $url ) {
+			$bases[] = rtrim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
+		}
+		foreach ( array_unique( $bases ) as $base ) {
+			if ( 0 === strpos( $path, $base . '/' . $prefix . '/' ) || 0 === strpos( $path, $base . '/index.php/' . $prefix . '/' ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

@@ -32,6 +32,7 @@ class Account_Controller extends Rest_Controller {
 	 * @return void
 	 */
 	public function register_routes() {
+		$this->strip_cors_for( '/' . self::REST_NAMESPACE . '/account/session' );
 		$public = array( $this, 'permission_public' );
 		$member = array( $this, 'permission_member' );
 		$routes = array(
@@ -72,9 +73,10 @@ class Account_Controller extends Rest_Controller {
 	 * @param string $bucket Uç adı.
 	 * @param int    $limit  Pencere başına üst sınır.
 	 * @param int    $period Pencere (sn).
+	 * @param bool   $donation_bucket Yok sayılır (hesap kovaları her zaman katı).
 	 * @return true|\WP_Error
 	 */
-	protected function throttle( $bucket, $limit, $period = 60 ) {
+	protected function throttle( $bucket, $limit, $period = 60, $donation_bucket = false ) {
 		/**
 		 * Hesap uçlarının hız sınırı.
 		 *
@@ -82,7 +84,8 @@ class Account_Controller extends Rest_Controller {
 		 * @param string $bucket Uç adı (`account_login`, `account_register`, `account_reset`, `account_link_guest` ...).
 		 */
 		$limit = (int) apply_filters( 'donation_panel_account_rate_limit', (int) $limit, (string) $bucket );
-		return parent::throttle( $bucket, $limit, $period );
+		// Hesap/kimlik doğrulama kovaları HER ZAMAN katıdır (belirteç bazlı gevşetme yok): 12.0 davranışı.
+		return parent::throttle( $bucket, $limit, $period, false );
 	}
 
 	/**
@@ -132,9 +135,18 @@ class Account_Controller extends Rest_Controller {
 	/**
 	 * GET /account/session: taze nonce + durum (önbellekli sayfalarda bayat nonce'ı önler).
 	 *
+	 * @param \WP_REST_Request|null $request Istek.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function session() {
+	public function session( $request = null ) {
+		if ( is_object( $request ) ) {
+			// Çerez kullanıcısı için nonce dönüyor: başka kökenden okunamasın (Origin / Sec-Fetch-Site).
+			$origin = $this->require_same_origin( $request );
+			if ( is_wp_error( $origin ) ) {
+				return $origin;
+			}
+		}
+		$this->remember_client( $request );
 		$limited = $this->throttle( 'account_session', 120 );
 		if ( is_wp_error( $limited ) ) {
 			return $limited;

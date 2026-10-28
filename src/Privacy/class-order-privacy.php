@@ -7,6 +7,7 @@
 
 namespace DonationPanel\Privacy;
 
+use DonationPanel\WooCommerce\Direct\Direct_Order_Factory;
 use DonationPanel\WooCommerce\Order_Meta_Keys;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -184,6 +185,11 @@ class Order_Privacy {
 				}
 			}
 
+			// Doğrudan bağış siparişindeki istemci karmaları (IP/tarayıcı belirteci türevi) da silinir.
+			if ( $billing_match && self::erase_direct_client_meta( $order ) ) {
+				$order_changed = true;
+			}
+
 			if ( $order_changed ) {
 				$response['items_removed'] = true;
 				++$changed_orders;
@@ -201,6 +207,26 @@ class Order_Privacy {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Doğrudan bağış siparişinin istemci karmalarını (IP/hesap, tarayıcı belirteci, anahtar sahibi) siler.
+	 *
+	 * @param \WC_Order $order Sipariş.
+	 * @return bool Bir şey silindi mi.
+	 */
+	public static function erase_direct_client_meta( $order ) {
+		$removed = false;
+		foreach ( array( Direct_Order_Factory::CLIENT_META, Direct_Order_Factory::TOKEN_META, Direct_Order_Factory::OWNER_META ) as $key ) {
+			if ( '' !== (string) $order->get_meta( $key ) ) {
+				$order->delete_meta_data( $key );
+				$removed = true;
+			}
+		}
+		if ( $removed ) {
+			$order->save();
+		}
+		return $removed;
 	}
 
 	/**

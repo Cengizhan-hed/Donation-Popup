@@ -1114,6 +1114,11 @@ if (!function_exists('home_url')) {
 		return 'https://example.test' . $path;
 	}
 }
+if (!function_exists('site_url')) {
+	function site_url($path = '') {
+		return 'https://example.test' . $path;
+	}
+}
 if (!function_exists('wp_parse_url')) {
 	function wp_parse_url($url, $component = -1) {
 		return $component === -1 ? parse_url((string) $url) : parse_url((string) $url, $component);

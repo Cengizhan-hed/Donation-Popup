@@ -41,6 +41,12 @@ final class Direct_Order_Factory {
 	/** İstemci + tarayıcı belirteci karması (ince alt sınır). */
 	const TOKEN_META = '_donation_panel_direct_token';
 
+	/** Anahtarı üreten tarayıcı belirtecinin tuzlu karması (anahtar sahipliği; IP'den bağımsız). */
+	const OWNER_META = '_donation_panel_direct_owner';
+
+	/** Site geneli bekleyen adet sayacı (kısa ömürlü transient). */
+	const SITE_QTY_TRANSIENT = 'donation_panel_direct_site_qty';
+
 	/** İçerik parmak izi (karma). */
 	const FINGERPRINT_META = '_donation_panel_direct_fp';
 
@@ -96,16 +102,19 @@ final class Direct_Order_Factory {
 			return $this->fail( 409, __( 'Your donation is already being processed. Please wait a moment.', 'woo-donation-popup' ), 'donation_panel_direct_busy' );
 		}
 		try {
+			$token    = isset( $input['client_token'] ) && is_scalar( $input['client_token'] ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', Cart_Data::text( (string) $input['client_token'], 64 ) ) : '';
+			$owner    = self::token_hash( (string) $token );
 			$existing = $this->find( $key_hash );
 			if ( $existing ) {
-				if ( (string) $existing->get_meta( self::FINGERPRINT_META ) !== $fingerprint ) {
+				// Mevcut siparişin ödeme/teşekkür adresi yalnız anahtarı üreten istemciye (aynı tarayıcı belirteci) döner;
+				// anahtarı bilen ya da tahmin eden başkası adresi (order key dahil) alamaz.
+				if ( (string) $existing->get_meta( self::OWNER_META ) !== $owner || (string) $existing->get_meta( self::FINGERPRINT_META ) !== $fingerprint ) {
 					return $this->fail( 422, __( 'This submission key was already used for a different donation.', 'woo-donation-popup' ), 'donation_panel_direct_key_reused' );
 				}
 				return $this->done( $existing, true );
 			}
-			$token = isset( $input['client_token'] ) && is_scalar( $input['client_token'] ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', Cart_Data::text( (string) $input['client_token'], 64 ) ) : '';
-			$ip    = self::client_hash();
-			$fine  = self::client_hash( (string) $token );
+			$ip   = self::client_hash();
+			$fine = self::client_hash( (string) $token );
 
 			// Katman 1 (SERT, sunucunun zorladığı): IP/hesap başına tüm hâlâ-bekleyen/başarısız siparişler + toplam adet. İstemci
 			// belirteciyle atlatılamaz; bekleyenler Direct_Cleanup ile kısa sürede iptal edildiği için kendiliğinden boşalır.
@@ -116,12 +125,10 @@ final class Direct_Order_Factory {
 				if ( count( $hard ) >= self::max_pending_per_ip() || $this->waiting_quantity( $hard ) + (int) $plan['quantity'] > self::max_pending_quantity() ) {
 					return $this->over_limit( $hard, $fingerprint );
 				}
-			} else {
+			} elseif ( $this->site_waiting_count() >= self::max_pending_site() || $this->site_waiting_quantity() + (int) $plan['quantity'] > self::max_pending_site_quantity() ) {
 				// IP güvenilmez: IP sınırı yerine siteye ait cömert genel sınır (tüm bekleyen doğrudan siparişler + toplam adet).
-				$site = $this->waiting_orders( self::FLAG_META, 'yes', 0, self::max_pending_site() );
-				if ( count( $site ) >= self::max_pending_site() || $this->waiting_quantity( $site ) + (int) $plan['quantity'] > self::max_pending_site_quantity() ) {
-					return $this->over_limit( $site, $fingerprint );
-				}
+				// Hafif: sayı tek COUNT sorgusuyla (sipariş nesnesi yüklenmez), adet kısa ömürlü sayaçla.
+				return $this->over_limit_site( $fingerprint, $owner );
 			}
 			// Katman 2 (ince): aynı IP içinde tarayıcı belirteci başına (ortak IP'deki bağışçılar birbirini tüketmez).
 			$fine_orders = $this->waiting_orders( self::TOKEN_META, $fine, HOUR_IN_SECONDS, self::max_pending() );
@@ -130,7 +137,11 @@ final class Direct_Order_Factory {
 			}
 			$plan['client'] = $ip;
 			$plan['token']  = $fine;
+			$plan['owner']  = $owner;
 			$order          = $this->create( $product, $plan, $key_hash, $fingerprint );
+			if ( $order instanceof \WC_Order ) {
+				$this->site_quantity_add( (int) $plan['quantity'] );
+			}
 		} finally {
 			$this->release( $key_hash );
 		}
@@ -138,6 +149,10 @@ final class Direct_Order_Factory {
 			return $this->fail( 409, $order->get_error_message(), 'donation_panel_direct_unavailable' );
 		}
 		if ( is_wp_error( $order ) ) {
+			// Kişisel veri içermeyen tanılama günlüğü (yalnız WP_DEBUG_LOG açıkken).
+			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				error_log( 'donation-panel: direct order could not be created (' . $order->get_error_code() . ')' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- yalnız WP_DEBUG_LOG açıkken, kişisel veri yok.
+			}
 			return $this->fail( 500, __( 'The donation could not be started. Please try again.', 'woo-donation-popup' ), 'donation_panel_direct_failed' );
 		}
 		return $this->done( $order, false );
@@ -235,11 +250,69 @@ final class Direct_Order_Factory {
 	 * @return bool
 	 */
 	private static function ip_is_reliable() {
-		if ( get_current_user_id() > 0 ) {
-			return true;
+		return Client_Ip::is_reliable();
+	}
+
+	/**
+	 * Tarayıcı belirtecinin tuzlu karması (yalnız anahtar sahipliği için; IP'den bağımsız). Belirteç yoksa ''.
+	 *
+	 * @param string $token Belirteç.
+	 * @return string
+	 */
+	private static function token_hash( $token ) {
+		return '' === $token ? '' : hash_hmac( 'sha256', 'donation_panel_direct_owner|' . $token, wp_salt( 'auth' ) );
+	}
+
+	/**
+	 * Sitedeki bekleyen/başarısız doğrudan sipariş sayısı (tek COUNT sorgusu; sipariş nesnesi yüklenmez).
+	 *
+	 * @return int
+	 */
+	private function site_waiting_count() {
+		$result = wc_get_orders(
+			array(
+				'limit'      => 1,
+				'paginate'   => true,
+				'return'     => 'ids',
+				'status'     => array( 'pending', 'failed' ),
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- tek anahtarlı, yalnız sayım.
+					array(
+						'key'   => self::FLAG_META,
+						'value' => 'yes',
+					),
+				),
+			)
+		);
+		return is_object( $result ) && isset( $result->total ) ? (int) $result->total : 0;
+	}
+
+	/**
+	 * Sitedeki bekleyen doğrudan siparişlerin toplam adedi: kısa ömürlü sayaç (30 sn); süresi dolunca bir kez hesaplanır,
+	 * sipariş açıldıkça artırılır. Her istekte sipariş nesnesi yüklenmez.
+	 *
+	 * @return int
+	 */
+	private function site_waiting_quantity() {
+		$cached = get_transient( self::SITE_QTY_TRANSIENT );
+		if ( is_numeric( $cached ) ) {
+			return (int) $cached;
 		}
-		$ip = Client_Ip::get();
-		return '0.0.0.0' !== $ip && false !== filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE );
+		$total = $this->waiting_quantity( $this->waiting_orders( self::FLAG_META, 'yes', 0, self::max_pending_site() ) );
+		set_transient( self::SITE_QTY_TRANSIENT, $total, 30 );
+		return $total;
+	}
+
+	/**
+	 * Yeni siparişin adedini sayaca ekler (sayaç yoksa sonraki okuma yeniden hesaplar).
+	 *
+	 * @param int $quantity Adet.
+	 * @return void
+	 */
+	private function site_quantity_add( $quantity ) {
+		$cached = get_transient( self::SITE_QTY_TRANSIENT );
+		if ( is_numeric( $cached ) ) {
+			set_transient( self::SITE_QTY_TRANSIENT, (int) $cached + max( 0, (int) $quantity ), 30 );
+		}
 	}
 
 	/**
@@ -251,11 +324,12 @@ final class Direct_Order_Factory {
 	 */
 	public static function client_hash( $token = null ) {
 		$user_id = get_current_user_id();
-		$who     = $user_id > 0 ? 'u' . $user_id : Client_Ip::get();
+		// IPv6 /64 önekine indirgenir (aynı önek içinde adres döndürerek sınır atlatılamaz); karma site tuzlu HMAC'tir.
+		$who = $user_id > 0 ? 'u' . $user_id : Client_Ip::key();
 		if ( null !== $token && $user_id < 1 ) {
 			$who .= '|' . $token;
 		}
-		return md5( 'donation_panel_direct_client|' . $who );
+		return hash_hmac( 'sha256', 'donation_panel_direct_client|' . $who, wp_salt( 'auth' ) );
 	}
 
 	/**
@@ -318,6 +392,40 @@ final class Direct_Order_Factory {
 		foreach ( $orders as $candidate ) {
 			if ( $candidate->has_status( 'pending' ) && (string) $candidate->get_meta( self::FINGERPRINT_META ) === $fingerprint ) {
 				return $this->done( $candidate, true );
+			}
+		}
+		return $this->fail( 429, __( 'You have several unpaid donations waiting. Please complete or wait for them to expire before starting another.', 'woo-donation-popup' ), 'donation_panel_direct_too_many' );
+	}
+
+	/**
+	 * Site genel sınırı aşıldı (IP güvenilmezken): yeni sipariş AÇILMAZ; yalnız aynı tarayıcı belirtecine ait, aynı içerikli
+	 * bekleyen sipariş varsa o yeniden kullanılır, yoksa uyarılır.
+	 *
+	 * @param string $fingerprint Yeni isteğin içerik parmak izi.
+	 * @param string $owner       Tarayıcı belirteci karması.
+	 * @return array<string, mixed>
+	 */
+	private function over_limit_site( $fingerprint, $owner ) {
+		if ( '' !== $owner ) {
+			$candidates = wc_get_orders(
+				array(
+					'limit'      => 1,
+					'status'     => array( 'pending' ),
+					'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- yalnız sınır aşılınca, tek sorgu.
+						'relation' => 'AND',
+						array(
+							'key'   => self::OWNER_META,
+							'value' => $owner,
+						),
+						array(
+							'key'   => self::FINGERPRINT_META,
+							'value' => $fingerprint,
+						),
+					),
+				)
+			);
+			if ( ! empty( $candidates ) && $candidates[0] instanceof \WC_Order ) {
+				return $this->done( $candidates[0], true );
 			}
 		}
 		return $this->fail( 429, __( 'You have several unpaid donations waiting. Please complete or wait for them to expire before starting another.', 'woo-donation-popup' ), 'donation_panel_direct_too_many' );
@@ -508,6 +616,7 @@ final class Direct_Order_Factory {
 		$order->update_meta_data( self::KEY_META, $key_hash );
 		$order->update_meta_data( self::CLIENT_META, isset( $plan['client'] ) ? (string) $plan['client'] : '' );
 		$order->update_meta_data( self::TOKEN_META, isset( $plan['token'] ) ? (string) $plan['token'] : '' );
+		$order->update_meta_data( self::OWNER_META, isset( $plan['owner'] ) ? (string) $plan['owner'] : '' );
 		$order->update_meta_data( self::FINGERPRINT_META, $fingerprint );
 		$order->calculate_totals( true );
 		$order->add_order_note( __( 'Direct donation started. Waiting for payment.', 'woo-donation-popup' ) );

@@ -55,6 +55,39 @@ final class Client_Ip {
 	}
 
 	/**
+	 * Sınır anahtarı için normalleştirilmiş IP: IPv4 olduğu gibi, IPv6 /64 önekine indirgenir
+	 * (aynı /64 içinde sınırsız adres üreten istemci kotayı atlayamaz).
+	 *
+	 * @return string
+	 */
+	public static function key() {
+		$ip = self::get();
+		if ( false === strpos( $ip, ':' ) ) {
+			return $ip;
+		}
+		$bin = @inet_pton( $ip ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- geçersiz giriş false döner.
+		if ( false === $bin || 16 !== strlen( $bin ) ) {
+			return $ip;
+		}
+		$prefix = @inet_ntop( substr( $bin, 0, 8 ) . str_repeat( "\0", 8 ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- geçersiz giriş false döner.
+		return false !== $prefix ? $prefix . '/64' : $ip;
+	}
+
+	/**
+	 * İstemci IP'si sınır için güvenilir mi: girişli hesap her zaman; aksi halde genel (özel/yerel/ayrılmış olmayan) geçerli IP.
+	 * Güvenilen vekil ayarsız bir CDN/vekil arkasında tüm ziyaretçiler aynı (genelde özel ya da vekil) adrestedir.
+	 *
+	 * @return bool
+	 */
+	public static function is_reliable() {
+		if ( function_exists( 'get_current_user_id' ) && get_current_user_id() > 0 ) {
+			return true;
+		}
+		$ip = self::get();
+		return '0.0.0.0' !== $ip && false !== filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE );
+	}
+
+	/**
 	 * Güvenilen vekil adresleri (IP ya da CIDR).
 	 *
 	 * @return string[]

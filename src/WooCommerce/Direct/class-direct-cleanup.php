@@ -31,6 +31,46 @@ final class Direct_Cleanup {
 	 */
 	public static function register() {
 		add_action( self::HOOK, array( __CLASS__, 'run' ) );
+		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'drop_client_hashes' ), 20, 3 );
+	}
+
+	/**
+	 * Zamanlanmış olayı kaldırır (eklenti devre dışı bırakılırken).
+	 *
+	 * @return void
+	 */
+	public static function unschedule() {
+		wp_clear_scheduled_hook( self::HOOK );
+	}
+
+	/**
+	 * Sipariş bekleme durumundan çıkınca (ödendi/beklemede/iptal/iade) IP ve tarayıcı belirteci karmaları silinir:
+	 * yalnız bekleyen sipariş sınırı için gerekir. Anahtar sahibi karması (idempotency) kalır.
+	 *
+	 * @param int    $order_id Sipariş.
+	 * @param string $from     Eski durum.
+	 * @param string $to       Yeni durum.
+	 * @return void
+	 */
+	public static function drop_client_hashes( $order_id, $from, $to ) {
+		unset( $from );
+		if ( in_array( $to, array( 'pending', 'failed' ), true ) || ! function_exists( 'wc_get_order' ) ) {
+			return;
+		}
+		$order = wc_get_order( $order_id );
+		if ( ! $order instanceof \WC_Order || 'yes' !== (string) $order->get_meta( Direct_Order_Factory::FLAG_META ) ) {
+			return;
+		}
+		$changed = false;
+		foreach ( array( Direct_Order_Factory::CLIENT_META, Direct_Order_Factory::TOKEN_META ) as $key ) {
+			if ( '' !== (string) $order->get_meta( $key ) ) {
+				$order->delete_meta_data( $key );
+				$changed = true;
+			}
+		}
+		if ( $changed ) {
+			$order->save();
+		}
 	}
 
 	/**

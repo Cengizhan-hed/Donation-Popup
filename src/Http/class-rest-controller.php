@@ -88,13 +88,95 @@ abstract class Rest_Controller {
 	 * @param string $bucket Uç adı.
 	 * @param int    $limit  Dakika başına üst sınır.
 	 * @param int    $period Pencere (sn).
+	 * @param bool   $donation_bucket Bağış kovası mı (direct, nonce, cart-add): yalnız bunlar güvenilmez IP'de belirteç bazlı gevşer.
 	 * @return true|\WP_Error
 	 */
-	protected function throttle( $bucket, $limit, $period = 60 ) {
-		if ( ! $this->limiter->hit( $bucket, $limit, $period ) ) {
+	protected function throttle( $bucket, $limit, $period = 60, $donation_bucket = false ) {
+		if ( ! $this->limiter->hit( $bucket, $limit, $period, $donation_bucket ) ) {
 			return $this->error( 'donation_panel_rate_limited', 'Too many requests. Please try again shortly.', 429 );
 		}
 		return true;
+	}
+
+	/**
+	 * İstekteki tarayıcı belirtecini (`X-Donation-Panel-Client` başlığı ya da `client_token` alanı) hız sınırlayıcıya bildirir.
+	 * Belirteç yalnız IP güvenilmezken (güvenilen vekil ayarsız) kova anahtarı olur.
+	 *
+	 * @param \WP_REST_Request|null $request Istek.
+	 * @return void
+	 */
+	protected function remember_client( $request ) {
+		if ( ! is_object( $request ) ) {
+			return;
+		}
+		$token = (string) $request->get_header( 'X-Donation-Panel-Client' );
+		if ( '' === $token ) {
+			$token = (string) $request->get_param( 'client_token' );
+		}
+		$this->limiter->set_client_token( $token );
+	}
+
+	/**
+	 * Çerez kimliğiyle nonce/oturum veren uçlar için kökenler arası isteği reddeder: `Sec-Fetch-Site: cross-site` ya da
+	 * site kökeniyle eşleşmeyen `Origin` 403 verir. Başlık yoksa (eski tarayıcı, aynı köken GET) izin verilir.
+	 *
+	 * @param \WP_REST_Request $request Istek.
+	 * @return true|\WP_Error
+	 */
+	protected function require_same_origin( $request ) {
+		$fetch_site = strtolower( trim( (string) $request->get_header( 'Sec-Fetch-Site' ) ) );
+		if ( 'cross-site' === $fetch_site ) {
+			return $this->error( 'donation_panel_cross_origin', 'Cross-site requests are not allowed.', 403 );
+		}
+		$origin = trim( (string) $request->get_header( 'Origin' ) );
+		if ( '' === $origin ) {
+			return true;
+		}
+		$allowed = array_filter( array( self::origin_of( home_url() ), self::origin_of( site_url() ) ) );
+		if ( '' === self::origin_of( $origin ) || ! in_array( self::origin_of( $origin ), $allowed, true ) ) {
+			return $this->error( 'donation_panel_cross_origin', 'Cross-site requests are not allowed.', 403 );
+		}
+		return true;
+	}
+
+	/**
+	 * Bu rotanın yanıtından `Access-Control-*` başlıklarını kaldırır (WordPress çekirdeği Origin'i kimlik bilgisiyle yansıtır;
+	 * nonce yanıtı başka kökene okunmasın). Çekirdeğin `rest_send_cors_headers` işleyicisinden SONRA çalışır.
+	 *
+	 * @param string $route Rota (`/donation-panel/v1/...`).
+	 * @return void
+	 */
+	protected function strip_cors_for( $route ) {
+		add_filter(
+			'rest_pre_serve_request',
+			static function ( $served, $result = null, $request = null ) use ( $route ) {
+				if ( is_object( $request ) && method_exists( $request, 'get_route' ) && $request->get_route() === $route && function_exists( 'header_remove' ) && ! headers_sent() ) {
+					foreach ( array( 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers', 'Access-Control-Expose-Headers' ) as $header ) {
+						header_remove( $header );
+					}
+					header( 'Vary: Origin, Cookie', false );
+				}
+				return $served;
+			},
+			99,
+			3
+		);
+	}
+
+	/**
+	 * Adresin kökeni (küçük harfli şema://sunucu:port); geçersizse ''.
+	 *
+	 * @param string $url Adres.
+	 * @return string
+	 */
+	private static function origin_of( $url ) {
+		$parts = wp_parse_url( (string) $url );
+		if ( ! is_array( $parts ) || empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
+			return '';
+		}
+		$scheme = strtolower( (string) $parts['scheme'] );
+		$port   = isset( $parts['port'] ) ? (int) $parts['port'] : ( 'https' === $scheme ? 443 : 80 );
+		return $scheme . '://' . strtolower( (string) $parts['host'] ) . ':' . $port;
 	}
 
 	/**
