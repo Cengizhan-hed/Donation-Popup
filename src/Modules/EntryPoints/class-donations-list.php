@@ -156,9 +156,9 @@ class Donations_List {
 		$order = isset( $atts['order'] ) ? strtoupper( sanitize_key( (string) $atts['order'] ) ) : 'ASC';
 		$order = 'DESC' === $order ? 'DESC' : 'ASC';
 
-		$image_ratio = isset( $atts['image_ratio'] ) ? (string) $atts['image_ratio'] : '4:3';
+		$image_ratio = isset( $atts['image_ratio'] ) ? (string) $atts['image_ratio'] : '3:2';
 		if ( ! in_array( $image_ratio, array( '1:1', '4:3', '3:2', '16:9', 'original' ), true ) ) {
-			$image_ratio = '4:3';
+			$image_ratio = '3:2';
 		}
 		$align  = isset( $atts['align'] ) ? sanitize_key( (string) $atts['align'] ) : 'center';
 		$align  = 'left' === $align ? 'left' : 'center';
@@ -452,7 +452,7 @@ class Donations_List {
 			. ';--wdp-cols-m:' . (int) $atts['columns_mobile']
 			. ';--wdp-gap:' . (int) $atts['gap'] . 'px';
 		$ratio = self::ratio_css( $atts['image_ratio'] );
-		if ( '' !== $ratio && '4:3' !== $atts['image_ratio'] ) {
+		if ( '' !== $ratio && '3:2' !== $atts['image_ratio'] ) {
 			$style .= ';--wdp-ratio:' . $ratio;
 		}
 

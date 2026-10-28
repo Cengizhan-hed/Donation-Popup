@@ -142,7 +142,8 @@ test('liste: kartlar dikey, görsel üstte, satırda eşit yükseklik, yatay ta�
     const box = await card.boundingBox();
     expect(media, 'görsel/yer tutucu bloğu var').not.toBeNull();
     expect(media.y + media.height, 'görsel gövdenin üstünde').toBeLessThanOrEqual(body.y + 1);
-    expect(Math.abs(media.x - box.x), 'görsel kart genişliğinde').toBeLessThan(1);
+    expect(Math.abs(media.x - box.x), 'görsel kart başında').toBeLessThan(1);
+    expect(Math.abs(media.width - box.width), 'görsel kart genişliğinde').toBeLessThan(1);
     const key = Math.round(box.y);
     rows.set(key, [...(rows.get(key) || []), box.height]);
     // Düğme kartın altında (gövde sonuna yakın).

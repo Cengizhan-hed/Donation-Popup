@@ -8,7 +8,7 @@
   --wdp-cols-t: 2;
   --wdp-cols-m: 1;
   --wdp-gap: 24px;
-  --wdp-ratio: 4 / 3;
+  --wdp-ratio: 3 / 2;
   --wdp-card-radius: 22px;
   --_surface: var(--dp-color-surface, #fff);
   --_text: var(--dp-color-text, #14213d);
@@ -105,6 +105,7 @@
   position: relative;
   display: block;
   flex: none;
+  inline-size: 100%;
   aspect-ratio: var(--wdp-ratio);
   overflow: hidden;
   background: var(--_ph);
@@ -249,6 +250,8 @@
   .wdp-list { grid-template-columns: repeat(var(--wdp-cols-t), minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
+  /* Tek sütunda görsel ekranı kaplamasın (tasarım: ~150 px). */
+  .wdp-card__media { max-block-size: 176px; }
   .wdp-list {
     grid-template-columns: repeat(var(--wdp-cols-m), minmax(0, 1fr));
     gap: min(var(--wdp-gap), 14px);
