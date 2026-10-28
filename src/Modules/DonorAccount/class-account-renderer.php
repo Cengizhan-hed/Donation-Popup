@@ -111,13 +111,13 @@ final class Account_Renderer {
 		$guard = '<div class="dp-ac__guard" data-dp-acc-guard><svg class="dp-ac__ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>' . esc_html__( 'Gifts you made earlier with this email are added to your account automatically once you verify your email.', 'woo-donation-popup' ) . '</span></div>';
 
 		return '<div class="dp dp-ac" data-dp-acc' . $data . '>'
-			. '<div class="dp-ac__overlay" data-dp-acc-overlay>'
-			. '<div class="dp-ac__surface" id="' . esc_attr( self::DIALOG_ID ) . '" role="dialog" aria-modal="true" aria-labelledby="' . esc_attr( self::DIALOG_ID ) . '-title" tabindex="-1" data-dp-acc-surface>'
+			. '<dialog class="dp-ac__overlay" id="' . esc_attr( self::DIALOG_ID ) . '" role="dialog" aria-modal="true" aria-labelledby="' . esc_attr( self::DIALOG_ID ) . '-title" data-dp-acc-overlay>'
+			. '<div class="dp-ac__surface" tabindex="-1" data-dp-acc-surface>'
 			. '<div class="dp-ac__handle" aria-hidden="true"></div>'
 			. '<div class="dp-ac__head"><h2 class="dp-ac__title" id="' . esc_attr( self::DIALOG_ID ) . '-title" data-dp-acc-title>' . esc_html__( 'Welcome', 'woo-donation-popup' ) . '</h2>'
 			. '<button type="button" class="dp-ac__close" data-dp-acc-close aria-label="' . esc_attr__( 'Close', 'woo-donation-popup' ) . '"><svg class="dp-ac__ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
 			. '<div class="dp-ac__body"><p class="dp-ac__lead" data-dp-acc-lead>' . esc_html( (string) ( isset( $attributes['lead-login'] ) ? $attributes['lead-login'] : '' ) ) . '</p>' . $tabs . $login . $register . $reset . $sent . $guard . '</div>'
-			. '</div></div></div>';
+			. '</div></dialog></div>';
 	}
 
 	/**

@@ -200,6 +200,17 @@ test.describe('mobil form davranışı', () => {
     test.skip((await custom.count()) === 0, 'serbest tutar alanı yok');
     const bar = page.locator('.dp-actionbar');
     await expect(bar).toBeVisible();
+    // Açılış animasyonu (alttan kayma) bitmeden ölçmek yarışa yol açar: panel konumu iki kare üst üste aynı olana dek bekle.
+    await page.waitForFunction(() => {
+      const el = document.querySelector('[data-dp-surface]');
+      if (!el) {
+        return false;
+      }
+      const top = Math.round(el.getBoundingClientRect().top * 10);
+      const prev = window.__dpSurfaceTop;
+      window.__dpSurfaceTop = top;
+      return prev === top;
+    }, null, { polling: 'raf' });
     await custom.focus();
     await expect(page.locator('[data-dp-exp]')).toHaveAttribute('data-dp-kb', '1');
     await expect(bar).toBeHidden();

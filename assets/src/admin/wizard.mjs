@@ -31,8 +31,11 @@ export function initWizard(root, api, notify, t, syncWhen) {
     const custom = (root.querySelector('input[name="design.colors"]:checked') || {}).value === 'custom';
     const brand = root.querySelector('[data-dpa-field="design.brand"]');
     const accent = root.querySelector('[data-dpa-field="design.accent"]');
-    phone.style.setProperty('--dpa-pv-brand', custom && brand ? brand.value : '');
-    phone.style.setProperty('--dpa-pv-accent', custom && accent ? accent.value : '');
+    // Temanın renkleri seçiliyse önizleme tema paletinden bulunan renkleri gösterir (yoksa varsayılan).
+    const themeBrand = root.getAttribute('data-dpa-theme-brand') || '';
+    const themeAccent = root.getAttribute('data-dpa-theme-accent') || '';
+    phone.style.setProperty('--dpa-pv-brand', custom ? (brand ? brand.value : '') : themeBrand);
+    phone.style.setProperty('--dpa-pv-accent', custom ? (accent ? accent.value : '') : themeAccent);
   };
 
   const paint = () => {

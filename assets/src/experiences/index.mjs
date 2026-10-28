@@ -1,9 +1,16 @@
 /**
  * Donation Panel — Experiences giriş noktası (yalnız form görünen sayfada yüklenir).
  */
+import '../ui2-shared/controls.css';
 import './base.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
+
+// Ana stil render engellemeyen yüklenmiş olabilir (media="print" + data-dp-defer): betik açılınca etkinleşir.
+document.querySelectorAll('link[data-dp-defer]').forEach((link) => {
+  link.media = 'all';
+  link.removeAttribute('data-dp-defer');
+});
 
 /**
  * @param {HTMLElement} root Kök.
