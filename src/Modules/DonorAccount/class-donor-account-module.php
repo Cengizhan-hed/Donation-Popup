@@ -27,10 +27,9 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Donor_Account_Module implements Module_Interface {
 
-	const SLUG       = 'donor_account';
-	const SHORTCODE  = 'donation_panel_account';
-	const ENDPOINT   = 'my-donations';
-	const FLUSH_FLAG = 'donation_panel_account_rewrite';
+	const SLUG      = 'donor_account';
+	const SHORTCODE = 'donation_panel_account';
+	const ENDPOINT  = 'my-donations';
 
 	/**
 	 * Bağımlılık kabı.
@@ -113,10 +112,18 @@ final class Donor_Account_Module implements Module_Interface {
 	 * @return void
 	 */
 	public function maybe_flush_rewrite() {
-		if ( self::endpoint() !== get_option( self::FLUSH_FLAG ) ) {
-			flush_rewrite_rules( false );
-			update_option( self::FLUSH_FLAG, self::endpoint(), false );
+		// Ek sorgu yok: `rewrite_rules` zaten otomatik yüklenir; uç nokta kurallarda yoksa bir kez yenilenir.
+		// Kural listesi boşsa (düz bağlantılar) yenilenecek bir şey yoktur.
+		$rules = get_option( 'rewrite_rules' );
+		if ( ! is_array( $rules ) || ! $rules ) {
+			return;
 		}
+		foreach ( array_keys( $rules ) as $pattern ) {
+			if ( false !== strpos( (string) $pattern, self::endpoint() ) ) {
+				return;
+			}
+		}
+		flush_rewrite_rules( false );
 	}
 
 	/**

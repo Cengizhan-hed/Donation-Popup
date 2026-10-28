@@ -13,6 +13,7 @@ use DonationPanel\Compat\Public_Contract;
 use DonationPanel\Domain\Addon_Product_Visibility;
 use DonationPanel\Domain\Campaign_Totals;
 use DonationPanel\Frontend\Assets;
+use DonationPanel\Frontend\Front_Gate;
 use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest\Ping_Controller;
@@ -136,7 +137,7 @@ final class Plugin {
 
 		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ), 20 );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-		add_action( 'wp_enqueue_scripts', array( $this->container->get( Assets::class ), 'register_all' ), 5 );
+		// Koşulsuz `wp_enqueue_scripts` kancası YOK (CLAUDE.md §24): varlıklar yalnız çizim anında Assets::enqueue ile kaydedilir.
 	}
 
 	/**
@@ -255,12 +256,19 @@ final class Plugin {
 	 */
 	public function on_plugins_loaded() {
 		$this->container->get( Migrations::class )->run();
-
-		$this->register_core_hooks();
-		Public_Contract::register();
+		// Göçlerden SONRA (göç, eski kayıtlardan ayar üretir): küçük, her istekte okunan kayıtlar otomatik yüklenir.
+		Settings::ensure_autoload();
 
 		$registry = $this->container->get( Module_Registry::class );
-		$registry->boot( $this->container );
+		if ( Front_Gate::front_request_disabled() ) {
+			// DONATION_PANEL_DISABLE / `general.disable_frontend`: ön yüz isteğinde bağışçı yüzeyi yok; sepet/sipariş kancaları sürer.
+			$this->register_core_hooks();
+			add_action( 'init', array( Front_Gate::class, 'register_silent_shortcodes' ), 99 );
+		} else {
+			$this->register_core_hooks();
+			Public_Contract::register();
+			$registry->boot( $this->container );
+		}
 
 		// Tek yönetici menüsü + yönetici REST uçları: yalnız yönetim alanında ya da yönetici REST isteğinde yüklenir.
 		$uri        = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- yalnız alt dize karşılaştırması.
@@ -291,6 +299,7 @@ final class Plugin {
 		Order_Hooks::init();
 		Addon_Product_Visibility::init();
 		Donation_Purchasable::init();
+		// Liste önbelleği geçersizleme kancaları (çıktı yok) ön yüz kapalıyken de çalışır.
 		Donations_List::init();
 		( new \DonationPanel\WooCommerce\Checkout\Checkout_Prefill() )->register();
 	}

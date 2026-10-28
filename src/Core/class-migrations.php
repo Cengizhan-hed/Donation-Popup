@@ -116,7 +116,7 @@ class Migrations {
 				call_user_func( $this->steps[ $step_id ]['callback'] );
 				$state['done'][ $step_id ] = time();
 				$state['version']          = max( $state['version'], $this->steps[ $step_id ]['version'] );
-				update_option( self::OPTION_NAME, $state, false );
+				update_option( self::OPTION_NAME, $state, true ); // Her istekte okunur: otomatik yüklenir (ek sorgu yok).
 				$ran[] = $step_id;
 			}
 			delete_option( self::ERROR_OPTION );

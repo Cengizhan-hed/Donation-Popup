@@ -101,7 +101,14 @@ class Donation_Scope {
 	 * @return string
 	 */
 	public static function product_flag( $product ) {
-		$raw = $product->get_meta( self::META, true );
+		// WP meta önbelleğinden (döngü/ürün sorgusu zaten doldurur): `WC_Data::get_meta` ürün başına AYRI bir
+		// `read_meta_data` sorgusu açar (mağaza döngüsünde ürün sayısı kadar ek sorgu). Kaydedilmemiş bellek içi
+		// değişiklik varsa (`get_meta` ≠ saklı) ürün nesnesi okunur.
+		$id  = (int) $product->get_id();
+		$raw = ( $id > 0 && function_exists( 'get_post_meta' ) ) ? get_post_meta( $id, self::META, true ) : $product->get_meta( self::META, true );
+		if ( '' === $raw && method_exists( $product, 'get_changes' ) && $product->get_changes() ) {
+			$raw = $product->get_meta( self::META, true );
+		}
 		$raw = is_scalar( $raw ) ? strtolower( trim( (string) $raw ) ) : '';
 		return in_array( $raw, array( 'yes', 'no' ), true ) ? $raw : '';
 	}

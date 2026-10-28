@@ -128,7 +128,8 @@ final class Experiences_Module implements Module_Interface {
 
 		$args = array(
 			'rest_url'     => esc_url_raw( rest_url( 'donation-panel/v1/' ) ),
-			'nonce'        => wp_create_nonce( 'wp_rest' ),
+			// Sayfa HTML'inde nonce YOK (önbellek/kullanıcıya özel içerik yok, CLAUDE.md §24): ilk etkileşimde REST'ten alınır.
+			'nonce'        => '',
 			'checkout_url' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
 		);
 		if ( '' !== trim( (string) $atts['button_text'] ) ) {

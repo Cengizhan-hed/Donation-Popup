@@ -59,7 +59,10 @@ final class LoggerAndPluginTest extends TestCase {
 
 		$this->assertCount(1, WDP_Test_State::$actions['plugins_loaded']);
 		$this->assertCount(1, WDP_Test_State::$actions['rest_api_init']);
-		$this->assertCount(1, WDP_Test_State::$actions['wp_enqueue_scripts']);
+		// Sıfır yük (CLAUDE.md §24): çekirdek koşulsuz `wp_enqueue_scripts` kancası bağlamaz.
+		$this->assertArrayNotHasKey('wp_enqueue_scripts', WDP_Test_State::$actions);
+		$this->assertArrayNotHasKey('wp_head', WDP_Test_State::$actions);
+		$this->assertArrayNotHasKey('wp_footer', WDP_Test_State::$actions);
 
 		$container = $first->container();
 		$this->assertInstanceOf(Container::class, $container);
@@ -88,21 +91,24 @@ final class LoggerAndPluginTest extends TestCase {
 		$this->assertTrue(true);
 	}
 
-	public function test_enqueue_before_wp_enqueue_scripts_is_deferred_without_duplicates(): void {
+	public function test_enqueue_registers_lazily_and_enqueues_at_render_time_even_before_wp_enqueue_scripts(): void {
 		$dir = sys_get_temp_dir() . '/wdp-assets-' . uniqid();
 		mkdir($dir . '/assets/build/blk', 0777, true);
 		file_put_contents($dir . '/assets/build/blk/index.js', '//');
 		$assets = new Assets($dir, 'https://example.test/p');
 		$assets->define('blk', 'assets/build/blk/index.js', '');
-		add_action('wp_enqueue_scripts', array( $assets, 'register_all' ), 5);
 
+		// Tanım tek başına hiçbir şey kaydetmez ve hiçbir kanca bağlamaz (sıfır yük).
+		$this->assertArrayNotHasKey('__scripts', WDP_Test_State::$options);
+		$this->assertArrayNotHasKey('wp_enqueue_scripts', WDP_Test_State::$actions);
+
+		// Blok temasında içerik `wp_enqueue_scripts` öncesi çizilir: kayıt + kuyruk aynı çağrıda yapılır (kanca beklenmez).
+		$this->assertSame(0, did_action('wp_enqueue_scripts'));
 		$assets->enqueue('blk');
 		$assets->enqueue('blk');
-		$this->assertArrayNotHasKey('__enqueued_scripts', WDP_Test_State::$options);
-
-		WDP_Test_State::$did_actions['wp_enqueue_scripts'] = 1;
-		do_action('wp_enqueue_scripts');
-		$this->assertSame(array( 'donation-panel-blk' ), WDP_Test_State::$options['__enqueued_scripts']);
+		$this->assertCount(1, WDP_Test_State::$options['__scripts']);
+		$this->assertSame(array( 'donation-panel-blk', 'donation-panel-blk' ), WDP_Test_State::$options['__enqueued_scripts']);
+		$this->assertArrayNotHasKey('wp_enqueue_scripts', WDP_Test_State::$actions);
 
 		unlink($dir . '/assets/build/blk/index.js');
 		rmdir($dir . '/assets/build/blk');
