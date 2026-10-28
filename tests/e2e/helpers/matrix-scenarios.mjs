@@ -833,24 +833,34 @@ export async function runDeviceScenarios({
 
       await emptyCartStoreApi(page, baseUrl);
       const scope = await openProductForm(page, baseUrl, productPath, productId);
-      await fillDonationForm(scope, store, { amount: '10,50' });
       if (Number(store.decimals) > 0) {
+        await fillDonationForm(scope, store, { amount: '10,50' });
         await goCheckoutFromForm(page, scope, 'amount-tr-comma');
         await cartHasAmount(page, baseUrl, 10.5, store);
         return;
       }
+      // Ondalıksız mağazada "10,50" belirsiz: istemci ana düğmeyi pasif (aria-disabled) tutar. Playwright aria-disabled
+      // düğmeye tıklamaz; gerçek bağışçı dokunabilir -> force ile dokunulur; tutar hatası görünür, istek/yerel gönderim olmaz.
+      const tryForm = scope.locator(DP_SEL.form).first();
+      await fillAmountStep(tryForm, store, '10,50');
+      const trySubmit = tryForm.locator(DP_SEL.submit).first();
+      await trySubmit.waitFor({ state: 'visible', timeout: CHECK_MS });
+      if ((await trySubmit.getAttribute('aria-disabled')) !== 'true') throw new Error('TRY 10,50 için ana düğme pasif olmalıydı');
       const probeNet = attachSubmitNetworkProbe(page);
+      let cartRequests = 0;
+      const countCart = (req) => {
+        if (isDonationAddToCartRequest(req)) cartRequests += 1;
+      };
+      page.on('request', countCart);
       try {
-        const [res] = await Promise.all([
-          page.waitForResponse((r) => isDonationAddToCartRequest(r.request()), { timeout: CART_MS }),
-          scope.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS, noWaitAfter: true }),
-        ]);
-        if (res.status() !== 400) throw new Error(`TRY 10,50 reddedilmeliydi, status=${res.status()}`);
+        await trySubmit.click({ timeout: CHECK_MS, noWaitAfter: true, force: true });
         const err = scope.locator(DP_SEL.error('amount')).filter({ visible: true }).first();
         await err.waitFor({ state: 'visible', timeout: CHECK_MS });
         if (!String((await err.textContent()) || '').trim()) throw new Error('tutar hata metni boş');
+        if (cartRequests) throw new Error(`TRY 10,50 için sepet isteği gitmemeliydi (${cartRequests})`);
         if (probeNet.nativeDoc.length) throw new Error(`yerel form gönderimi ${probeNet.nativeDoc.join(', ')}`);
       } finally {
+        page.off('request', countCart);
         probeNet.detach();
       }
       await shot(page, shotDir, 'amount-tr-comma-warn');
