@@ -89,7 +89,7 @@ class Loop_Price_Filters {
 			// Aynı istekte bu ürün için başka bir giriş (form/düğme) çizildiyse yalnız bağlantı olarak kalır.
 			if ( ! Render_Registry::has_product_ui( $product_id ) ) {
 				Render_Registry::mark_trigger( $product_id );
-				Donations_List::enqueue_assets( true );
+				Donations_List::enqueue_trigger_assets();
 				$attrs .= ' data-wdp-form="' . esc_attr( (string) $product_id ) . '"'
 					. ' data-wdp-kind="' . esc_attr( 'popup' === $mode ? 'popup' : 'side_panel' ) . '"'
 					. ' data-wdp-rest="' . esc_url( rest_url( 'donation-panel/v1/' ) ) . '"'
