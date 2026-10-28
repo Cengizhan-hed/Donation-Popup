@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
 import {
   advanceToDetails,
+  ensureDetailsStepForEmptySubmit,
   returnToDetails,
   collectHiddenTriggerDump,
   fillAmountStep,
@@ -231,6 +232,41 @@ describe('advanceToDetails', () => {
       });
       await assert.rejects(advanceToDetails(formOf(page.locator('body')), 1500), /vergi indirimi adımı bilgi adımından sonra/);
       assert.notEqual(await page.title(), 'submitted');
+    });
+  });
+});
+
+describe('ensureDetailsStepForEmptySubmit (hazır tutar kartlı form)', () => {
+  const PRESET_FLOW = (disabled) => `
+<form data-dp-form novalidate>
+  <section data-dp-step="amount"><button type="button" class="donation-panel-amount" data-dp-preset="50">50</button></section>
+  <section data-dp-step="details" hidden><input name="donation_full_name"></section>
+  <button type="submit" data-dp-submit aria-disabled="${disabled}">Continue</button>
+</form>
+<script>
+  window.__disabledClicks = 0;
+  const f = document.querySelector('[data-dp-form]');
+  const btn = f.querySelector('[data-dp-submit]');
+  btn.addEventListener('click', () => { if (btn.getAttribute('aria-disabled') === 'true') window.__disabledClicks++; });
+  f.querySelector('[data-dp-preset]').addEventListener('click', () => btn.setAttribute('aria-disabled', 'false'));
+  f.addEventListener('submit', (e) => {
+    e.preventDefault();
+    f.querySelector('[data-dp-step="amount"]').hidden = true;
+    f.querySelector('[data-dp-step="details"]').hidden = false;
+  });
+</script>`;
+
+  it('tutar adımında pasif düğmeye tıklamaz; tutar seçip bilgi adımına geçer', async () => {
+    await withPage(PRESET_FLOW('true'), async (page) => {
+      await ensureDetailsStepForEmptySubmit(formOf(page.locator('body')), 3000);
+      assert.equal(await page.locator('[data-dp-step="details"]').isVisible(), true);
+      assert.equal(await page.evaluate(() => window.__disabledClicks), 0);
+    });
+  });
+
+  it('negatif: tutar adımında düğme pasif değilse açık hata verir', async () => {
+    await withPage(PRESET_FLOW('false'), async (page) => {
+      await assert.rejects(ensureDetailsStepForEmptySubmit(formOf(page.locator('body')), 1500), /düğme pasif değil/);
     });
   });
 });

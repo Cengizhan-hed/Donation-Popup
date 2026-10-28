@@ -92,6 +92,21 @@ export async function returnToDetails(form, timeout = CHECK_MS) {
 }
 
 /**
+ * Boş gönderim hazırlığı (serbest tutar alanı olmayan, hazır tutar kartlı form): tutar adımındaysak ana düğmenin
+ * pasif (aria-disabled=true) olduğu doğrulanır (tıklanmaz), sonra tutar seçilip bilgi adımına geçilir.
+ * Bilgi adımı zaten görünürse bir şey yapmaz.
+ * @param {import('@playwright/test').Locator} form
+ * @param {number} [timeout]
+ */
+export async function ensureDetailsStepForEmptySubmit(form, timeout = CHECK_MS) {
+  const details = form.locator(DP_SEL.detailsStep).first();
+  if (await isStepShown(details)) return;
+  const pending = await form.locator(DP_SEL.submit).first().getAttribute('aria-disabled');
+  if (pending !== 'true') throw new Error(`tutar adımında düğme pasif değil (aria-disabled=${pending})`);
+  await advanceToDetails(form, timeout);
+}
+
+/**
  * Bilgi adımı görünene kadar "Devam"a basar (adımlar tek sayfaysa bir şey yapmaz).
  * @param {import('@playwright/test').Locator} form
  * @param {number} [timeout]
