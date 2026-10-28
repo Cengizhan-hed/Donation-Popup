@@ -40,7 +40,7 @@ function mount(root) {
   let busy = false;
   let refreshSeq = 0;
 
-  const triggers = () => Array.from(document.querySelectorAll('[data-dp-sc-open]'));
+  const triggers = () => Array.from(document.querySelectorAll('[data-dp-sc-open], [data-dp-sc-fab]'));
 
   const visibleFocusables = () =>
     Array.from(surface.querySelectorAll(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
@@ -315,19 +315,21 @@ function mount(root) {
         window.history.back();
       }
     }
+    const returnTo = lastFocus;
+    lastFocus = null;
     closeTimer = window.setTimeout(
       () => {
         if (overlay.open) {
           overlay.close();
         }
         overlay.removeAttribute('open');
+        // Odak dönüşü dialog kapandıktan sonra (modal açıkken arka plan inert; WebKit odağı kabul etmez).
+        if (!opened && returnTo && typeof returnTo.focus === 'function' && returnTo.isConnected && !returnTo.hidden) {
+          returnTo.focus();
+        }
       },
       reduced.matches ? 0 : 260
     );
-    if (lastFocus && typeof lastFocus.focus === 'function' && lastFocus.isConnected && !lastFocus.hidden) {
-      lastFocus.focus();
-    }
-    lastFocus = null;
   }
 
   // Esc: yerel kapatma yerine kendi akışımız (animasyon, odak dönüşü, geri tuşu).
@@ -359,7 +361,7 @@ function mount(root) {
     if (!el) {
       return;
     }
-    const opener = el.closest('[data-dp-sc-open]');
+    const opener = el.closest('[data-dp-sc-open], [data-dp-sc-fab]');
     if (opener) {
       event.preventDefault();
       open(opener);

@@ -189,6 +189,10 @@ export function createLayer(root, hooks = {}) {
       overlay.close();
     }
     overlay.removeAttribute('open');
+    // Odak dönüşü dialog kapandıktan sonra (modal açıkken arka plan inert; WebKit odağı kabul etmez).
+    if (!opened) {
+      trigger.focus({ preventScroll: true });
+    }
   };
 
   const open = () => {
@@ -254,7 +258,6 @@ export function createLayer(root, hooks = {}) {
       }
     }
     closeTimer = window.setTimeout(finishClose, reduced.matches ? 0 : CLOSE_MS);
-    trigger.focus({ preventScroll: true });
     root.dispatchEvent(new CustomEvent('dp:close', { bubbles: true }));
   };
 

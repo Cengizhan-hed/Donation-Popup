@@ -178,7 +178,7 @@ final class Side_Cart_Renderer {
 	 * @return string
 	 */
 	public static function floating_button( $count ) {
-		return '<button type="button" class="dp-sc__fab" data-dp-sc-open data-dp-sc-fab hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
+		return '<button type="button" class="dp-sc__fab" data-dp-sc-fab hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
 			. self::cart_icon() . '<span class="dp-sc__sr">' . esc_html__( 'Donation basket', 'woo-donation-popup' ) . '</span>' . self::count_badge( $count ) . '</button>';
 	}
 
