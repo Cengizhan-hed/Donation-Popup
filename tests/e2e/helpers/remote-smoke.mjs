@@ -5,7 +5,7 @@
 import path from 'node:path';
 import { withCacheBust } from './env.mjs';
 import { DP_SEL, SEL } from './selectors.mjs';
-import { advanceToDetails, clickSubmit, formOf } from './dp-form.mjs';
+import { advanceToDetails, clickSubmit, ensureDetailsStepForEmptySubmit, formOf } from './dp-form.mjs';
 import {
   applyTimeoutsToPage,
   isRemoteProfile,
@@ -383,6 +383,9 @@ export async function runRemoteSmokeChecks(ctx) {
       const pending = await submitBtn.getAttribute('aria-disabled');
       if (pending !== 'true') throw new Error(`tutar boşken düğme pasif değil (aria-disabled=${pending})`);
       await advanceToDetails(formOf(shell));
+    } else {
+      // Hazır tutar kartlı ürün (serbest tutar alanı yok): pasif düğmeyi doğrula, tutar seçip bilgi adımına geç.
+      await ensureDetailsStepForEmptySubmit(formOf(shell));
     }
     const name = formOf(shell).locator(SEL.donorName).first();
     if ((await name.count()) > 0 && (await name.isVisible())) await name.fill('');
