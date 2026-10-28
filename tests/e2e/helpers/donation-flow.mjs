@@ -75,16 +75,19 @@ export async function fillDonationShell(shell, spec) {
 export async function resolveDonationFillAmount(shell, currency) {
   const form = formOf(shell);
   await form.waitFor({ state: 'visible', timeout: checkMs() });
-  const bounds = await form.evaluate((f) => {
+  const readBounds = () => form.evaluate((f) => {
     // Serbest tutar formunda (ör. Zekat) önerilen yoksa ilk hazır tutar geçerli bir tutardır.
     const rec =
       f.querySelector('button.donation-panel-amount[aria-checked="true"][data-dp-preset]') ||
       f.querySelector('button.donation-panel-amount[data-dp-preset]');
+    // Hazır tutar yoksa (sabit birim / adet / hisse formları): birim fiyatı ya da gizli tutar alanı.
+    const hidden = f.querySelector('input[type="hidden"][name="amount"]');
+    const fallback = f.getAttribute('data-unit') || (hidden && hidden.value) || '';
     const custom = f.querySelector('input.donation-panel-custom__in[name="amount"]');
     return {
       min: f.getAttribute('data-min') || '',
       max: '',
-      recommended: (rec && rec.getAttribute('data-dp-preset')) || '',
+      recommended: (rec && rec.getAttribute('data-dp-preset')) || fallback,
       type: custom ? 'text' : '',
       step: '',
       pageCurrency: {
@@ -94,6 +97,13 @@ export async function resolveDonationFillAmount(shell, currency) {
       },
     };
   });
+  // Form çizilirken tutar öğeleri henüz yoksa kısa süre yokla (ilk geçerli değerde çık).
+  let bounds = await readBounds();
+  const deadline = Date.now() + Math.min(checkMs(), 5000);
+  while (!(Number.parseFloat(bounds.min) > 0 || Number.parseFloat(bounds.recommended) > 0) && Date.now() < deadline) {
+    await form.page().waitForTimeout(150);
+    bounds = await readBounds();
+  }
   const fillCurrency = mergeFillCurrency(currency, bounds.pageCurrency);
   const picked = pickDonationFillAmount(bounds, fillCurrency);
   if (Number.isFinite(picked.amount) && picked.amount > 0) return picked;

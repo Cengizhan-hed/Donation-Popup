@@ -1259,6 +1259,8 @@ async function runSubmitFaultChecks({ browser, contextOpts, env, productPath, gu
           return;
         }
         const name = form.locator(SEL.donorName).first();
+        // Hata sonrası form tutar adımına dönmüş olabilir (ad alanı gizli): bilgi adımına tutar seçerek geç.
+        if (!(await name.isVisible())) await advanceToDetails(form);
         await name.fill('Fault Unlock');
         if ((await name.inputValue()) !== 'Fault Unlock') {
           failures.push(makeFailure({ check: 'submit-fault', description: `Hata sonrası ad alanı yazılamadı (${mode})` }));
@@ -3327,7 +3329,21 @@ export async function captureAll({
       const anyKind = productId
         ? page.locator(`[data-dp-exp][data-dp-product="${productId}"] [data-dp-open]`)
         : page.locator('[data-dp-exp] [data-dp-open]');
-      if ((await anyKind.count()) > 0) trigger = anyKind.first();
+      const total = await anyKind.count();
+      if (total > 0) {
+        // `.first()` gizli bir öğeye denk gelebilir; görünür ilk adayı seç.
+        let pickedIdx = -1;
+        for (let i = 0; i < total; i += 1) {
+          if (await anyKind.nth(i).isVisible()) {
+            pickedIdx = i;
+            break;
+          }
+        }
+        if (pickedIdx < 0) {
+          return { ok: false, detail: `trigger-gorunmez adaylar=${total} hepsi gizli (productId=${productId || 0})` };
+        }
+        trigger = anyKind.nth(pickedIdx);
+      }
     }
     if ((await trigger.count()) === 0) {
       const ids = await page
