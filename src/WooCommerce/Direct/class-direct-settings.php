@@ -51,20 +51,6 @@ final class Direct_Settings {
 	}
 
 	/**
-	 * Ürün kimliğinden okur (ürün bulunamazsa false).
-	 *
-	 * @param int $product_id Ürün.
-	 * @return bool
-	 */
-	public static function enabled_for_id( $product_id ) {
-		if ( ! function_exists( 'wc_get_product' ) || (int) $product_id < 1 ) {
-			return false;
-		}
-		$product = wc_get_product( (int) $product_id );
-		return $product ? self::enabled_for( $product ) : false;
-	}
-
-	/**
 	 * Genel varsayılan (`direct.enabled`; varsayılan kapalı).
 	 *
 	 * @return bool

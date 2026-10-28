@@ -9,9 +9,7 @@ namespace DonationPanel\WooCommerce;
 
 use DonationPanel\Domain\Addon_Settings;
 use DonationPanel\Domain\Campaign_Goal;
-use DonationPanel\Domain\Cover_Fee;
 use DonationPanel\Domain\Donation_Scope;
-use DonationPanel\Domain\Donation_Type;
 use DonationPanel\Domain\Placement_Settings;
 use DonationPanel\Domain\Progress_Currency;
 use DonationPanel\Support\Price;
@@ -198,26 +196,6 @@ class Cart_Hooks {
 	}
 
 	/**
-	 * Cover-fee percent for a product. ALWAYS read from product meta (never from the client);
-	 * 0 when the product has the fee disabled. Runtime-clamped to 0.5–15.
-	 *
-	 * @param \WC_Product|int $product Product or ID.
-	 * @return float
-	 */
-	public static function get_product_cover_fee_percent( $product ) {
-		if ( is_numeric( $product ) ) {
-			$product = wc_get_product( (int) $product );
-		}
-		if ( ! $product || ! is_object( $product ) || ! method_exists( $product, 'get_meta' ) ) {
-			return 0.0;
-		}
-		if ( 'yes' !== $product->get_meta( '_enable_cover_fee' ) ) {
-			return 0.0;
-		}
-		return Cover_Fee::clamp_percent( $product->get_meta( '_cover_fee_percent' ) );
-	}
-
-	/**
 	 * Unit amount including the cover fee.
 	 *
 	 * @param float $amount  Base unit amount.
@@ -232,29 +210,6 @@ class Cart_Hooks {
 		}
 		$dp = function_exists( 'wc_get_price_decimals' ) ? (int) wc_get_price_decimals() : 2;
 		return round( $amount * ( 1 + ( $percent / 100 ) ), max( 0, $dp ) );
-	}
-
-	/**
-	 * Whether the product form has the quantity selector (fixed type only; default on).
-	 *
-	 * @param \WC_Product $product Product.
-	 * @return bool
-	 */
-	public static function product_allows_quantity( $product ) {
-		if ( ! $product || ! is_object( $product ) || ! method_exists( $product, 'get_meta' ) ) {
-			return true;
-		}
-		if ( 'no' === $product->get_meta( '_enable_quantity' ) ) {
-			return false;
-		}
-		$type = Donation_Type::infer_from_meta(
-			array(
-				'_allow_custom_price'    => (string) $product->get_meta( '_allow_custom_price' ),
-				'_allow_multiple_shares' => (string) $product->get_meta( '_allow_multiple_shares' ),
-				'_enable_progress_bar'   => (string) $product->get_meta( '_enable_progress_bar' ),
-			)
-		);
-		return Donation_Type::FIXED === $type;
 	}
 
 	/**

@@ -1160,24 +1160,4 @@ class Phone_Countries {
 			'max' => 12,
 		);
 	}
-
-	/**
-	 * Compact list for frontend localization.
-	 *
-	 * @return array<int, array{iso:string,name:string,dial:string,nationalMin:int,nationalMax:int}>
-	 */
-	public static function get_countries_for_js() {
-		$out = array();
-		foreach ( self::get_countries() as $iso => $row ) {
-			$length = self::get_national_length_for_iso( $iso );
-			$out[]  = array(
-				'iso'         => $iso,
-				'name'        => $row['name'],
-				'dial'        => $row['dial'],
-				'nationalMin' => $length['min'],
-				'nationalMax' => $length['max'],
-			);
-		}
-		return $out;
-	}
 }
