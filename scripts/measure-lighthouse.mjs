@@ -11,7 +11,9 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import http from 'node:http';
+import zlib from 'node:zlib';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import { loadMatrix } from '../tests/e2e/helpers/matrix-cover.mjs';
@@ -54,15 +56,76 @@ export function judge(off, on) {
   return out;
 }
 
-function lighthouse(url) {
+const COMPRESSIBLE = /^(?:text\/|application\/(?:javascript|json|xml)|image\/svg)/i;
+
+/**
+ * Metin yanıtlarını gzip'leyen ters vekil (üretim sunucusu davranışı).
+ * @param {number} listen Dinlenen port.
+ * @param {number} target Hedef (PHP) port.
+ * @return {Promise<import('node:http').Server>} Sunucu.
+ */
+function startGzipProxy(listen, target) {
+  return new Promise((resolve, reject) => {
+    const srv = http.createServer((req, res) => {
+      const up = http.request({ host: '127.0.0.1', port: target, method: req.method, path: req.url, headers: { ...req.headers, 'accept-encoding': 'identity' } }, (r) => {
+        const chunks = [];
+        r.on('data', (c) => chunks.push(c));
+        r.on('end', () => {
+          let body = Buffer.concat(chunks);
+          const headers = { ...r.headers };
+          delete headers['transfer-encoding'];
+          if (/\bgzip\b/.test(String(req.headers['accept-encoding'] || '')) && COMPRESSIBLE.test(String(headers['content-type'] || '')) && body.length > 512) {
+            body = zlib.gzipSync(body, { level: 6 });
+            headers['content-encoding'] = 'gzip';
+            headers.vary = 'Accept-Encoding';
+          }
+          headers['content-length'] = String(body.length);
+          res.writeHead(r.statusCode || 200, headers);
+          res.end(body);
+        });
+      });
+      up.on('error', () => {
+        res.writeHead(502);
+        res.end();
+      });
+      req.pipe(up);
+    });
+    srv.on('error', reject);
+    srv.listen(listen, '127.0.0.1', () => resolve(srv));
+  });
+}
+
+/** Eşzamansız çalışır (aynı süreçteki gzip vekili yanıt verebilsin). */
+function runLighthouse(url) {
   const bin = path.join(ROOT, 'node_modules/.bin/lighthouse');
-  const res = spawnSync(
-    bin,
-    [url, '--output=json', '--quiet', '--only-categories=performance', '--form-factor=mobile', '--chrome-flags=--headless=new --no-sandbox --disable-gpu'],
-    { env: { ...process.env, CHROME_PATH: chromium.executablePath() }, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8', timeout: 180000 }
-  );
-  if (res.status !== 0) throw new Error(`lighthouse çıkış ${res.status}: ${String(res.stderr).slice(0, 300)}`);
-  const j = JSON.parse(res.stdout);
+  return new Promise((resolve, reject) => {
+    const child = spawn(bin, [url, '--output=json', '--quiet', '--only-categories=performance', '--form-factor=mobile', '--chrome-flags=--headless=new --no-sandbox --disable-gpu'], {
+      env: { ...process.env, CHROME_PATH: chromium.executablePath() },
+    });
+    const out = [];
+    const err = [];
+    const timer = setTimeout(() => child.kill('SIGKILL'), 180000);
+    child.stdout.on('data', (c) => out.push(c));
+    child.stderr.on('data', (c) => err.push(c));
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      if (code !== 0) reject(new Error(`lighthouse çıkış ${code}: ${Buffer.concat(err).toString().slice(0, 300)}`));
+      else resolve(Buffer.concat(out).toString());
+    });
+  });
+}
+
+async function lighthouse(url, diagTag = '') {
+  const j = JSON.parse(await runLighthouse(url));
+  if (diagTag) {
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    const a2 = j.audits;
+    const lcpEl = a2['largest-contentful-paint-element']?.details?.items?.[0]?.items?.[0]?.node;
+    const lcpParts = a2['largest-contentful-paint-element']?.details?.items?.[1]?.items || [];
+    const reqs = (a2['network-requests']?.details?.items || []).map((r) => ({ url: r.url.replace(/^https?:\/\/[^/]+/, '').slice(0, 90), start: Math.round(r.networkRequestTime), end: Math.round(r.networkEndTime), kb: Math.round((r.transferSize || 0) / 1024), type: r.resourceType, prio: r.priority }));
+    const blocking = (a2['render-blocking-resources']?.details?.items || []).map((r) => `${r.url.replace(/^https?:\/\/[^/]+/, '').slice(0, 80)} ${Math.round(r.wastedMs)}ms`);
+    fs.writeFileSync(path.join(OUT_DIR, `diag-${diagTag}.json`), JSON.stringify({ lcp: a2['largest-contentful-paint'].numericValue, lcpEl: lcpEl && lcpEl.snippet, lcpParts, blocking, reqs }, null, 1));
+  }
   const a = j.audits;
   return {
     score: Math.round((j.categories.performance.score || 0) * 100),
@@ -95,8 +158,14 @@ async function main() {
   setState({});
   fs.writeFileSync(path.join(wpDir, 'wp-content/wdp-scope-sim.json'), '{}');
 
-  const server = await startPhpServer({ wpDir, port: PORT });
-  const base = server.url.replace(/\/$/, '');
+  // PHP yerleşik sunucusu yanıtları sıkıştırmaz; gerçek sunucular gzip/brotli verir. Sıkıştırmasız ölçüm eklentinin ham
+  // boyutunu (CSS 38 KB, JS 25 KB) yavaş ağda gerçekte olmayan LCP gecikmesine çevirir: önüne gzip veren ters vekil konur
+  // (tüm kaynaklar, eklenti açık/kapalı, aynı koşulda). `--no-gzip` ham ölçümü verir.
+  const useGzip = !argv.includes('--no-gzip');
+  const phpPort = useGzip ? PORT + 100 : PORT;
+  const server = await startPhpServer({ wpDir, port: phpPort });
+  const proxy = useGzip ? await startGzipProxy(PORT, phpPort) : null;
+  const base = `http://127.0.0.1:${PORT}`;
   const rows = [];
   const violations = [];
   try {
@@ -110,7 +179,7 @@ async function main() {
         for (const mode of i % 2 ? ['on', 'off'] : ['off', 'on']) {
           setState(mode === 'off' ? { plugin_off: 1 } : {});
           await fetch(url, { signal: AbortSignal.timeout(120000) }); // ısınma
-          samples[mode].push(lighthouse(url));
+          samples[mode].push(await lighthouse(url, argv.includes('--diag') && i === 0 ? `${theme}-${pg.id}-${mode}` : ''));
         }
       }
       const med = (mode, k) => median(samples[mode].map((s) => s[k]));
@@ -123,6 +192,7 @@ async function main() {
       console.log(`| ${pg.id} | ${off.score}→${on.score} | ${off.lcp.toFixed(0)}→${on.lcp.toFixed(0)} | ${off.cls.toFixed(3)}→${on.cls.toFixed(3)} | ${off.tbt.toFixed(0)}→${on.tbt.toFixed(0)} | ${bad.length ? 'KALDI: ' + bad.join('; ') : 'geçti'} |`);
     }
   } finally {
+    proxy?.close();
     await server.stop?.();
   }
   fs.mkdirSync(OUT_DIR, { recursive: true });
