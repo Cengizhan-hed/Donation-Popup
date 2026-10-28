@@ -88,10 +88,11 @@ abstract class Rest_Controller {
 	 * @param string $bucket Uç adı.
 	 * @param int    $limit  Dakika başına üst sınır.
 	 * @param int    $period Pencere (sn).
+	 * @param bool   $donation_bucket Bağış kovası mı (direct, nonce, cart-add): yalnız bunlar güvenilmez IP'de belirteç bazlı gevşer.
 	 * @return true|\WP_Error
 	 */
-	protected function throttle( $bucket, $limit, $period = 60 ) {
-		if ( ! $this->limiter->hit( $bucket, $limit, $period ) ) {
+	protected function throttle( $bucket, $limit, $period = 60, $donation_bucket = false ) {
+		if ( ! $this->limiter->hit( $bucket, $limit, $period, $donation_bucket ) ) {
 			return $this->error( 'donation_panel_rate_limited', 'Too many requests. Please try again shortly.', 429 );
 		}
 		return true;

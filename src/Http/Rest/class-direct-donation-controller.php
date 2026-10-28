@@ -73,11 +73,11 @@ class Direct_Donation_Controller extends Rest_Controller {
 			return $this->error( 'donation_panel_disabled', 'Donations are temporarily unavailable.', 503 );
 		}
 		$this->remember_client( $request );
-		$throttled = $this->throttle( 'direct', 30 );
+		$throttled = $this->throttle( 'direct', 30, 60, true );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}
-		$throttled = $this->throttle( 'direct_hour', 300, 3600 );
+		$throttled = $this->throttle( 'direct_hour', 300, 3600, true );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}

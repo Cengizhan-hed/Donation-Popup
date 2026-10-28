@@ -43,10 +43,13 @@ class Rate_Limiter {
 	 * @param string $bucket Uç/eylem adı.
 	 * @param int    $limit  Pencere başına üst sınır.
 	 * @param int    $period Pencere süresi (sn).
+	 * @param bool   $donation_bucket true: bağış kovası (direct, nonce, cart-add); IP güvenilmezken belirteç bazlı gevşetme
+	 *                                yalnız bunlara uygulanır. Varsayılan false = katı (hesap/kimlik doğrulama dahil diğer tüm kovalar:
+	 *                                12.0 davranışı, IP başına tek kova).
 	 * @return bool true: izinli.
 	 */
-	public function hit( $bucket, $limit, $period = 60 ) {
-		if ( null === $this->client_id && ! Client_Ip::is_reliable() ) {
+	public function hit( $bucket, $limit, $period = 60, $donation_bucket = false ) {
+		if ( $donation_bucket && null === $this->client_id && ! Client_Ip::is_reliable() ) {
 			return $this->hit_untrusted( $bucket, (int) $limit, (int) $period );
 		}
 		return $this->bump( 'donation_panel_rl_' . md5( $bucket . '|' . $this->identify() ), (int) $limit, (int) $period );

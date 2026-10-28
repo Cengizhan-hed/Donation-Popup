@@ -498,14 +498,115 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 			}
 			$blocked = $this->direct( $this->donor_body( $product->get_id(), '99', 'k-site-5', array( 'client_token' => 'siteTok5' ) ) );
 			$this->assertSame( 429, $blocked->get_status(), wp_json_encode( $blocked->get_data() ) );
-			$same = $this->direct( $this->donor_body( $product->get_id(), '51', 'k-site-same', array( 'client_token' => 'siteTokX' ) ) );
+			// Aynı içerik YALNIZ aynı tarayıcı belirteciyle mevcut bekleyen siparişe bağlanır (başkasının adresi sızmaz).
+			$same = $this->direct( $this->donor_body( $product->get_id(), '51', 'k-site-same', array( 'client_token' => 'siteTok1' ) ) );
 			$this->assertTrue( $same->get_data()['reused'], 'Aynı içerik mevcut bekleyen siparişe bağlanır.' );
+			$other = $this->direct( $this->donor_body( $product->get_id(), '51', 'k-site-same-2', array( 'client_token' => 'siteTokX' ) ) );
+			$this->assertSame( 429, $other->get_status(), 'Başka belirteç başkasının bekleyen siparişini alamaz.' );
 		} finally {
 			$_SERVER['REMOTE_ADDR'] = $saved;
 			remove_filter( 'donation_panel_direct_max_pending_site', $low );
 		}
 		$this->assertSame( 500, \DonationPanel\WooCommerce\Direct\Direct_Order_Factory::max_pending_site() );
 		$this->assertSame( 5000, \DonationPanel\WooCommerce\Direct\Direct_Order_Factory::max_pending_site_quantity() );
+	}
+
+	public function test_unreliable_ip_does_not_load_site_orders_on_every_request(): void {
+		$product = $this->direct_product();
+		$saved   = $_SERVER['REMOTE_ADDR'] ?? '';
+		$_SERVER['REMOTE_ADDR'] = '10.1.2.3';
+		delete_transient( Direct_Order_Factory::SITE_QTY_TRANSIENT );
+		$loads   = 0;
+		$counter = static function ( $class ) use ( &$loads ) {
+			++$loads;
+			return $class;
+		};
+		try {
+			// Taban: bekleyen sipariş yokken tek istekte yüklenen sipariş nesnesi sayısı (kendi akışı).
+			add_filter( 'woocommerce_order_class', $counter );
+			$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '60', 'k-light-0', array( 'client_token' => 'lightTok0' ) ) ) );
+			remove_filter( 'woocommerce_order_class', $counter );
+			$base  = $loads;
+			for ( $i = 1; $i <= 8; $i++ ) {
+				$this->order_from( $this->direct( $this->donor_body( $product->get_id(), (string) ( 60 + $i ), 'k-light-' . $i, array( 'client_token' => 'lightTok' . $i ) ) ) );
+			}
+			// Sayaç ısındı; 9 bekleyen sipariş varken yeni istek tabandan fazla sipariş nesnesi yüklemez (eskiden bekleyen sayısı kadar).
+			$loads = 0;
+			add_filter( 'woocommerce_order_class', $counter );
+			$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '99', 'k-light-9', array( 'client_token' => 'lightTok9' ) ) ) );
+			remove_filter( 'woocommerce_order_class', $counter );
+			$this->assertLessThanOrEqual( $base + 1, $loads, 'Bekleyen siparişler her istekte yüklenmemeli; taban ' . $base . ', yüklenen: ' . $loads );
+		} finally {
+			remove_filter( 'woocommerce_order_class', $counter );
+			$_SERVER['REMOTE_ADDR'] = $saved;
+		}
+	}
+
+	public function test_submission_key_returns_the_payment_url_only_to_the_client_that_created_it(): void {
+		$product = $this->direct_product();
+		$first   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '25', 'k-owner', array( 'client_token' => 'ownerTokA' ) ) ) );
+
+		// Aynı anahtar + aynı içerik, BAŞKA belirteç: yeni sipariş yok, adres yok.
+		$thief = $this->direct( $this->donor_body( $product->get_id(), '25', 'k-owner', array( 'client_token' => 'ownerTokB' ) ) );
+		$this->assertSame( 422, $thief->get_status(), wp_json_encode( $thief->get_data() ) );
+		$this->assertArrayNotHasKey( 'redirect_url', (array) $thief->get_data() );
+		$this->assertStringNotContainsString( $first->get_order_key(), (string) wp_json_encode( $thief->get_data() ) );
+		$this->assertSame( 1, $this->orders_for_key( 'k-owner' ) );
+
+		// Belirteçsiz istek de alamaz.
+		$none = $this->direct( $this->donor_body( $product->get_id(), '25', 'k-owner' ) );
+		$this->assertSame( 422, $none->get_status() );
+		$this->assertSame( 1, $this->orders_for_key( 'k-owner' ) );
+
+		// Aynı istemci yeniden gönderirse aynı sipariş.
+		$again = $this->direct( $this->donor_body( $product->get_id(), '25', 'k-owner', array( 'client_token' => 'ownerTokA' ) ) );
+		$this->assertTrue( $again->get_data()['reused'] );
+		$this->assertSame( $first->get_id(), $this->order_from( $again )->get_id() );
+	}
+
+	public function test_client_hashes_are_salted_and_dropped_when_the_order_leaves_pending(): void {
+		$product = $this->direct_product();
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.77';
+		$order  = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '31', 'k-hash', array( 'client_token' => 'hashTok' ) ) ) );
+		$client = (string) $order->get_meta( Direct_Order_Factory::CLIENT_META );
+		$this->assertNotSame( md5( 'donation_panel_direct_client|203.0.113.77' ), $client, 'Tuzsuz md5 değil.' );
+		$this->assertSame( 64, strlen( $client ) );
+		$this->assertNotSame( '', (string) $order->get_meta( Direct_Order_Factory::TOKEN_META ) );
+
+		$order->update_status( 'on-hold' );
+		$fresh = wc_get_order( $order->get_id() );
+		$this->assertSame( '', (string) $fresh->get_meta( Direct_Order_Factory::CLIENT_META ) );
+		$this->assertSame( '', (string) $fresh->get_meta( Direct_Order_Factory::TOKEN_META ) );
+		$this->assertNotSame( '', (string) $fresh->get_meta( Direct_Order_Factory::OWNER_META ), 'İdempotency sahibi kalır.' );
+
+		// Eraser aynı e-postadaki siparişin kalan karmasını da siler.
+		$fresh->set_billing_email( 'sec-test-' . $this->run . '@example.com' );
+		$fresh->save();
+		\DonationPanel\Privacy\Order_Privacy::erase_direct_client_meta( $fresh );
+		$this->assertSame( '', (string) wc_get_order( $order->get_id() )->get_meta( Direct_Order_Factory::OWNER_META ) );
+	}
+
+	public function test_direct_endpoint_is_closed_when_the_front_gate_is_disabled(): void {
+		$product = $this->direct_product();
+		$off     = static function () {
+			return true;
+		};
+		add_filter( 'donation_panel_front_disabled', $off );
+		try {
+			$res = $this->direct( $this->donor_body( $product->get_id(), '40', 'k-gate' ) );
+			$this->assertSame( 503, $res->get_status() );
+			$this->assertSame( 0, $this->orders_for_key( 'k-gate' ) );
+		} finally {
+			remove_filter( 'donation_panel_front_disabled', $off );
+		}
+		$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '40', 'k-gate' ) ) );
+	}
+
+	public function test_deactivation_clears_the_cleanup_event(): void {
+		Direct_Cleanup::schedule();
+		$this->assertNotFalse( wp_next_scheduled( Direct_Cleanup::HOOK ) );
+		\DonationPanel\Core\Bootstrap::deactivate();
+		$this->assertFalse( wp_next_scheduled( Direct_Cleanup::HOOK ) );
 	}
 
 	public function test_total_reserved_quantity_per_ip_is_capped(): void {

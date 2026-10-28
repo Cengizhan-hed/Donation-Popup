@@ -73,9 +73,10 @@ class Account_Controller extends Rest_Controller {
 	 * @param string $bucket Uç adı.
 	 * @param int    $limit  Pencere başına üst sınır.
 	 * @param int    $period Pencere (sn).
+	 * @param bool   $donation_bucket Yok sayılır (hesap kovaları her zaman katı).
 	 * @return true|\WP_Error
 	 */
-	protected function throttle( $bucket, $limit, $period = 60 ) {
+	protected function throttle( $bucket, $limit, $period = 60, $donation_bucket = false ) {
 		/**
 		 * Hesap uçlarının hız sınırı.
 		 *
@@ -83,7 +84,8 @@ class Account_Controller extends Rest_Controller {
 		 * @param string $bucket Uç adı (`account_login`, `account_register`, `account_reset`, `account_link_guest` ...).
 		 */
 		$limit = (int) apply_filters( 'donation_panel_account_rate_limit', (int) $limit, (string) $bucket );
-		return parent::throttle( $bucket, $limit, $period );
+		// Hesap/kimlik doğrulama kovaları HER ZAMAN katıdır (belirteç bazlı gevşetme yok): 12.0 davranışı.
+		return parent::throttle( $bucket, $limit, $period, false );
 	}
 
 	/**

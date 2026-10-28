@@ -108,7 +108,7 @@ class Cart_Controller extends Rest_Controller {
 			return $this->error( 'donation_panel_disabled', 'Donations are temporarily unavailable.', 503 );
 		}
 		$this->remember_client( $request );
-		$throttled = $this->throttle( 'experiences_cart_add', 20 );
+		$throttled = $this->throttle( 'experiences_cart_add', 20, 60, true );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}
@@ -162,7 +162,7 @@ class Cart_Controller extends Rest_Controller {
 			}
 		}
 		$this->remember_client( $request );
-		$throttled = $this->throttle( 'experiences_nonce', 30 );
+		$throttled = $this->throttle( 'experiences_nonce', 30, 60, true );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}

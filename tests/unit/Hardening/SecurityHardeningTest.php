@@ -92,22 +92,42 @@ final class SecurityHardeningTest extends TestCase {
 		$b->set_client_token( 'token-b' );
 
 		for ( $i = 0; $i < 3; ++$i ) {
-			$this->assertTrue( $a->hit( 'direct', 3 ) );
+			$this->assertTrue( $a->hit( 'direct', 3, 60, true ) );
 		}
-		$this->assertFalse( $a->hit( 'direct', 3 ), 'Tek belirteç sınırı aşınca 429.' );
-		$this->assertTrue( $b->hit( 'direct', 3 ), 'Başka belirteç etkilenmez.' );
+		$this->assertFalse( $a->hit( 'direct', 3, 60, true ), 'Tek belirteç sınırı aşınca 429.' );
+		$this->assertTrue( $b->hit( 'direct', 3, 60, true ), 'Başka belirteç etkilenmez.' );
+	}
+
+	public function test_auth_buckets_keep_the_strict_per_ip_behaviour_on_an_untrusted_ip(): void {
+		$_SERVER['REMOTE_ADDR'] = '10.0.0.5';
+		foreach ( array( 'account_login', 'account_register', 'account_reset' ) as $bucket ) {
+			$limiter = new Rate_Limiter();
+			$limiter->set_client_token( 'rotating-1' );
+			for ( $i = 0; $i < 10; ++$i ) {
+				$this->assertTrue( $limiter->hit( $bucket, 10 ), $bucket );
+			}
+			// Belirteç döndürmek ya da belirteçsiz gelmek 12.0'daki IP kovasını atlatmaz.
+			$rotated = new Rate_Limiter();
+			$rotated->set_client_token( 'rotating-2' );
+			$this->assertFalse( $rotated->hit( $bucket, 10 ), $bucket . ': belirteç döndürme' );
+			$this->assertFalse( ( new Rate_Limiter() )->hit( $bucket, 10 ), $bucket . ': belirteçsiz' );
+		}
+		// Aynı koşulda bağış kovası belirteç bazlıdır.
+		$donor = new Rate_Limiter();
+		$donor->set_client_token( 'donor-1' );
+		$this->assertTrue( $donor->hit( 'direct', 10, 60, true ) );
 	}
 
 	public function test_untrusted_ip_without_token_is_only_subject_to_the_high_site_ceiling(): void {
 		$_SERVER['REMOTE_ADDR'] = '10.0.0.5';
 		$limiter                = new Rate_Limiter();
 		for ( $i = 0; $i < 100; ++$i ) {
-			$this->assertTrue( $limiter->hit( 'direct', 5 ), 'Belirteçsiz istek düşük sınırla kısıtlanmaz.' );
+			$this->assertTrue( $limiter->hit( 'direct', 5, 60, true ), 'Belirteçsiz istek düşük sınırla kısıtlanmaz.' );
 		}
 		// Tavan = max(600, 5 x 20) = 600 (yeni sayaç: kalan 500).
 		$denied = 0;
 		for ( $i = 0; $i < 600; ++$i ) {
-			if ( ! $limiter->hit( 'direct', 5 ) ) {
+			if ( ! $limiter->hit( 'direct', 5, 60, true ) ) {
 				++$denied;
 			}
 		}
@@ -120,7 +140,7 @@ final class SecurityHardeningTest extends TestCase {
 		for ( $i = 0; $i < 700; ++$i ) {
 			$limiter = new Rate_Limiter();
 			$limiter->set_client_token( 'rot-' . $i );
-			if ( $limiter->hit( 'direct', 30 ) ) {
+			if ( $limiter->hit( 'direct', 30, 60, true ) ) {
 				++$allowed;
 			}
 		}
@@ -142,8 +162,8 @@ final class SecurityHardeningTest extends TestCase {
 		$a->set_client_token( "tok<script>\n" );
 		$b = new Rate_Limiter();
 		$b->set_client_token( 'tokscript' );
-		$this->assertTrue( $a->hit( 'x', 1 ) );
-		$this->assertFalse( $b->hit( 'x', 1 ), 'Temizlenmiş belirteç aynı kovayı paylaşır.' );
+		$this->assertTrue( $a->hit( 'x', 1, 60, true ) );
+		$this->assertFalse( $b->hit( 'x', 1, 60, true ),'Temizlenmiş belirteç aynı kovayı paylaşır.' );
 	}
 
 	public function test_ipv6_is_normalised_to_its_64_prefix(): void {
