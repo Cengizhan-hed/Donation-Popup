@@ -273,7 +273,9 @@ export async function snapshotAddonAndButton(page) {
         let anims = 0;
         try {
           anims = typeof el.getAnimations === 'function' ? el.getAnimations().length : 0;
-        } catch (e) {}
+        } catch {
+          anims = 0; // getAnimations desteklenmiyorsa animasyon sayılmaz
+        }
         const st = window.getComputedStyle(el);
         return {
           animCount: anims,

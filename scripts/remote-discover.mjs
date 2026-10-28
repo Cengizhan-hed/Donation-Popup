@@ -94,11 +94,7 @@ export function createLocalRunner() {
         }
         return r.stdout || '';
       } finally {
-        try {
-          fs.unlinkSync(tmp);
-        } catch (e) {
-          if (e && e.code !== 'ENOENT') throw e;
-        }
+        fs.rmSync(tmp, { force: true });
       }
     }
     throw new Error(`yerel adım desteklenmiyor: ${step.kind}`);

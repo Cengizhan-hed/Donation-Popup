@@ -368,7 +368,7 @@ export async function runDonationFlowChecks({
         check: `checkout-flow-order-${deviceId}`,
         reason: SKIP_REASONS.NO_REMOTE_ORDERS,
         evidence: SKIP_EVIDENCE.POLICY,
-        detail: skipOrderReason || url,
+        detail: skipOrderReason || page.url(),
       });
       if (classifySkip(orderSkip) === 'fail') {
         throw new Error(`Altyapı atlaması hata: ${orderSkip.description}`);

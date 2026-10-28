@@ -383,6 +383,7 @@ class Donations_List_Widget extends \Elementor\Widget_Base {
 			'categories'         => isset( $s['categories'] ) ? $s['categories'] : '',
 			'exclude_categories' => isset( $s['exclude_categories'] ) ? $s['exclude_categories'] : '',
 			'ids'                => isset( $s['ids'] ) ? $s['ids'] : '',
+			// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- Short-code attribute name, not a query argument.
 			'exclude'            => isset( $s['exclude'] ) ? $s['exclude'] : '',
 			'type'               => isset( $s['type'] ) ? $s['type'] : '',
 			'limit'              => isset( $s['limit'] ) ? $s['limit'] : 48,
