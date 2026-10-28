@@ -305,6 +305,15 @@ describe('waitForVisibleCandidate', () => {
     });
   });
 
+  it('başlangıçta 0x0 olan, scrollIntoView ile boyanan aday görünür sayılır', async () => {
+    const html = '<div style="height:3000px"></div><div id="w"><button data-dp-open style="display:block;width:0;height:0;padding:0;border:0;overflow:hidden">x</button></div>'
+      + '<script>const b=document.querySelector("[data-dp-open]");const o=b.scrollIntoView.bind(b);b.scrollIntoView=function(a){o(a);b.style.width="349px";b.style.height="48px"}</script>';
+    await withPage(html, async (page) => {
+      const r = await waitForVisibleCandidate(page.locator('[data-dp-open]'), 2000);
+      assert.ok(r.locator);
+    });
+  });
+
   const TABS = (tabAttrs) => `
 <div><button ${tabAttrs} onclick="document.getElementById('p1').hidden=true;document.getElementById('p2').hidden=false">B</button></div>
 <div id="p1" role="tabpanel"><p>x</p></div>
