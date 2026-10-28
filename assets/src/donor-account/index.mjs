@@ -460,8 +460,41 @@ function mountPage(root) {
   }
 }
 
+/**
+ * Önbellek sözleşmesi: sunucu HTML'i oturumdan bağımsızdır. Oturum açıksa üstbilgi düğmesi Hesabım bağlantısına çevrilir.
+ *
+ * @param {HTMLElement} root Pencere kökü (REST taban adresi).
+ */
+async function upgradeTriggers(root) {
+  const base = root.dataset.dpAccRest || '';
+  if (!base || !document.querySelector('[data-dp-acc-open][data-dp-acc-url]')) {
+    return;
+  }
+  try {
+    const r = await call(base, 'session');
+    if (!r.ok || !r.data || r.data.logged_in !== true) {
+      return;
+    }
+    document.querySelectorAll('[data-dp-acc-open][data-dp-acc-url]').forEach((btn) => {
+      const url = btn.dataset.dpAccUrl || '';
+      if (!url) {
+        return;
+      }
+      const link = document.createElement('a');
+      link.className = btn.className;
+      link.href = url;
+      link.setAttribute('aria-label', btn.dataset.dpAccLabel || '');
+      link.append(...Array.from(btn.childNodes));
+      btn.replaceWith(link);
+    });
+  } catch {
+    // Ağ hatası: düğme pencereyi açar; oturum denetimi sunucuda yapılır.
+  }
+}
+
 function init() {
   document.querySelectorAll('[data-dp-acc]').forEach(mountDialog);
+  document.querySelectorAll('[data-dp-acc]').forEach(upgradeTriggers);
   document.querySelectorAll('[data-dp-acc-page]').forEach(mountPage);
 }
 

@@ -82,6 +82,7 @@
 .donation-panel-sc__empty { margin: auto; display: grid; justify-items: center; gap: 12px; text-align: center; padding: 40px 24px; }
 .donation-panel-sc__empty h3 { margin: 0; font-size: 1.125rem; font-weight: 800; color: var(--dp-color-text); }
 .donation-panel-sc__empty p { margin: 0; color: var(--dpx-muted); font-size: .875rem; max-inline-size: 34ch; }
+.donation-panel-sc__body[aria-busy="true"] .donation-panel-sc__empty { visibility: hidden; }
 .donation-panel-sc__empty-art { inline-size: 72px; block-size: 72px; display: grid; place-items: center; border-radius: 50%; background: var(--dpx-warm); color: var(--dp-color-text); font-size: 1.75rem; }
 
 /* Mobil (≤ 639px): alttan panel (köşe 28) */

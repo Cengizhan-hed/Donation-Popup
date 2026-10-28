@@ -213,10 +213,14 @@ class Campaign_Goal {
 	/**
 	 * Close modunda yeni bağış reddedilmeli mi?
 	 *
-	 * @param int|\WC_Product $product Product.
+	 * Sayfa HTML'i kullanıcıya özel olamaz: görünüm çağrıları `$include_pending = false` verir (yalnız onaylı toplam);
+	 * sepete ekleme kapısı sepetteki bekleyeni de sayar (varsayılan true).
+	 *
+	 * @param int|\WC_Product $product         Product.
+	 * @param bool            $include_pending Sepet bekleyenini say.
 	 * @return bool
 	 */
-	public static function should_block_new_donations( $product ) {
+	public static function should_block_new_donations( $product, $include_pending = true ) {
 		if ( ! self::is_campaign_product( $product ) ) {
 			return false;
 		}
@@ -224,7 +228,7 @@ class Campaign_Goal {
 			return false;
 		}
 		$product_id = $product instanceof \WC_Product ? (int) $product->get_id() : absint( $product );
-		return self::is_goal_reached( $product_id, array( 'include_pending' => true ) );
+		return self::is_goal_reached( $product_id, array( 'include_pending' => (bool) $include_pending ) );
 	}
 
 	/**
@@ -259,7 +263,7 @@ class Campaign_Goal {
 		}
 		$message = self::resolve_message( $product );
 		$class   = 'wdp-goal-reached-notice';
-		if ( $closed || self::should_block_new_donations( $product ) ) {
+		if ( $closed || self::should_block_new_donations( $product, false ) ) {
 			$class .= ' wdp-goal-reached-notice--closed';
 		}
 		return '<div class="' . esc_attr( $class ) . '" role="status" data-wdp-goal-notice="1"><p class="wdp-goal-reached-notice__text">'

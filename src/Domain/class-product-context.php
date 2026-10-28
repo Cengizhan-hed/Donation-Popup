@@ -153,7 +153,7 @@ class Product_Context {
 			'goal_reached_action'       => Campaign_Goal::resolve_action( $product ),
 			'goal_reached_message'      => Campaign_Goal::resolve_message( $product ),
 			'goal_reached'              => Campaign_Goal::is_goal_reached( $product_id, array( 'include_pending' => false ) ),
-			'goal_closed'               => Campaign_Goal::should_block_new_donations( $product ),
+			'goal_closed'               => Campaign_Goal::should_block_new_donations( $product, false ),
 		);
 
 		// `wdp_form_context` süzgeci eski (sadaka_*) anahtar adlarıyla çalışır; bkz. Compat\Legacy_Context.

@@ -88,7 +88,8 @@ final class Side_Cart_Module implements Module_Interface {
 	 */
 	public function shortcode() {
 		$this->wanted = true;
-		return Side_Cart_Renderer::trigger( $this->cart_count(), '' );
+		// Önbellek sözleşmesi: sayfa HTML'i kullanıcıya özel değildir; sayaç istemcide (sepet çerezi + REST) yazılır.
+		return Side_Cart_Renderer::trigger( 0, '' );
 	}
 
 	/**
@@ -124,7 +125,7 @@ final class Side_Cart_Module implements Module_Interface {
 	 * @return bool
 	 */
 	public function should_load() {
-		$load = ! is_admin() && ( $this->wanted || wp_script_is( Assets::handle( 'experiences' ), 'enqueued' ) || $this->returning_donor_cart() );
+		$load = ! is_admin() && ( $this->wanted || wp_script_is( Assets::handle( 'experiences' ), 'enqueued' ) );
 		if ( $load && function_exists( 'is_cart' ) && function_exists( 'is_checkout' ) && ( is_cart() || is_checkout() ) ) {
 			$load = false;
 		}
@@ -152,20 +153,6 @@ final class Side_Cart_Module implements Module_Interface {
 	}
 
 	/**
-	 * Yüzey olmayan sayfada bile sepeti dolu bağışçı için düğme gösterilsin mi (sayfalar arası kalır).
-	 * Yalnız WooCommerce'in kendi sepet çerezi varsa ve sepette bağış varsa; çerezi olmayan ziyaretçi için 0 iş.
-	 *
-	 * @return bool
-	 */
-	private function returning_donor_cart() {
-		if ( ! $this->floating_enabled() || empty( $_COOKIE['woocommerce_items_in_cart'] ) ) {
-			return false;
-		}
-		$cart = $this->cart();
-		return $cart && count( Side_Cart_Lines::from_cart( $cart ) ) > 0;
-	}
-
-	/**
 	 * Çekmece kabuğunu sayfa sonunda bir kez basar.
 	 *
 	 * @return void
@@ -179,15 +166,10 @@ final class Side_Cart_Module implements Module_Interface {
 		// Geç kuyruk: WordPress, `wp_footer` içinde kuyruğa alınan betiği/stili sayfa sonunda basar (betik defer).
 		$this->container->get( Assets::class )->enqueue( self::SLUG );
 
-		$lines    = array();
-		$subtotal = '';
-		$cart     = $this->cart();
-		if ( $cart ) {
-			$lines    = Side_Cart_Lines::from_cart( $cart );
-			$subtotal = (string) $cart->get_cart_subtotal();
-		}
+		// Önbellek sözleşmesi: kabuk tüm ziyaretçiler için aynıdır (boş durum iskeleti). Satırlar, toplam, sayaç ve
+		// ek bağış önerisi yalnız istemcide, Woo sepet çerezi varsa `GET donation-panel/v1/side-cart` ile gelir.
 		$checkout = function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '';
-		$body     = Side_Cart_Renderer::body( $lines, $subtotal, $checkout, Side_Cart_Suggestion::current( $lines ) );
+		$body     = Side_Cart_Renderer::body( array(), '', $checkout );
 
 		$html = Side_Cart_Renderer::drawer(
 			$body,
@@ -200,8 +182,8 @@ final class Side_Cart_Module implements Module_Interface {
 				'failed'   => __( 'Something went wrong. Please try again.', 'woo-donation-popup' ),
 				'removed'  => __( 'Removed from your basket.', 'woo-donation-popup' ),
 			),
-			$lines ? Side_Cart_Renderer::count_text( count( $lines ) ) : '',
-			$this->floating_enabled() ? Side_Cart_Renderer::floating_button( $this->cart_count() ) : ''
+			'',
+			$this->floating_enabled() ? Side_Cart_Renderer::floating_button( 0 ) : ''
 		);
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Side_Cart_Renderer tüm değerleri kaçışlar.
 	}

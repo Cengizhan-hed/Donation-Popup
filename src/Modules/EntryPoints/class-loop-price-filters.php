@@ -76,7 +76,7 @@ class Loop_Price_Filters {
 		$url         = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
 		$text        = Shortcodes::resolve_button_text( '' );
 		$cls         = 'button wdp-loop-donate';
-		$goal_closed = Campaign_Goal::should_block_new_donations( $product );
+		$goal_closed = Campaign_Goal::should_block_new_donations( $product, false );
 		if ( $goal_closed ) {
 			$cls .= ' is-disabled wdp-goal-closed-trigger';
 		}

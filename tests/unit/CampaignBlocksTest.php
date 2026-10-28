@@ -68,6 +68,23 @@ final class CampaignBlocksTest extends TestCase {
 		$this->assertSame('', \DonationPanel\Domain\Campaign_Goal::render_reached_notice_html($cont));
 	}
 
+	/**
+	 * Önbellek sözleşmesi: görünüm kararı sepete bağlı olamaz; ekleme kapısı sepetteki bekleyeni sayar.
+	 */
+	public function test_display_block_ignores_cart_pending_but_gate_counts_it(): void {
+		update_post_meta(self::PRODUCT, '_wdp_total_donation_amount', 900.0);
+		$closed = $this->product(array('_goal_reached_action' => 'close'));
+		add_filter(
+			'donation_panel_cart_pending_total',
+			static function () {
+				return 150.0;
+			}
+		);
+		$this->assertFalse(\DonationPanel\Domain\Campaign_Goal::should_block_new_donations($closed, false));
+		$this->assertTrue(\DonationPanel\Domain\Campaign_Goal::should_block_new_donations($closed));
+		$this->assertTrue(\DonationPanel\Domain\Campaign_Goal::should_block_new_donations($closed, true));
+	}
+
 	public function test_goal_zero_rejected_and_thousand_separator(): void {
 		$bad = \DonationPanel\Admin\Product\Product_Settings::normalize(
 			array(

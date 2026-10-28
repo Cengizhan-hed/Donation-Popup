@@ -28,17 +28,14 @@ final class Account_Renderer {
 	}
 
 	/**
-	 * Header simgesi: girişliyse Hesabım bağlantısı, değilse pencereyi açan düğme.
+	 * Header simgesi. Önbellek sözleşmesi: çıktı tüm ziyaretçiler için aynıdır (pencereyi açan düğme); oturum açıksa
+	 * istemci REST `session` yanıtıyla düğmeyi Hesabım bağlantısına çevirir (`data-dp-acc-url`, `data-dp-acc-label`).
 	 *
-	 * @param bool   $logged_in   Oturum var mı.
 	 * @param string $account_url Hesabım sayfası.
 	 * @return string
 	 */
-	public static function trigger( $logged_in, $account_url ) {
-		if ( $logged_in && '' !== $account_url ) {
-			return '<a class="donation-panel donation-panel-ac__trigger" href="' . esc_url( $account_url ) . '" aria-label="' . esc_attr__( 'My account', 'woo-donation-popup' ) . '">' . self::icon() . '</a>';
-		}
-		return '<button type="button" class="donation-panel donation-panel-ac__trigger" data-dp-acc-open aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DIALOG_ID ) . '" aria-label="' . esc_attr__( 'Log in or sign up', 'woo-donation-popup' ) . '">' . self::icon() . '</button>';
+	public static function trigger( $account_url ) {
+		return '<button type="button" class="donation-panel donation-panel-ac__trigger" data-dp-acc-open data-dp-acc-url="' . esc_url( $account_url ) . '" data-dp-acc-label="' . esc_attr__( 'My account', 'woo-donation-popup' ) . '" aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DIALOG_ID ) . '" aria-label="' . esc_attr__( 'Log in or sign up', 'woo-donation-popup' ) . '">' . self::icon() . '</button>';
 	}
 
 	/**
