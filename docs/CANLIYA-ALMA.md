@@ -87,6 +87,12 @@ Not: Eklentinin eski çerezi (`wdp_vid`) kaldırıldı; geri dönüşte eski sü
 2. 12.1.0'ın yazdığı yeni anahtarlar eski sürümde zararsızdır, kalabilir: `general.trusted_proxies`, `direct.enabled`, ürün meta `_donation_panel_direct`, `side_cart.floating`, sipariş meta `_donation_panel_direct_owner`, autoload bayrağı `donation_panel_autoload_v2`. Veri göçünü geri almak gerekmez.
 3. Toplam yanlış görünürse eklenti seçeneklerini yedekten geri yükle; `wp donation-panel recalc-totals --dry-run` önizler.
 
+## G3. Sayfa önbelleği (12.1.1)
+- Eklentinin sayfa HTML'i tüm ziyaretçiler için aynıdır; sepet ve oturum bilgisi tarayıcıda REST ile gelir. Eklenti çıktısı bu yüzden güvenle önbelleğe alınabilir.
+- **Ek önlem:** önbellek eklentisinde `woocommerce_items_in_cart`, `woocommerce_cart_hash` ve `wp_woocommerce_session_*` çerezli istekleri önbellekten HARİÇ tutun (WooCommerce çoğu önbellek eklentisinde bunu varsayılan yapar). Gerekçe: WooCommerce çekirdeği blok şablonlu mağaza/ürün sayfalarında sepeti kendi sayfa verisine (`wp-script-module-data-@wordpress/interactivity`) yazar; bunu eklenti değiştiremez.
+- Ödeme, Sepet, Hesabım, Bağışlarım ve teşekkür sayfaları zaten önbelleğe alınmaz olmalıdır.
+- Doğrulama: çıkış yapmış bir tarayıcıda sepete bağış ekleyip başka bir gizli pencerede aynı sayfayı açın; ikincisinde sepet bilgisi görünmemeli.
+
 ## B. Ikram Aid yayına alma listesi
 
 Ikram (ikramaid.uk): Blocksy + Elementor, GBP, şu an "coming soon" açık. Test için eklentinin kendi ayarlarından modüller açıktır (yeni motor, kampanya, etki, sosyal kanıt, yan sepet, bağışçı hesabı, teşekkür, vergi indirimi/Gift Aid).

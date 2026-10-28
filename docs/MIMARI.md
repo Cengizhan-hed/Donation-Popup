@@ -966,3 +966,11 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 - **Doğrudan bağış:** bekleyen sayısı tek COUNT + 30 sn `donation_panel_direct_site_qty` transient sayacı (501 `WC_Order` yükleme yok); sipariş meta karmaları tuzlu HMAC; mevcut sipariş adresi yalnız sahip belirteciyle (`_donation_panel_direct_owner`, tuzlu karma) döner, aksi 422; `submission_key` `crypto.randomUUID`; IPv6 /64 önekine normalize (`Client_Ip::key`).
 - **Kapı:** `DONATION_PANEL_DISABLE` / `general.disable_frontend` iken `direct` ve `cart/add` 503; `Front_Gate` REST algısı yolun başında.
 - **Bilinen kalan:** nonce ve sepetli cart-add çağrıları JS'ten istemci belirteci başlığı göndermez (yalnız direct gönderir) → güvenilmez IP'de yalnız site tavanına tabidir; yan sepet sayfa HTML'inde yalnız Woo sepet çerezi varken sepet içeriği basar.
+
+### 12.1.1 önbellek sözleşmesi (sayfa HTML'i ziyaretçiye özel değildir)
+- Eklentinin ürettiği sayfa HTML'i tüm ziyaretçiler için bayt bayt aynıdır: yan sepet kabuğu boş iskelettir (sayaç 0, satır/toplam yok), hesap simgesi herkese aynı düğmedir, sunucu `WC()->cart` / `is_user_logged_in()` ile HTML'i değiştirmez. Sepet içeriği, sayacı, toplamı ve oturum durumu yalnız tarayıcıda REST ile alınır; sepet çerezi yoksa istek yok.
+- Kampanya görünümü (`Campaign_Goal::should_block_new_donations($product, false)`) yalnız onaylı toplamı sayar; sepete ekleme kapısı bekleyeni saymaya devam eder (`true`).
+- `returning_donor_cart()` kaldırıldı: yüzeysiz sayfada çerezli ziyaretçiye yüzen sepet düğmesi çıkmaz (sıfır yük kuralı ile bayt eşitliği birlikte sağlanamazdı).
+- Muaf (kullanıcıya özel doğası gereği): Bağışlarım, teşekkür sayfası, ödeme sayfası (Woo'nun kendi çıktısı).
+- Eklenti dışı: WooCommerce çekirdeği blok şablonlu mağaza/ürün sayfalarında sepeti `wp-script-module-data-@wordpress/interactivity` içine yazar; eklenti değiştiremez. Bu sayfalar önbelleğe alınırken sepet çerezli ziyaretçi atlanmalıdır (CANLIYA-ALMA).
+- Kanıt: `tests/e2e/specs/cache-contract.spec.mjs` (`npm run e2e:side-cart -- --spec cache-contract`).

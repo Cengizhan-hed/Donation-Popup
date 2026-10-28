@@ -195,3 +195,7 @@ Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (v
 - **Meta:** `_donation_panel_direct_owner` (doğrudan bağış siparişinin sahip belirteci, tuzlu karma). **Transient:** `donation_panel_direct_site_qty` (30 sn bekleyen adet sayacı).
 - **`Rate_Limiter::hit()` 4. parametre** `$donation_bucket` (varsayılan `false` = katı). Üçüncü taraf kodu bu sınıfı çağırmamalıdır; ayar için `donation_panel_trusted_proxies` süzgeci ve Araçlar → "Ziyaretçi adresi" kullanılır.
 - **REST:** `/nonce` ve `/account/session` cross-site isteklere 403 döner (CORS başlıksız).
+
+## 12.1.1 notları
+- `donation_panel_cart_pending_total` yalnız sepete ekleme kapısında etkilidir; görünümde (kampanya "ulaşıldı" iletisi, döngü fiyat süzgeçleri) bekleyen toplam sayılmaz.
+- `donation_panel_side_cart_load` aynı kalır.
