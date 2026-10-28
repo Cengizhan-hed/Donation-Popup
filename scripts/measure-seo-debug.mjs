@@ -103,15 +103,16 @@ async function main() {
     const pid = probeMeta.products.fixed.id;
     const cookieless = await get(base, urls.shop);
     const linesNoCookie = (cookieless.html.match(/data-dp-sc-line=/g) || []).length;
-    const cartApi = await fetch(`${base}/?rest_route=/wc/store/v1/cart`, { signal: AbortSignal.timeout(60000) });
-    const nonce = cartApi.headers.get('nonce') || '';
-    const jar = (cartApi.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]);
-    const add = await fetch(`${base}/?rest_route=/wc/store/v1/cart/add-item`, {
+    const nonceRes = await fetch(`${base}/?rest_route=/donation-panel/v1/nonce`, { signal: AbortSignal.timeout(60000) });
+    const nonce = (await nonceRes.json()).nonce || '';
+    const jar = (nonceRes.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]);
+    const add = await fetch(`${base}/?rest_route=/donation-panel/v1/cart/add`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', nonce, cookie: jar.join('; ') },
-      body: JSON.stringify({ id: pid, quantity: 1 }),
+      headers: { 'content-type': 'application/json', 'x-wp-nonce': nonce, cookie: jar.join('; ') },
+      body: JSON.stringify({ product_id: pid, amount: '125', donation_full_name: 'Test Donor', donation_phone: '+44 7700 900123', submission_key: `rel-${Date.now()}` }),
       signal: AbortSignal.timeout(60000),
     });
+    if (add.status !== 200) console.log('add-item yanıtı:', add.status, (await add.text()).slice(0, 300));
     const jar2 = [...jar, ...(add.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]), 'woocommerce_items_in_cart=1'];
     const withCookie = await get(base, urls.shop, { cookie: jar2.join('; ') });
     const afterNoCookie = await get(base, urls.shop);

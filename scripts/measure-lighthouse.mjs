@@ -124,7 +124,7 @@ async function lighthouse(url, diagTag = '') {
     const lcpParts = a2['largest-contentful-paint-element']?.details?.items?.[1]?.items || [];
     const reqs = (a2['network-requests']?.details?.items || []).map((r) => ({ url: r.url.replace(/^https?:\/\/[^/]+/, '').slice(0, 90), start: Math.round(r.networkRequestTime), end: Math.round(r.networkEndTime), kb: Math.round((r.transferSize || 0) / 1024), type: r.resourceType, prio: r.priority }));
     const blocking = (a2['render-blocking-resources']?.details?.items || []).map((r) => `${r.url.replace(/^https?:\/\/[^/]+/, '').slice(0, 80)} ${Math.round(r.wastedMs)}ms`);
-    fs.writeFileSync(path.join(OUT_DIR, `diag-${diagTag}.json`), JSON.stringify({ lcp: a2['largest-contentful-paint'].numericValue, lcpEl: lcpEl && lcpEl.snippet, lcpParts, blocking, reqs }, null, 1));
+    fs.writeFileSync(path.join(OUT_DIR, `diag-${diagTag}.json`), JSON.stringify({ lcp: a2['largest-contentful-paint'].numericValue, lcpEl: lcpEl && lcpEl.snippet, lcpRaw: Object.keys(a2).filter((k) => /lcp|largest/.test(k)).map((k) => `${k}: ${JSON.stringify(a2[k].details || a2[k].displayValue || '').slice(0, 700)}`).join('\n'), lcpParts, blocking, reqs }, null, 1));
   }
   const a = j.audits;
   return {
@@ -145,7 +145,7 @@ async function main() {
   const matrix = loadMatrix();
   const template = ensureMatrixTemplate();
   ensureTheme(template, theme);
-  const resolved = { id: `lh-${theme}`, themeSpec: { slug: theme }, storeSpec: matrix.stores.try, checkout: 'classic', hpos: true };
+  const resolved = { id: `lh-${theme}`, themeSpec: { slug: theme }, storeSpec: matrix.stores[arg('--store', 'try')], checkout: 'classic', hpos: true };
   const { snap, meta } = prepareConfigSnapshot(resolved);
   const probeMeta = meta.probe || meta;
   const wpDir = materializeWorker(resolved.id, PORT, snap, { hpos: true });
