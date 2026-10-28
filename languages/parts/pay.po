@@ -16,8 +16,8 @@ msgstr "Sepeti atla (doğrudan bağış)"
 msgid "If on, the donor goes from the form straight to payment and nothing is added to the cart."
 msgstr "Açıksa bağışçı formdan doğrudan ödemeye geçer ve sepete hiçbir şey eklenmez."
 
-msgid "The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product."
-msgstr "Bağışçı formdan doğrudan ödemeye geçer. Sepete hiçbir şey eklenmez; bağışçının mevcut sepeti olduğu gibi kalır. Bunu her ürün için ayrıca değiştirebilirsiniz."
+msgid "The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, ask your developer to set the donation_panel_trusted_proxies filter so visitors can be told apart."
+msgstr "Bağışçı formdan doğrudan ödemeye geçer. Sepete hiçbir şey eklenmez; bağışçının mevcut sepeti olduğu gibi kalır. Bunu her ürün için ayrıca değiştirebilirsiniz. Siteniz bir vekil ya da CDN arkasındaysa, ziyaretçilerin birbirinden ayırt edilebilmesi için geliştiricinizden donation_panel_trusted_proxies süzgecini ayarlamasını isteyin."
 
 msgid "Direct donation was not paid in time and was cancelled automatically."
 msgstr "Doğrudan bağış zamanında ödenmedi ve otomatik olarak iptal edildi."

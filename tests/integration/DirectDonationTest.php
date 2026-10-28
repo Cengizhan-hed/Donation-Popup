@@ -484,6 +484,30 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		}
 	}
 
+	public function test_unreliable_ip_falls_back_to_a_generous_site_wide_cap(): void {
+		$product = $this->direct_product();
+		$low     = static function () {
+			return 4;
+		};
+		add_filter( 'donation_panel_direct_max_pending_site', $low );
+		$saved                  = $_SERVER['REMOTE_ADDR'] ?? '';
+		$_SERVER['REMOTE_ADDR'] = '10.1.2.3';
+		try {
+			for ( $i = 1; $i <= 4; $i++ ) {
+				$this->order_from( $this->direct( $this->donor_body( $product->get_id(), (string) ( 50 + $i ), 'k-site-' . $i, array( 'client_token' => 'siteTok' . $i ) ) ) );
+			}
+			$blocked = $this->direct( $this->donor_body( $product->get_id(), '99', 'k-site-5', array( 'client_token' => 'siteTok5' ) ) );
+			$this->assertSame( 429, $blocked->get_status(), wp_json_encode( $blocked->get_data() ) );
+			$same = $this->direct( $this->donor_body( $product->get_id(), '51', 'k-site-same', array( 'client_token' => 'siteTokX' ) ) );
+			$this->assertTrue( $same->get_data()['reused'], 'Aynı içerik mevcut bekleyen siparişe bağlanır.' );
+		} finally {
+			$_SERVER['REMOTE_ADDR'] = $saved;
+			remove_filter( 'donation_panel_direct_max_pending_site', $low );
+		}
+		$this->assertSame( 500, \DonationPanel\WooCommerce\Direct\Direct_Order_Factory::max_pending_site() );
+		$this->assertSame( 5000, \DonationPanel\WooCommerce\Direct\Direct_Order_Factory::max_pending_site_quantity() );
+	}
+
 	public function test_total_reserved_quantity_per_ip_is_capped(): void {
 		$product = $this->direct_product( '5', array( '_enable_quantity' => 'yes', '_max_shares' => '500' ) );
 		$cap     = static function () {

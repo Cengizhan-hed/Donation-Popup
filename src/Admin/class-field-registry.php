@@ -457,7 +457,7 @@ final class Field_Registry {
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'cart',
 			'label'   => __( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
-			'help'    => __( 'The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product.', 'woo-donation-popup' ),
+			'help'    => __( 'The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, ask your developer to set the donation_panel_trusted_proxies filter so visitors can be told apart.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 		);
 

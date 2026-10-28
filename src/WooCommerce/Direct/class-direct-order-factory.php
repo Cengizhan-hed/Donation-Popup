@@ -110,11 +110,17 @@ final class Direct_Order_Factory {
 			// Katman 1 (SERT, sunucunun zorladığı): IP/hesap başına tüm hâlâ-bekleyen/başarısız siparişler + toplam adet. İstemci
 			// belirteciyle atlatılamaz; bekleyenler Direct_Cleanup ile kısa sürede iptal edildiği için kendiliğinden boşalır.
 			// IP belirlenemiyorsa ya da özel/yerel aralıktaysa (güvenilen vekil yapılandırılmamış: herkes aynı adreste toplanır) sert IP
-			// sınırı UYGULANMAZ; yalnız belirteç alt sınırı kalır.
+			// sınırı yerine siteye ait genel sınır uygulanır; ince belirteç sınırı her durumda kalır.
 			if ( self::ip_is_reliable() ) {
 				$hard = $this->waiting_orders( self::CLIENT_META, $ip, 0, self::max_pending_per_ip() );
 				if ( count( $hard ) >= self::max_pending_per_ip() || $this->waiting_quantity( $hard ) + (int) $plan['quantity'] > self::max_pending_quantity() ) {
 					return $this->over_limit( $hard, $fingerprint );
+				}
+			} else {
+				// IP güvenilmez: IP sınırı yerine siteye ait cömert genel sınır (tüm bekleyen doğrudan siparişler + toplam adet).
+				$site = $this->waiting_orders( self::FLAG_META, 'yes', 0, self::max_pending_site() );
+				if ( count( $site ) >= self::max_pending_site() || $this->waiting_quantity( $site ) + (int) $plan['quantity'] > self::max_pending_site_quantity() ) {
+					return $this->over_limit( $site, $fingerprint );
 				}
 			}
 			// Katman 2 (ince): aynı IP içinde tarayıcı belirteci başına (ortak IP'deki bağışçılar birbirini tüketmez).
@@ -193,6 +199,34 @@ final class Direct_Order_Factory {
 		 * @param int $max Üst sınır.
 		 */
 		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending_quantity', 500 ) );
+	}
+
+	/**
+	 * Siteye ait genel sınır (IP güvenilmezken): tüm bekleyen/başarısız doğrudan siparişler (varsayılan 500).
+	 *
+	 * @return int
+	 */
+	public static function max_pending_site() {
+		/**
+		 * IP güvenilmezken (güvenilen vekil ayarsız) tüm site için bekleyen/başarısız doğrudan sipariş sınırı.
+		 *
+		 * @param int $max Üst sınır.
+		 */
+		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending_site', 500 ) );
+	}
+
+	/**
+	 * Siteye ait genel toplam adet sınırı (IP güvenilmezken; varsayılan 5000).
+	 *
+	 * @return int
+	 */
+	public static function max_pending_site_quantity() {
+		/**
+		 * IP güvenilmezken tüm bekleyen/başarısız doğrudan siparişlerin toplam adedi.
+		 *
+		 * @param int $max Üst sınır.
+		 */
+		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending_site_quantity', 5000 ) );
 	}
 
 	/**
