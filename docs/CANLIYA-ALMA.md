@@ -82,6 +82,11 @@ Yükseltilen kurulumda eski deneyim kalır; yeni deneyim iki adımda açılır:
 
 Not: Eklentinin eski çerezi (`wdp_vid`) kaldırıldı; geri dönüşte eski sürüm onu yeniden yazar, zararsızdır.
 
+## G2. 12.1.0 geri alma planı
+1. Önceki sürüm zip'ini (12.0.0) Eklentiler > Yeni ekle > Eklenti yükle ile aynı klasörün üzerine kur; ayarlar ve siparişler korunur.
+2. 12.1.0'ın yazdığı yeni anahtarlar eski sürümde zararsızdır, kalabilir: `general.trusted_proxies`, `direct.enabled`, ürün meta `_donation_panel_direct`, `side_cart.floating`, sipariş meta `_donation_panel_direct_owner`, autoload bayrağı `donation_panel_autoload_v2`. Veri göçünü geri almak gerekmez.
+3. Toplam yanlış görünürse eklenti seçeneklerini yedekten geri yükle; `wp donation-panel recalc-totals --dry-run` önizler.
+
 ## B. Ikram Aid yayına alma listesi
 
 Ikram (ikramaid.uk): Blocksy + Elementor, GBP, şu an "coming soon" açık. Test için eklentinin kendi ayarlarından modüller açıktır (yeni motor, kampanya, etki, sosyal kanıt, yan sepet, bağışçı hesabı, teşekkür, vergi indirimi/Gift Aid).
