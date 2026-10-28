@@ -162,6 +162,22 @@ final class SideCartTest extends TestCase {
 		$this->assertStringContainsString( 'data-dp-sc-body', $html );
 	}
 
+	public function test_floating_button_is_hidden_by_default_and_not_a_second_open_trigger(): void {
+		$fab  = Side_Cart_Renderer::floating_button( 0 );
+		$html = Side_Cart_Renderer::drawer( '<p>x</p>', array(), '', $fab );
+		$this->assertStringContainsString( 'data-dp-sc-fab hidden', $fab );
+		$this->assertStringNotContainsString( 'data-dp-sc-open', $fab );
+		$this->assertStringContainsString( 'aria-controls="' . Side_Cart_Renderer::DRAWER_ID . '"', $fab );
+		$this->assertStringContainsString( '<dialog class="dp-sc__overlay"', $html );
+		$this->assertStringNotContainsString( 'data-dp-sc-fab', Side_Cart_Renderer::drawer( '<p>x</p>', array() ) );
+	}
+
+	public function test_floating_setting_defaults_on(): void {
+		$schema = Settings::schema();
+		$this->assertTrue( $schema['side_cart']['floating']['default'] );
+		$this->assertSame( 'bool', $schema['side_cart']['floating']['type'] );
+	}
+
 	public function test_module_registered_default_off(): void {
 		$registry = new Module_Registry( new Settings() );
 		Plugin::register_modules( $registry );

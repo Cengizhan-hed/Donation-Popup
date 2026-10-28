@@ -1,0 +1,21 @@
+# Turkish translations — 121-inst (anında açılma, yan sepet düğmesi).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgctxt "Donation form: disabled button while no amount is chosen"
+msgid "Choose an amount"
+msgstr "Tutar seçin"
+
+msgid "Floating basket button"
+msgstr "Yüzen sepet düğmesi"
+
+msgid "A round basket button in the bottom corner. It appears only after a gift is added and disappears when the basket is empty. Switch it off if your theme already shows its own cart icon."
+msgstr "Sağ alt köşede yuvarlak bir sepet düğmesi. Yalnız sepete bağış eklenince görünür, sepet boşalınca kaybolur. Temanız zaten kendi sepet simgesini gösteriyorsa kapatın."
