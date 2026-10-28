@@ -38,7 +38,7 @@ final class Direct_Order_Factory {
 	const FINGERPRINT_META = '_donation_panel_direct_fp';
 
 	/** Kilit seçeneği öneki (kısa ömürlü). */
-	const LOCK_PREFIX = 'donation_panel_dl_';
+	const GUARD_PREFIX = 'donation_panel_dl_';
 
 	/** Kilit en çok bu kadar sn tutulur; eskiyen kilit devralınır. */
 	const LOCK_TTL = 60;
@@ -71,7 +71,12 @@ final class Direct_Order_Factory {
 			return $this->fail( 400, $rule['message'], 'donation_panel_cart_rejected', $rule['errors'] );
 		}
 
-		$plan        = $this->plan( $product, $model, $input, $validated );
+		$plan = $this->plan( $product, $model, $input, $validated );
+		// Sipariş kalemi oluşmadan önce sepete ekleme ile aynı satın alınabilirlik/stok/ekleme doğrulamaları.
+		$purchase = $this->purchase_error( $product, (int) $plan['quantity'] );
+		if ( '' !== $purchase ) {
+			return $this->fail( 409, $purchase, 'donation_panel_direct_unavailable' );
+		}
 		$key_hash    = md5( 'donation_panel_direct|' . $key );
 		$fingerprint = md5( (string) wp_json_encode( $plan['fingerprint'] ) );
 
@@ -90,10 +95,57 @@ final class Direct_Order_Factory {
 		} finally {
 			$this->release( $key_hash );
 		}
+		if ( is_wp_error( $order ) && 'donation_panel_direct_stock' === $order->get_error_code() ) {
+			return $this->fail( 409, $order->get_error_message(), 'donation_panel_direct_unavailable' );
+		}
 		if ( is_wp_error( $order ) ) {
 			return $this->fail( 500, __( 'The donation could not be started. Please try again.', 'woo-donation-popup' ), 'donation_panel_direct_failed' );
 		}
 		return $this->done( $order, false );
+	}
+
+	/**
+	 * Sepete ekleme ile aynı doğrulamalar: satın alınabilirlik, stok, tekil satış ve `woocommerce_add_to_cart_validation`.
+	 *
+	 * @param object $product  \WC_Product.
+	 * @param int    $quantity Adet.
+	 * @return string Hata iletisi; boşsa geçerli.
+	 */
+	private function purchase_error( $product, $quantity ) {
+		$quantity = max( 1, (int) $quantity );
+		if ( ! $product->is_purchasable() ) {
+			return __( 'This donation is not available right now.', 'woo-donation-popup' );
+		}
+		if ( ! $product->is_in_stock() || ! $product->has_enough_stock( $quantity ) ) {
+			return __( 'This donation is out of stock.', 'woo-donation-popup' );
+		}
+		if ( $product->is_sold_individually() && $quantity > 1 ) {
+			return __( 'This donation can only be made once per order.', 'woo-donation-popup' );
+		}
+		$product_id = (int) $product->get_id();
+		/** This filter is documented in woocommerce/includes/class-wc-cart.php. */
+		$passed = (bool) Cart_Hooks::run_in_plugin_flow(
+			static function () use ( $product_id, $quantity ) {
+				return apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+			}
+		);
+		$notice = '';
+		if ( function_exists( 'wc_get_notices' ) ) {
+			$notices = wc_get_notices( 'error' );
+			if ( ! $passed && is_array( $notices ) && ! empty( $notices ) ) {
+				$first  = reset( $notices );
+				$text   = is_array( $first ) && isset( $first['notice'] ) ? $first['notice'] : $first;
+				$notice = is_scalar( $text ) ? wp_strip_all_tags( (string) $text ) : '';
+			}
+			// Doğrulayıcıların kuyruğa aldığı sepet iletileri REST yanıtında/oturumda kalmasın.
+			if ( function_exists( 'wc_clear_notices' ) ) {
+				wc_clear_notices();
+			}
+		}
+		if ( $passed ) {
+			return '';
+		}
+		return '' !== $notice ? $notice : __( 'This donation cannot be started right now.', 'woo-donation-popup' );
 	}
 
 	/**
@@ -115,7 +167,7 @@ final class Direct_Order_Factory {
 		}
 		if ( ! empty( $model['allow_custom'] ) ) {
 			$min   = method_exists( $product, 'get_meta' ) ? $product->get_meta( '_min_custom_price' ) : '';
-			$error = (string) Cart_Hooks::get_donation_amount_error( $amount, $min, (int) $product->get_id(), true );
+			$error = (string) Cart_Hooks::get_donation_amount_error( $amount, $min, (int) $product->get_id(), true, Progress_Currency::get_active_currency() );
 			if ( '' !== $error ) {
 				return array(
 					'message' => $error,
@@ -159,8 +211,8 @@ final class Direct_Order_Factory {
 		$line_total  = 0.0;
 		$line_values = array( 'donation_data' => $data );
 		if ( null !== $custom ) {
-			$quantity                  = 1;
-			$line_total                = (float) Progress_Currency::to_store_amount( $custom, $active );
+			$quantity                    = 1;
+			$line_total                  = (float) Progress_Currency::to_store_amount( $custom, $active );
 			$line_values['custom_price'] = (float) $custom;
 			if ( '' !== $active ) {
 				$line_values['wdp_input_currency'] = $active;
@@ -187,7 +239,7 @@ final class Direct_Order_Factory {
 			'quantity'    => $quantity,
 			'values'      => $line_values,
 			'data'        => $data,
-			'fingerprint' => array( (int) $product->get_id(), $line_total, $quantity, $data, $type ),
+			'fingerprint' => array( (int) $product->get_id(), $line_total, Progress_Currency::get_base_currency(), $quantity, $data, $type ),
 		);
 	}
 
@@ -211,6 +263,8 @@ final class Direct_Order_Factory {
 		if ( is_wp_error( $order ) ) {
 			return $order;
 		}
+		// Tutar mağaza ana birimine çevrilerek hesaplandı (Progress_Currency::to_store_amount); sipariş de o birimde.
+		$order->set_currency( Progress_Currency::get_base_currency() );
 
 		$item = new \WC_Order_Item_Product();
 		$item->set_product( $product );
@@ -232,6 +286,16 @@ final class Direct_Order_Factory {
 		$order->calculate_totals( true );
 		$order->add_order_note( __( 'Direct donation started. Waiting for payment.', 'woo-donation-popup' ) );
 		$order->save();
+
+		// Bekleyen sipariş stoğu rezerve eder (WooCommerce ödeme akışıyla aynı); yetmiyorsa sipariş açılmaz.
+		if ( function_exists( 'wc_reserve_stock_for_order' ) ) {
+			try {
+				wc_reserve_stock_for_order( $order );
+			} catch ( \Exception $e ) {
+				$order->delete( true );
+				return new \WP_Error( 'donation_panel_direct_stock', $e->getMessage() );
+			}
+		}
 
 		Direct_Cleanup::schedule();
 		return $order;
@@ -339,7 +403,7 @@ final class Direct_Order_Factory {
 	 * @return bool
 	 */
 	private function acquire( $key_hash ) {
-		$name = self::LOCK_PREFIX . $key_hash;
+		$name = self::GUARD_PREFIX . $key_hash;
 		if ( add_option( $name, time(), '', false ) ) {
 			return true;
 		}
@@ -358,6 +422,6 @@ final class Direct_Order_Factory {
 	 * @return void
 	 */
 	private function release( $key_hash ) {
-		delete_option( self::LOCK_PREFIX . $key_hash );
+		delete_option( self::GUARD_PREFIX . $key_hash );
 	}
 }

@@ -278,6 +278,8 @@ class Uninstall {
 			self::delete_options_like( $wpdb, '_site_transient_' . $prefix );
 			self::delete_options_like( $wpdb, '_site_transient_timeout_' . $prefix );
 		}
+		// Doğrudan bağış kısa ömürlü kilit seçenekleri (çökme sonrası kalmış olabilir).
+		self::delete_options_like( $wpdb, 'donation_panel_dl_' );
 
 		self::delete_product_meta( $wpdb );
 

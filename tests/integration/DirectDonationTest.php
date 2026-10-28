@@ -266,7 +266,7 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 	public function test_concurrent_request_is_blocked_by_lock_and_stale_lock_is_taken_over(): void {
 		$product = $this->direct_product();
 		$key     = 'k-lock';
-		$name    = Direct_Order_Factory::LOCK_PREFIX . md5( 'donation_panel_direct|' . $this->key( $key ) );
+		$name    = Direct_Order_Factory::GUARD_PREFIX . md5( 'donation_panel_direct|' . $this->key( $key ) );
 
 		add_option( $name, time(), '', false );
 		$busy = $this->direct( $this->donor_body( $product->get_id(), '30', $key ) );
@@ -315,6 +315,77 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$normal = $this->create_product( '25', array( Direct_Settings::META => 'yes' ) );
 		$this->assertSame( 404, $this->direct( $this->donor_body( $normal->get_id(), '25', 'k-normal' ) )->get_status(), 'Bağış ürünü olmayan ürün sipariş üretmemeli.' );
 		$this->assertSame( 0, $this->counts['woocommerce_new_order'] );
+	}
+
+	public function test_unavailable_products_are_rejected_before_any_order_item(): void {
+		$body = static function ( int $id, string $key ) {
+			return array( 'product_id' => $id, 'amount' => '1', 'quantity' => 3, 'submission_key' => $key, 'donation_full_name' => 'Ali Veli', 'donation_phone' => '+90 532 111 11 11' );
+		};
+
+		// Stokta yok.
+		$oos = $this->direct_product( '25', array( '_enable_quantity' => 'yes' ) );
+		$p   = wc_get_product( $oos->get_id() );
+		$p->set_manage_stock( true );
+		$p->set_stock_quantity( 0 );
+		$p->save();
+		$this->assertSame( 409, $this->direct( $body( $oos->get_id(), 'k-oos' ) )->get_status() );
+
+		// Yeterli stok yok (2 var, 3 isteniyor).
+		$few = $this->direct_product( '25', array( '_enable_quantity' => 'yes' ) );
+		$p   = wc_get_product( $few->get_id() );
+		$p->set_manage_stock( true );
+		$p->set_stock_quantity( 2 );
+		$p->save();
+		$this->assertSame( 409, $this->direct( $body( $few->get_id(), 'k-few' ) )->get_status() );
+
+		// Tekil satış: adet > 1 reddedilir.
+		$solo = $this->direct_product( '25', array( '_enable_quantity' => 'yes' ) );
+		$p    = wc_get_product( $solo->get_id() );
+		$p->set_sold_individually( true );
+		$p->save();
+		$this->assertSame( 409, $this->direct( $body( $solo->get_id(), 'k-solo' ) )->get_status() );
+
+		// Satın alınamaz (taslak): ürün gizli sayılır, sipariş yok.
+		$draft = $this->direct_product( '25' );
+		$p     = wc_get_product( $draft->get_id() );
+		$p->set_status( 'draft' );
+		$p->save();
+		$this->assertGreaterThanOrEqual( 400, $this->direct( $body( $draft->get_id(), 'k-draft' ) )->get_status() );
+
+		// Ortak doğrulama süzgeci (sepete ekleme ile aynı) reddederse sipariş açılmaz.
+		$ok     = $this->direct_product( '25' );
+		$reject = static function ( $passed ) {
+			wc_add_notice( 'Blocked by validator.', 'error' );
+			return false;
+		};
+		add_filter( 'woocommerce_add_to_cart_validation', $reject, 99 );
+		try {
+			$res = $this->direct( array( 'product_id' => $ok->get_id(), 'submission_key' => 'k-filter', 'donation_full_name' => 'Ali Veli', 'donation_phone' => '+90 532 111 11 11' ) );
+		} finally {
+			remove_filter( 'woocommerce_add_to_cart_validation', $reject, 99 );
+		}
+		$this->assertSame( 409, $res->get_status() );
+		$this->assertStringContainsString( 'Blocked by validator', (string) $res->get_data()['message'] );
+		$this->assertCount( 0, wc_get_notices( 'error' ), 'Doğrulayıcı iletileri kuyrukta kalmamalı.' );
+		$this->assertSame( 0, $this->counts['woocommerce_new_order'], 'Hiçbir reddedilen istek sipariş üretmemeli.' );
+	}
+
+	public function test_stock_is_reserved_for_the_pending_order(): void {
+		$product = $this->direct_product( '25', array( '_enable_quantity' => 'yes' ) );
+		$p       = wc_get_product( $product->get_id() );
+		$p->set_manage_stock( true );
+		$p->set_stock_quantity( 5 );
+		$p->save();
+		$order = $this->order_from( $this->direct( array( 'product_id' => $product->get_id(), 'quantity' => 3, 'submission_key' => 'k-res', 'donation_full_name' => 'Ali Veli', 'donation_phone' => '+90 532 111 11 11' ) ) );
+		$this->assertSame( 3, (int) ( new \Automattic\WooCommerce\Checkout\Helpers\ReserveStock() )->get_reserved_stock( wc_get_product( $product->get_id() ), 0 ), 'Bekleyen sipariş 3 adet rezerve etmeli.' );
+		$this->assertSame( 5, (int) wc_get_product( $product->get_id() )->get_stock_quantity(), 'Rezervasyon stok miktarını düşürmez.' );
+	}
+
+	public function test_order_currency_matches_the_amount_calculation(): void {
+		$product = $this->direct_product();
+		$order   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '55', 'k-cur' ) ) );
+		$this->assertSame( \DonationPanel\Domain\Progress_Currency::get_base_currency(), $order->get_currency() );
+		$this->assertSame( 55.0, (float) $order->get_total() );
 	}
 
 	public function test_rate_limit(): void {
@@ -455,7 +526,7 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$regular->set_date_created( time() - 3 * DAY_IN_SECONDS );
 		$regular->save();
 
-		$this->assertSame( 1, Direct_Cleanup::run() );
+		$this->assertSame( 1, Direct_Cleanup::cancel_stale() );
 		$this->assertSame( 'cancelled', wc_get_order( $old->get_id() )->get_status() );
 		$this->assertSame( 'pending', wc_get_order( $fresh->get_id() )->get_status() );
 		$this->assertSame( 'pending', wc_get_order( $regular->get_id() )->get_status(), 'Doğrudan bağış olmayan sipariş dokunulmaz.' );

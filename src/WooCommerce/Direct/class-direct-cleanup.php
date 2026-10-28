@@ -59,11 +59,20 @@ final class Direct_Cleanup {
 	}
 
 	/**
+	 * Olay işleyicisi.
+	 *
+	 * @return void
+	 */
+	public static function run() {
+		self::cancel_stale();
+	}
+
+	/**
 	 * Süresi geçen yarım siparişleri iptal eder.
 	 *
 	 * @return int İptal edilen sipariş sayısı.
 	 */
-	public static function run() {
+	public static function cancel_stale() {
 		if ( ! function_exists( 'wc_get_orders' ) ) {
 			return 0;
 		}
@@ -80,7 +89,7 @@ final class Direct_Cleanup {
 				),
 			)
 		);
-		$count = 0;
+		$count  = 0;
 		foreach ( $orders as $order ) {
 			if ( $order instanceof \WC_Order && $order->has_status( array( 'pending', 'failed' ) ) ) {
 				$order->update_status( 'cancelled', __( 'Direct donation was not paid in time and was cancelled automatically.', 'woo-donation-popup' ) );
