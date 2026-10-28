@@ -218,13 +218,11 @@ final class Donor_Account_Module implements Module_Interface {
 	 * @return string
 	 */
 	public function render_trigger() {
-		$logged_in = is_user_logged_in();
+		// Önbellek sözleşmesi: oturum durumu HTML'e girmez; istemci `session` ile belirler.
 		$this->enqueue();
-		if ( ! $logged_in ) {
-			$this->needs_dialog = true;
-		}
-		$account = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'myaccount' ) : '';
-		return Account_Renderer::trigger( $logged_in, $account );
+		$this->needs_dialog = true;
+		$account            = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'myaccount' ) : '';
+		return Account_Renderer::trigger( $account );
 	}
 
 	/**
@@ -234,7 +232,7 @@ final class Donor_Account_Module implements Module_Interface {
 	 */
 	public function print_dialog() {
 		static $printed = false;
-		if ( $printed || ! $this->needs_dialog || is_user_logged_in() ) {
+		if ( $printed || ! $this->needs_dialog ) {
 			return;
 		}
 		$printed = true;
