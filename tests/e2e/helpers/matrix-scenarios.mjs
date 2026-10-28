@@ -283,7 +283,7 @@ async function fillDonationForm(scope, store, opts = {}) {
 }
 
 /**
- * Doğrulama: tutarı boşalt -> tutar hatası + odak; geçerli tutar -> bilgi adımı; boş gönder -> her zorunlu alanda hata + odak.
+ * Doğrulama: tutarı boşalt -> pasif düğme (aria-disabled, tıklama yok); geçerli tutar -> düğme etkin -> bilgi adımı; boş gönder -> her zorunlu alanda hata + odak.
  * Not: tutar-adımı tutarsız formlarda (sabit fiyat / hisse) yalnız bilgi adımı denetlenir.
  * @param {import('@playwright/test').Page} page
  * @param {import('@playwright/test').Locator} root
@@ -300,12 +300,15 @@ async function checkValidationErrors(page, root, store, label) {
     if (!text) throw new Error(`${label}: ${name} hata metni boş`);
   };
   if ((await custom.count()) > 0) {
+    // 12.1 tasarımı: tutar boşken hata yerine pasif düğme (aria-disabled + is-pending + etiket); tıklama yok.
+    const submitBtn = form.locator(DP_SEL.submit).first();
     await custom.fill('');
-    await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS });
-    await visibleError('amount');
-    const focused = await page.evaluate(() => (document.activeElement && document.activeElement.getAttribute('name')) || '');
-    if (focused !== 'amount') throw new Error(`${label}: tutar hatasında odak '${focused}' (beklenen amount)`);
+    await expect(submitBtn, `${label}: tutar boşken düğme pasif değil`).toHaveAttribute('aria-disabled', 'true', { timeout: CHECK_MS });
+    await expect(submitBtn, `${label}: tutar boşken is-pending yok`).toHaveClass(/is-pending/, { timeout: CHECK_MS });
+    const pendingLabel = String((await submitBtn.textContent()) || '').trim();
+    if (!pendingLabel) throw new Error(`${label}: pasif düğme etiketi boş`);
     await custom.fill(formatFillAmount(store.amount, store) || String(store.amount));
+    await expect(submitBtn, `${label}: geçerli tutarda düğme etkinleşmedi`).toHaveAttribute('aria-disabled', 'false', { timeout: CHECK_MS });
   } else {
     const preset = form.locator(DP_SEL.preset).first();
     if ((await preset.count()) > 0) await preset.click({ timeout: CHECK_MS });
