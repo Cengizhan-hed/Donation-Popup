@@ -11,7 +11,7 @@ test('parsePage: harici kaynakları, render engelleyenleri ve satır içi blokla
     <script src="/head.js"></script>
     <script src="/deferred.js" defer></script>
     <style>.a{}</style>
-  </head><body><script>var x=1;</script><div class="dp dp-exp" data-dp-exp></div>
+  </head><body><script>var x=1;</script><div class="donation-panel donation-panel-exp" data-dp-exp></div>
   <script src="/wp-content/plugins/woo-donation-popup/assets/build/experiences/index.js" defer></script></body></html>
   <!--wdp-probe {"queries":7,"sql":[],"autoload":10,"owned":{}}-->`;
   const parsed = parsePage(html, BASE);

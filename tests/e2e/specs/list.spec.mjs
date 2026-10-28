@@ -174,5 +174,5 @@ test('form: panel içinde ürün/kampanya görseli yok', async ({ page }) => {
   await page.goto(URL);
   await page.locator('a.wdp-card__cta').first().click();
   await expect(page.locator('.wdp-form-host [data-dp-surface]')).toBeVisible({ timeout: 15000 });
-  expect(await page.locator('.wdp-form-host .dp-form img, .wdp-form-host .dp-hero').count()).toBe(0);
+  expect(await page.locator('.wdp-form-host .donation-panel-form img, .wdp-form-host .donation-panel-hero').count()).toBe(0);
 });

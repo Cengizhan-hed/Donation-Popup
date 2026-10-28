@@ -19,7 +19,7 @@ final class EntryPointFallbackTest extends TestCase {
 		unset($GLOBALS['product'], $GLOBALS['post']);
 		// Gerçek deneyim modülü yok: giriş noktası köprüsü sahte işaretleme alır (kapsam: giriş noktası mantığı).
 		WDP_Test_State::$filters['donation_panel_experience_html'] = static function ($html, $product_id, $kind, $text) {
-			return '<div class="dp dp-exp" data-dp-exp data-dp-product="' . (int) $product_id . '" data-dp-kind="' . $kind . '">' . $text . '</div>';
+			return '<div class="donation-panel donation-panel-exp" data-dp-exp data-dp-product="' . (int) $product_id . '" data-dp-kind="' . $kind . '">' . $text . '</div>';
 		};
 	}
 

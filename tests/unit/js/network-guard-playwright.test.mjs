@@ -323,7 +323,7 @@ describe('network-guard Playwright kanıt', () => {
       const context = await browser.newContext();
       const page = await context.newPage();
       await page.setContent(`<!doctype html><html><body>
-        <div data-dp-overlay class="dp-overlay is-open">
+        <div data-dp-overlay class="donation-panel-overlay is-open">
           <form data-dp-form>
             <div data-dp-summary class="is-visible" role="alert">Something went wrong. Please try again.</div>
           </form>
@@ -335,7 +335,7 @@ describe('network-guard Playwright kanıt', () => {
       );
       // errors senaryosunda beklenen alan doğrulaması (genel hata değil) serbest
       await page.setContent(`<!doctype html><html><body>
-        <div data-dp-overlay class="dp-overlay is-open">
+        <div data-dp-overlay class="donation-panel-overlay is-open">
           <form data-dp-form>
             <div data-dp-summary class="is-visible" role="alert">Please check the highlighted fields.</div>
             <div data-dp-field class="has-error"><p data-dp-error="donation_full_name">Name is required</p></div>

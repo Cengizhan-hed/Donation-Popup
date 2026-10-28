@@ -18,7 +18,7 @@ function celebrate(doc) {
     return;
   }
   const layer = doc.createElement('div');
-  layer.className = 'dp dp-thanks-confetti';
+  layer.className = 'donation-panel donation-panel-thanks-confetti';
   layer.setAttribute('aria-hidden', 'true');
   confettiSpec(26, Math.random).forEach((spec) => {
     const piece = doc.createElement('i');
@@ -57,10 +57,10 @@ function wireShare(root) {
     });
     if (toast && outcome !== 'shared' && outcome !== 'cancelled') {
       toast.textContent = outcome === 'copied' ? button.dataset.copied || '' : button.dataset.failed || '';
-      toast.classList.remove('dp-sr');
+      toast.classList.remove('donation-panel-sr');
       window.setTimeout(() => {
         toast.textContent = '';
-        toast.classList.add('dp-sr');
+        toast.classList.add('donation-panel-sr');
       }, 3000);
     }
   });

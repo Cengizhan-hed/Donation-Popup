@@ -1,109 +1,109 @@
 /* Donation Panel — Yan sepet (onaylı tasarım YanSepet.dc.html). Tema özel seçici yok; mantıksal özellikler (RTL).
  * Belirteçler: ../campaign/base.css (--dp-*) + ../ui2-shared/tokens.css (--dpx-*). */
-.dp-sc, .dp-sc *, .dp-sc *::before, .dp-sc *::after, .dp-sc__trigger, .dp-sc__trigger * { box-sizing: border-box; }
-.dp-sc { font-family: var(--dp-font-body); font-size: 1rem; line-height: 1.5; color: var(--dp-color-text); }
-.dp-sc__ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.dp-sc__num { font-variant-numeric: tabular-nums; }
-.dp-sc__sr { position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.donation-panel-sc, .donation-panel-sc *, .donation-panel-sc *::before, .donation-panel-sc *::after, .donation-panel-sc__trigger, .donation-panel-sc__trigger * { box-sizing: border-box; }
+.donation-panel-sc { font-family: var(--dp-font-body); font-size: 1rem; line-height: 1.5; color: var(--dp-color-text); }
+.donation-panel-sc__ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.donation-panel-sc__num { font-variant-numeric: tabular-nums; }
+.donation-panel-sc__sr { position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 /* Tetikleyici (kısa kod): 44 px dokunma hedefi + sayaç rozeti */
-.dp-sc__trigger { position: relative; display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--dpx-chip); color: inherit; font: inherit; cursor: pointer; transition: background 160ms, transform 160ms var(--dp-ease-spring); }
-.dp-sc__trigger:hover { background: var(--dpx-line); }
-.dp-sc__trigger:active { transform: scale(.92); }
-.dp-sc__count { position: absolute; inset-block-start: 0; inset-inline-end: -2px; min-inline-size: 20px; block-size: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--dpx-accent); color: var(--dpx-on-accent); font-size: 12px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.donation-panel-sc__trigger { position: relative; display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--dpx-chip); color: inherit; font: inherit; cursor: pointer; transition: background 160ms, transform 160ms var(--dp-ease-spring); }
+.donation-panel-sc__trigger:hover { background: var(--dpx-line); }
+.donation-panel-sc__trigger:active { transform: scale(.92); }
+.donation-panel-sc__count { position: absolute; inset-block-start: 0; inset-inline-end: -2px; min-inline-size: 20px; block-size: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--dpx-accent); color: var(--dpx-on-accent); font-size: 12px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* Katman */
-.dp-sc__overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay, 99990); display: grid; justify-items: end; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 0; border: 0; color: inherit; overflow: hidden; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; transition: opacity 260ms var(--dp-ease-out), visibility 0s linear 260ms; }
+.donation-panel-sc__overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay, 99990); display: grid; justify-items: end; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 0; border: 0; color: inherit; overflow: hidden; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; transition: opacity 260ms var(--dp-ease-out), visibility 0s linear 260ms; }
 /* <dialog> üst katmanda (başka eklentinin yüzen öğeleri üste çıkamaz); kapalıyken hiç yerleşmez. */
-.dp-sc__overlay:not([open]) { display: none; }
-.dp-sc__overlay::backdrop { background: transparent; }
-.dp-sc__overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
-.dp-sc__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 356px); block-size: 100%; max-block-size: 100%; overflow: hidden; background: var(--dpx-card); color: var(--dp-color-text); box-shadow: -12px 0 40px rgb(10 20 40 / .3); transform: translateX(calc(100% * var(--sc-dir, 1))); transition: transform 420ms var(--dp-ease-out); outline: none; }
-[dir="rtl"] .dp-sc__surface { --sc-dir: -1; box-shadow: 12px 0 40px rgb(10 20 40 / .3); }
-.dp-sc__overlay.is-open .dp-sc__surface { transform: none; }
-.dp-sc__surface.is-dragging { transition: none; }
-.dp-sc__handle { display: none; padding-block: 10px 0; cursor: grab; touch-action: none; flex: none; }
-.dp-sc__handle::before { content: ""; display: block; inline-size: 44px; block-size: 5px; margin-inline: auto; border-radius: 99px; background: var(--dpx-line-strong); }
-.dp-sc__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 18px 14px; border-block-end: 1px solid var(--dpx-line); flex: none; touch-action: none; }
-.dp-sc__headtext { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
-.dp-sc .dp-sc__title { margin: 0; font-size: 1.25rem; font-weight: 800; line-height: 1.3; }
-.dp-sc__sub { font-size: .78rem; color: var(--dpx-muted); }
-.dp-sc__sub:empty { display: none; }
-.dp-sc__close { flex: none; inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: var(--dpx-chip); color: inherit; cursor: pointer; }
-.dp-sc__close:hover { background: var(--dpx-line); }
-.dp-sc__close .dp-sc__ico { inline-size: 18px; block-size: 18px; stroke-width: 2.2; }
-.dp-sc__body { flex: 1 1 auto; min-block-size: 0; display: flex; flex-direction: column; }
-.dp-sc__body[aria-busy="true"] { opacity: .7; }
-.dp-sc__error { margin: 8px 18px 0; padding: 12px 16px; border-radius: var(--dpx-r-field); background: var(--dpx-bad-bg); color: var(--dpx-bad); font-size: .875rem; font-weight: 500; }
+.donation-panel-sc__overlay:not([open]) { display: none; }
+.donation-panel-sc__overlay::backdrop { background: transparent; }
+.donation-panel-sc__overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
+.donation-panel-sc__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 356px); block-size: 100%; max-block-size: 100%; overflow: hidden; background: var(--dpx-card); color: var(--dp-color-text); box-shadow: -12px 0 40px rgb(10 20 40 / .3); transform: translateX(calc(100% * var(--sc-dir, 1))); transition: transform 420ms var(--dp-ease-out); outline: none; }
+[dir="rtl"] .donation-panel-sc__surface { --sc-dir: -1; box-shadow: 12px 0 40px rgb(10 20 40 / .3); }
+.donation-panel-sc__overlay.is-open .donation-panel-sc__surface { transform: none; }
+.donation-panel-sc__surface.is-dragging { transition: none; }
+.donation-panel-sc__handle { display: none; padding-block: 10px 0; cursor: grab; touch-action: none; flex: none; }
+.donation-panel-sc__handle::before { content: ""; display: block; inline-size: 44px; block-size: 5px; margin-inline: auto; border-radius: 99px; background: var(--dpx-line-strong); }
+.donation-panel-sc__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 18px 14px; border-block-end: 1px solid var(--dpx-line); flex: none; touch-action: none; }
+.donation-panel-sc__headtext { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
+.donation-panel-sc .donation-panel-sc__title { margin: 0; font-size: 1.25rem; font-weight: 800; line-height: 1.3; }
+.donation-panel-sc__sub { font-size: .78rem; color: var(--dpx-muted); }
+.donation-panel-sc__sub:empty { display: none; }
+.donation-panel-sc__close { flex: none; inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: var(--dpx-chip); color: inherit; cursor: pointer; }
+.donation-panel-sc__close:hover { background: var(--dpx-line); }
+.donation-panel-sc__close .donation-panel-sc__ico { inline-size: 18px; block-size: 18px; stroke-width: 2.2; }
+.donation-panel-sc__body { flex: 1 1 auto; min-block-size: 0; display: flex; flex-direction: column; }
+.donation-panel-sc__body[aria-busy="true"] { opacity: .7; }
+.donation-panel-sc__error { margin: 8px 18px 0; padding: 12px 16px; border-radius: var(--dpx-r-field); background: var(--dpx-bad-bg); color: var(--dpx-bad); font-size: .875rem; font-weight: 500; }
 
 /* Satırlar */
-.dp-sc__scroll { flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 18px; }
-.dp-sc__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
-.dp-sc__row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
-.dp-sc__row[aria-busy="true"] { opacity: .55; }
-.dp-sc__thumb { inline-size: 56px; block-size: 56px; border-radius: 14px; object-fit: cover; background: var(--dpx-track); }
-.dp-sc__thumb--ph { display: grid; place-items: center; color: var(--dpx-muted); }
-.dp-sc__info { min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
-.dp-sc__name { font-size: .875rem; font-weight: 700; white-space: normal; overflow-wrap: anywhere; }
-.dp-sc__meta { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; color: var(--dpx-muted); font-size: .75rem; }
-.dp-sc__tag { color: var(--dpx-muted); font-size: .75rem; font-weight: 500; }
-.dp-sc__detail { color: var(--dpx-muted); font-size: .75rem; overflow-wrap: anywhere; }
-.dp-sc__amt { font-size: .9375rem; font-weight: 800; white-space: nowrap; text-align: end; align-self: start; padding-block-start: 2px; }
-.dp-sc__actions { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; margin-block-start: 2px; }
-.dp-sc__stepper { display: inline-flex; align-items: center; gap: 2px; border-radius: 99px; background: var(--dpx-chip); }
-.dp-sc__stepper output { min-inline-size: 24px; text-align: center; font-weight: 700; font-size: .875rem; }
-.dp-sc__step { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
-.dp-sc__step:hover:not([disabled]) { background: var(--dpx-line); }
-.dp-sc__step[disabled] { opacity: .4; cursor: not-allowed; }
-.dp-sc__remove { min-block-size: 44px; min-inline-size: 44px; padding: 0; text-align: start; border: 0; background: transparent; color: var(--dpx-muted); text-decoration: underline; text-underline-offset: 3px; font: inherit; font-size: .75rem; font-weight: 600; cursor: pointer; border-radius: 8px; }
-.dp-sc__remove:hover:not([disabled]) { color: var(--dp-color-text); }
-.dp-sc__remove[disabled] { opacity: .5; cursor: not-allowed; }
+.donation-panel-sc__scroll { flex: 1 1 auto; min-block-size: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px 18px; }
+.donation-panel-sc__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.donation-panel-sc__row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+.donation-panel-sc__row[aria-busy="true"] { opacity: .55; }
+.donation-panel-sc__thumb { inline-size: 56px; block-size: 56px; border-radius: 14px; object-fit: cover; background: var(--dpx-track); }
+.donation-panel-sc__thumb--ph { display: grid; place-items: center; color: var(--dpx-muted); }
+.donation-panel-sc__info { min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
+.donation-panel-sc__name { font-size: .875rem; font-weight: 700; white-space: normal; overflow-wrap: anywhere; }
+.donation-panel-sc__meta { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; color: var(--dpx-muted); font-size: .75rem; }
+.donation-panel-sc__tag { color: var(--dpx-muted); font-size: .75rem; font-weight: 500; }
+.donation-panel-sc__detail { color: var(--dpx-muted); font-size: .75rem; overflow-wrap: anywhere; }
+.donation-panel-sc__amt { font-size: .9375rem; font-weight: 800; white-space: nowrap; text-align: end; align-self: start; padding-block-start: 2px; }
+.donation-panel-sc__actions { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: center; margin-block-start: 2px; }
+.donation-panel-sc__stepper { display: inline-flex; align-items: center; gap: 2px; border-radius: 99px; background: var(--dpx-chip); }
+.donation-panel-sc__stepper output { min-inline-size: 24px; text-align: center; font-weight: 700; font-size: .875rem; }
+.donation-panel-sc__step { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.donation-panel-sc__step:hover:not([disabled]) { background: var(--dpx-line); }
+.donation-panel-sc__step[disabled] { opacity: .4; cursor: not-allowed; }
+.donation-panel-sc__remove { min-block-size: 44px; min-inline-size: 44px; padding: 0; text-align: start; border: 0; background: transparent; color: var(--dpx-muted); text-decoration: underline; text-underline-offset: 3px; font: inherit; font-size: .75rem; font-weight: 600; cursor: pointer; border-radius: 8px; }
+.donation-panel-sc__remove:hover:not([disabled]) { color: var(--dp-color-text); }
+.donation-panel-sc__remove[disabled] { opacity: .5; cursor: not-allowed; }
 
 /* Ek bağış önerisi */
-.dp-sc__suggest { margin-block-start: 18px; padding: 14px; border-radius: var(--dpx-r-btn); background: var(--dpx-warm); display: flex; flex-direction: column; gap: 10px; }
-.dp-sc__suggest-title { font-size: .8125rem; font-weight: 700; }
-.dp-sc__suggest-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.dp-sc__suggest-text { flex: 1 1 140px; min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
-.dp-sc__suggest-name { font-size: .875rem; font-weight: 600; }
-.dp-sc__suggest-hint { font-size: .75rem; color: var(--dpx-muted); }
-.dp-sc__suggest-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.dp-sc__suggest-btn.dpx-btn { min-block-size: 44px; padding: 0 14px; border: 1.5px solid var(--dp-color-primary); border-radius: 12px; background: var(--dpx-card); color: var(--dp-color-primary-strong); font-size: .875rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-.dp-sc__suggest-btn.dpx-btn:hover { background: var(--dpx-soft); color: var(--dp-color-primary-strong); }
+.donation-panel-sc__suggest { margin-block-start: 18px; padding: 14px; border-radius: var(--dpx-r-btn); background: var(--dpx-warm); display: flex; flex-direction: column; gap: 10px; }
+.donation-panel-sc__suggest-title { font-size: .8125rem; font-weight: 700; }
+.donation-panel-sc__suggest-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.donation-panel-sc__suggest-text { flex: 1 1 140px; min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
+.donation-panel-sc__suggest-name { font-size: .875rem; font-weight: 600; }
+.donation-panel-sc__suggest-hint { font-size: .75rem; color: var(--dpx-muted); }
+.donation-panel-sc__suggest-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.donation-panel-sc__suggest-btn.dpx-btn { min-block-size: 44px; padding: 0 14px; border: 1.5px solid var(--dp-color-primary); border-radius: 12px; background: var(--dpx-card); color: var(--dp-color-primary-strong); font-size: .875rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.donation-panel-sc__suggest-btn.dpx-btn:hover { background: var(--dpx-soft); color: var(--dp-color-primary-strong); }
 
 /* Sabit alt çubuk: başparmak bölgesi + güvenli alan */
-.dp-sc__bar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 16px 18px max(24px, env(safe-area-inset-bottom)); background: var(--dpx-card); border-block-start: 1px solid var(--dpx-line); }
-.dp-sc__subtotal { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.dp-sc__subtotal > span { font-size: .875rem; color: var(--dpx-muted); }
-.dp-sc__subtotal strong { font-size: 1.375rem; font-weight: 800; }
-.dp-sc__hint { margin: 0; color: var(--dpx-muted); font-size: .75rem; text-align: center; }
-.dp-sc__bar .dpx-btn--primary, .dp-sc__bar .dpx-btn--link { inline-size: 100%; }
+.donation-panel-sc__bar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 16px 18px max(24px, env(safe-area-inset-bottom)); background: var(--dpx-card); border-block-start: 1px solid var(--dpx-line); }
+.donation-panel-sc__subtotal { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.donation-panel-sc__subtotal > span { font-size: .875rem; color: var(--dpx-muted); }
+.donation-panel-sc__subtotal strong { font-size: 1.375rem; font-weight: 800; }
+.donation-panel-sc__hint { margin: 0; color: var(--dpx-muted); font-size: .75rem; text-align: center; }
+.donation-panel-sc__bar .dpx-btn--primary, .donation-panel-sc__bar .dpx-btn--link { inline-size: 100%; }
 
 /* Boş durum */
-.dp-sc__empty { margin: auto; display: grid; justify-items: center; gap: 12px; text-align: center; padding: 40px 24px; }
-.dp-sc__empty h3 { margin: 0; font-size: 1.125rem; font-weight: 800; color: var(--dp-color-text); }
-.dp-sc__empty p { margin: 0; color: var(--dpx-muted); font-size: .875rem; max-inline-size: 34ch; }
-.dp-sc__empty-art { inline-size: 72px; block-size: 72px; display: grid; place-items: center; border-radius: 50%; background: var(--dpx-warm); color: var(--dp-color-text); font-size: 1.75rem; }
+.donation-panel-sc__empty { margin: auto; display: grid; justify-items: center; gap: 12px; text-align: center; padding: 40px 24px; }
+.donation-panel-sc__empty h3 { margin: 0; font-size: 1.125rem; font-weight: 800; color: var(--dp-color-text); }
+.donation-panel-sc__empty p { margin: 0; color: var(--dpx-muted); font-size: .875rem; max-inline-size: 34ch; }
+.donation-panel-sc__empty-art { inline-size: 72px; block-size: 72px; display: grid; place-items: center; border-radius: 50%; background: var(--dpx-warm); color: var(--dp-color-text); font-size: 1.75rem; }
 
 /* Mobil (≤ 639px): alttan panel (köşe 28) */
 @media (max-width: 639.98px) {
-  .dp-sc__overlay { justify-items: stretch; align-items: end; }
-  .dp-sc__surface { inline-size: 100%; block-size: auto; max-block-size: 94dvh; border-radius: var(--dpx-r-sheet) var(--dpx-r-sheet) 0 0; box-shadow: 0 -6px 30px rgb(16 24 40 / .18); transform: translateY(100%); }
-  .dp-sc__overlay.is-open .dp-sc__surface { transform: translateY(var(--dp-sc-drag, 0px)); }
-  .dp-sc__handle { display: block; }
-  .dp-sc__head { padding-block-start: 8px; }
+  .donation-panel-sc__overlay { justify-items: stretch; align-items: end; }
+  .donation-panel-sc__surface { inline-size: 100%; block-size: auto; max-block-size: 94dvh; border-radius: var(--dpx-r-sheet) var(--dpx-r-sheet) 0 0; box-shadow: 0 -6px 30px rgb(16 24 40 / .18); transform: translateY(100%); }
+  .donation-panel-sc__overlay.is-open .donation-panel-sc__surface { transform: translateY(var(--dp-sc-drag, 0px)); }
+  .donation-panel-sc__handle { display: block; }
+  .donation-panel-sc__head { padding-block-start: 8px; }
 }
-@media (prefers-reduced-motion: reduce) { .dp-sc__overlay, .dp-sc__surface { transition-duration: 1ms; } }
-html.dp-sc-lock { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .donation-panel-sc__overlay, .donation-panel-sc__surface { transition-duration: 1ms; } }
+html.donation-panel-sc-lock { overflow: hidden; }
 
 /* Yüzen sepet düğmesi: sağ altta, güvenli alan içinde; sepet boşken `hidden` (istemci Woo sepet çerezine bakar).
  * Başka bir yüzen öğeyle çakışırsa --dp-sc-fab-offset ile yukarı kaydırılabilir. */
-.dp-sc__fab { position: fixed; inset-block-end: calc(max(16px, env(safe-area-inset-bottom)) + var(--dp-sc-fab-offset, 0px)); inset-inline-end: max(16px, env(safe-area-inset-right)); z-index: var(--dp-z-sticky, 10); display: inline-grid; place-items: center; inline-size: 56px; block-size: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); box-shadow: 0 6px 20px rgb(16 24 40 / .28); font: inherit; cursor: pointer; transition: transform 160ms var(--dp-ease-spring); }
-.dp-sc__fab[hidden] { display: none; }
-.dp-sc__fab:active { transform: scale(.92); }
-.dp-sc__fab .dp-sc__ico { inline-size: 26px; block-size: 26px; }
-.dp-sc__fab .dp-sc__count { inset-block-start: -2px; inset-inline-end: -2px; background: var(--dpx-accent); }
-.dp-sc__fab.is-entering { animation: dp-sc-fab-in 420ms var(--dp-ease-spring) both; }
-.dp-sc__fab.is-pulse { animation: dp-sc-fab-pulse 700ms var(--dp-ease-spring) 2; }
+.donation-panel-sc__fab { position: fixed; inset-block-end: calc(max(16px, env(safe-area-inset-bottom)) + var(--dp-sc-fab-offset, 0px)); inset-inline-end: max(16px, env(safe-area-inset-right)); z-index: var(--dp-z-sticky, 10); display: inline-grid; place-items: center; inline-size: 56px; block-size: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); box-shadow: 0 6px 20px rgb(16 24 40 / .28); font: inherit; cursor: pointer; transition: transform 160ms var(--dp-ease-spring); }
+.donation-panel-sc__fab[hidden] { display: none; }
+.donation-panel-sc__fab:active { transform: scale(.92); }
+.donation-panel-sc__fab .donation-panel-sc__ico { inline-size: 26px; block-size: 26px; }
+.donation-panel-sc__fab .donation-panel-sc__count { inset-block-start: -2px; inset-inline-end: -2px; background: var(--dpx-accent); }
+.donation-panel-sc__fab.is-entering { animation: dp-sc-fab-in 420ms var(--dp-ease-spring) both; }
+.donation-panel-sc__fab.is-pulse { animation: dp-sc-fab-pulse 700ms var(--dp-ease-spring) 2; }
 @keyframes dp-sc-fab-in { from { opacity: 0; transform: translateY(24px) scale(.6); } to { opacity: 1; transform: none; } }
 @keyframes dp-sc-fab-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
-@media (prefers-reduced-motion: reduce) { .dp-sc__fab { transition: none; animation: none; } .dp-sc__fab.is-entering, .dp-sc__fab.is-pulse { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .donation-panel-sc__fab { transition: none; animation: none; } .donation-panel-sc__fab.is-entering, .donation-panel-sc__fab.is-pulse { animation: none; } }

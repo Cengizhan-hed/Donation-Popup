@@ -135,14 +135,14 @@ final class Product_Data_Tab {
 		}
 		$values = self::values( $product );
 
-		echo '<div id="' . esc_attr( self::PANEL_ID ) . '" class="panel woocommerce_options_panel hidden dp-ptab" data-wdp-product-panel data-wdp-supported-types="' . esc_attr( implode( ' ', Donation_Scope::supported_types() ) ) . '">';
+		echo '<div id="' . esc_attr( self::PANEL_ID ) . '" class="panel woocommerce_options_panel hidden donation-panel-ptab" data-wdp-product-panel data-wdp-supported-types="' . esc_attr( implode( ' ', Donation_Scope::supported_types() ) ) . '">';
 		wp_nonce_field( self::NONCE_ACTION, self::NONCE_FIELD );
 
 		self::render_scope( $product, $values );
 		self::render_type_picker( $values['donation_type'] );
 		self::render_type_fields( $product, $values );
 
-		echo '<div class="dp-ptab__sections">';
+		echo '<div class="donation-panel-ptab__sections">';
 		self::render_amount_section( $values );
 		self::render_fields_section( $values );
 		self::render_addon_section( $values, $product->get_id() );
@@ -396,9 +396,9 @@ final class Product_Data_Tab {
 	 * @return void
 	 */
 	private static function open_section( $id, $title, $hint ) {
-		echo '<details class="dp-ptab__section" id="dp-ptab-section-' . esc_attr( $id ) . '">';
-		echo '<summary class="dp-ptab__summary"><span class="dp-ptab__title">' . esc_html( $title ) . '</span><span class="dp-ptab__hint">' . esc_html( $hint ) . '</span></summary>';
-		echo '<div class="dp-ptab__body options_group">';
+		echo '<details class="donation-panel-ptab__section" id="dp-ptab-section-' . esc_attr( $id ) . '">';
+		echo '<summary class="donation-panel-ptab__summary"><span class="donation-panel-ptab__title">' . esc_html( $title ) . '</span><span class="donation-panel-ptab__hint">' . esc_html( $hint ) . '</span></summary>';
+		echo '<div class="donation-panel-ptab__body options_group">';
 	}
 
 	/**
@@ -418,7 +418,7 @@ final class Product_Data_Tab {
 	 * @return void
 	 */
 	private static function open_type_scope( array $types, $current ) {
-		echo '<div class="dp-ptab__scope" data-wdp-type-scope="' . esc_attr( implode( ' ', $types ) ) . '"' . ( in_array( $current, $types, true ) ? '' : ' hidden' ) . '>';
+		echo '<div class="donation-panel-ptab__scope" data-wdp-type-scope="' . esc_attr( implode( ' ', $types ) ) . '"' . ( in_array( $current, $types, true ) ? '' : ' hidden' ) . '>';
 	}
 
 	/* ---------------------------------------------------------------------
@@ -437,7 +437,7 @@ final class Product_Data_Tab {
 		$global_label       = $global_is_donation ? __( 'Donation product', 'woo-donation-popup' ) : __( 'Regular product', 'woo-donation-popup' );
 		$auto_global        = 'yes' === Placement_Settings::value( 'auto_place' ) ? __( 'On', 'woo-donation-popup' ) : __( 'Off', 'woo-donation-popup' );
 
-		echo '<div class="dp-ptab__block options_group">';
+		echo '<div class="donation-panel-ptab__block options_group">';
 		self::select(
 			'donation_product',
 			$values['donation_product'],
@@ -484,18 +484,18 @@ final class Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_type_picker( $current ) {
-		echo '<fieldset class="dp-ptab__block dp-ptab__types">';
-		echo '<legend class="dp-ptab__heading">' . esc_html__( 'Donation type', 'woo-donation-popup' ) . '</legend>';
-		echo '<p class="dp-ptab__lead">' . esc_html__( 'Choose how this product’s donation form works; only the selected type’s settings appear below.', 'woo-donation-popup' ) . '</p>';
-		echo '<div class="dp-ptab__grid">';
+		echo '<fieldset class="donation-panel-ptab__block donation-panel-ptab__types">';
+		echo '<legend class="donation-panel-ptab__heading">' . esc_html__( 'Donation type', 'woo-donation-popup' ) . '</legend>';
+		echo '<p class="donation-panel-ptab__lead">' . esc_html__( 'Choose how this product’s donation form works; only the selected type’s settings appear below.', 'woo-donation-popup' ) . '</p>';
+		echo '<div class="donation-panel-ptab__grid">';
 		foreach ( Donation_Type::get_definitions() as $type => $def ) {
 			$input_id = 'wdp_donation_type_' . $type;
 			$selected = ( $type === $current );
-			echo '<label class="dp-ptab__card' . ( $selected ? ' is-selected' : '' ) . '" for="' . esc_attr( $input_id ) . '" data-wdp-type-card>';
-			echo '<input type="radio" class="dp-ptab__card-input" id="' . esc_attr( $input_id ) . '" name="' . esc_attr( self::name( 'donation_type' ) ) . '" value="' . esc_attr( $type ) . '" aria-describedby="' . esc_attr( $input_id . '_desc' ) . '" data-wdp-type-input' . checked( $selected, true, false ) . ' />';
-			echo '<span class="dp-ptab__card-icon dashicons ' . esc_attr( $def['icon'] ) . '" aria-hidden="true"></span>';
-			echo '<span class="dp-ptab__card-text"><span class="dp-ptab__card-title">' . esc_html( $def['label'] ) . '</span>';
-			echo '<span class="dp-ptab__card-desc" id="' . esc_attr( $input_id . '_desc' ) . '">' . esc_html( $def['description'] ) . '</span></span>';
+			echo '<label class="donation-panel-ptab__card' . ( $selected ? ' is-selected' : '' ) . '" for="' . esc_attr( $input_id ) . '" data-wdp-type-card>';
+			echo '<input type="radio" class="donation-panel-ptab__card-input" id="' . esc_attr( $input_id ) . '" name="' . esc_attr( self::name( 'donation_type' ) ) . '" value="' . esc_attr( $type ) . '" aria-describedby="' . esc_attr( $input_id . '_desc' ) . '" data-wdp-type-input' . checked( $selected, true, false ) . ' />';
+			echo '<span class="donation-panel-ptab__card-icon dashicons ' . esc_attr( $def['icon'] ) . '" aria-hidden="true"></span>';
+			echo '<span class="donation-panel-ptab__card-text"><span class="donation-panel-ptab__card-title">' . esc_html( $def['label'] ) . '</span>';
+			echo '<span class="donation-panel-ptab__card-desc" id="' . esc_attr( $input_id . '_desc' ) . '">' . esc_html( $def['description'] ) . '</span></span>';
 			echo '</label>';
 		}
 		echo '</div></fieldset>';
@@ -512,15 +512,15 @@ final class Product_Data_Tab {
 		$type     = $values['donation_type'];
 		$currency = get_woocommerce_currency_symbol();
 
-		echo '<div class="dp-ptab__block options_group">';
+		echo '<div class="donation-panel-ptab__block options_group">';
 
 		self::open_type_scope( array( Donation_Type::FIXED ), $type );
 		$price = $product->get_price();
 		if ( '' !== $price && (float) $price > 0 ) {
 			/* translators: %s: formatted product price */
-			echo '<p class="dp-ptab__note">' . esc_html( sprintf( __( 'The donation amount is the product price: %s. You can change the price on the "General" tab.', 'woo-donation-popup' ), Price::format_price_plain( $price ) ) ) . '</p>';
+			echo '<p class="donation-panel-ptab__note">' . esc_html( sprintf( __( 'The donation amount is the product price: %s. You can change the price on the "General" tab.', 'woo-donation-popup' ), Price::format_price_plain( $price ) ) ) . '</p>';
 		} else {
-			echo '<p class="dp-ptab__note dp-ptab__note--warn">' . esc_html__( 'This product has no price; enter a regular price on the "General" tab for a fixed amount.', 'woo-donation-popup' ) . '</p>';
+			echo '<p class="donation-panel-ptab__note donation-panel-ptab__note--warn">' . esc_html__( 'This product has no price; enter a regular price on the "General" tab for a fixed amount.', 'woo-donation-popup' ) . '</p>';
 		}
 		echo '</div>';
 
@@ -539,7 +539,7 @@ final class Product_Data_Tab {
 		echo '</div>';
 
 		self::open_type_scope( array( Donation_Type::CUSTOM, Donation_Type::CAMPAIGN ), $type );
-		echo '<p class="dp-ptab__note">' . esc_html__( 'The donor enters the amount. The WooCommerce General price field may stay empty for these types.', 'woo-donation-popup' ) . '</p>';
+		echo '<p class="donation-panel-ptab__note">' . esc_html__( 'The donor enters the amount. The WooCommerce General price field may stay empty for these types.', 'woo-donation-popup' ) . '</p>';
 		self::number(
 			'min_custom_price',
 			$values['min_custom_price'],
@@ -609,17 +609,17 @@ final class Product_Data_Tab {
 		$unconverted   = get_post_meta( $product_id, '_wdp_progress_unconverted_orders', true );
 		$unconverted_n = is_array( $unconverted ) ? count( $unconverted ) : 0;
 
-		echo '<div class="dp-ptab__totals" data-wdp-progress>';
-		echo '<p class="dp-ptab__totals-title">' . esc_html__( 'Raised so far', 'woo-donation-popup' ) . '</p>';
-		echo '<p class="dp-ptab__totals-main"><strong>' . esc_html( Price::format_price_plain( $total ) ) . '</strong> <span>/ ' . esc_html( Price::format_price_plain( $goal ) ) . '</span></p>';
-		echo '<div class="dp-ptab__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' . esc_attr( (string) $percent ) . '" aria-label="' . esc_attr__( 'Progress toward goal', 'woo-donation-popup' ) . '"><span style="width:' . esc_attr( (string) $percent ) . '%"></span></div>';
-		echo '<dl class="dp-ptab__facts">';
+		echo '<div class="donation-panel-ptab__totals" data-wdp-progress>';
+		echo '<p class="donation-panel-ptab__totals-title">' . esc_html__( 'Raised so far', 'woo-donation-popup' ) . '</p>';
+		echo '<p class="donation-panel-ptab__totals-main"><strong>' . esc_html( Price::format_price_plain( $total ) ) . '</strong> <span>/ ' . esc_html( Price::format_price_plain( $goal ) ) . '</span></p>';
+		echo '<div class="donation-panel-ptab__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' . esc_attr( (string) $percent ) . '" aria-label="' . esc_attr__( 'Progress toward goal', 'woo-donation-popup' ) . '"><span style="width:' . esc_attr( (string) $percent ) . '%"></span></div>';
+		echo '<dl class="donation-panel-ptab__facts">';
 		echo '<div><dt>' . esc_html__( 'Carried over', 'woo-donation-popup' ) . '</dt><dd>' . esc_html( Price::format_price_plain( $carried ) ) . '</dd></div>';
 		echo '<div><dt>' . esc_html__( 'Added by hand', 'woo-donation-popup' ) . '</dt><dd>' . esc_html( Price::format_price_plain( $manual ) ) . '</dd></div>';
 		echo '<div><dt>' . esc_html__( 'Progress', 'woo-donation-popup' ) . '</dt><dd>' . esc_html( (string) $percent ) . '%</dd></div>';
 		echo '</dl>';
 		if ( $unconverted_n > 0 ) {
-			echo '<p class="dp-ptab__note dp-ptab__note--warn">' . esc_html(
+			echo '<p class="donation-panel-ptab__note donation-panel-ptab__note--warn">' . esc_html(
 				sprintf(
 					/* translators: %d: number of orders */
 					_n( '%d order could not be converted', '%d orders could not be converted', $unconverted_n, 'woo-donation-popup' ),
@@ -627,7 +627,7 @@ final class Product_Data_Tab {
 				)
 			) . '</p>';
 		}
-		echo '<p class="dp-ptab__note">' . wp_kses(
+		echo '<p class="donation-panel-ptab__note">' . wp_kses(
 			sprintf(
 				/* translators: %s: link to the Campaigns screen */
 				__( 'These figures are shown for reference. To add an amount by hand or recalculate the total, open %s.', 'woo-donation-popup' ),
@@ -705,7 +705,7 @@ final class Product_Data_Tab {
 		self::select( 'enable_anonymous', $values['enable_anonymous'], __( 'Anonymous donation', 'woo-donation-popup' ), __( 'If checked, the donor name is hidden on public lists; it remains visible on order records.', 'woo-donation-popup' ), self::tristate_options() );
 		echo '</div>';
 		self::open_type_scope( array( Donation_Type::SHARES ), $values['donation_type'] );
-		echo '<p class="dp-ptab__note">' . esc_html__( 'Share-based forms ask for a name and phone number for each share; these fields do not change per product.', 'woo-donation-popup' ) . '</p>';
+		echo '<p class="donation-panel-ptab__note">' . esc_html__( 'Share-based forms ask for a name and phone number for each share; these fields do not change per product.', 'woo-donation-popup' ) . '</p>';
 		echo '</div>';
 		self::close_section();
 	}
@@ -723,7 +723,7 @@ final class Product_Data_Tab {
 
 		self::open_section( 'addon', __( 'Extra donation', 'woo-donation-popup' ), __( 'A second, smaller donation row added to the form', 'woo-donation-popup' ) );
 		self::open_type_scope( array( Donation_Type::CAMPAIGN ), $values['donation_type'] );
-		echo '<p class="dp-ptab__note">' . esc_html__( 'On a goal campaign the extra donation is not shown on the form; the settings are used if you switch to other types.', 'woo-donation-popup' ) . '</p>';
+		echo '<p class="donation-panel-ptab__note">' . esc_html__( 'On a goal campaign the extra donation is not shown on the form; the settings are used if you switch to other types.', 'woo-donation-popup' ) . '</p>';
 		echo '</div>';
 		self::checkbox( 'enable_addon_donation', $values['enable_addon_donation'], __( 'Add an extra donation', 'woo-donation-popup' ), __( 'Lets the donor add a small extra donation on top of the main donation.', 'woo-donation-popup' ) );
 		self::text(
@@ -799,10 +799,10 @@ final class Product_Data_Tab {
 	private static function render_shortcodes( $product_id ) {
 		$shortcodes = self::get_shortcodes( $product_id );
 
-		echo '<div class="dp-ptab__block dp-ptab__shortcode">';
-		echo '<p class="dp-ptab__heading">' . esc_html__( 'Shortcode', 'woo-donation-popup' ) . '</p>';
-		echo '<p class="dp-ptab__lead">' . esc_html__( 'Choose a view, copy the shortcode, and paste it into a page or post.', 'woo-donation-popup' ) . '</p>';
-		echo '<div class="dp-ptab__shortcode-row">';
+		echo '<div class="donation-panel-ptab__block donation-panel-ptab__shortcode">';
+		echo '<p class="donation-panel-ptab__heading">' . esc_html__( 'Shortcode', 'woo-donation-popup' ) . '</p>';
+		echo '<p class="donation-panel-ptab__lead">' . esc_html__( 'Choose a view, copy the shortcode, and paste it into a page or post.', 'woo-donation-popup' ) . '</p>';
+		echo '<div class="donation-panel-ptab__shortcode-row">';
 		echo '<label class="screen-reader-text" for="wdp-shortcode-view">' . esc_html_x( 'View', 'section title', 'woo-donation-popup' ) . '</label>';
 		echo '<select id="wdp-shortcode-view" data-wdp-shortcode-select aria-controls="wdp-shortcode-output">';
 		foreach ( $shortcodes as $shortcode ) {

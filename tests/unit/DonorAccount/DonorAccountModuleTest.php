@@ -432,7 +432,7 @@ final class DonorAccountModuleTest extends TestCase {
 		$this->assertStringContainsString( 'İğdır', $html );
 		$this->assertStringContainsString( 'data-dp-acc-receipt', $html );
 		$this->assertStringNotContainsString( 'data-dp-acc-repeat', $html, 'ürün yoksa tekrar bağış düğmesi yok' );
-		$this->assertStringContainsString( 'dp-ac__empty', Account_Renderer::donations( array() ) );
+		$this->assertStringContainsString( 'donation-panel-ac__empty', Account_Renderer::donations( array() ) );
 	}
 
 	public function test_status_tone_and_video_url_filtering(): void {
@@ -462,8 +462,8 @@ final class DonorAccountModuleTest extends TestCase {
 			'date'        => '2 Ekim',
 		);
 		$html = Account_Renderer::donations( array( $row ) );
-		$this->assertStringContainsString( 'dp-ac__pill--ok', $html );
-		$this->assertStringContainsString( 'dp-ac__progress', $html );
+		$this->assertStringContainsString( 'donation-panel-ac__pill--ok', $html );
+		$this->assertStringContainsString( 'donation-panel-ac__progress', $html );
 		$this->assertStringContainsString( 'data-dp-acc-video', $html );
 		$this->assertStringContainsString( 'data-product="12"', $html );
 		$row['can_repeat'] = false;
@@ -472,7 +472,7 @@ final class DonorAccountModuleTest extends TestCase {
 		$plain             = Account_Renderer::donations( array( $row ) );
 		$this->assertStringNotContainsString( 'data-product=', $plain, 'para birimi farklıysa anında tekrar yok; bağlantı ürün sayfasına gider' );
 		$this->assertStringNotContainsString( 'data-dp-acc-video', $plain );
-		$this->assertStringNotContainsString( 'dp-ac__progress', $plain );
+		$this->assertStringNotContainsString( 'donation-panel-ac__progress', $plain );
 	}
 
 	public function test_dialog_has_accessible_tabs_password_toggle_and_remember(): void {

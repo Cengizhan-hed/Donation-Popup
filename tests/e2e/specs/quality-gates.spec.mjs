@@ -35,7 +35,7 @@ test.afterEach(async ({}, info) => {
 });
 
 /**
- * Sayfada axe çalıştırır; ihlalleri okunur dizi olarak verir (eklentinin kendi alanı: `.wdp-*`/`.dp*` içindekiler öncelikli,
+ * Sayfada axe çalıştırır; ihlalleri okunur dizi olarak verir (eklentinin kendi alanı: `.wdp-*`/`.donation-panel*` içindekiler öncelikli,
  * ama kapsam tüm sayfadır: tema kaynaklı ihlaller `theme:` önekiyle ayrılır).
  * @param {import('@playwright/test').Page} page Sayfa.
  * @param {string} [include] Kapsam seçicisi (boş = tüm sayfa).

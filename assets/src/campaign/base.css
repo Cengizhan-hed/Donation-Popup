@@ -1,16 +1,16 @@
 /* Donation Panel — kampanya paketi. Belirteç + temel + düğme bölümü: assets/src/experiences/base.css 1-157'den, ilerleme/rozet/liste: design/components.css'den (aynı tanımlar; ikisi birlikte yüklenirse çakışmaz). Tema özel seçici yok. */
-.dp, .dp *, .dp *::before, .dp *::after { box-sizing: border-box; }
-.dp { font-family: var(--dp-font-body); font-size: var(--dp-fs-base); line-height: var(--dp-lh-body); color: var(--dp-color-text); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
-.dp h1,.dp h2,.dp h3,.dp h4 { font-family: var(--dp-font-heading); line-height: var(--dp-lh-snug); margin: 0; color: var(--dp-color-text); letter-spacing: -.01em; }
-.dp p { margin: 0; }
-.dp [hidden][hidden] { display: none; }
+.donation-panel, .donation-panel *, .donation-panel *::before, .donation-panel *::after { box-sizing: border-box; }
+.donation-panel { font-family: var(--dp-font-body); font-size: var(--dp-fs-base); line-height: var(--dp-lh-body); color: var(--dp-color-text); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+.donation-panel h1,.donation-panel h2,.donation-panel h3,.donation-panel h4 { font-family: var(--dp-font-heading); line-height: var(--dp-lh-snug); margin: 0; color: var(--dp-color-text); letter-spacing: -.01em; }
+.donation-panel p { margin: 0; }
+.donation-panel [hidden][hidden] { display: none; }
 /* Donation Panel — tasarım belirteçleri (design tokens)
  * Tek görsel dil. Hiçbir temaya/oluşturucuya özel seçici YOK.
  * "Tema köprüsü": değerler önce WordPress global stil / theme.json önayarlarından
  * (--wp--preset--*, --wp--custom--*) türetilir; yoksa nötr varsayılan kullanılır.
  * Mantıksal özellikler (inline/block) kullanılır -> RTL kendiliğinden çalışır. */
 
-:root, .dp {
+:root, .donation-panel {
   /* ---------- 1. Tema köprüsü (ham girdiler) ---------- */
   --dp-bridge-primary:  var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e));
   --dp-bridge-text:     var(--wp--preset--color--contrast, var(--wp--preset--color--foreground, #1c2330));
@@ -89,12 +89,12 @@
 
 /* Otomatik okunabilir düğme yazısı: göreli renk sözdizimi destekleniyorsa. */
 @supports (color: oklch(from red l c h)) {
-  :root, .dp { --dp-color-on-primary: oklch(from var(--dp-color-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); --dp-color-primary-strong: oklch(from var(--dp-color-primary) min(l, 0.48) c h); }
+  :root, .donation-panel { --dp-color-on-primary: oklch(from var(--dp-color-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); --dp-color-primary-strong: oklch(from var(--dp-color-primary) min(l, 0.48) c h); }
 }
 
 /* ---------- Koyu mod ---------- */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-dp-scheme="light"]), :root:not([data-dp-scheme="light"]) .dp {
+  :root:not([data-dp-scheme="light"]), :root:not([data-dp-scheme="light"]) .donation-panel {
     --dp-color-surface: #14181f;  --dp-bridge-text: #eef1f5;
     --dp-color-primary: color-mix(in oklab, var(--dp-bridge-primary) 78%, #fff);
     --dp-color-primary-strong: color-mix(in oklab, var(--dp-bridge-primary) 55%, #fff);
@@ -110,7 +110,7 @@
     --dp-shadow-sheet: 0 -6px 30px rgb(0 0 0 / .5), 0 -1px 0 rgb(255 255 255 / .06);
   }
 }
-:root[data-dp-scheme="dark"], :root[data-dp-scheme="dark"] .dp {
+:root[data-dp-scheme="dark"], :root[data-dp-scheme="dark"] .donation-panel {
   --dp-color-surface: #14181f;  --dp-bridge-text: #eef1f5;
   --dp-color-primary: color-mix(in oklab, var(--dp-bridge-primary) 78%, #fff);
   --dp-color-primary-strong: color-mix(in oklab, var(--dp-bridge-primary) 55%, #fff);
@@ -134,23 +134,23 @@
   }
 }
 
-.dp :focus-visible { box-shadow: var(--dp-shadow-focus); outline: 2px solid transparent; border-radius: var(--dp-radius-sm); }
-.dp .dp-sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.dp-num { font-variant-numeric: tabular-nums; font-family: var(--dp-font-numeric); }
-.dp-muted { color: var(--dp-color-text-muted); }
-.dp-eyebrow { font-size: var(--dp-fs-xs); font-weight: var(--dp-fw-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--dp-color-primary-strong); }
+.donation-panel :focus-visible { box-shadow: var(--dp-shadow-focus); outline: 2px solid transparent; border-radius: var(--dp-radius-sm); }
+.donation-panel .donation-panel-sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.donation-panel-num { font-variant-numeric: tabular-nums; font-family: var(--dp-font-numeric); }
+.donation-panel-muted { color: var(--dp-color-text-muted); }
+.donation-panel-eyebrow { font-size: var(--dp-fs-xs); font-weight: var(--dp-fw-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--dp-color-primary-strong); }
 
 /* ---------- Düğmeler ---------- */
-.dp-btn { --_bg: var(--dp-color-primary); --_fg: var(--dp-color-on-primary); display: inline-flex; align-items: center; justify-content: center; gap: var(--dp-space-2); min-block-size: var(--dp-touch); padding: 0 var(--dp-space-6); border: 0; border-radius: var(--dp-radius-md); background: var(--_bg); color: var(--_fg); font: inherit; font-weight: var(--dp-fw-semibold); font-size: var(--dp-fs-base); cursor: pointer; text-decoration: none; position: relative; transition: transform var(--dp-dur-fast) var(--dp-ease-spring), box-shadow var(--dp-dur-base) var(--dp-ease-out), filter var(--dp-dur-fast), background var(--dp-dur-fast); box-shadow: 0 1px 0 rgb(255 255 255 / .18) inset, var(--dp-shadow-1); user-select: none; }
-.dp-btn:hover { filter: brightness(1.06); box-shadow: 0 1px 0 rgb(255 255 255 / .18) inset, var(--dp-shadow-2); }
-.dp-btn:active { transform: scale(var(--dp-press-scale)); filter: brightness(.97); }
-.dp-btn--block { inline-size: 100%; }
-.dp-btn--lg { min-block-size: 56px; font-size: var(--dp-fs-md); border-radius: var(--dp-radius-lg); }
-.dp-btn--secondary { --_bg: var(--dp-color-primary-soft); --_fg: var(--dp-color-primary-strong); box-shadow: none; }
-.dp-btn--ghost { --_bg: transparent; --_fg: var(--dp-color-text); box-shadow: inset 0 0 0 1.5px var(--dp-color-border-strong); }
-.dp-btn--ghost:hover { background: var(--dp-color-surface-2); filter: none; }
-.dp-btn--text { --_bg: transparent; --_fg: var(--dp-color-primary-strong); box-shadow: none; padding-inline: var(--dp-space-3); min-block-size: 44px; }
-.dp-btn[disabled], .dp-btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; filter: none; }
-.dp-btn.is-loading { pointer-events: none; color: transparent; }
-.dp-btn.is-loading::after { content: ""; position: absolute; inline-size: 22px; block-size: 22px; border-radius: 50%; border: 3px solid color-mix(in oklab, var(--dp-color-on-primary) 35%, transparent); border-block-start-color: var(--dp-color-on-primary); animation: dp-spin .7s linear infinite; }
-.dp-iconbtn { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; background: transparent; color: inherit; border-radius: 50%; cursor: pointer; transition: background var(--dp-dur-fast), transform var(--dp-dur-fast) var(--dp-ease-spring); }
+.donation-panel-btn { --_bg: var(--dp-color-primary); --_fg: var(--dp-color-on-primary); display: inline-flex; align-items: center; justify-content: center; gap: var(--dp-space-2); min-block-size: var(--dp-touch); padding: 0 var(--dp-space-6); border: 0; border-radius: var(--dp-radius-md); background: var(--_bg); color: var(--_fg); font: inherit; font-weight: var(--dp-fw-semibold); font-size: var(--dp-fs-base); cursor: pointer; text-decoration: none; position: relative; transition: transform var(--dp-dur-fast) var(--dp-ease-spring), box-shadow var(--dp-dur-base) var(--dp-ease-out), filter var(--dp-dur-fast), background var(--dp-dur-fast); box-shadow: 0 1px 0 rgb(255 255 255 / .18) inset, var(--dp-shadow-1); user-select: none; }
+.donation-panel-btn:hover { filter: brightness(1.06); box-shadow: 0 1px 0 rgb(255 255 255 / .18) inset, var(--dp-shadow-2); }
+.donation-panel-btn:active { transform: scale(var(--dp-press-scale)); filter: brightness(.97); }
+.donation-panel-btn--block { inline-size: 100%; }
+.donation-panel-btn--lg { min-block-size: 56px; font-size: var(--dp-fs-md); border-radius: var(--dp-radius-lg); }
+.donation-panel-btn--secondary { --_bg: var(--dp-color-primary-soft); --_fg: var(--dp-color-primary-strong); box-shadow: none; }
+.donation-panel-btn--ghost { --_bg: transparent; --_fg: var(--dp-color-text); box-shadow: inset 0 0 0 1.5px var(--dp-color-border-strong); }
+.donation-panel-btn--ghost:hover { background: var(--dp-color-surface-2); filter: none; }
+.donation-panel-btn--text { --_bg: transparent; --_fg: var(--dp-color-primary-strong); box-shadow: none; padding-inline: var(--dp-space-3); min-block-size: 44px; }
+.donation-panel-btn[disabled], .donation-panel-btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; filter: none; }
+.donation-panel-btn.is-loading { pointer-events: none; color: transparent; }
+.donation-panel-btn.is-loading::after { content: ""; position: absolute; inline-size: 22px; block-size: 22px; border-radius: 50%; border: 3px solid color-mix(in oklab, var(--dp-color-on-primary) 35%, transparent); border-block-start-color: var(--dp-color-on-primary); animation: dp-spin .7s linear infinite; }
+.donation-panel-iconbtn { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; background: transparent; color: inherit; border-radius: 50%; cursor: pointer; transition: background var(--dp-dur-fast), transform var(--dp-dur-fast) var(--dp-ease-spring); }

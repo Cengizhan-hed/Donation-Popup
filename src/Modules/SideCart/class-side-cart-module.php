@@ -110,8 +110,8 @@ final class Side_Cart_Module implements Module_Interface {
 	 * @return array<string, string>
 	 */
 	public function add_fragments( $fragments ) {
-		$fragments                      = (array) $fragments;
-		$fragments['span.dp-sc__count'] = Side_Cart_Renderer::count_badge( $this->cart_count() );
+		$fragments                                  = (array) $fragments;
+		$fragments['span.donation-panel-sc__count'] = Side_Cart_Renderer::count_badge( $this->cart_count() );
 		return $fragments;
 	}
 

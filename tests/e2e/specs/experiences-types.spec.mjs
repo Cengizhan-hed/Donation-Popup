@@ -237,7 +237,7 @@ test.describe('adım akışı', () => {
     await next(page);
     await expectStep(page, 'details');
     await expect(page.locator('[data-dp-steplabel]')).toContainText('2');
-    await expect(page.locator('.dp-steps__i.is-current')).toHaveCount(1);
+    await expect(page.locator('.donation-panel-steps__i.is-current')).toHaveCount(1);
     await page.locator('input[name="donation_full_name"]').fill('Öznur');
     await page.locator('[data-dp-back]').click();
     await expectStep(page, 'amount');
@@ -269,7 +269,7 @@ test.describe('adım akışı', () => {
     await expect(page.locator('input[name="donation_type"]')).toHaveCount(0);
     await load(page, 'custom', '&dp_freq=1');
     await expect(page.locator('input[name="donation_type"]')).toHaveCount(2);
-    await expect(page.locator('.dp-seg')).toBeVisible();
+    await expect(page.locator('.donation-panel-seg')).toBeVisible();
   });
 });
 

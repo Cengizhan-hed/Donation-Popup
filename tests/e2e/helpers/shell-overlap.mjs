@@ -106,7 +106,7 @@ export function collectShellOverlapSample() {
   let panelCta = null;
   const kindRoot = shell.closest('[data-dp-exp]');
   if (kindRoot && kindRoot.getAttribute('data-dp-kind') === 'side_panel') {
-    const footer = shell.querySelector('.dp-actionbar');
+    const footer = shell.querySelector('.donation-panel-actionbar');
     if (footer) {
       const fr = footer.getBoundingClientRect();
       if (fr.height > 0) {
@@ -324,7 +324,7 @@ export function measurePanelCtaWhenShort() {
   const shell = document.querySelector('[data-dp-exp][data-dp-kind="side_panel"] [data-dp-overlay].is-open');
   if (!shell) return { skipped: 'panel yok' };
   const main = shell.querySelector('[data-dp-step]:not([hidden])');
-  const footer = shell.querySelector('.dp-actionbar');
+  const footer = shell.querySelector('.donation-panel-actionbar');
   const content = shell.querySelector('[data-dp-surface]') || shell;
   if (!main || !footer) return { skipped: 'gövde/alt çubuk yok' };
   const kids = Array.from(main.children);

@@ -487,7 +487,7 @@ async function scenarioDonorAccountPopup(page, ctx) {
   const locked = await page.evaluate(() => {
     const h = getComputedStyle(document.documentElement).overflow;
     const b = getComputedStyle(document.body).overflow;
-    return h === 'hidden' || b === 'hidden' || document.documentElement.classList.contains('dp-ac-lock');
+    return h === 'hidden' || b === 'hidden' || document.documentElement.classList.contains('donation-panel-ac-lock');
   });
   if (!locked) throw new Error('pencere açıkken sayfa kaydırması kilitlenmedi');
   await waitForTransitionsDone(page, ctx.timeouts.settle);
@@ -507,7 +507,7 @@ async function scenarioDonorAccountPopup(page, ctx) {
   const unlocked = await page.evaluate(() => {
     const h = getComputedStyle(document.documentElement).overflow;
     const b = getComputedStyle(document.body).overflow;
-    return h !== 'hidden' && b !== 'hidden' && !document.documentElement.classList.contains('dp-ac-lock');
+    return h !== 'hidden' && b !== 'hidden' && !document.documentElement.classList.contains('donation-panel-ac-lock');
   });
   if (!unlocked) throw new Error('pencere kapandıktan sonra sayfa kaydırması geri açılmadı');
   assertNoDuplicateLoads(await findDuplicateLoads(page), 'sayfa (bağışçı hesabı)');

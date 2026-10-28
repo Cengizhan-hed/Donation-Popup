@@ -22,7 +22,7 @@ Ayarlar: `donation_panel_settings` seçeneği (şemalı, sürümlü; yalnız `Do
 
 Kaynak: `src/Compat/class-public-contract.php`.
 
-Kısa kodlar (**korunur**): `[wdp_donation_button]`, `[wdp_donation_button_panel]` (`id`), `[wdp_donation_form]`, `[wdp_donations]`. Öznitelikler: `id, slug, sku, text, button_text, class, title, show_title`; 12.0.0'da `id/slug/sku/text/button_text` çalışır, `class` bir `<div class="dp-entry ...">` sarmalayıcıya gider, `title/show_title` yeni formda kullanılmaz.
+Kısa kodlar (**korunur**): `[wdp_donation_button]`, `[wdp_donation_button_panel]` (`id`), `[wdp_donation_form]`, `[wdp_donations]`. Öznitelikler: `id, slug, sku, text, button_text, class, title, show_title`; 12.0.0'da `id/slug/sku/text/button_text` çalışır, `class` bir `<div class="donation-panel-entry ...">` sarmalayıcıya gider, `title/show_title` yeni formda kullanılmaz.
 Bloklar (**korunur**): `wdp/donation-form`, `wdp/donations`.
 PHP işlevleri (**korunur**): `wdp_render_donation_button()`, `wdp_render_donation_form()` (giriş dosyasında ince sarmalayıcı).
 Meta (**korunur**): sipariş kalemi `wdp_donor_name, wdp_donor_phone, wdp_donor_email, wdp_donation_note`; ürün `_enable_sadaka_donation, _sadaka_min_price` (okuma yedeği) ve `_enable_addon_donation, _addon_min_price`; sepet `wdp_sadaka_donation, wdp_sadaka_linked_wc_product`.
@@ -119,8 +119,8 @@ Eklenti `plugins_loaded` öncelik 20'de başlar (ayrıntı: docs/MIMARI.md "Kanc
 - **Tarayıcı olayları (dinlenir, `document` üzerinde):** `wc-blocks_added_to_cart`, `donation-panel:cart-added` (sepet yenilenir + çekmece açılır); klasik `added_to_cart` (jQuery varsa). **Gönderilir:** `donation-panel:cart-updated` (`detail.count`) her yeniden çizimden sonra.
 - **Filtre `donation_panel_side_cart_suggestion`:** `apply_filters( 'donation_panel_side_cart_suggestion', array $suggestion )` — ek bağış önerisi `[ 'product_id' => int, 'amounts' => float[], 'title' => string, 'hint' => string ]` (varsayılan boş = öneri yok; ürün yayımlanmamışsa ya da sepette zaten varsa gösterilmez).
 - **REST:** `POST /wp-json/donation-panel/v1/side-cart/suggestion` — öneri ürünü/tutar sunucu önerisinden doğrulanır, bağışçı bilgisi sepetteki satırdan alınır.
-- **WooCommerce parçası:** `woocommerce_add_to_cart_fragments` ile `span.dp-sc__count` sayaç rozeti.
-- **DOM işaretleri (kararlı):** `[data-dp-sc-open]` (tetikleyici), `[data-dp-sc-count]`, `[data-dp-sc-go]` (ödemeye git bağlantısı), `.dp-sc__*` sınıfları.
+- **WooCommerce parçası:** `woocommerce_add_to_cart_fragments` ile `span.donation-panel-sc__count` sayaç rozeti.
+- **DOM işaretleri (kararlı):** `[data-dp-sc-open]` (tetikleyici), `[data-dp-sc-count]`, `[data-dp-sc-go]` (ödemeye git bağlantısı), `.donation-panel-sc__*` sınıfları.
 
 ## Kampanya, etki ifadeleri, sosyal kanıt (E3)
 
@@ -172,7 +172,7 @@ Sipariş kalemi meta (yeni): `wdp_donation_type` (`fixed|custom|shares|campaign`
 - **Eylem `donation_panel_guest_orders_linked`:** `do_action( 'donation_panel_guest_orders_linked', int $user_id, int $linked )` — doğrulanmış bağlamadan sonra (kişi verisi taşımaz).
 - **REST (`/wp-json/donation-panel/v1/account/...`):** `GET session` `{logged_in, registration, nonce}`; `POST login` `{email, password, remember}` → `{ok, nonce}`; `POST register` `{email, password}` → `{ok}` (e-posta var/yok için aynı); `POST reset` `{email}` → `{ok}` (her durumda aynı); `GET donations?page&per_page` (oturum) → `{rows, html, total, pages, page}`; `POST repeat` (oturum; kendi siparişindeki bağışı aynı tutarla sepete ekler, başarısızsa ürün sayfasına yönlendirir); `POST link-guest` (oturum) → `{ok}`; `POST link-guest/confirm` `{token}` (oturum) → `{linked}`. Yazma uçları `X-WP-Nonce` (wp_rest) ister; yanıtlar `no-store, private`. Hata kodları: `donation_panel_bad_nonce` 403, `donation_panel_rate_limited` 429, `donation_panel_login_failed` 401, `donation_panel_invalid_email|weak_password` 400, `donation_panel_registration_disabled` 403, `donation_panel_link_invalid` 400.
 - **WooCommerce kancaları (standart):** `woocommerce_get_query_vars`, `woocommerce_account_menu_items`, `woocommerce_endpoint_{endpoint}_title`, `woocommerce_account_{endpoint}_endpoint`, `woocommerce_before_checkout_registration_form`, `woocommerce_reset_password_notification` (tetiklenir).
-- **DOM işaretleri (kararlı):** `[data-dp-acc-open]` (tetikleyici), `[data-dp-acc]` (pencere), `[data-dp-acc-form="login|register|reset"]`, `[data-dp-acc-page]`, `[data-dp-acc-card]`, `[data-dp-acc-link]`, `.dp-ac__*` sınıfları.
+- **DOM işaretleri (kararlı):** `[data-dp-acc-open]` (tetikleyici), `[data-dp-acc]` (pencere), `[data-dp-acc-form="login|register|reset"]`, `[data-dp-acc-page]`, `[data-dp-acc-card]`, `[data-dp-acc-link]`, `.donation-panel-ac__*` sınıfları.
 
 ## Ödeme sayfası otomatik doldurma (`Checkout_Prefill`)
 

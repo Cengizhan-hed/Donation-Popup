@@ -36,12 +36,12 @@ test.describe('kampanya kartı', () => {
     await expect(card.locator('[role="progressbar"]')).toHaveAttribute('aria-valuenow', '40');
     await expect(card.locator('[data-dp-percent]')).toHaveText('40%');
     await expect(card.locator('[data-dp-donors]')).toContainText('12');
-    await expect(card.locator('.dp-bar__ms')).toHaveCount(3);
-    await expect(card.locator('.dp-bar__ms.is-hit')).toHaveCount(1);
+    await expect(card.locator('.donation-panel-bar__ms')).toHaveCount(3);
+    await expect(card.locator('.donation-panel-bar__ms.is-hit')).toHaveCount(1);
     await expect(card.locator('[data-dp-reached]')).toBeHidden();
     // Çubuk dolgusu son değere ulaşır (animasyon bitince): genişlik ~%40.
     await expect
-      .poll(async () => card.locator('.dp-bar__fill').evaluate((el) => Math.round((el.getBoundingClientRect().width / el.parentElement.getBoundingClientRect().width) * 100)))
+      .poll(async () => card.locator('.donation-panel-bar__fill').evaluate((el) => Math.round((el.getBoundingClientRect().width / el.parentElement.getBoundingClientRect().width) * 100)))
       .toBe(40);
     expect(await axeViolations(page, '[data-dp-progress]')).toEqual([]);
     // Yatay taşma yok (mobil dahil).
@@ -52,7 +52,7 @@ test.describe('kampanya kartı', () => {
   test('azaltılmış harekette dolgu anında son değerde', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(URL);
-    const fill = page.locator('[data-dp-progress] .dp-bar__fill');
+    const fill = page.locator('[data-dp-progress] .donation-panel-bar__fill');
     await expect(fill).toBeVisible();
     expect(await fill.evaluate((el) => el.style.getPropertyValue('--p'))).toBe('40');
   });
@@ -60,7 +60,7 @@ test.describe('kampanya kartı', () => {
   test('RTL: çubuk sağdan dolar ve taşma olmaz', async ({ page }) => {
     await page.goto(URL);
     await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
-    const box = await page.locator('[data-dp-progress] .dp-bar__fill').evaluate((el) => {
+    const box = await page.locator('[data-dp-progress] .donation-panel-bar__fill').evaluate((el) => {
       const a = el.getBoundingClientRect();
       const b = el.parentElement.getBoundingClientRect();
       return { fillRight: Math.round(a.right), trackRight: Math.round(b.right) };
@@ -106,11 +106,11 @@ test.describe('sosyal kanıt', () => {
     await page.goto(URL);
     await page.goto(URL); // ikinci yükleme: siparişler hazır
     await expect(page.locator('#social-line [data-dp-social="line"]')).toContainText('12');
-    await expect(page.locator('#social-counters [data-dp-social="counters"] .dp-social__cell')).toHaveCount(3);
+    await expect(page.locator('#social-counters [data-dp-social="counters"] .donation-panel-social__cell')).toHaveCount(3);
     const feed = page.locator('#social-feed [data-dp-social="feed"]');
-    await expect(feed.locator('.dp-list__row')).toHaveCount(1);
+    await expect(feed.locator('.donation-panel-list__row')).toHaveCount(1);
     await feed.locator('[data-dp-feed-more]').click();
-    await expect(feed.locator('.dp-list__row')).toHaveCount(2);
+    await expect(feed.locator('.donation-panel-list__row')).toHaveCount(2);
     await expect(feed).not.toContainText('Ayşe');
     await expect(feed).not.toContainText('example.test');
     expect(await axeViolations(page, '#social-feed')).toEqual([]);
@@ -123,16 +123,16 @@ test.describe('etki ifadesi', () => {
     await page.goto(URL);
     const form = page.locator('#form [data-dp-form]');
     await expect(form).toBeVisible();
-    const impact = form.locator('.dp-impact');
+    const impact = form.locator('.donation-panel-impact');
     // Hazır tutarlar: 10, 25, 50, 1234
     // Hazır tutar kartları ifadeyi kendi içinde gösterir; ayrı satır yalnız yazılan tutar içindir.
     await form.locator('[data-dp-preset="25"]').click();
-    await expect(form.locator('[data-dp-preset="25"] .dp-amount__i')).toContainText('1 food parcel');
+    await expect(form.locator('[data-dp-preset="25"] .donation-panel-amount__i')).toContainText('1 food parcel');
     await expect(impact).toBeHidden();
     await form.locator('[data-dp-preset="50"]').click();
-    await expect(form.locator('[data-dp-preset="50"] .dp-amount__i')).toContainText('2 food parcels');
+    await expect(form.locator('[data-dp-preset="50"] .donation-panel-amount__i')).toContainText('2 food parcels');
     await form.locator('[data-dp-preset="10"]').click();
-    await expect(form.locator('[data-dp-preset="10"] .dp-amount__i')).toHaveCount(0);
+    await expect(form.locator('[data-dp-preset="10"] .donation-panel-amount__i')).toHaveCount(0);
     await expect(impact).toBeHidden();
     await form.locator('input[name="amount"]').fill('125');
     await expect(impact).toBeVisible();

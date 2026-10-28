@@ -283,7 +283,7 @@ ${FREEZE_MOTION_CSS}
   outline: none !important;
   box-shadow: none !important;
 }
-.dp-error,
+.donation-panel-error,
 [data-dp-summary] {
   animation: none !important;
   transition: none !important;
@@ -885,7 +885,7 @@ async function stabilizeShareholderErrorState(page, mode = '') {
   const shell = openShellLocator(page, mode);
   const root = (await shell.count()) > 0 ? shell : page.locator('body');
   await root.evaluate((scope) => {
-    scope.querySelectorAll('[data-dp-surface], .dp-form').forEach((el) => {
+    scope.querySelectorAll('[data-dp-surface], .donation-panel-form').forEach((el) => {
       el.scrollTop = 0;
     });
     window.scrollTo(0, 0);
@@ -997,7 +997,7 @@ async function prepareErrorShot(page, opts = {}) {
   await page
     .evaluate(() => {
       window.scrollTo(0, 0);
-      document.querySelectorAll('[data-dp-surface], .dp-form').forEach((el) => {
+      document.querySelectorAll('[data-dp-surface], .donation-panel-form').forEach((el) => {
         if (el && 'scrollTop' in el) el.scrollTop = 0;
       });
     })
@@ -1359,7 +1359,7 @@ async function assertDonorFieldsPersist(shell, expected, failures, check) {
       return {
         name: val('input[name="donation_full_name"]'),
         phone: val('input[name="donation_phone"]'),
-        custom: val('input.dp-custom__in[name="amount"]'),
+        custom: val('input.donation-panel-custom__in[name="amount"]'),
         addon: val('input[name="addon_amount"]'),
       };
     })

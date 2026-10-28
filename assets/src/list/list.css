@@ -244,7 +244,7 @@
 
 /* Katman kabı ana belgeye eklenir; açma düğmesi gizli (liste düğmesi açar). */
 .wdp-form-host { display: contents; }
-.wdp-form-host .dp-trigger { display: none; }
+.wdp-form-host .donation-panel-trigger { display: none; }
 
 @media (max-width: 1024px) {
   .wdp-list { grid-template-columns: repeat(var(--wdp-cols-t), minmax(0, 1fr)); }

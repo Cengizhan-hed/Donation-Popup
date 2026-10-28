@@ -217,7 +217,7 @@ class Assets {
 	/**
 	 * Yönetici "kendi renklerimi seçeyim" dediyse marka/eylem rengini tüm bağışçı yüzeylerine (form, teşekkür,
 	 * yan sepet, hesap) tek satır içi belirteçle yazar. Boşsa hiçbir şey yazılmaz: renkler tema ön ayarından gelir.
-	 * `:root .dp` seçicisi `.dp` kapsamındaki varsayılan tanımın önüne geçer. İstek başına bir kez eklenir.
+	 * `:root .donation-panel` seçicisi `.donation-panel` kapsamındaki varsayılan tanımın önüne geçer. İstek başına bir kez eklenir.
 	 *
 	 * @param string $handle Stil tutamacı.
 	 * @return void
@@ -235,7 +235,7 @@ class Assets {
 			$custom ? (string) $settings->get( 'design.accent', '' ) : ''
 		);
 		if ( '' !== $declarations ) {
-			wp_add_inline_style( $handle, ':root .dp{' . $declarations . '}' );
+			wp_add_inline_style( $handle, ':root .donation-panel{' . $declarations . '}' );
 		}
 	}
 

@@ -288,23 +288,23 @@ export function collectShellCompletenessMetrics() {
   };
   const hiddenType = (el) => el.matches('input[type="hidden"], [hidden], [aria-hidden="true"]');
   const cta = root.querySelector(
-    '.dp-actionbar, [data-dp-submit]'
+    '.donation-panel-actionbar, [data-dp-submit]'
   );
   const header = root.querySelector(
-    '.dp-head, [data-dp-close]'
+    '.donation-panel-head, [data-dp-close]'
   );
   const inCta = (el) =>
-    !!(cta && (cta.contains(el) || el.closest('.dp-actionbar')));
+    !!(cta && (cta.contains(el) || el.closest('.donation-panel-actionbar')));
   const scrollers = Array.from(
-    root.querySelectorAll('.dp-surface__body')
+    root.querySelectorAll('.donation-panel-surface__body')
   );
   const scrollRoot = scrollers[0] || content;
 
   const findLast = () => {
-    const skip = /dp-actionbar|dp-summary-err/;
+    const skip = /donation-panel-actionbar|donation-panel-summary-err/;
     const nodes = Array.from(
       scrollRoot.querySelectorAll(
-        'input:not([type="hidden"]), textarea, select, button, [data-dp-addon], .dp-holder'
+        'input:not([type="hidden"]), textarea, select, button, [data-dp-addon], .donation-panel-holder'
       )
     ).filter((el) => !hiddenType(el) && hasBox(el) && !inCta(el));
     Array.from(scrollRoot.children)
