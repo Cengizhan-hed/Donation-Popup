@@ -136,7 +136,17 @@ final class Setup_Wizard {
 		$text   = $this->step_text();
 		$cur    = $this->current_step();
 
-		$html  = '<div class="wrap dpa dpa-wizard" id="dpa-wizard" data-dpa-page="wizard" data-dpa-step="' . (int) $cur . '" data-dpa-steps="' . (int) self::STEP_COUNT . '" data-dpa-overview="' . esc_url( Admin_View::url( Admin_Bootstrap::SLUG_OVERVIEW ) ) . '">';
+		// "Temamın renklerini kullan" önizlemesi: tema paletinden seçilen ana/eylem rengi (WordPress standart paleti).
+		$theme_colors = \DonationPanel\Frontend\Theme_Colors::variables( \DonationPanel\Frontend\Theme_Colors::site_palette() );
+		$theme_attrs  = '';
+		if ( isset( $theme_colors['--dp-color-primary'] ) ) {
+			$theme_attrs .= ' data-dpa-theme-brand="' . esc_attr( $theme_colors['--dp-color-primary'] ) . '"';
+		}
+		if ( isset( $theme_colors['--dp-accent'] ) ) {
+			$theme_attrs .= ' data-dpa-theme-accent="' . esc_attr( $theme_colors['--dp-accent'] ) . '"';
+		}
+
+		$html  = '<div class="wrap dpa dpa-wizard" id="dpa-wizard" data-dpa-page="wizard"' . $theme_attrs . ' data-dpa-step="' . (int) $cur . '" data-dpa-steps="' . (int) self::STEP_COUNT . '" data-dpa-overview="' . esc_url( Admin_View::url( Admin_Bootstrap::SLUG_OVERVIEW ) ) . '">';
 		$html .= '<h1 class="screen-reader-text">' . esc_html__( 'Quick setup', 'woo-donation-popup' ) . '</h1>';
 		$html .= '<ol class="dpa-stepper" aria-label="' . esc_attr__( 'Setup progress', 'woo-donation-popup' ) . '">';
 		foreach ( $labels as $n => $label ) {
