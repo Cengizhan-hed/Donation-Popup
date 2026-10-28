@@ -1,32 +1,28 @@
-// ESLint — yalnız geliştirme; pakete girmez. Kapsam: assets/js (kaynak).
+// ESLint — yalnız geliştirme; pakete girmez. Kapsam: kaynak JS (assets/src, blocks, tests, tools, scripts).
 import js from '@eslint/js';
 import globals from 'globals';
 
 export default [
-  { ignores: ['assets/js/build/**', 'assets/vendor/**', '**/*.min.js', 'node_modules/**', 'vendor/**', 'vendor-dev/**', 'build/**', 'tests/**', 'tools/**', 'scripts/**'] },
+  { ignores: ['assets/build/**', 'node_modules/**', 'vendor/**', 'vendor-dev/**', 'build/**', 'dev/design/**'] },
   js.configs.recommended,
   {
-    files: ['assets/src/**/*.{js,mjs}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
-      globals: { ...globals.browser },
+      globals: { ...globals.node },
     },
+    rules: { complexity: ['error', 15] },
   },
   {
-    files: ['assets/js/**/*.js'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'script',
-      globals: { ...globals.browser, jQuery: 'readonly', wp: 'readonly', elementor: 'readonly', elementorFrontend: 'readonly', wdpData: 'readonly' },
-    },
+    files: ['assets/src/**/*.{js,mjs}'],
+    languageOptions: { globals: { ...globals.browser } },
   },
   {
-    files: ['src/**/assets/**/*.js'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'script',
-      globals: { ...globals.browser },
-    },
+    files: ['tests/**/*.{js,mjs}'],
+    languageOptions: { globals: { ...globals.browser } },
+  },
+  {
+    files: ['blocks/**/*.js'],
+    languageOptions: { sourceType: 'script', globals: { ...globals.browser, wp: 'readonly' } },
   },
 ];
