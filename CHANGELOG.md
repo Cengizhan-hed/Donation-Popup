@@ -3,6 +3,29 @@
 All notable changes to Donation Panel for WooCommerce are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [12.1.0]
+
+### Added
+- Direct donation (no cart): order-pay flow with WooCommerce completion hooks (purchase event fires once, idempotent).
+- Instant open of the donation layer, lazy initialization.
+- Theme colors: palette read from WordPress global styles; two admin color pickers.
+- Floating side cart button (absent and request-free while the cart is empty).
+- Trusted proxy setting (`general.trusted_proxies`).
+- Security hardening: nonce origin check, rate-limit buckets, salted HMAC, submission ownership, `DONATION_PANEL_DISABLE` gate.
+- Zero front-end load on pages without a donation surface; assets enqueue only when rendered.
+
+### Changed
+- Vertical cards; no image in the form; panel headings are h2; root class prefix `.donation-panel`.
+- Keyboard behavior on mobile: no auto-focus, bottom section follows the flow when the keyboard is open.
+
+### Removed
+- Old visual baselines and dead code.
+
+### Rollback plan
+1. Reinstall the previous (12.0.0) plugin zip over the folder (Plugins > Add New > Upload, replace). Settings and orders are kept.
+2. New keys written by 12.1.0 are harmless to 12.0.0 and may stay: `general.trusted_proxies`, `direct.enabled`, product meta `_donation_panel_direct`, `side_cart.floating`, order meta `_donation_panel_direct_owner`, autoload flag `donation_panel_autoload_v2`. No data migration needs reversing.
+3. If totals look wrong, restore the plugin options from backup; `wp donation-panel recalc-totals --dry-run` previews recalculation.
+
 ## [12.0.0]
 
 ### Changed

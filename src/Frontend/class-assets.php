@@ -150,9 +150,10 @@ class Assets {
 	 *
 	 * @param string $slug        Modül slug'ı.
 	 * @param bool   $defer_style Ana stil engellemesin mi.
+	 * @param bool   $with_style  Stil de kuyruğa alınsın mı (false: yalnız betik; ör. liste dışı kart düğmesi tetikleyicisi).
 	 * @return void
 	 */
-	public function enqueue( $slug, $defer_style = false ) {
+	public function enqueue( $slug, $defer_style = false, $with_style = true ) {
 		if ( Front_Gate::disabled() ) {
 			return;
 		}
@@ -162,7 +163,7 @@ class Assets {
 		if ( wp_script_is( $handle, 'registered' ) ) {
 			wp_enqueue_script( $handle );
 		}
-		if ( wp_style_is( $handle, 'registered' ) ) {
+		if ( $with_style && wp_style_is( $handle, 'registered' ) ) {
 			wp_enqueue_style( $handle );
 			$this->add_brand_variables( $handle );
 			$this->track_deferred( $slug, $handle, (bool) $defer_style );

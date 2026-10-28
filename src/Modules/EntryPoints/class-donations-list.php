@@ -413,6 +413,22 @@ class Donations_List {
 	}
 
 	/**
+	 * Liste dışı kart/döngü düğmesi tetikleyicisi: yalnız `list` betiği (düğme tıklamasını yakalar, stil gerekmez) ve
+	 * engellemeyen form stili. Sıfır yük kuralı: görünür liste yokken ikinci engelleyen CSS yüklenmez.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_trigger_assets() {
+		$plugin = Plugin::instance();
+		if ( null === $plugin ) {
+			return;
+		}
+		$assets = $plugin->container()->get( Assets::class );
+		$assets->enqueue( self::ASSET_SLUG, false, false );
+		$assets->enqueue( Experiences_Module::SLUG, true );
+	}
+
+	/**
 	 * Replace cache-safe placeholders with per-request unique ids.
 	 *
 	 * @param string $html Cached HTML.

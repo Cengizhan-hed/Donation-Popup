@@ -68,7 +68,7 @@ define('NONCE_SALT', 'local-wdp-nonce-salt');
 \\$table_prefix = 'wp_';
 define('WP_DEBUG', true);
 define('WP_DEBUG_DISPLAY', false);
-define('WP_DEBUG_LOG', false);
+define('WP_DEBUG_LOG', ${process.env.WDP_WP_DEBUG_LOG ? "__DIR__ . '/wp-content/debug.log'" : 'false'});
 define('WP_MEMORY_LIMIT', '512M');
 define('DISABLE_WP_CRON', true);
 define('WP_HOME', '${homePhp}');

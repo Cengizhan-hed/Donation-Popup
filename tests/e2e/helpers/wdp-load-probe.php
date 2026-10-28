@@ -35,6 +35,9 @@ if ( ! empty( $wdp_probe_state['plugin_off'] ) ) {
 if ( ! empty( $wdp_probe_state['modules_all'] ) ) {
 	add_filter( 'donation_panel_module_enabled', '__return_true', 99 );
 }
+if ( ! empty( $wdp_probe_state['direct'] ) ) {
+	add_filter( 'donation_panel_direct_enabled', '__return_true', 99 );
+}
 if ( ! empty( $wdp_probe_state['none_donation'] ) ) {
 	add_filter( 'wdp_is_donation_product', '__return_false', 99 );
 }

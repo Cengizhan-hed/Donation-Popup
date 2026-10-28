@@ -5,7 +5,7 @@ Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 12.0.0
+Stable tag: 12.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,10 +46,18 @@ Write it on your site; the form only shows a link to the page you choose.
 
 == Upgrade Notice ==
 
+= 12.1.0 =
+Performance and security release. Nothing loads on pages without a donation surface; direct donations, floating side cart button, theme colors. Settings and orders are kept. Back up before updating.
+
 = 12.0.0 =
 Major release. One experience, one menu: the previous form engine and settings screens were removed. Settings, orders, shortcodes and blocks are kept. Back up before updating.
 
 == Changelog ==
+
+= 12.1.0 =
+* Added: direct donation (no cart), instant open, theme color palette support, floating side cart button, trusted proxy setting, security hardening.
+* Changed: vertical cards, no image in the form, h2 headings, `.donation-panel` class prefix, keyboard behavior on mobile.
+* Removed: old baselines and dead code. Zero front-end load on pages without a donation surface.
 
 = 12.0.0 =
 * One experience, one menu, new design; donation form pre-fills the checkout page. The previous form engine and admin screens were removed.
