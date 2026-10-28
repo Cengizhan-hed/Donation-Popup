@@ -69,7 +69,7 @@ final class SideCartTest extends TestCase {
 
 	public function test_body_empty_state_has_action_and_no_checkout_link(): void {
 		$html = Side_Cart_Renderer::body( array(), '', 'https://example.test/checkout/' );
-		$this->assertStringContainsString( 'dp-sc__empty', $html );
+		$this->assertStringContainsString( 'donation-panel-sc__empty', $html );
 		$this->assertStringContainsString( 'data-dp-sc-close', $html );
 		$this->assertStringNotContainsString( 'data-dp-sc-go', $html );
 	}
@@ -168,7 +168,7 @@ final class SideCartTest extends TestCase {
 		$this->assertStringContainsString( 'data-dp-sc-fab hidden', $fab );
 		$this->assertStringNotContainsString( 'data-dp-sc-open', $fab );
 		$this->assertStringContainsString( 'aria-controls="' . Side_Cart_Renderer::DRAWER_ID . '"', $fab );
-		$this->assertStringContainsString( '<dialog class="dp-sc__overlay"', $html );
+		$this->assertStringContainsString( '<dialog class="donation-panel-sc__overlay"', $html );
 		$this->assertStringNotContainsString( 'data-dp-sc-fab', Side_Cart_Renderer::drawer( '<p>x</p>', array() ) );
 	}
 

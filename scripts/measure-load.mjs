@@ -70,7 +70,7 @@ export function parsePage(html, base) {
   }
   const inlineStyles = (clean.match(/<style\b/gi) || []).length;
   const inlineScripts = (clean.match(/<script\b(?![^>]*\bsrc=)/gi) || []).length;
-  // Eklenti DOM'u: `.dp` kök sınıfı, `data-dp-*` öznitelikleri, `donation-panel/` yolları (ürün adı/slug'ı sayılmaz).
+  // Eklenti DOM'u: `.donation-panel` kök sınıfı, `data-dp-*` öznitelikleri, `donation-panel/` yolları (ürün adı/slug'ı sayılmaz).
   const markers = (clean.match(/\bdata-dp-[a-z-]+|class="(?:[^"]*\s)?dp(?:\s|-[a-z]|")|donation-panel\//g) || []).length;
   return { probe, resources, blocking, inlineStyles, inlineScripts, markers, htmlBytes: Buffer.byteLength(clean) };
 }

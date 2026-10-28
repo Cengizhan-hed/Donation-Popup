@@ -65,7 +65,7 @@ async function loginViaUi(page, email) {
   await page.locator('#dp-ac-email').fill(email);
   await page.locator('#dp-ac-password').fill(PASSWORD);
   await page.locator('[data-dp-acc-form="login"] [data-dp-acc-submit]').click();
-  await expect(page.locator('a.dp-ac__trigger')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('a.donation-panel-ac__trigger')).toBeVisible({ timeout: 20000 });
 }
 
 test.describe('bağışçı hesabı penceresi', () => {
@@ -138,7 +138,7 @@ test.describe('bağışçı hesabı penceresi', () => {
     const email = unique('giris');
     await seed(page, email);
     await loginViaUi(page, email);
-    await expect(page.locator('a.dp-ac__trigger')).toHaveAttribute('href', /my-account|hesab|account/i);
+    await expect(page.locator('a.donation-panel-ac__trigger')).toHaveAttribute('href', /my-account|hesab|account/i);
   });
 
   test('kayıt: yeni e-posta oturum açar; var olan e-posta aynı akışta tek tip giriş iletisiyle döner', async ({ page }) => {
@@ -148,7 +148,7 @@ test.describe('bağışçı hesabı penceresi', () => {
     await page.locator('#dp-ac-reg-email').fill(unique('yeni'));
     await page.locator('#dp-ac-reg-password').fill('yeni-sifre-123');
     await page.locator('[data-dp-acc-form="register"] [data-dp-acc-submit]').click();
-    await expect(page.locator('a.dp-ac__trigger')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('a.donation-panel-ac__trigger')).toBeVisible({ timeout: 20000 });
 
     // Var olan e-posta (başka parola): hesap açılmaz, kullanıcıya hesabın varlığı söylenmez.
     const existing = unique('mevcut');
@@ -314,7 +314,7 @@ test.describe('ödeme sayfası', () => {
     expect((await add.json()).ok).toBe(true);
     const info = await (await page.request.get(`/?dp_da_seed=1&email=${encodeURIComponent(unique('odeme'))}&pid=${PRODUCT}`)).json();
     await page.goto(info.checkout);
-    await expect(page.locator('.dp-ac__checkout-note')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.donation-panel-ac__checkout-note')).toBeVisible({ timeout: 20000 });
     await expect(page.locator('#createaccount')).toBeAttached();
   });
 });

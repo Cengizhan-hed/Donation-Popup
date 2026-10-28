@@ -28,7 +28,7 @@ function focusables(surface) {
 }
 
 /**
- * @param {HTMLElement} root Kök (.dp-exp).
+ * @param {HTMLElement} root Kök (.donation-panel-exp).
  * @param {{ onBuild?: Function }} [hooks] `onBuild(root)`: katman DOM'u oluşunca (form bağlama).
  * @return {{open: Function, close: Function, isOpen: Function, build: Function, destroy: Function}|null} Denetleyici.
  */
@@ -218,7 +218,7 @@ export function createLayer(root, hooks = {}) {
     void overlay.offsetWidth;
     overlay.classList.add('is-open');
     trigger.setAttribute('aria-expanded', 'true');
-    lockPage(ownerId, root, 'dp-lock');
+    lockPage(ownerId, root, 'donation-panel-lock');
     document.addEventListener('keydown', onKeydown, true);
     window.addEventListener('popstate', onPopState);
     try {

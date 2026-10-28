@@ -416,7 +416,7 @@ async function assertAmountFieldAndSymbol(scope, store) {
   await input.waitFor({ state: 'visible', timeout: CHECK_MS });
   const ph = String((await input.getAttribute('placeholder')) || '').trim();
   if (!ph) throw new Error('tutar alanı yer tutucusu boş');
-  const sym = String((await scope.locator('.dp-custom__sym').first().textContent()) || '').trim();
+  const sym = String((await scope.locator('.donation-panel-custom__sym').first().textContent()) || '').trim();
   const want = String(store.symbol || '').trim();
   if (want && sym !== want) throw new Error(`tutar alanı sembolü '${sym}' ≠ mağaza '${want}'`);
 }
@@ -430,7 +430,7 @@ async function assertCloseNotOverlappingForm(page) {
     const overlay = document.querySelector('[data-dp-overlay].is-open');
     if (!overlay) return { skip: true };
     const close = overlay.querySelector('[data-dp-close]');
-    const body = overlay.querySelector('[data-dp-step]:not([hidden]) .dp-fieldset, [data-dp-step]:not([hidden]) .dp-field');
+    const body = overlay.querySelector('[data-dp-step]:not([hidden]) .donation-panel-fieldset, [data-dp-step]:not([hidden]) .donation-panel-field');
     if (!close) return { error: 'kapat düğmesi yok' };
     const c = close.getBoundingClientRect();
     const f = body ? body.getBoundingClientRect() : null;
@@ -618,7 +618,7 @@ async function snapshotChromeStyles(page) {
     const pick = (sel) => {
       const el = document.querySelector(sel);
       if (!el) return null;
-      if (el.closest('.wdp-modal, .hdf-donation-modal-wrapper, [class*="wdp-"], [class*="dp-"]')) return null;
+      if (el.closest('.wdp-modal, .hdf-donation-modal-wrapper, [class*="wdp-"], [class*="donation-panel"]')) return null;
       const cs = getComputedStyle(el);
       return {
         color: cs.color,

@@ -265,7 +265,7 @@ class Theme_Colors {
 	}
 
 	/**
-	 * `.donation-panel`/`.dp` kökü için tek satır içi bildirim bloğu ('' = tema CSS varsayılanları).
+	 * `.donation-panel`/`.donation-panel` kökü için tek satır içi bildirim bloğu ('' = tema CSS varsayılanları).
 	 *
 	 * @param string $custom_brand  Yönetici ana rengi.
 	 * @param string $custom_accent Yönetici düğme rengi.

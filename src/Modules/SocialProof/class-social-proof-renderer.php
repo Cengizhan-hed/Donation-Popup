@@ -64,8 +64,8 @@ final class Social_Proof_Renderer {
 	private static function line( $product_id, array $stats ) {
 		ob_start();
 		?>
-<p class="dp dp-social dp-social--line" data-dp-social="line" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>">
-	<span class="dp-social__dot" aria-hidden="true"></span>
+<p class="donation-panel donation-panel-social donation-panel-social--line" data-dp-social="line" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>">
+	<span class="donation-panel-social__dot" aria-hidden="true"></span>
 	<span>
 		<?php
 		echo esc_html(
@@ -107,9 +107,9 @@ final class Social_Proof_Renderer {
 		);
 		ob_start();
 		?>
-<div class="dp dp-social dp-social--counters" data-dp-social="counters" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>">
+<div class="donation-panel donation-panel-social donation-panel-social--counters" data-dp-social="counters" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>">
 		<?php foreach ( $cells as $cell ) : ?>
-	<div class="dp-social__cell"><b class="dp-num"><?php echo esc_html( (string) $cell[0] ); ?></b><span><?php echo esc_html( (string) $cell[1] ); ?></span></div>
+	<div class="donation-panel-social__cell"><b class="donation-panel-num"><?php echo esc_html( (string) $cell[0] ); ?></b><span><?php echo esc_html( (string) $cell[1] ); ?></span></div>
 	<?php endforeach; ?>
 </div>
 		<?php
@@ -126,13 +126,13 @@ final class Social_Proof_Renderer {
 	private static function feed( $product_id, array $feed ) {
 		ob_start();
 		?>
-<div class="dp dp-social dp-social--feed" data-dp-social="feed" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>" data-page="<?php echo esc_attr( (string) (int) $feed['page'] ); ?>" data-per-page="<?php echo esc_attr( (string) (int) $feed['per_page'] ); ?>" data-anon="<?php echo esc_attr__( 'A kind donor', 'woo-donation-popup' ); ?>">
-	<ul class="dp-list" data-dp-feed-list>
+<div class="donation-panel donation-panel-social donation-panel-social--feed" data-dp-social="feed" data-product-id="<?php echo esc_attr( (string) (int) $product_id ); ?>" data-page="<?php echo esc_attr( (string) (int) $feed['page'] ); ?>" data-per-page="<?php echo esc_attr( (string) (int) $feed['per_page'] ); ?>" data-anon="<?php echo esc_attr__( 'A kind donor', 'woo-donation-popup' ); ?>">
+	<ul class="donation-panel-list" data-dp-feed-list>
 		<?php foreach ( (array) $feed['items'] as $item ) : ?>
 			<?php self::row( (array) $item ); ?>
 		<?php endforeach; ?>
 	</ul>
-	<button type="button" class="dp-btn dp-btn--ghost" data-dp-feed-more<?php echo empty( $feed['has_more'] ) ? ' hidden' : ''; ?>><?php esc_html_e( 'Show more', 'woo-donation-popup' ); ?></button>
+	<button type="button" class="donation-panel-btn donation-panel-btn--ghost" data-dp-feed-more<?php echo empty( $feed['has_more'] ) ? ' hidden' : ''; ?>><?php esc_html_e( 'Show more', 'woo-donation-popup' ); ?></button>
 </div>
 		<?php
 		return (string) ob_get_clean();
@@ -147,10 +147,10 @@ final class Social_Proof_Renderer {
 	private static function row( array $item ) {
 		$name = (string) $item['name'];
 		?>
-		<li class="dp-list__row">
-			<span class="dp-avatar" aria-hidden="true"><?php echo '' !== $name ? esc_html( function_exists( 'mb_substr' ) ? mb_substr( $name, 0, 1, 'UTF-8' ) : substr( $name, 0, 1 ) ) : '&#9825;'; ?></span>
-			<div class="dp-list__t"><b><?php echo esc_html( '' !== $name ? $name : __( 'A kind donor', 'woo-donation-popup' ) ); ?></b><small><?php echo esc_html( (string) $item['ago'] ); ?></small></div>
-			<span class="dp-num"><?php echo esc_html( (string) $item['label'] ); ?></span>
+		<li class="donation-panel-list__row">
+			<span class="donation-panel-avatar" aria-hidden="true"><?php echo '' !== $name ? esc_html( function_exists( 'mb_substr' ) ? mb_substr( $name, 0, 1, 'UTF-8' ) : substr( $name, 0, 1 ) ) : '&#9825;'; ?></span>
+			<div class="donation-panel-list__t"><b><?php echo esc_html( '' !== $name ? $name : __( 'A kind donor', 'woo-donation-popup' ) ); ?></b><small><?php echo esc_html( (string) $item['ago'] ); ?></small></div>
+			<span class="donation-panel-num"><?php echo esc_html( (string) $item['label'] ); ?></span>
 		</li>
 		<?php
 	}

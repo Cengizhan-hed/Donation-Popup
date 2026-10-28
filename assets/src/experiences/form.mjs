@@ -8,7 +8,7 @@ const RTL = () => document.documentElement.dir === 'rtl' || document.dir === 'rt
 const HOLDER = /^shareholder_(\d+)_/;
 
 /**
- * Telefon değeri: ulusal numara girildiyse seçili ülke ön eki eklenir (ülke kodu seçicisi `.dp-phone` içinde).
+ * Telefon değeri: ulusal numara girildiyse seçili ülke ön eki eklenir (ülke kodu seçicisi `.donation-panel-phone` içinde).
  *
  * @param {HTMLInputElement} input Numara girdisi.
  * @return {string} Sunucuya gidecek değer.
@@ -18,7 +18,7 @@ export function phoneValue(input) {
   if (raw === '' || /^(\+|00)/.test(raw)) {
     return raw;
   }
-  const select = input.closest('.dp-phone') ? input.closest('.dp-phone').querySelector('[data-dp-dial]') : null;
+  const select = input.closest('.donation-panel-phone') ? input.closest('.donation-panel-phone').querySelector('[data-dp-dial]') : null;
   const dial = select ? select.value : '';
   if (!dial) {
     return raw;
@@ -28,7 +28,7 @@ export function phoneValue(input) {
 }
 
 /**
- * @param {HTMLElement} root Kök (.dp-exp).
+ * @param {HTMLElement} root Kök (.donation-panel-exp).
  * @param {{ onDone?: Function }} [hooks] Olaylar.
  * @return {{getState: Function}} Denetleyici.
  */
@@ -66,7 +66,7 @@ export function createForm(root, hooks = {}) {
   const locale = document.documentElement.lang || undefined;
 
   const sections = Array.from(form.querySelectorAll('[data-dp-step]'));
-  const stepsBar = Array.from(form.querySelectorAll('.dp-steps__i'));
+  const stepsBar = Array.from(form.querySelectorAll('.donation-panel-steps__i'));
   const stepsWrap = form.querySelector('[data-dp-steps]');
   const stepText = form.querySelector('[data-dp-steplabel]');
   const titleNode = form.querySelector('[data-dp-title]');
@@ -133,10 +133,10 @@ export function createForm(root, hooks = {}) {
     let node = form.querySelector('[data-dp-added]');
     if (!node) {
       node = document.createElement('p');
-      node.className = 'dp-added';
+      node.className = 'donation-panel-added';
       node.setAttribute('role', 'status');
       node.dataset.dpAdded = '';
-      const bar = form.querySelector('.dp-actionbar');
+      const bar = form.querySelector('.donation-panel-actionbar');
       form.insertBefore(node, bar);
     }
     node.textContent = message;
@@ -228,7 +228,7 @@ export function createForm(root, hooks = {}) {
       const name = error.dataset.dpError;
       const message = state.errors[name] || '';
       error.textContent = message;
-      const wrap = error.closest('[data-dp-field], .dp-fieldset');
+      const wrap = error.closest('[data-dp-field], .donation-panel-fieldset');
       if (wrap) {
         wrap.classList.toggle('has-error', Boolean(message));
       }
@@ -353,7 +353,7 @@ export function createForm(root, hooks = {}) {
     });
   }
   form.querySelectorAll('[data-dp-dial]').forEach((select) => {
-    const label = select.closest('.dp-phone__code') ? select.closest('.dp-phone__code').querySelector('[data-dp-dial-label]') : null;
+    const label = select.closest('.donation-panel-phone__code') ? select.closest('.donation-panel-phone__code').querySelector('[data-dp-dial-label]') : null;
     select.addEventListener('change', () => {
       if (label) {
         label.textContent = `+${select.value}`;
@@ -517,7 +517,7 @@ export function createForm(root, hooks = {}) {
   // Adım değişince odak başlığa gider (alana değil): mobilde klavye kendiliğinden açılmaz, ekran okuyucu yeni adımı duyar.
   const focusStep = () => {
     const target = titleNode;
-    const body = form.querySelector('.dp-surface__body');
+    const body = form.querySelector('.donation-panel-surface__body');
     if (body) {
       body.scrollTop = 0;
     }

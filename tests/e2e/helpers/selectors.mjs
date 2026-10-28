@@ -39,7 +39,7 @@ export const SEL = {
   donorNote: 'textarea[name="donation_note"]',
 
   // Özel tutar kutusu (önerilen tutar gizli girdisi `input[type=hidden][name=amount]` ayrıdır)
-  customPrice: 'input.dp-custom__in[name="amount"]',
+  customPrice: 'input.donation-panel-custom__in[name="amount"]',
 
   lineTotal: '[data-dp-total]',
   qtyIncrease: '[data-dp-qty="1"]',
@@ -133,8 +133,8 @@ export const DP_SEL = {
   surface: '[data-dp-surface]',
   close: '[data-dp-close]',
   submit: '[data-dp-submit]',
-  amount: 'input.dp-custom__in[name="amount"]',
-  preset: 'button.dp-amount',
+  amount: 'input.donation-panel-custom__in[name="amount"]',
+  preset: 'button.donation-panel-amount',
   detailsStep: '[data-dp-step="details"]',
   dediToggle: '[data-dp-dedi-toggle]',
   inlineRoot: '[data-dp-exp][data-dp-kind="inline"]',

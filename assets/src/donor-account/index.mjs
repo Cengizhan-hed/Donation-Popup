@@ -88,12 +88,12 @@ function mountDialog(root) {
     if (guard) {
       guard.hidden = name !== 'login' && name !== 'register';
     }
-    root.querySelectorAll('.dp-ac__tab').forEach((tab) => {
+    root.querySelectorAll('.donation-panel-ac__tab').forEach((tab) => {
       const selected = tab.dataset.dpAccViewBtn === name;
       tab.setAttribute('aria-selected', String(selected));
       tab.tabIndex = selected ? 0 : -1;
     });
-    const tabs = root.querySelector('.dp-ac__tabs');
+    const tabs = root.querySelector('.donation-panel-ac__tabs');
     if (tabs) {
       tabs.hidden = name !== 'login' && name !== 'register';
     }
@@ -118,7 +118,7 @@ function mountDialog(root) {
     }
     void overlay.offsetWidth;
     overlay.classList.add('is-open');
-    lockPage('donor-account', root, 'dp-ac-lock');
+    lockPage('donor-account', root, 'donation-panel-ac-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
     // Dokunmatik cihazda otomatik odak yok (klavye paneli kapatmasın); odak pencereye verilir.
     const touch = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
@@ -247,7 +247,7 @@ function mountDialog(root) {
   // Sürükleyerek kapatma (yalnız dar ekranda tutamaç/başlık).
   let drag = null;
   surface.addEventListener('pointerdown', (e) => {
-    if (!e.target.closest('.dp-ac__handle, .dp-ac__head') || e.target.closest('button') || !window.matchMedia('(max-width: 639.98px)').matches) {
+    if (!e.target.closest('.donation-panel-ac__handle, .donation-panel-ac__head') || e.target.closest('button') || !window.matchMedia('(max-width: 639.98px)').matches) {
       return;
     }
     drag = { y: e.clientY, t: performance.now(), d: 0 };

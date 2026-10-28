@@ -51,7 +51,7 @@ final class Experience_Renderer {
 		$html = is_string( $html ) ? $html : '';
 
 		if ( '' !== $html && '' !== $extra_class ) {
-			$html = '<div class="dp-entry ' . esc_attr( $extra_class ) . '">' . $html . '</div>';
+			$html = '<div class="donation-panel-entry ' . esc_attr( $extra_class ) . '">' . $html . '</div>';
 		}
 		return $html;
 	}

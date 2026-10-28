@@ -36,8 +36,8 @@ function tween(node, from, to, format) {
  */
 export function applyProgress(root, data) {
   const percent = clampPercent(data.percent);
-  const bar = root.querySelector('.dp-bar');
-  const fill = root.querySelector('.dp-bar__fill');
+  const bar = root.querySelector('.donation-panel-bar');
+  const fill = root.querySelector('.donation-panel-bar__fill');
   if (bar) {
     bar.setAttribute('aria-valuenow', String(percent));
   }
@@ -80,7 +80,7 @@ export function initProgress(root) {
     return;
   }
   root.dataset.dpReady = '1';
-  const fill = root.querySelector('.dp-bar__fill');
+  const fill = root.querySelector('.donation-panel-bar__fill');
   const target = clampPercent(root.dataset.percent);
   const run = () => {
     if (fill && !reduced()) {

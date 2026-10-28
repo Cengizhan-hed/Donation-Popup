@@ -198,7 +198,7 @@ test.describe('mobil form davranışı', () => {
     await page.locator('[data-dp-open]').click();
     const custom = page.locator('input[name="amount"]:not([type="hidden"])');
     test.skip((await custom.count()) === 0, 'serbest tutar alanı yok');
-    const bar = page.locator('.dp-actionbar');
+    const bar = page.locator('.donation-panel-actionbar');
     await expect(bar).toBeVisible();
     // Açılış animasyonu (alttan kayma) bitmeden ölçmek yarışa yol açar: panel konumu iki kare üst üste aynı olana dek bekle.
     await page.waitForFunction(() => {

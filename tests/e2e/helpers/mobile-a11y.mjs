@@ -30,7 +30,7 @@ export async function probeTouchTargets(page, scopeSel) {
       const root = document.querySelector(sel) || document.body;
       const nodes = Array.from(
         root.querySelectorAll(
-          'button, a[href], [role="button"], .dp-amount, input[type="checkbox"], [data-dp-qty], [data-dp-close], [role="tab"]'
+          'button, a[href], [role="button"], .donation-panel-amount, input[type="checkbox"], [data-dp-qty], [data-dp-close], [role="tab"]'
         )
       );
       function vis(el) {
@@ -110,7 +110,7 @@ export async function probeScrollLock(page) {
     const cls = `${html.className} ${body.className}`;
     const overflow = `${getComputedStyle(html).overflow} ${getComputedStyle(body).overflow}`;
     return {
-      locked: /dp-lock|modal-open|no-scroll|overflow:\s*hidden/i.test(`${cls} ${overflow}`),
+      locked: /donation-panel-lock|modal-open|no-scroll|overflow:\s*hidden/i.test(`${cls} ${overflow}`),
       htmlOverflow: getComputedStyle(html).overflow,
       bodyOverflow: getComputedStyle(body).overflow,
       bodyPosition: getComputedStyle(body).position,

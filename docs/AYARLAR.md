@@ -352,7 +352,7 @@ Aşağıdaki her alan için: ekran adı, ne işe yarar, hangi tipte görünür /
 
 ### Kısa kodlar
 
-Ürün Bağış sekmesinde üç kod kopyalanır: buton, panel, form (hepsi `id="…"` ile; `id` verilmezse kod bulunduğu ürünü kendisi bulur). Gutenberg blokları ve Elementor widget’ları aynı render fonksiyonlarını kullanır. 12.0.0'da `title/show_title` yeni formda kullanılmaz; `class` bir `<div class="dp-entry ...">` sarmalayıcıya gider.
+Ürün Bağış sekmesinde üç kod kopyalanır: buton, panel, form (hepsi `id="…"` ile; `id` verilmezse kod bulunduğu ürünü kendisi bulur). Gutenberg blokları ve Elementor widget’ları aynı render fonksiyonlarını kullanır. 12.0.0'da `title/show_title` yeni formda kullanılmaz; `class` bir `<div class="donation-panel-entry ...">` sarmalayıcıya gider.
 
 **Kapsam:** `id`, `slug` veya `sku` ile açıkça verilen ürün de bağış kapsamında olmalıdır (12-fix: kapsam dışı ürün sepete bağış olarak giremez, REST reddeder). Kapsam “yalnızca işaretli”/“kategoriler” iken ürünü işaretleyin ya da kategoriye alın. Kapsam dışı ürün için ziyaretçi boş çıktı görür; `manage_woocommerce` yetkisi olan kullanıcı sayfada nedenini söyleyen bir ipucu görür.
 

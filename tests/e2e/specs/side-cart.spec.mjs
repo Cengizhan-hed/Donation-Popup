@@ -64,7 +64,7 @@ test.describe('yan sepet', () => {
     await trigger.click();
     await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('.dp-sc__empty')).toBeVisible();
+    await expect(page.locator('.donation-panel-sc__empty')).toBeVisible();
     await expect(page.locator('[data-dp-sc-go]')).toHaveCount(0);
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-dp-sc-overlay].is-open')).toHaveCount(0);
@@ -81,7 +81,7 @@ test.describe('yan sepet', () => {
     await expect(row).toContainText(DEDICATION);
     await expect(row).toContainText('Çağlar Öztürk, Ayşe Yılmaz');
     await expect(row).toContainText('75');
-    await expect(page.locator('.dp-sc__subtotal')).toContainText('75');
+    await expect(page.locator('.donation-panel-sc__subtotal')).toContainText('75');
     await expect(page.locator('[data-dp-sc-count]').first()).toHaveText('1');
     // Hisse bağışında miktar değiştirilmez; kaldırma vardır.
     await expect(page.locator('[data-dp-sc-qty]')).toHaveCount(0);
@@ -101,13 +101,13 @@ test.describe('yan sepet', () => {
     await expect(page.locator('[data-dp-sc-qty="-1"]')).toBeDisabled();
     await page.locator('[data-dp-sc-qty="1"]').click();
     await expect(row).toHaveAttribute('data-qty', '2');
-    await expect(page.locator('.dp-sc__subtotal')).toContainText('80');
+    await expect(page.locator('.donation-panel-sc__subtotal')).toContainText('80');
     let cart = await (await page.request.get('/?rest_route=/wc/store/v1/cart')).json();
     expect(cart.items[0].quantity).toBe(2);
     await page.locator('[data-dp-sc-qty="-1"]').click();
     await expect(row).toHaveAttribute('data-qty', '1');
     await page.locator('[data-dp-sc-remove]').click();
-    await expect(page.locator('.dp-sc__empty')).toBeVisible();
+    await expect(page.locator('.donation-panel-sc__empty')).toBeVisible();
     await expect(page.locator('[data-dp-sc-count]').first()).toBeHidden();
     cart = await (await page.request.get('/?rest_route=/wc/store/v1/cart')).json();
     expect(cart.items).toHaveLength(0);
@@ -198,7 +198,7 @@ test.describe('yan sepet: yeni motorun kendi ekleme yolu', () => {
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('donation-panel:cart-added')));
     await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
     await expect(page.locator('[data-dp-sc-line]')).toHaveCount(1);
-    await expect(page.locator('.dp-sc__subtotal')).toContainText('125');
+    await expect(page.locator('.donation-panel-sc__subtotal')).toContainText('125');
   });
 });
 
@@ -268,7 +268,7 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
     expect(topInDrawer).toBe(true);
     expect(await page.locator('[data-dp-sc-overlay]').evaluate((el) => el.matches(':modal'))).toBe(true);
 
-    await page.locator('.dp-sc__bar [data-dp-sc-close]').click();
+    await page.locator('.donation-panel-sc__bar [data-dp-sc-close]').click();
     await expect(page.locator('[data-dp-sc-overlay].is-open')).toHaveCount(0);
     await expect(fab).toHaveClass(/is-pulse/);
     expect(errors).toEqual([]);

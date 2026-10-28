@@ -1,7 +1,7 @@
 /* Donation Panel — teşekkür / yan sepet / giriş / Bağışlarım ortak yüzey belirteçleri (onaylı tasarım v1, TASARIM-SPEC.md).
  * Marka rengi = --dp-color-primary (temadan/ayardan). Eylem rengi = --dp-color-accent (tanımlıysa), yoksa marka. Yazı tipi devralınır.
- * Yalnız .dp kapsamı; temaya özel seçici yok; mantıksal özellikler (RTL). */
-.dp {
+ * Yalnız .donation-panel kapsamı; temaya özel seçici yok; mantıksal özellikler (RTL). */
+.donation-panel {
   --dpx-accent: var(--dp-color-accent, var(--dp-color-primary));
   --dpx-on-accent: var(--dp-color-on-accent, var(--dp-color-on-primary, #fff));
   --dpx-warm: color-mix(in oklab, #d8c7a8 22%, var(--dp-color-surface, #fff));
@@ -23,7 +23,7 @@
   --dpx-shadow-card: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px rgb(16 24 40 / .06);
 }
 @supports (color: oklch(from red l c h)) {
-  .dp { --dpx-on-accent: var(--dp-color-on-accent, oklch(from var(--dpx-accent) clamp(0, (0.66 - l) * 1000, 1) 0 0)); }
+  .donation-panel { --dpx-on-accent: var(--dp-color-on-accent, oklch(from var(--dpx-accent) clamp(0, (0.66 - l) * 1000, 1) 0 0)); }
 }
 /* Ortak düğmeler */
 .dpx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; min-block-size: var(--dpx-h-touch); padding: 0 20px; border: 1.5px solid transparent; border-radius: var(--dpx-r-btn-sm); font: inherit; font-size: .875rem; font-weight: 600; line-height: 1.2; text-decoration: none; cursor: pointer; transition: transform 160ms var(--dp-ease-spring, ease), filter 160ms; }

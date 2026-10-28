@@ -71,6 +71,6 @@ final class Privacy_Notice {
 		if ( ! $notice || empty( $notice['show'] ) || empty( $notice['url'] ) ) {
 			return '';
 		}
-		return '<p class="dp-privacy-notice"><a href="' . esc_url( $notice['url'] ) . '" target="_blank" rel="noopener">' . esc_html( $notice['link_label'] ) . '</a></p>';
+		return '<p class="donation-panel-privacy-notice"><a href="' . esc_url( $notice['url'] ) . '" target="_blank" rel="noopener">' . esc_html( $notice['link_label'] ) . '</a></p>';
 	}
 }

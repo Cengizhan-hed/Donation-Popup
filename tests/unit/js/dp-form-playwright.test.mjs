@@ -21,13 +21,13 @@ import { openShellLocator, shellTriggerLocator, visibleValidationErrors, waitFor
 const FORM = (kind, extra = '') => `
 <div data-dp-exp data-dp-kind="${kind}" data-dp-product="7" data-dp-mounted="1" data-dp-checkout="/checkout/">
   ${kind === 'inline' ? '' : '<button type="button" data-dp-open aria-expanded="false">Donate</button>'}
-  <div ${kind === 'inline' ? '' : 'data-dp-overlay class="dp-overlay"'}>
+  <div ${kind === 'inline' ? '' : 'data-dp-overlay class="donation-panel-overlay"'}>
     <div ${kind === 'inline' ? '' : 'data-dp-surface'}>
       ${kind === 'inline' ? '' : '<button type="button" data-dp-close>x</button>'}
       <form data-dp-form novalidate data-min="10" data-decimals="0" data-thousand-sep="." data-decimal-sep=",">
         <section data-dp-step="amount">
-          <button type="button" class="dp-amount" data-dp-preset="50" aria-checked="true">50</button>
-          <div data-dp-field="amount"><input class="dp-custom__in" name="amount" type="text"><p data-dp-error="amount"></p></div>
+          <button type="button" class="donation-panel-amount" data-dp-preset="50" aria-checked="true">50</button>
+          <div data-dp-field="amount"><input class="donation-panel-custom__in" name="amount" type="text"><p data-dp-error="amount"></p></div>
           <label><input type="checkbox" name="addon_active" value="1" data-dp-addon-toggle style="position:absolute;opacity:0;width:1px;height:1px"> addon</label>
         </section>
         <section data-dp-step="details" hidden>
@@ -126,10 +126,10 @@ describe('dp-form yardımcıları (satır içi form)', () => {
   it('fillAmountStep özel kutu yoksa önerilen tutarı seçer; advanceToDetails bilgi adımına geçer', async () => {
     await withPage(FORM('inline'), async (page) => {
       const form = formOf(page.locator('[data-dp-exp]').first());
-      await form.evaluate((f) => f.querySelector('input.dp-custom__in').remove());
+      await form.evaluate((f) => f.querySelector('input.donation-panel-custom__in').remove());
       await page.evaluate(() => {
         window.__presetClicks = 0;
-        document.querySelector('.dp-amount').addEventListener('click', () => { window.__presetClicks += 1; });
+        document.querySelector('.donation-panel-amount').addEventListener('click', () => { window.__presetClicks += 1; });
       });
       await fillAmountStep(form, '');
       assert.equal(await page.evaluate(() => window.__presetClicks), 1);

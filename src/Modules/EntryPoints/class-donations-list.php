@@ -456,7 +456,7 @@ class Donations_List {
 			$style .= ';--wdp-ratio:' . $ratio;
 		}
 
-		$wrap_class = 'dp wdp-list-wrap wdp-list-wrap--' . $atts['align'];
+		$wrap_class = 'donation-panel wdp-list-wrap wdp-list-wrap--' . $atts['align'];
 		if ( '' !== $atts['class'] ) {
 			$wrap_class .= ' ' . $atts['class'];
 		}

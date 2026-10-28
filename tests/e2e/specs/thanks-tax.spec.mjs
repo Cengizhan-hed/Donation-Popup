@@ -118,8 +118,8 @@ test.describe('teşekkür + vergi indirimi', () => {
     await expect(thanks).toBeVisible();
     await expect(page.locator(WOO_CONTENT).first()).toBeVisible();
     await expect(thanks.locator('h2')).toHaveText(/thank you|teşekkür/i);
-    await expect(thanks.locator('.dp-thanks__amount')).toContainText('125');
-    await expect(thanks.locator('.dp-thanks__project')).toHaveCount(1);
+    await expect(thanks.locator('.donation-panel-thanks__amount')).toContainText('125');
+    await expect(thanks.locator('.donation-panel-thanks__project')).toHaveCount(1);
     await expect(thanks.locator('a[href]', { hasText: /give again|tekrar/i })).toBeVisible();
 
     const text = (await thanks.innerText()) + (await thanks.innerHTML());
@@ -128,8 +128,8 @@ test.describe('teşekkür + vergi indirimi', () => {
     }
 
     // Kutlama: konfeti oluşur ve süre sonunda silinir.
-    await expect(page.locator('.dp-thanks-confetti i')).toHaveCount(26);
-    await expect(page.locator('.dp-thanks-confetti')).toHaveCount(0, { timeout: 8000 });
+    await expect(page.locator('.donation-panel-thanks-confetti i')).toHaveCount(26);
+    await expect(page.locator('.donation-panel-thanks-confetti')).toHaveCount(0, { timeout: 8000 });
     if (process.env.WDP_UI2_SHOTS) {
       // Yalnız ekran görüntüsü toplama koşusunda: ONCE-SONRA/Tesekkur/uygulama-<mobil|masaustu>.png
       await thanks.screenshot({ path: path.join(process.env.WDP_UI2_SHOTS, 'Tesekkur', `uygulama-${desktop ? 'masaustu' : 'mobil'}.png`) });
@@ -179,8 +179,8 @@ test.describe('teşekkür + vergi indirimi', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(thanksUrl);
     await expect(page.locator('[data-dp-thanks]')).toBeVisible();
-    await expect(page.locator('.dp-thanks-confetti')).toHaveCount(0);
-    expect(await page.locator('.dp-thanks__tick').evaluate((el) => getComputedStyle(el).strokeDashoffset)).toBe('0px');
+    await expect(page.locator('.donation-panel-thanks-confetti')).toHaveCount(0);
+    expect(await page.locator('.donation-panel-thanks__tick').evaluate((el) => getComputedStyle(el).strokeDashoffset)).toBe('0px');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
 
     await context.addCookies([{ name: 'dp_e6_off', value: '1', url: page.url() }]);

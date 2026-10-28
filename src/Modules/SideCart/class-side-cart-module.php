@@ -111,7 +111,7 @@ final class Side_Cart_Module implements Module_Interface {
 	 */
 	public function add_fragments( $fragments ) {
 		$fragments                      = (array) $fragments;
-		$fragments['span.dp-sc__count'] = Side_Cart_Renderer::count_badge( $this->cart_count() );
+		$fragments['span.donation-panel-sc__count'] = Side_Cart_Renderer::count_badge( $this->cart_count() );
 		return $fragments;
 	}
 

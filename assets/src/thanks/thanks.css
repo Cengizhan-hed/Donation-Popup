@@ -1,50 +1,50 @@
 /* Donation Panel — teşekkür ekranı (onaylı tasarım Tesekkur.dc.html). Mantıksal özellikler: RTL güvenli. */
-.dp-thanks { box-sizing: border-box; max-inline-size: 560px; margin-inline: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 18px; background: var(--dpx-warm); border-radius: var(--dpx-r-card); color: var(--dp-color-text); }
-.dp-thanks__hero { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-block-start: 16px; text-align: center; }
-.dp-thanks__ring { display: grid; place-items: center; inline-size: 88px; block-size: 88px; border-radius: 50%; background: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); box-shadow: 0 0 0 10px color-mix(in oklab, var(--dp-color-primary) 10%, transparent), 0 0 0 22px color-mix(in oklab, var(--dp-color-primary) 5%, transparent); animation: dp-thanks-pop .6s var(--dp-ease-spring, ease) both; }
-.dp-thanks__ring svg { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-.dp-thanks__tick { stroke-dasharray: 80; stroke-dashoffset: 80; animation: dp-thanks-draw .6s var(--dp-ease-out, ease) .35s forwards; }
-.dp-thanks .dp-thanks__title { margin: 14px 0 0; font-size: 1.625rem; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; }
-.dp-thanks .dp-thanks__sub { margin: 0; max-inline-size: 36ch; font-size: .9375rem; line-height: 1.5; color: var(--dp-color-text-muted); }
-.dp-thanks__card { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: var(--dpx-card); border-radius: var(--dpx-r-card); text-align: start; }
-.dp-thanks__row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; font-size: .875rem; }
-.dp-thanks__label { color: var(--dpx-muted); }
-.dp-thanks__project { min-inline-size: 0; overflow-wrap: anywhere; font-weight: 700; text-align: end; }
-.dp-thanks__amount { font-weight: 800; white-space: nowrap; }
-.dp-thanks__order { font-weight: 600; }
-.dp-thanks__row--total { padding-block-start: 12px; border-block-start: 1px solid var(--dpx-line); }
-.dp-thanks .dp-impact { margin: 0; }
-.dp-thanks__tax { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--dpx-ok-bg); color: var(--dpx-ok); font-size: .8125rem; font-weight: 600; }
-.dp-thanks__divider { block-size: 1px; background: var(--dpx-line); }
-.dp-thanks__impactbar { display: flex; flex-direction: column; gap: 8px; }
-.dp-thanks__row--bar { font-size: .8125rem; }
-.dp-thanks__barlabel { font-weight: 600; color: var(--dp-color-text); }
-.dp-thanks__barvalue { font-weight: 700; color: var(--dp-color-primary-strong); }
-.dp-thanks__promo { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--dpx-card); border-radius: var(--dpx-r-card); color: inherit; text-decoration: none; min-block-size: 44px; }
-.dp-thanks__promo:hover { color: inherit; box-shadow: var(--dpx-shadow-card); }
-.dp-thanks__promo-ico { display: grid; place-items: center; flex: none; inline-size: 44px; block-size: 44px; border-radius: 12px; background: var(--dpx-soft); color: var(--dp-color-primary-strong); }
-.dp-thanks__promo-ico .dpx-ico { inline-size: 22px; block-size: 22px; }
-.dp-thanks__promo-text { display: flex; flex: 1; flex-direction: column; gap: 2px; min-inline-size: 0; }
-.dp-thanks__promo-text b { font-size: .875rem; font-weight: 700; }
-.dp-thanks__promo-text span { font-size: .78rem; color: var(--dpx-muted); }
-.dp-thanks__actions { display: flex; flex-direction: column; gap: 10px; margin-block-start: 6px; }
-.dp-thanks__actions .dpx-btn { inline-size: 100%; }
-.dp-thanks__toast:not(.dp-sr) { margin: 0; font-size: .875rem; color: var(--dpx-muted); text-align: center; }
-@media (min-width: 640px) { .dp-thanks { padding: 32px 28px; } .dp-thanks__actions { flex-direction: row; } .dp-thanks__actions .dpx-btn { flex: 1; } }
+.donation-panel-thanks { box-sizing: border-box; max-inline-size: 560px; margin-inline: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 18px; background: var(--dpx-warm); border-radius: var(--dpx-r-card); color: var(--dp-color-text); }
+.donation-panel-thanks__hero { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-block-start: 16px; text-align: center; }
+.donation-panel-thanks__ring { display: grid; place-items: center; inline-size: 88px; block-size: 88px; border-radius: 50%; background: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); box-shadow: 0 0 0 10px color-mix(in oklab, var(--dp-color-primary) 10%, transparent), 0 0 0 22px color-mix(in oklab, var(--dp-color-primary) 5%, transparent); animation: dp-thanks-pop .6s var(--dp-ease-spring, ease) both; }
+.donation-panel-thanks__ring svg { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.donation-panel-thanks__tick { stroke-dasharray: 80; stroke-dashoffset: 80; animation: dp-thanks-draw .6s var(--dp-ease-out, ease) .35s forwards; }
+.donation-panel-thanks .donation-panel-thanks__title { margin: 14px 0 0; font-size: 1.625rem; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; }
+.donation-panel-thanks .donation-panel-thanks__sub { margin: 0; max-inline-size: 36ch; font-size: .9375rem; line-height: 1.5; color: var(--dp-color-text-muted); }
+.donation-panel-thanks__card { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: var(--dpx-card); border-radius: var(--dpx-r-card); text-align: start; }
+.donation-panel-thanks__row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; font-size: .875rem; }
+.donation-panel-thanks__label { color: var(--dpx-muted); }
+.donation-panel-thanks__project { min-inline-size: 0; overflow-wrap: anywhere; font-weight: 700; text-align: end; }
+.donation-panel-thanks__amount { font-weight: 800; white-space: nowrap; }
+.donation-panel-thanks__order { font-weight: 600; }
+.donation-panel-thanks__row--total { padding-block-start: 12px; border-block-start: 1px solid var(--dpx-line); }
+.donation-panel-thanks .donation-panel-impact { margin: 0; }
+.donation-panel-thanks__tax { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--dpx-ok-bg); color: var(--dpx-ok); font-size: .8125rem; font-weight: 600; }
+.donation-panel-thanks__divider { block-size: 1px; background: var(--dpx-line); }
+.donation-panel-thanks__impactbar { display: flex; flex-direction: column; gap: 8px; }
+.donation-panel-thanks__row--bar { font-size: .8125rem; }
+.donation-panel-thanks__barlabel { font-weight: 600; color: var(--dp-color-text); }
+.donation-panel-thanks__barvalue { font-weight: 700; color: var(--dp-color-primary-strong); }
+.donation-panel-thanks__promo { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--dpx-card); border-radius: var(--dpx-r-card); color: inherit; text-decoration: none; min-block-size: 44px; }
+.donation-panel-thanks__promo:hover { color: inherit; box-shadow: var(--dpx-shadow-card); }
+.donation-panel-thanks__promo-ico { display: grid; place-items: center; flex: none; inline-size: 44px; block-size: 44px; border-radius: 12px; background: var(--dpx-soft); color: var(--dp-color-primary-strong); }
+.donation-panel-thanks__promo-ico .dpx-ico { inline-size: 22px; block-size: 22px; }
+.donation-panel-thanks__promo-text { display: flex; flex: 1; flex-direction: column; gap: 2px; min-inline-size: 0; }
+.donation-panel-thanks__promo-text b { font-size: .875rem; font-weight: 700; }
+.donation-panel-thanks__promo-text span { font-size: .78rem; color: var(--dpx-muted); }
+.donation-panel-thanks__actions { display: flex; flex-direction: column; gap: 10px; margin-block-start: 6px; }
+.donation-panel-thanks__actions .dpx-btn { inline-size: 100%; }
+.donation-panel-thanks__toast:not(.donation-panel-sr) { margin: 0; font-size: .875rem; color: var(--dpx-muted); text-align: center; }
+@media (min-width: 640px) { .donation-panel-thanks { padding: 32px 28px; } .donation-panel-thanks__actions { flex-direction: row; } .donation-panel-thanks__actions .dpx-btn { flex: 1; } }
 
-.dp-thanks-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 99999; }
-.dp-thanks-confetti i { position: absolute; inset-block-start: 0; inset-inline-start: var(--left); inline-size: var(--w); block-size: var(--h); border-radius: 2px; background: var(--dp-color-primary); box-shadow: 0 0 0 1px rgb(0 0 0 / .06); animation: dp-thanks-confetti var(--dur) var(--dp-ease-out) var(--delay) both; }
-.dp-thanks-confetti i[data-dp-round="1"] { border-radius: 50%; }
-.dp-thanks-confetti i[data-dp-tone="1"] { background: var(--dp-color-gold); }
-.dp-thanks-confetti i[data-dp-tone="2"] { background: var(--dp-color-primary-soft); }
-.dp-thanks-confetti i[data-dp-tone="3"] { background: #fff; }
+.donation-panel-thanks-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 99999; }
+.donation-panel-thanks-confetti i { position: absolute; inset-block-start: 0; inset-inline-start: var(--left); inline-size: var(--w); block-size: var(--h); border-radius: 2px; background: var(--dp-color-primary); box-shadow: 0 0 0 1px rgb(0 0 0 / .06); animation: dp-thanks-confetti var(--dur) var(--dp-ease-out) var(--delay) both; }
+.donation-panel-thanks-confetti i[data-dp-round="1"] { border-radius: 50%; }
+.donation-panel-thanks-confetti i[data-dp-tone="1"] { background: var(--dp-color-gold); }
+.donation-panel-thanks-confetti i[data-dp-tone="2"] { background: var(--dp-color-primary-soft); }
+.donation-panel-thanks-confetti i[data-dp-tone="3"] { background: #fff; }
 
 @keyframes dp-thanks-pop { 0% { transform: scale(0); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
 @keyframes dp-thanks-draw { to { stroke-dashoffset: 0; } }
 @keyframes dp-thanks-confetti { 0% { transform: translate3d(0, -10vh, 0) rotate(0); opacity: 1; } 100% { transform: translate3d(var(--x), 70vh, 0) rotate(var(--r)); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .dp-thanks__ring { animation: none; }
-  .dp-thanks__tick { animation: none; stroke-dashoffset: 0; }
-  :root .dp.dp .dp-thanks-confetti { display: none; }
+  .donation-panel-thanks__ring { animation: none; }
+  .donation-panel-thanks__tick { animation: none; stroke-dashoffset: 0; }
+  :root .donation-panel.donation-panel .donation-panel-thanks-confetti { display: none; }
 }

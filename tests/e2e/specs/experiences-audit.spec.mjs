@@ -30,10 +30,10 @@ function measure(root) {
   const rootRect = root.getBoundingClientRect();
 
   root.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea, select').forEach((el) => {
-    if (!visible(el) && !el.classList.contains('dp-phone__select')) {
+    if (!visible(el) && !el.classList.contains('donation-panel-phone__select')) {
       return;
     }
-    if (el.classList.contains('dp-phone__select')) {
+    if (el.classList.contains('donation-panel-phone__select')) {
       return; // Saydam seçici: görünür çerçevesi yok (kapsayıcı çizer).
     }
     // Aynı öğeden kökün içindeki en yakın çerçeveli atalara kadar çerçeve sayısı: 1'den fazla = iç içe çerçeve.
@@ -42,7 +42,7 @@ function measure(root) {
       if (hasFrame(n)) {
         frames += 1;
       }
-      if (n.matches('.dp-phone, .dp-custom, .dp-field')) {
+      if (n.matches('.donation-panel-phone, .donation-panel-custom, .donation-panel-field')) {
         break;
       }
     }
@@ -51,7 +51,7 @@ function measure(root) {
     }
     const r = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
-    const isBare = el.matches('.dp-custom__in, .dp-phone__input');
+    const isBare = el.matches('.donation-panel-custom__in, .donation-panel-phone__input');
     if (!isBare && el.tagName !== 'TEXTAREA' && (r.height < 49.5 || r.height > 56.5)) {
       out.heights.push(`${label(el)} h=${r.height.toFixed(1)}`);
     }
@@ -64,12 +64,12 @@ function measure(root) {
   });
 
   root.querySelectorAll('*').forEach((el) => {
-    if (!visible(el) || el.closest('.dp-sr, [aria-hidden="true"]') || el.matches('.dp-sr, svg, path, use')) {
+    if (!visible(el) || el.closest('.donation-panel-sr, [aria-hidden="true"]') || el.matches('.donation-panel-sr, svg, path, use')) {
       return;
     }
     const r = el.getBoundingClientRect();
     if (r.right > rootRect.right + 1.5 || r.left < rootRect.left - 1.5) {
-      if (!el.closest('[data-dp-handle], .dp-confetti, [class*="toast"]')) {
+      if (!el.closest('[data-dp-handle], .donation-panel-confetti, [class*="toast"]')) {
         out.overflow.push(`${label(el)} dx=${Math.max(r.right - rootRect.right, rootRect.left - r.left).toFixed(1)}`);
       }
     }
@@ -135,7 +135,7 @@ for (const kind of ['popup', 'inline']) {
       await field.focus();
       const ring = await field.evaluate((el) => {
         const own = getComputedStyle(el);
-        const wrap = el.closest('.dp-phone, .dp-custom');
+        const wrap = el.closest('.donation-panel-phone, .donation-panel-custom');
         const target = wrap ? getComputedStyle(wrap) : own;
         const shadow = target.boxShadow !== 'none' && /\d/.test(target.boxShadow);
         const outline = parseFloat(own.outlineWidth) > 0 && own.outlineStyle !== 'none' && !/rgba\(\s*0,\s*0,\s*0,\s*0\)|transparent/.test(own.outlineColor);

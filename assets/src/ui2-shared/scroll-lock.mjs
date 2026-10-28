@@ -52,7 +52,7 @@ function apply() {
 
   // Sınıflar: sahiplerin kullandığı sınıfların birleşimi.
   const wanted = new Set(Array.from(s.owners.values()).map((o) => o.className).filter(Boolean));
-  ['dp-lock', 'dp-sc-lock', 'dp-ac-lock'].forEach((name) => {
+  ['donation-panel-lock', 'donation-panel-sc-lock', 'donation-panel-ac-lock'].forEach((name) => {
     if (wanted.has(name)) {
       html.classList.add(name);
     } else {
@@ -97,7 +97,7 @@ function apply() {
  *
  * @param {string} owner Benzersiz sahip kimliği.
  * @param {Element} container Katmanın kök öğesi (inert dışı kalır).
- * @param {string} className Kilit sınıfı (dp-lock | dp-sc-lock | dp-ac-lock).
+ * @param {string} className Kilit sınıfı (donation-panel-lock | donation-panel-sc-lock | donation-panel-ac-lock).
  */
 export function lockPage(owner, container, className) {
   const s = state();

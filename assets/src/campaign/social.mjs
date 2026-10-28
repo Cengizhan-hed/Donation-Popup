@@ -9,20 +9,20 @@ import { getJson } from './rest.mjs';
  */
 export function buildRow(item, anon) {
   const row = document.createElement('li');
-  row.className = 'dp-list__row is-new';
+  row.className = 'donation-panel-list__row is-new';
   const avatar = document.createElement('span');
-  avatar.className = 'dp-avatar';
+  avatar.className = 'donation-panel-avatar';
   avatar.setAttribute('aria-hidden', 'true');
   avatar.textContent = item.name ? Array.from(item.name)[0] : '♡';
   const text = document.createElement('div');
-  text.className = 'dp-list__t';
+  text.className = 'donation-panel-list__t';
   const name = document.createElement('b');
   name.textContent = item.name || anon;
   const ago = document.createElement('small');
   ago.textContent = item.ago || '';
   text.append(name, ago);
   const amount = document.createElement('span');
-  amount.className = 'dp-num';
+  amount.className = 'donation-panel-num';
   amount.textContent = item.label || '';
   row.append(avatar, text, amount);
   return row;

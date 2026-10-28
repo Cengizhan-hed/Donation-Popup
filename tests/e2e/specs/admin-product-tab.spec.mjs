@@ -91,7 +91,7 @@ test('bağış türüne göre yalnız ilgili alanlar görünür', async ({ page 
   await expect(page.locator('#wdp_progress_bar_limit')).toBeVisible();
   await expect(page.locator('#wdp_min_custom_price')).toBeVisible();
   await expect(page.locator('#wdp_max_shares')).toBeHidden();
-  await expect(page.locator(`${PANEL} .dp-ptab__totals`)).toBeVisible();
+  await expect(page.locator(`${PANEL} .donation-panel-ptab__totals`)).toBeVisible();
   await pick('shares');
   await expect(page.locator('#wdp_max_shares')).toBeVisible();
   await expect(page.locator('#wdp_progress_bar_limit')).toBeHidden();

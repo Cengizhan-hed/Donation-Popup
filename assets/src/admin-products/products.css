@@ -2,7 +2,7 @@
  * Ürün düzenleme "Donation" sekmesi: WooCommerce'in kendi panel görünümü üzerine sade, gruplu yerleşim.
  * Renkler yönetici arayüzü (WordPress renk şeması) ile uyumludur; mantıksal özellikler RTL'yi bozmaz.
  */
-.dp-ptab {
+.donation-panel-ptab {
   --dp-ptab-brand: var(--wp-admin-theme-color, #2271b1);
   --dp-ptab-ink: #1d2327;
   --dp-ptab-muted: #50575e;
@@ -14,14 +14,14 @@
   --dp-ptab-radius: 12px;
 }
 
-.dp-ptab__block,
-.dp-ptab__sections,
-.dp-ptab__shortcode {
+.donation-panel-ptab__block,
+.donation-panel-ptab__sections,
+.donation-panel-ptab__shortcode {
   padding-block: 12px;
   padding-inline: 12px;
 }
 
-.dp-ptab__heading {
+.donation-panel-ptab__heading {
   margin: 0 0 4px;
   padding: 0;
   font-size: 14px;
@@ -29,8 +29,8 @@
   color: var(--dp-ptab-ink);
 }
 
-.dp-ptab__lead,
-.dp-ptab__note {
+.donation-panel-ptab__lead,
+.donation-panel-ptab__note {
   margin: 0 0 10px;
   padding: 0;
   color: var(--dp-ptab-muted);
@@ -38,23 +38,23 @@
   line-height: 1.5;
 }
 
-.dp-ptab__note--warn {
+.donation-panel-ptab__note--warn {
   color: var(--dp-ptab-warn);
 }
 
-.dp-ptab__types {
+.donation-panel-ptab__types {
   border: 0;
   margin: 0;
   min-inline-size: 0;
 }
 
-.dp-ptab__grid {
+.donation-panel-ptab__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 10px;
 }
 
-.dp-ptab__card {
+.donation-panel-ptab__card {
   position: relative;
   display: flex;
   align-items: flex-start;
@@ -70,48 +70,48 @@
   margin: 0;
 }
 
-.dp-ptab__card:focus-within {
+.donation-panel-ptab__card:focus-within {
   outline: 2px solid var(--dp-ptab-brand);
   outline-offset: 1px;
 }
 
-.dp-ptab__card.is-selected {
+.donation-panel-ptab__card.is-selected {
   border-color: var(--dp-ptab-brand);
   background: var(--dp-ptab-sel);
 }
 
-.dp-ptab__card-input {
+.donation-panel-ptab__card-input {
   margin: 3px 0 0;
   flex: none;
 }
 
-.dp-ptab__card-icon {
+.donation-panel-ptab__card-icon {
   flex: none;
   color: var(--dp-ptab-brand);
 }
 
-.dp-ptab__card-text {
+.donation-panel-ptab__card-text {
   display: grid;
   gap: 2px;
   min-inline-size: 0;
 }
 
-.dp-ptab__card-title {
+.donation-panel-ptab__card-title {
   font-weight: 600;
   color: var(--dp-ptab-ink);
 }
 
-.dp-ptab__card-desc {
+.donation-panel-ptab__card-desc {
   font-size: 12px;
   line-height: 1.4;
   color: var(--dp-ptab-muted);
 }
 
-.dp-ptab__scope[hidden] {
+.donation-panel-ptab__scope[hidden] {
   display: none;
 }
 
-.dp-ptab__totals {
+.donation-panel-ptab__totals {
   margin: 8px 12px 12px;
   padding: 14px;
   border: 1px solid var(--dp-ptab-line);
@@ -119,7 +119,7 @@
   background: var(--dp-ptab-soft);
 }
 
-.dp-ptab__totals-title {
+.donation-panel-ptab__totals-title {
   margin: 0 0 2px;
   padding: 0;
   font-size: 12px;
@@ -128,58 +128,58 @@
   color: var(--dp-ptab-muted);
 }
 
-.dp-ptab__totals-main {
+.donation-panel-ptab__totals-main {
   margin: 0 0 8px;
   padding: 0;
   font-size: 18px;
   font-variant-numeric: tabular-nums;
 }
 
-.dp-ptab__totals-main span {
+.donation-panel-ptab__totals-main span {
   color: var(--dp-ptab-muted);
   font-size: 14px;
 }
 
-.dp-ptab__bar {
+.donation-panel-ptab__bar {
   block-size: 8px;
   border-radius: 999px;
   background: #e5e7ea;
   overflow: hidden;
 }
 
-.dp-ptab__bar > span {
+.donation-panel-ptab__bar > span {
   display: block;
   block-size: 100%;
   background: var(--dp-ptab-ok);
   border-radius: 999px;
 }
 
-.dp-ptab__facts {
+.donation-panel-ptab__facts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px 16px;
   margin: 12px 0 8px;
 }
 
-.dp-ptab__facts dt {
+.donation-panel-ptab__facts dt {
   font-size: 12px;
   color: var(--dp-ptab-muted);
 }
 
-.dp-ptab__facts dd {
+.donation-panel-ptab__facts dd {
   margin: 0;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
-.dp-ptab__section {
+.donation-panel-ptab__section {
   margin-block-end: 8px;
   border: 1px solid var(--dp-ptab-line);
   border-radius: var(--dp-ptab-radius);
   background: #fff;
 }
 
-.dp-ptab__summary {
+.donation-panel-ptab__summary {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -189,35 +189,35 @@
   cursor: pointer;
 }
 
-.dp-ptab__title {
+.donation-panel-ptab__title {
   font-weight: 600;
   color: var(--dp-ptab-ink);
 }
 
-.dp-ptab__hint {
+.donation-panel-ptab__hint {
   font-size: 12px;
   color: var(--dp-ptab-muted);
 }
 
-.dp-ptab__body {
+.donation-panel-ptab__body {
   padding-block: 4px 10px;
 }
 
-.dp-ptab__shortcode-row {
+.donation-panel-ptab__shortcode-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.dp-ptab__shortcode-row select,
-.dp-ptab__shortcode-row input,
-.dp-ptab__shortcode-row .button {
+.donation-panel-ptab__shortcode-row select,
+.donation-panel-ptab__shortcode-row input,
+.donation-panel-ptab__shortcode-row .button {
   min-block-size: 36px;
   margin: 0;
 }
 
-.dp-ptab__shortcode-row input {
+.donation-panel-ptab__shortcode-row input {
   flex: 1 1 260px;
   float: none;
   width: auto;
@@ -225,27 +225,27 @@
 
 /* Telefonda: WooCommerce'in dar sütun düzenini tek sütuna çevirir, dokunma alanı ≥44 px. */
 @media (max-width: 782px) {
-  .dp-ptab .form-field input[type='text'],
-  .dp-ptab .form-field input[type='number'],
-  .dp-ptab .form-field select,
-  .dp-ptab .form-field textarea {
+  .donation-panel-ptab .form-field input[type='text'],
+  .donation-panel-ptab .form-field input[type='number'],
+  .donation-panel-ptab .form-field select,
+  .donation-panel-ptab .form-field textarea {
     width: 100%;
     min-block-size: 44px;
   }
 
-  .dp-ptab__shortcode-row select,
-  .dp-ptab__shortcode-row input,
-  .dp-ptab__shortcode-row .button {
+  .donation-panel-ptab__shortcode-row select,
+  .donation-panel-ptab__shortcode-row input,
+  .donation-panel-ptab__shortcode-row .button {
     min-block-size: 44px;
   }
 
-  .dp-ptab__card {
+  .donation-panel-ptab__card {
     min-block-size: 56px;
   }
 }
 
 /* WooCommerce'in `.woocommerce_options_panel` kayan/dar sütun kuralları kartları ve bölümleri bozmasın. */
-.woocommerce_options_panel.dp-ptab .dp-ptab__types {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__types {
   float: none;
   width: auto;
   padding: 12px;
@@ -253,20 +253,20 @@
   border: 0;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__types legend {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__types legend {
   float: none;
   width: auto;
   padding: 0;
   margin: 0 0 4px;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__grid {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__grid {
   float: none;
   width: 100%;
   box-sizing: border-box;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__card {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__card {
   float: none;
   clear: none;
   width: auto;
@@ -275,7 +275,7 @@
   padding: 12px;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__card .dp-ptab__card-input {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__card .donation-panel-ptab__card-input {
   float: none;
   width: 16px;
   min-width: 16px;
@@ -283,7 +283,7 @@
   margin: 3px 0 0;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__card .dp-ptab__card-icon {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__card .donation-panel-ptab__card-icon {
   float: none;
   width: 20px;
   height: 20px;
@@ -291,44 +291,44 @@
   margin: 0;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__card-text,
-.woocommerce_options_panel.dp-ptab .dp-ptab__card-title,
-.woocommerce_options_panel.dp-ptab .dp-ptab__card-desc {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__card-text,
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__card-title,
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__card-desc {
   float: none;
   width: auto;
   margin: 0;
   padding: 0;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__sections {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__sections {
   float: none;
   width: auto;
   box-sizing: border-box;
   clear: both;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__section {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__section {
   clear: both;
   overflow: hidden;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__summary {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__summary {
   float: none;
   width: auto;
   margin: 0;
   box-sizing: border-box;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__block,
-.woocommerce_options_panel.dp-ptab .dp-ptab__shortcode {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__block,
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__shortcode {
   clear: both;
   float: none;
   width: auto;
   box-sizing: border-box;
 }
 
-.woocommerce_options_panel.dp-ptab .dp-ptab__note,
-.woocommerce_options_panel.dp-ptab .dp-ptab__lead {
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__note,
+.woocommerce_options_panel.donation-panel-ptab .donation-panel-ptab__lead {
   float: none;
   width: auto;
   padding: 0;

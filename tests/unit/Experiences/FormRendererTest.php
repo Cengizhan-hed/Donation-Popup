@@ -73,9 +73,9 @@ final class FormRendererTest extends TestCase {
 	 */
 	public static function kinds(): array {
 		return array(
-			'popup'        => array( 'popup', 'dp-overlay--modal' ),
-			'side_panel'   => array( 'side_panel', 'dp-overlay--panel' ),
-			'bottom_sheet' => array( 'bottom_sheet', 'dp-overlay--sheet' ),
+			'popup'        => array( 'popup', 'donation-panel-overlay--modal' ),
+			'side_panel'   => array( 'side_panel', 'donation-panel-overlay--panel' ),
+			'bottom_sheet' => array( 'bottom_sheet', 'donation-panel-overlay--sheet' ),
 		);
 	}
 
@@ -103,7 +103,7 @@ final class FormRendererTest extends TestCase {
 		$this->assertStringContainsString( '</template>', $html );
 		$this->assertLessThan( $template_at, (int) strpos( $html, 'data-dp-open' ) );
 		// Açılışta odak başlığa (h2, tabindex -1); tutar seçilmemişken düğme etiketi için ileti var.
-		$this->assertMatchesRegularExpression( '/<h2 class="dp-surface__title"[^>]*tabindex="-1"/', $html );
+		$this->assertMatchesRegularExpression( '/<h2 class="donation-panel-surface__title"[^>]*tabindex="-1"/', $html );
 		$this->assertStringContainsString( 'data-label-choose="', $html );
 		$this->assertStringNotContainsString( 'autofocus', $html );
 	}
@@ -112,7 +112,7 @@ final class FormRendererTest extends TestCase {
 		$html = $this->renderer()->render( $this->model(), 'inline' );
 		$this->assertStringNotContainsString( 'role="dialog"', $html );
 		$this->assertStringNotContainsString( 'data-dp-open', $html );
-		$this->assertStringContainsString( 'dp-inline', $html );
+		$this->assertStringContainsString( 'donation-panel-inline', $html );
 		$this->assertSame( 1, substr_count( $html, 'data-dp-form' ) );
 	}
 

@@ -43,7 +43,7 @@ async function openIfLayer(page, kind) {
   await expect(page.locator('[data-dp-overlay]')).toHaveClass(/is-open/);
 }
 
-const surfaceOf = (page, kind) => (kind === 'inline' ? page.locator('.dp-inline') : page.locator('[data-dp-surface]'));
+const surfaceOf = (page, kind) => (kind === 'inline' ? page.locator('.donation-panel-inline') : page.locator('[data-dp-surface]'));
 
 for (const kind of KINDS) {
   test.describe(`kap: ${kind}`, () => {
@@ -92,15 +92,15 @@ for (const kind of KINDS) {
       await page.waitForTimeout(700); // açılış animasyonu bitsin (ölçek geçişi ölçümü bozar)
       const small = await surfaceOf(page, kind).evaluate((el) => {
         const out = [];
-        el.querySelectorAll('button, [role="radio"], input:not([type="hidden"]), textarea, .dp-check').forEach((node) => {
+        el.querySelectorAll('button, [role="radio"], input:not([type="hidden"]), textarea, .donation-panel-check').forEach((node) => {
           const style = getComputedStyle(node);
-          if (style.visibility === 'hidden' || style.display === 'none' || node.classList.contains('dp-sr')) {
+          if (style.visibility === 'hidden' || style.display === 'none' || node.classList.contains('donation-panel-sr')) {
             return;
           }
-          if (node.closest('.dp-check') && node.tagName === 'INPUT') {
+          if (node.closest('.donation-panel-check') && node.tagName === 'INPUT') {
             return; // satırın kendisi hedef
           }
-          if (node.closest('.dp-seg__item') && node.tagName === 'INPUT') {
+          if (node.closest('.donation-panel-seg__item') && node.tagName === 'INPUT') {
             return;
           }
           const box = node.getBoundingClientRect();
@@ -122,7 +122,7 @@ for (const kind of KINDS) {
       const result = await page.evaluate(async (selector) => {
         // eslint-disable-next-line no-undef
         return axe.run(document.querySelector(selector), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } });
-      }, kind === 'inline' ? '.dp-inline' : '[data-dp-surface]');
+      }, kind === 'inline' ? '.donation-panel-inline' : '[data-dp-surface]');
       const summary = result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`);
       expect(summary).toEqual([]);
     });

@@ -95,7 +95,7 @@ function mount(root) {
     let alert = body.querySelector('[data-dp-sc-error]');
     if (!alert) {
       alert = document.createElement('p');
-      alert.className = 'dp-sc__error';
+      alert.className = 'donation-panel-sc__error';
       alert.setAttribute('role', 'alert');
       alert.setAttribute('data-dp-sc-error', '');
       body.prepend(alert);
@@ -285,7 +285,7 @@ function mount(root) {
     }
     void overlay.offsetWidth;
     overlay.classList.add('is-open');
-    lockPage('side-cart', root, 'dp-sc-lock');
+    lockPage('side-cart', root, 'donation-panel-sc-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
     const first = visibleFocusables()[0];
     (first || surface).focus();
@@ -371,7 +371,7 @@ function mount(root) {
       return;
     }
     if (el === overlay || el.closest('[data-dp-sc-close]')) {
-      const another = Boolean(el.closest('[data-dp-sc-close]')) && Boolean(el.closest('.dp-sc__bar'));
+      const another = Boolean(el.closest('[data-dp-sc-close]')) && Boolean(el.closest('.donation-panel-sc__bar'));
       close();
       if (another) {
         pulseFab();
@@ -397,8 +397,8 @@ function mount(root) {
   });
 
   // Alttan panel: tutamaç/başlıktan aşağı sürükleyerek kapatma.
-  const grip = root.querySelector('.dp-sc__handle');
-  const head = root.querySelector('.dp-sc__head');
+  const grip = root.querySelector('.donation-panel-sc__handle');
+  const head = root.querySelector('.donation-panel-sc__head');
   [grip, head].forEach((zone) => {
     if (!zone) {
       return;

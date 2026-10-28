@@ -32,13 +32,13 @@ export async function initImpact(form) {
     return;
   }
   const line = document.createElement('p');
-  line.className = 'dp-impact';
+  line.className = 'donation-panel-impact';
   line.setAttribute('aria-live', 'polite');
   line.hidden = true;
   holder.appendChild(line);
 
   const symbolNode = form.querySelector('[data-symbol]');
-  const preNode = form.querySelector('.dp-prefixed .pre');
+  const preNode = form.querySelector('.donation-panel-prefixed .pre');
   const symbol = (symbolNode && symbolNode.dataset.symbol) || (preNode && preNode.textContent) || '';
   const decimals = Number(form.dataset.decimals) || 0;
   const locale = document.documentElement.lang || undefined;
