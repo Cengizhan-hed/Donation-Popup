@@ -172,7 +172,9 @@ export function createForm(root, hooks = {}) {
   const paintSteps = () => {
     const last = state.step >= lastStep;
     const pending = amountPending();
-    const multi = sections.length > 1;
+    // Doğrudan bağışta ödeme sayfası son (form dışı) adımdır: göstergede ek çubuk olarak sayılır.
+    const extraSteps = direct ? stepsBar.length - sections.length : 0;
+    const multi = sections.length + extraSteps > 1;
     sections.forEach((section, index) => {
       section.hidden = index !== state.step;
     });
@@ -185,7 +187,7 @@ export function createForm(root, hooks = {}) {
     }
     if (stepText) {
       stepText.hidden = !multi;
-      stepText.textContent = multi ? stepLabel(form.dataset.msgStep, state.step, sections.length, '') : '';
+      stepText.textContent = multi ? stepLabel(form.dataset.msgStep, state.step, sections.length + extraSteps, '') : '';
     }
     if (titleNode) {
       const section = sections[state.step];
@@ -240,7 +242,9 @@ export function createForm(root, hooks = {}) {
         summary.classList.add('is-visible');
         // 429 (hız sınırı) için ayırt edici ileti; diğer hatalar genel iletiyi gösterir.
         summary.textContent =
-          root.dataset.dpFailKind === 'rate' ? root.dataset.dpMsgRate || root.dataset.dpMsgFailed || '' : root.dataset.dpMsgFailed || '';
+          root.dataset.dpFailKind === 'rate'
+            ? root.dataset.dpMsgRate || root.dataset.dpMsgFailed || ''
+            : (direct && form.dataset.msgFailedDirect) || root.dataset.dpMsgFailed || '';
       }
     }
   };

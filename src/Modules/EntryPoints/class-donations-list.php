@@ -33,7 +33,7 @@ class Donations_List {
 	const ASSET_SLUG = 'list';
 
 	/** İşaretleme sürümü: kart/sekme HTML'i değişince önbellek anahtarına girer. */
-	const MARKUP_REV = '12.1';
+	const MARKUP_REV = '12.1.1';
 
 	/** @var bool */
 	private static $invalidation_hooked = false;
@@ -166,9 +166,11 @@ class Donations_List {
 		if ( ! in_array( $button, array( 'panel', 'popup', 'link' ), true ) ) {
 			$button = 'panel';
 		}
-		$heading = isset( $atts['heading_tag'] ) ? strtolower( sanitize_key( (string) $atts['heading_tag'] ) ) : 'h3';
+		// Kart başlıkları varsayılan h2 (eklenti H1 üretmez); listenin kendi başlığı varsa onun altında h3.
+		$heading_default = ( isset( $atts['title'] ) && '' !== trim( (string) $atts['title'] ) ) ? 'h3' : 'h2';
+		$heading         = isset( $atts['heading_tag'] ) ? strtolower( sanitize_key( (string) $atts['heading_tag'] ) ) : $heading_default;
 		if ( ! in_array( $heading, array( 'h2', 'h3', 'h4' ), true ) ) {
-			$heading = 'h3';
+			$heading = $heading_default;
 		}
 
 		$types = array();
@@ -752,20 +754,20 @@ class Donations_List {
 		) . '"';
 		$cta = '<a' . $cta_attrs . '>' . esc_html( $button_text ) . '</a>';
 
-		$image = '';
+		$image     = '';
+		$has_image = false;
 		if ( 'yes' === $atts['show_image'] ) {
 			$thumb_id = $product->get_image_id();
 			$attrs    = array(
 				'alt'      => '',
 				'class'    => 'wdp-card__img',
-				'loading'  => $index <= 3 ? 'eager' : 'lazy',
+				// İlk satır tembel yüklenmez; eklenti LCP için ek bildirim (fetchpriority) yapmaz.
+				'loading'  => $index <= max( 1, (int) $atts['columns'] ) ? 'eager' : 'lazy',
 				'decoding' => 'async',
 			);
-			if ( 1 === $index ) {
-				$attrs['fetchpriority'] = 'high';
-			}
 			if ( $thumb_id && function_exists( 'wp_get_attachment_image' ) ) {
-				$image = wp_get_attachment_image( (int) $thumb_id, $atts['image_size'], false, $attrs );
+				$image     = (string) wp_get_attachment_image( (int) $thumb_id, $atts['image_size'], false, $attrs );
+				$has_image = '' !== $image;
 			}
 		}
 
@@ -792,9 +794,12 @@ class Donations_List {
 		$html    .= '<article class="wdp-card wdp-card--' . $modifier . ' wdp-card--' . esc_attr( $type ) . '">';
 		$media    = '';
 		if ( 'yes' === $atts['show_image'] ) {
-			// Görsel yoksa yer tutucu simge çizilmez: yalnız sakin bir zemin (tasarımdaki gibi).
+			// Görseli olmayan üründe gri kutu yerine markanın açık tonu + satır içi simge.
+			if ( '' === $image ) {
+				$image = self::placeholder_svg();
+			}
 			$badge = $is_campaign ? self::campaign_badge( $id ) : '';
-			$media = '<a class="wdp-card__media" href="' . esc_url( $url ) . '" aria-hidden="true" tabindex="-1">' . $image . $badge . '</a>';
+			$media = '<a class="wdp-card__media' . ( $has_image ? '' : ' wdp-card__media--empty' ) . '" href="' . esc_url( $url ) . '" aria-hidden="true" tabindex="-1">' . $image . $badge . '</a>';
 		}
 
 		if ( $is_campaign ) {
@@ -832,6 +837,15 @@ class Donations_List {
 		 * @param array      $atts    Sanitized atts.
 		 */
 		return (string) apply_filters( 'wdp_donations_card_html', $html, $product, $atts ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- geriye dönük uyumluluk sözleşmesi: eski wdp_ kanca adı değişmez.
+	}
+
+	/**
+	 * Görseli olmayan kartın yer tutucu simgesi (satır içi SVG, istek yok).
+	 *
+	 * @return string
+	 */
+	private static function placeholder_svg() {
+		return '<svg class="wdp-card__ph" viewBox="0 0 24 24" width="40" height="40" aria-hidden="true" focusable="false"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 	}
 
 	/**
