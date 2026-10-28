@@ -136,6 +136,43 @@ function extraQuery(env, profile, extra = {}) {
 /**
  * @param {import('@playwright/test').Locator} shell
  */
+export async function clickFirstVisibleTrigger(page, triggerSel, timeout, kind = '') {
+  // Sayfa/oluşturucu hazır olana dek ilk görünür, döngü dışı adayı bekler (anlık kontrol yarış yaratır).
+  const deadline = Date.now() + timeout;
+  let lastState = 'aday yok';
+  for (;;) {
+    const n = await page.locator(triggerSel).count();
+    const states = [];
+    for (let i = 0; i < n; i += 1) {
+      const btn = page.locator(triggerSel).nth(i);
+      const inLoop = await btn.evaluate(
+        (el, excludeSel) => !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
+        LOOP_EXCLUDE_SEL
+      );
+      if (inLoop) {
+        states.push(`#${i}:dongu-ici`);
+        continue;
+      }
+      if (!(await btn.isVisible())) {
+        states.push(`#${i}:gizli`);
+        continue;
+      }
+      try {
+        await clickShellTrigger(btn, timeout);
+      } catch (e) {
+        throw new Error(
+          `kabuk tetikleyicisi tıklama hatası: locator=${triggerSel} aday=#${i}/${n} gorunur=true kind=${kind} — ${String(e && e.message ? e.message : e).split('\n')[0]}`
+        );
+      }
+      return;
+    }
+    lastState = n ? states.join(',') : 'aday yok';
+    if (Date.now() > deadline) break;
+    await page.waitForTimeout(150);
+  }
+  throw new Error(`kabuk tetikleyicisi tıklanamadı: locator=${triggerSel} adaylar=[${lastState}] kind=${kind}`);
+}
+
 export async function clickAddOrGo(page, shell, timeout) {
   void page;
   await clickSubmit(shell, timeout);
@@ -324,22 +361,7 @@ export async function runRemoteSmokeChecks(ctx) {
     const classified = classifyVisiblePluginEntry(ui);
     if (classified.kind === 'panel' || classified.kind === 'popup') {
       const triggerSel = classified.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-      const n = await page.locator(triggerSel).count();
-      let clicked = false;
-      for (let i = 0; i < n; i += 1) {
-        const btn = page.locator(triggerSel).nth(i);
-        const inLoop = await btn.evaluate(
-          (el, excludeSel) =>
-            !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
-          LOOP_EXCLUDE_SEL
-        );
-        if (inLoop) continue;
-        if (!(await btn.isVisible())) continue;
-        await clickShellTrigger(btn, timeouts.action);
-        clicked = true;
-        break;
-      }
-      if (!clicked) throw new Error('kabuk tetikleyicisi tıklanamadı');
+      await clickFirstVisibleTrigger(page, triggerSel, timeouts.action, classified.kind);
     }
     const shell =
       classified.kind === 'form'
@@ -399,7 +421,7 @@ export async function runRemoteSmokeChecks(ctx) {
     const classAdd = classifyVisiblePluginEntry(uiAdd);
     if (classAdd.kind === 'panel' || classAdd.kind === 'popup') {
       const triggerSel = classAdd.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-      await clickShellTrigger(page.locator(triggerSel).first(), timeouts.action);
+      await clickFirstVisibleTrigger(page, triggerSel, timeouts.action, classAdd.kind);
     }
     const shell =
       classAdd.kind === 'form'
@@ -523,7 +545,7 @@ export async function runRemoteSmokeChecks(ctx) {
     const classAmb = classifyVisiblePluginEntry(uiAmb);
     if (classAmb.kind === 'panel' || classAmb.kind === 'popup') {
       const triggerSel = classAmb.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-      await clickShellTrigger(page.locator(triggerSel).first(), timeouts.action);
+      await clickFirstVisibleTrigger(page, triggerSel, timeouts.action, classAmb.kind);
     }
     const shell =
       classAmb.kind === 'form'

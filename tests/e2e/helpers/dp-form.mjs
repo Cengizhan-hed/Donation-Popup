@@ -78,9 +78,31 @@ export async function advanceToDetails(form, timeout = CHECK_MS) {
   if ((await submitBtn.getAttribute('aria-disabled')) === 'true') {
     await selectAnyAmount(form, timeout);
   }
+  // Form zaten vergi adımında ve o adım bilgiden sonra ise: ana düğme formu gönderir; tıklamadan açık hata ver.
+  const taxNow = form.locator('[data-dp-step="tax_relief"]').first();
+  if (
+    (await isStepShown(taxNow)) &&
+    (await taxNow.evaluate((t, d) => !!d && !(t.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING), await details.elementHandle().catch(() => null)))
+  ) {
+    throw new Error('vergi indirimi adımı bilgi adımından sonra; ilerlemek formu gönderir');
+  }
   await submitBtn.click({ timeout });
   try {
-    await details.waitFor({ state: 'visible', timeout });
+    // Araya isteğe bağlı adım (vergi indirimi / Gift Aid) girebilir: kutu işaretlenmeden "Devam" ile geçilir.
+    const taxStep = form.locator('[data-dp-step="tax_relief"]').first();
+    const deadline = Date.now() + timeout;
+    while (!(await isStepShown(details)) && Date.now() < deadline) {
+      if ((await isStepShown(taxStep)) && (await taxStep.isVisible())) {
+        // Yalnız vergi adımı bilgi adımından ÖNCE geliyorsa "Devam" güvenlidir; sonra geliyorsa ana düğme son adımda
+        // formu gönderir (bilgi adımına geri dönülemez) → açık hata.
+        const taxBeforeDetails = await taxStep.evaluate((t, d) => !!d && !!(t.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING), await details.elementHandle());
+        if (!taxBeforeDetails) throw new Error('vergi indirimi adımı bilgi adımından sonra; ilerlemek formu gönderir');
+        await submitBtn.click({ timeout });
+      } else {
+        await form.page().waitForTimeout(100);
+      }
+    }
+    await details.waitFor({ state: 'visible', timeout: Math.max(1000, deadline - Date.now()) });
   } catch (err) {
     // Teşhis: adım/alan durumu (değer yok, yalnız uzunluk) + görünür hata metinleri.
     const state = await form
@@ -228,4 +250,45 @@ export async function advanceToFinalStep(form, timeout = CHECK_MS) {
     }
     if (!after.last && after.sig === before.sig) return;
   }
+}
+
+/**
+ * Aday öğeler arasından ilk GÖRÜNÜR olanı, sayfa/oluşturucu hazır olana dek bekleyerek çözer (anlık kontrol yok).
+ * Zaman aşımında aday sayısı + her adayın neden gizli olduğu `detail` içinde döner.
+ * @param {import('@playwright/test').Locator} candidates
+ * @param {number} [timeout]
+ * @returns {Promise<{ locator: import('@playwright/test').Locator|null, total: number, detail: string }>}
+ */
+export async function waitForVisibleCandidate(candidates, timeout = CHECK_MS) {
+  const deadline = Date.now() + timeout;
+  let total = 0;
+  for (;;) {
+    total = await candidates.count();
+    for (let i = 0; i < total; i += 1) {
+      if (await candidates.nth(i).isVisible()) return { locator: candidates.nth(i), total, detail: '' };
+    }
+    if (Date.now() > deadline) break;
+    await candidates.page().waitForTimeout(100);
+  }
+  const reasons = [];
+  for (let i = 0; i < Math.min(total, 6); i += 1) {
+    const why = await candidates
+      .nth(i)
+      .evaluate((el) => {
+        const cs = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        let hiddenBy = '';
+        for (let a = el.parentElement; a; a = a.parentElement) {
+          const s = getComputedStyle(a);
+          if (s.display === 'none' || s.visibility === 'hidden' || a.hidden) {
+            hiddenBy = (a.tagName || '').toLowerCase() + (a.className ? '.' + String(a.className).split(' ')[0] : '');
+            break;
+          }
+        }
+        return `display=${cs.display} visibility=${cs.visibility} size=${Math.round(r.width)}x${Math.round(r.height)} ata=${hiddenBy || '-'}`;
+      })
+      .catch((e) => 'okunamadı:' + String(e && e.message ? e.message : e).split('\n')[0]);
+    reasons.push(`#${i}[${why}]`);
+  }
+  return { locator: null, total, detail: total === 0 ? 'aday yok' : `adaylar=${total} hepsi gizli ${reasons.join(' ')}` };
 }
