@@ -8,6 +8,8 @@ import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
 import {
   advanceToDetails,
+  returnToDetails,
+  collectHiddenTriggerDump,
   fillAmountStep,
   fillDonationForm,
   fillShareholders,
@@ -229,6 +231,63 @@ describe('advanceToDetails', () => {
       });
       await assert.rejects(advanceToDetails(formOf(page.locator('body')), 1500), /vergi indirimi adımı bilgi adımından sonra/);
       assert.notEqual(await page.title(), 'submitted');
+    });
+  });
+});
+
+describe('returnToDetails (gönderim hatası sonrası geri dönüş)', () => {
+  const BACK_FLOW = (withBack) => `
+<form data-dp-form novalidate>
+  ${withBack ? '<button type="button" data-dp-back>Back</button>' : ''}
+  <section data-dp-step="amount" hidden><input name="amount" value="50"></section>
+  <section data-dp-step="details" hidden><input name="donation_full_name"></section>
+  <section data-dp-step="tax_relief"><input type="checkbox" name="donation_tax_relief"></section>
+  <button type="submit" data-dp-submit>Continue</button>
+</form>
+<script>
+  const f = document.querySelector('[data-dp-form]');
+  const secs = Array.from(f.querySelectorAll('[data-dp-step]'));
+  const back = f.querySelector('[data-dp-back]');
+  if (back) back.addEventListener('click', () => {
+    const i = secs.findIndex((s) => !s.hidden);
+    if (i > 0) { secs[i].hidden = true; secs[i - 1].hidden = false; }
+  });
+</script>`;
+
+  it('vergi adımı son adımsa geri düğmesiyle bilgi adımına döner', async () => {
+    await withPage(BACK_FLOW(true), async (page) => {
+      assert.equal(await returnToDetails(formOf(page.locator('body')), 2000), 'details');
+      assert.equal(await page.locator('input[name="donation_full_name"]').isVisible(), true);
+    });
+  });
+
+  it('geri düğmesi yoksa locked-step döner (çağıran son adımdaki alanı yoklar)', async () => {
+    await withPage(BACK_FLOW(false), async (page) => {
+      assert.equal(await returnToDetails(formOf(page.locator('body')), 800), 'locked-step');
+    });
+  });
+
+  it('bilgi adımı zaten görünürse hemen details döner', async () => {
+    await withPage(FORM('inline'), async (page) => {
+      const form = formOf(page.locator('[data-dp-exp]').first());
+      await form.evaluate((f) => {
+        f.querySelector('[data-dp-step="amount"]').hidden = true;
+        f.querySelector('[data-dp-step="details"]').hidden = false;
+      });
+      assert.equal(await returnToDetails(form, 800), 'details');
+    });
+  });
+});
+
+describe('collectHiddenTriggerDump', () => {
+  it('ata zinciri, [data-dp-open] sayısı, adres ve başlık döner', async () => {
+    await withPage('<div class="tab-content"><div style="width:0;height:0;overflow:hidden"><button data-dp-open style="display:inline-flex">x</button></div></div>', async (page) => {
+      const d = await collectHiddenTriggerDump(page.locator('[data-dp-open]'));
+      assert.equal(d.openCountAll, 1);
+      assert.ok(Array.isArray(d.chain) && d.chain.length >= 3);
+      assert.ok(d.chain[0].el.startsWith('button'));
+      assert.equal(d.chain[d.chain.length - 1].el, 'body');
+      assert.equal(typeof d.url, 'string');
     });
   });
 });

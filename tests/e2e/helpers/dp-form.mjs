@@ -63,6 +63,35 @@ export async function selectAnyAmount(form, timeout = CHECK_MS) {
 }
 
 /**
+ * Gönderim hatasından sonra formun bulunduğu adımdan bilgi adımına döner. Gift Aid / vergi indirimi adımı
+ * bilgiden SONRA geliyorsa form o adımda kalır; geri düğmesiyle (`[data-dp-back]`) bilgi adımına inilir.
+ * @param {import('@playwright/test').Locator} form
+ * @param {number} [timeout]
+ * @returns {Promise<'details'|'locked-step'>} 'locked-step': bilgi adımına dönülemedi (geri düğmesi yok/gizli).
+ */
+export async function returnToDetails(form, timeout = CHECK_MS) {
+  const details = form.locator(DP_SEL.detailsStep).first();
+  const back = form.locator('[data-dp-back]').first();
+  const deadline = Date.now() + timeout;
+  while (!(await details.isVisible()) && Date.now() < deadline) {
+    if ((await back.count()) > 0 && (await back.isVisible())) {
+      await back.click({ timeout });
+      await form.page().waitForTimeout(50);
+    } else {
+      break;
+    }
+  }
+  if (await details.isVisible()) return 'details';
+  // Geri düğmesi tutar adımında gizlenir: tutar adımındaysak ileri yolla bilgi adımına geç.
+  const amountStep = form.locator('[data-dp-step="amount"]').first();
+  if (await amountStep.isVisible()) {
+    await advanceToDetails(form, timeout);
+    return 'details';
+  }
+  return 'locked-step';
+}
+
+/**
  * Bilgi adımı görünene kadar "Devam"a basar (adımlar tek sayfaysa bir şey yapmaz).
  * @param {import('@playwright/test').Locator} form
  * @param {number} [timeout]
@@ -259,6 +288,34 @@ export async function advanceToFinalStep(form, timeout = CHECK_MS) {
  * @param {number} [timeout]
  * @returns {Promise<{ locator: import('@playwright/test').Locator|null, total: number, detail: string }>}
  */
+/**
+ * Görünmeyen tetikleyici teşhisi (yalnız yapı/ölçü; kimlik, çerez, değer yok): sayfa adresi, başlık, tüm `[data-dp-open]`
+ * sayısı, ilk adayın body'ye kadar ata zinciri (tag.class, display, visibility, getBoundingClientRect).
+ * @param {import('@playwright/test').Locator} candidates
+ * @returns {Promise<object>}
+ */
+export async function collectHiddenTriggerDump(candidates) {
+  const page = candidates.page();
+  return page
+    .evaluate(() => {
+      const label = (el) => el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).slice(0, 3).join('.') : '');
+      const box = (el) => {
+        const r = el.getBoundingClientRect();
+        return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) };
+      };
+      const all = Array.from(document.querySelectorAll('[data-dp-open]'));
+      const first = all[0] || null;
+      const chain = [];
+      for (let el = first; el; el = el.parentElement) {
+        const cs = getComputedStyle(el);
+        chain.push({ el: label(el), display: cs.display, visibility: cs.visibility, opacity: cs.opacity, hidden: !!el.hidden, rect: box(el) });
+        if (el === document.body) break;
+      }
+      return { url: location.href, title: document.title, openCountAll: all.length, chain };
+    })
+    .catch((e) => ({ diag: String(e && e.message ? e.message : e).split('\n')[0] }));
+}
+
 export async function waitForVisibleCandidate(candidates, timeout = CHECK_MS) {
   const deadline = Date.now() + timeout;
   let total = 0;
