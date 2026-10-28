@@ -58,6 +58,9 @@ async function main() {
   fs.mkdirSync(path.join(wpDir, 'wp-content/mu-plugins'), { recursive: true });
   fs.copyFileSync(SIM_SRC, path.join(wpDir, 'wp-content/mu-plugins/wdp-exp-sim.php'));
   fs.copyFileSync(SC_SIM_SRC, path.join(wpDir, 'wp-content/mu-plugins/wdp-sc-sim.php'));
+  if (flag(argv, '--spec') === 'cache-contract') {
+    fs.copyFileSync(path.join(__dirname, 'helpers/wdp-cc-sim.php'), path.join(wpDir, 'wp-content/mu-plugins/wdp-cc-sim.php'));
+  }
   restoreSqlite(wpDir, snap);
   const gateways = matrixEval(wpDir, ['enable-offline-gateways']);
   if (gateways && gateways.ok === false) {
