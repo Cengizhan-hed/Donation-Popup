@@ -13,10 +13,11 @@
 .dp-sc__count { position: absolute; inset-block-start: 0; inset-inline-end: -2px; min-inline-size: 20px; block-size: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--dpx-accent); color: var(--dpx-on-accent); font-size: 12px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* Katman */
-.dp-sc__overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay, 99990); display: grid; justify-items: end; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; transition: opacity 260ms var(--dp-ease-out), visibility 0s linear 260ms; }
+.dp-sc__overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay, 99990); display: grid; justify-items: end; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 0; border: 0; color: inherit; overflow: hidden; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; transition: opacity 260ms var(--dp-ease-out), visibility 0s linear 260ms; }
+/* <dialog> üst katmanda (başka eklentinin yüzen öğeleri üste çıkamaz); kapalıyken hiç yerleşmez. */
+.dp-sc__overlay:not([open]) { display: none; }
+.dp-sc__overlay::backdrop { background: transparent; }
 .dp-sc__overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
-/* Kapalıyken içerik hiç yerleşmez: tarayıcı gizli çekmecenin yazı tipi dosyalarını (ör. kalın başlık) boşuna indirmez, sayfa LCP'si gecikmez. */
-.dp-sc__overlay:not(.is-open) .dp-sc__surface { content-visibility: hidden; contain-intrinsic-size: auto 1px; transition: transform 420ms var(--dp-ease-out), content-visibility 420ms allow-discrete; }
 .dp-sc__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 356px); block-size: 100%; max-block-size: 100%; overflow: hidden; background: var(--dpx-card); color: var(--dp-color-text); box-shadow: -12px 0 40px rgb(10 20 40 / .3); transform: translateX(calc(100% * var(--sc-dir, 1))); transition: transform 420ms var(--dp-ease-out); outline: none; }
 [dir="rtl"] .dp-sc__surface { --sc-dir: -1; box-shadow: 12px 0 40px rgb(10 20 40 / .3); }
 .dp-sc__overlay.is-open .dp-sc__surface { transform: none; }
@@ -93,3 +94,16 @@
 }
 @media (prefers-reduced-motion: reduce) { .dp-sc__overlay, .dp-sc__surface { transition-duration: 1ms; } }
 html.dp-sc-lock { overflow: hidden; }
+
+/* Yüzen sepet düğmesi: sağ altta, güvenli alan içinde; sepet boşken `hidden` (istemci Woo sepet çerezine bakar).
+ * Başka bir yüzen öğeyle çakışırsa --dp-sc-fab-offset ile yukarı kaydırılabilir. */
+.dp-sc__fab { position: fixed; inset-block-end: calc(max(16px, env(safe-area-inset-bottom)) + var(--dp-sc-fab-offset, 0px)); inset-inline-end: max(16px, env(safe-area-inset-right)); z-index: var(--dp-z-sticky, 10); display: inline-grid; place-items: center; inline-size: 56px; block-size: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); box-shadow: 0 6px 20px rgb(16 24 40 / .28); font: inherit; cursor: pointer; transition: transform 160ms var(--dp-ease-spring); }
+.dp-sc__fab[hidden] { display: none; }
+.dp-sc__fab:active { transform: scale(.92); }
+.dp-sc__fab .dp-sc__ico { inline-size: 26px; block-size: 26px; }
+.dp-sc__fab .dp-sc__count { inset-block-start: -2px; inset-inline-end: -2px; background: var(--dpx-accent); }
+.dp-sc__fab.is-entering { animation: dp-sc-fab-in 420ms var(--dp-ease-spring) both; }
+.dp-sc__fab.is-pulse { animation: dp-sc-fab-pulse 700ms var(--dp-ease-spring) 2; }
+@keyframes dp-sc-fab-in { from { opacity: 0; transform: translateY(24px) scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes dp-sc-fab-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .dp-sc__fab { transition: none; animation: none; } .dp-sc__fab.is-entering, .dp-sc__fab.is-pulse { animation: none; } }

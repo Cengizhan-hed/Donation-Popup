@@ -470,6 +470,14 @@ final class Field_Registry {
 			'type'    => 'switch',
 		);
 
+		$f['side_cart.floating'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'cart',
+			'label'   => __( 'Floating basket button', 'woo-donation-popup' ),
+			'help'    => __( 'A round basket button in the bottom corner. It appears only after a gift is added and disappears when the basket is empty. Switch it off if your theme already shows its own cart icon.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+
 		$f['form.privacy_notice'] = array(
 			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
 			'section' => 'notice',

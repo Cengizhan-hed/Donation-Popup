@@ -127,7 +127,7 @@ final class Form_Context {
 			'fields'         => $shares ? array() : self::fields( $legacy ),
 			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
 			// Doğrudan (sepetsiz) bağış: gönderim sepete değil siparişe (order-pay) gider.
-			'direct'         => is_object( $product ) && \DonationPanel\WooCommerce\Direct\Direct_Settings::enabled_for( $product ),
+			'direct'         => is_object( $product ) && class_exists( '\DonationPanel\WooCommerce\Direct\Direct_Settings' ) && \DonationPanel\WooCommerce\Direct\Direct_Settings::enabled_for( $product ),
 		);
 
 		// Form altı gizlilik bağlantısı: ayar açıksa ve form kişisel veri alanı topluyorsa; adres boşsa WordPress gizlilik sayfası.

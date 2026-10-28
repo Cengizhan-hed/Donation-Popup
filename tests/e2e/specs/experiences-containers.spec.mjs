@@ -151,7 +151,8 @@ test.describe('form çekirdeği (yeni motor)', () => {
     await expect(chips.nth(2)).toHaveAttribute('aria-checked', 'false');
 
     await custom.fill('');
-    await page.locator('[data-dp-submit]').click();
+    // Tutar yokken düğme aria-disabled ("Tutar seçin"); Playwright pasif saydığı için zorla tıklanır (gerçek kullanıcı da dokunabilir).
+    await page.locator('[data-dp-submit]').click({ force: true });
     await expect(page.locator('[data-dp-field="amount"]')).toHaveClass(/has-error/);
     await expect(page.locator('[data-dp-summary]')).toHaveClass(/is-visible/);
     await expect(page.locator('input[name="amount"]')).toBeFocused();

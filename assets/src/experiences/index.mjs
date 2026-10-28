@@ -13,12 +13,13 @@ function mount(root) {
     return;
   }
   root.dataset.dpMounted = '1';
-  createForm(root);
   if (root.dataset.dpKind !== 'inline') {
-    const layer = createLayer(root);
+    // Katman formu ihtiyaçta (yaklaşma/dokunma/ilk açılış) oluşturulur; form o anda bağlanır.
+    const layer = createLayer(root, { onBuild: (built) => createForm(built) });
     // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
     root.addEventListener('dp:added', () => layer && layer.close());
   } else {
+    createForm(root);
     root.dataset.dpPresented = 'inline';
   }
 }

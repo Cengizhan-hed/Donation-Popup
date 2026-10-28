@@ -172,26 +172,39 @@ final class Side_Cart_Renderer {
 	}
 
 	/**
-	 * Çekmece kabuğu (sayfada bir kez, `wp_footer`).
+	 * Yüzen sepet düğmesi (sağ altta; sepet boşken `hidden`, görünürlüğü istemci Woo sepet çerezinden belirler).
+	 *
+	 * @param int $count Kalem sayısı.
+	 * @return string
+	 */
+	public static function floating_button( $count ) {
+		return '<button type="button" class="dp-sc__fab" data-dp-sc-fab hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
+			. self::cart_icon() . '<span class="dp-sc__sr">' . esc_html__( 'Donation basket', 'woo-donation-popup' ) . '</span>' . self::count_badge( $count ) . '</button>';
+	}
+
+	/**
+	 * Çekmece kabuğu (sayfada bir kez, `wp_footer`): HTML <dialog> (üst katman).
 	 *
 	 * @param string                $body_html  `body()` çıktısı.
 	 * @param array<string, string> $attributes Veri öznitelikleri (rest, store, checkout, nonce, mesajlar).
 	 * @param string                $sub        Başlık altı kalem sayısı metni.
+	 * @param string                $floating   Yüzen düğme HTML'i (boşsa yok).
 	 * @return string
 	 */
-	public static function drawer( $body_html, array $attributes, $sub = '' ) {
+	public static function drawer( $body_html, array $attributes, $sub = '', $floating = '' ) {
 		$data = '';
 		foreach ( $attributes as $name => $value ) {
 			$data .= ' data-dp-sc-' . sanitize_key( (string) $name ) . '="' . esc_attr( (string) $value ) . '"';
 		}
 		return '<div class="dp dp-sc" data-dp-sc' . $data . '>'
-			. '<div class="dp-sc__overlay" data-dp-sc-overlay>'
-			. '<div class="dp-sc__surface" id="' . esc_attr( self::DRAWER_ID ) . '" role="dialog" aria-modal="true" aria-labelledby="' . esc_attr( self::DRAWER_ID ) . '-title" tabindex="-1" data-dp-sc-surface>'
+			. $floating
+			. '<dialog class="dp-sc__overlay" id="' . esc_attr( self::DRAWER_ID ) . '" role="dialog" aria-modal="true" aria-labelledby="' . esc_attr( self::DRAWER_ID ) . '-title" data-dp-sc-overlay>'
+			. '<div class="dp-sc__surface" tabindex="-1" data-dp-sc-surface>'
 			. '<div class="dp-sc__handle" aria-hidden="true"></div>'
 			. '<div class="dp-sc__head"><div class="dp-sc__headtext"><h2 class="dp-sc__title" id="' . esc_attr( self::DRAWER_ID ) . '-title">' . esc_html__( 'Your donation basket', 'woo-donation-popup' ) . '</h2>'
 			. '<span class="dp-sc__sub" data-dp-sc-sub>' . esc_html( $sub ) . '</span></div>'
 			. '<button type="button" class="dp-sc__close" data-dp-sc-close aria-label="' . esc_attr__( 'Close basket', 'woo-donation-popup' ) . '"><svg class="dp-sc__ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
 			. '<div class="dp-sc__body" data-dp-sc-body aria-live="polite">' . $body_html . '</div>'
-			. '</div></div></div>';
+			. '</div></dialog></div>';
 	}
 }

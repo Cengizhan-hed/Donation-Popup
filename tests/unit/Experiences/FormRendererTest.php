@@ -91,6 +91,23 @@ final class FormRendererTest extends TestCase {
 		$this->assertStringContainsString( 'data-dp-kind="' . $kind . '"', $html );
 	}
 
+	/**
+	 * @dataProvider kinds
+	 */
+	public function test_layer_html_is_inert_template_with_dialog_and_heading_focus_target( string $kind, string $overlay_class ): void {
+		$html = $this->renderer()->render( $this->model(), $kind );
+		// Katman canlı DOM'da değil, <template> içinde (CLS 0); açılışta <dialog> olarak oluşturulur.
+		$template_at = strpos( $html, '<template data-dp-tpl>' );
+		$this->assertNotFalse( $template_at );
+		$this->assertGreaterThan( $template_at, (int) strpos( $html, '<dialog ' ) );
+		$this->assertStringContainsString( '</template>', $html );
+		$this->assertLessThan( $template_at, (int) strpos( $html, 'data-dp-open' ) );
+		// Açılışta odak başlığa (h2, tabindex -1); tutar seçilmemişken düğme etiketi için ileti var.
+		$this->assertMatchesRegularExpression( '/<h2 class="dp-surface__title"[^>]*tabindex="-1"/', $html );
+		$this->assertStringContainsString( 'data-label-choose="', $html );
+		$this->assertStringNotContainsString( 'autofocus', $html );
+	}
+
 	public function test_inline_container_has_no_dialog_or_trigger(): void {
 		$html = $this->renderer()->render( $this->model(), 'inline' );
 		$this->assertStringNotContainsString( 'role="dialog"', $html );

@@ -222,6 +222,58 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
     expect(errors).toEqual([]);
   });
 
+  test('yüzen düğme: sepet boşken gizli ve istek yok; bağış eklenince belirir, sayfalar arası kalır, "başka bağış ekle" vurgular', async ({ page }) => {
+    const calls = [];
+    page.on('request', (r) => {
+      if (/donation-panel\/v1\/side-cart|wc\/store/.test(r.url())) {
+        calls.push(r.url());
+      }
+    });
+    const errors = await load(page);
+    const fab = page.locator('[data-dp-sc-fab]');
+    await expect(fab).toHaveCount(1);
+    await expect(fab).toBeHidden();
+    // Boş sepet: sayfa yüklendikten sonra boşta bile Store/REST isteği yok.
+    await page.waitForTimeout(2500);
+    expect(calls).toEqual([]);
+
+    await addDonation(page, '&amount=60');
+    await page.goto(q('&p=2'));
+    await expect(fab).toBeVisible({ timeout: 15000 });
+    await expect(fab.locator('[data-dp-sc-count]')).toHaveText('1');
+    await expect(fab).not.toHaveClass(/is-entering/);
+    // Güvenli alan içinde, sağ altta.
+    const box = await fab.boundingBox();
+    const vp = page.viewportSize();
+    expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
+    expect(box.y + box.height).toBeLessThanOrEqual(vp.height);
+    expect(box.width).toBeGreaterThanOrEqual(44);
+
+    // Başka eklentinin yüzen öğesi çekmecenin altında kalır (dialog üst katmanı).
+    await page.evaluate(() => {
+      const fake = document.createElement('div');
+      fake.id = 'fake-float';
+      fake.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none';
+      document.body.appendChild(fake);
+    });
+    await fab.click();
+    await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
+    await page.waitForTimeout(700);
+    const topInDrawer = await page.evaluate(() => {
+      const surface = document.querySelector('[data-dp-sc-surface]');
+      const r = surface.getBoundingClientRect();
+      const el = document.elementFromPoint(r.left + r.width / 2, r.top + 30);
+      return Boolean(el && surface.contains(el));
+    });
+    expect(topInDrawer).toBe(true);
+    expect(await page.locator('[data-dp-sc-overlay]').evaluate((el) => el.matches(':modal'))).toBe(true);
+
+    await page.locator('.dp-sc__bar [data-dp-sc-close]').click();
+    await expect(page.locator('[data-dp-sc-overlay].is-open')).toHaveCount(0);
+    await expect(fab).toHaveClass(/is-pulse/);
+    expect(errors).toEqual([]);
+  });
+
   test('tasarım görüntüsü (yalnız WDP_UI2_SHOTS ile)', async ({ page }, testInfo) => {
     test.skip(!process.env.WDP_UI2_SHOTS, 'yalnız ekran görüntüsü toplama koşusunda');
     await page.goto('/?dp_sc_test=1');

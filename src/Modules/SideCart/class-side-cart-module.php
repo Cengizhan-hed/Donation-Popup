@@ -17,6 +17,7 @@ namespace DonationPanel\Modules\SideCart;
 
 use DonationPanel\Core\Container;
 use DonationPanel\Core\Module_Interface;
+use DonationPanel\Core\Settings;
 use DonationPanel\Frontend\Assets;
 use DonationPanel\Http\Rate_Limiter;
 
@@ -123,7 +124,7 @@ final class Side_Cart_Module implements Module_Interface {
 	 * @return bool
 	 */
 	public function should_load() {
-		$load = ! is_admin() && ( $this->wanted || wp_script_is( Assets::handle( 'experiences' ), 'enqueued' ) );
+		$load = ! is_admin() && ( $this->wanted || wp_script_is( Assets::handle( 'experiences' ), 'enqueued' ) || $this->returning_donor_cart() );
 		if ( $load && function_exists( 'is_cart' ) && function_exists( 'is_checkout' ) && ( is_cart() || is_checkout() ) ) {
 			$load = false;
 		}
@@ -133,6 +134,35 @@ final class Side_Cart_Module implements Module_Interface {
 		 * @param bool $load Varsayılan karar.
 		 */
 		return (bool) apply_filters( 'donation_panel_side_cart_load', $load );
+	}
+
+	/**
+	 * Yüzen düğme ayarı (`side_cart.floating`, varsayılan açık): tema kendi sepet simgesini gösteriyorsa kapatılabilir.
+	 *
+	 * @return bool
+	 */
+	private function floating_enabled() {
+		$enabled = (bool) $this->container->get( Settings::class )->get( 'side_cart.floating', true );
+		/**
+		 * Yüzen yan sepet düğmesi bu istekte gösterilsin mi.
+		 *
+		 * @param bool $enabled Ayara göre karar.
+		 */
+		return (bool) apply_filters( 'donation_panel_side_cart_floating', $enabled );
+	}
+
+	/**
+	 * Yüzey olmayan sayfada bile sepeti dolu bağışçı için düğme gösterilsin mi (sayfalar arası kalır).
+	 * Yalnız WooCommerce'in kendi sepet çerezi varsa ve sepette bağış varsa; çerezi olmayan ziyaretçi için 0 iş.
+	 *
+	 * @return bool
+	 */
+	private function returning_donor_cart() {
+		if ( ! $this->floating_enabled() || empty( $_COOKIE['woocommerce_items_in_cart'] ) ) {
+			return false;
+		}
+		$cart = $this->cart();
+		return $cart && count( Side_Cart_Lines::from_cart( $cart ) ) > 0;
 	}
 
 	/**
@@ -170,7 +200,8 @@ final class Side_Cart_Module implements Module_Interface {
 				'failed'   => __( 'Something went wrong. Please try again.', 'woo-donation-popup' ),
 				'removed'  => __( 'Removed from your basket.', 'woo-donation-popup' ),
 			),
-			$lines ? Side_Cart_Renderer::count_text( count( $lines ) ) : ''
+			$lines ? Side_Cart_Renderer::count_text( count( $lines ) ) : '',
+			$this->floating_enabled() ? Side_Cart_Renderer::floating_button( $this->cart_count() ) : ''
 		);
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Side_Cart_Renderer tüm değerleri kaçışlar.
 	}
