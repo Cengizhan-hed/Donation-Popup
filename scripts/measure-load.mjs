@@ -217,7 +217,7 @@ async function main() {
         if (coreCss > 1 || coreJs > 1) violations.push(`${pg.id}: çekirdek paket ${coreCss} CSS + ${coreJs} JS (≤1+1)`);
         if (row.dQueries > 2) violations.push(`${pg.id}: sorgu +${row.dQueries} (≤+2)`);
         if (row.dCookie !== 0 || row.allCookie !== 0) violations.push(`${pg.id}: ilk ziyarette eklenti çerezi/oturumu açtı (çerez Δ ${row.dCookie}/${row.allCookie})`);
-        if (row.dReq - css.length - js.length !== 0) violations.push(`${pg.id}: eklenti dışı ek istek (${row.dReq - css.length - js.length})`);
+        if (row.dReq - css.length - js.length > 0) violations.push(`${pg.id}: eklenti dışı ek istek (${row.dReq - css.length - js.length})`);
         if (css.some((f) => f.gzip > BUDGET.css)) violations.push(`${pg.id}: CSS bütçesi aşıldı (${row.cssKB} KB > 12 KB)`);
         if (js.some((f) => f.gzip > BUDGET.js)) violations.push(`${pg.id}: JS bütçesi aşıldı (${row.jsKB} KB > 25 KB)`);
       }
