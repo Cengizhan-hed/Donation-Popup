@@ -53,7 +53,7 @@ import {
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks, resolveDonationFillAmount } from './donation-flow.mjs';
-import { waitForVisibleCandidate, advanceToDetails, advanceToFinalStep, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
+import { waitForVisibleCandidate, advanceToDetails, returnToDetails, collectHiddenTriggerDump, advanceToFinalStep, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
 import {
   probeSimilarDonations,
@@ -1259,8 +1259,29 @@ async function runSubmitFaultChecks({ browser, contextOpts, env, productPath, gu
           return;
         }
         const name = form.locator(SEL.donorName).first();
-        // Hata sonrası form tutar adımına dönmüş olabilir (ad alanı gizli): bilgi adımına tutar seçerek geç.
-        if (!(await name.isVisible())) await advanceToDetails(form);
+        // Hata sonrası form tutar ya da (Gift Aid açıkken) son adımda (vergi indirimi) kalabilir; ad alanı gizlidir.
+        // Geri düğmesiyle bilgi adımına dön; dönülemezse son adımdaki yazılabilir alanla kilit açıklığını kanıtla.
+        const where = (await name.isVisible()) ? 'details' : await returnToDetails(form);
+        if (where === 'locked-step') {
+          const probe = form.locator('input:not([type="hidden"]):not([disabled]), textarea:not([disabled])').filter({ visible: true }).first();
+          const kind = (await probe.count()) > 0 ? await probe.evaluate((el) => (el.type === 'checkbox' || el.type === 'radio' ? 'check' : 'text')) : '';
+          let ok = false;
+          if (kind === 'check') {
+            const was = await probe.isChecked();
+            await setChecked(probe, !was);
+            ok = (await probe.isChecked()) === !was;
+          } else if (kind === 'text') {
+            await probe.fill('Fault Unlock');
+            ok = (await probe.inputValue()) === 'Fault Unlock';
+          }
+          if (!ok) {
+            failures.push(makeFailure({ check: 'submit-fault', description: `Hata sonrası son adımda yazılabilir alan yok/yazılamadı (${mode})` }));
+            stats.failed += 1;
+            return;
+          }
+          stats.passed += 1;
+          return;
+        }
         await name.fill('Fault Unlock');
         if ((await name.inputValue()) !== 'Fault Unlock') {
           failures.push(makeFailure({ check: 'submit-fault', description: `Hata sonrası ad alanı yazılamadı (${mode})` }));
@@ -3288,7 +3309,7 @@ export async function captureAll({
    * @param {'popup'|'panel'} mode
    * @param {number} productId
    */
-  async function openShellForMode(page, mode, productId) {
+  async function openShellForMode(page, mode, productId, ctxKind) {
     const kindOf = (loc) =>
       loc
         .evaluate((el) => {
@@ -3334,6 +3355,19 @@ export async function captureAll({
         // Sayfa/oluşturucu hazır olana dek ilk görünür adayı bekle (anlık kontrol yarış yaratır).
         const picked = await waitForVisibleCandidate(anyKind, CHECK_MS);
         if (!picked.locator) {
+          try {
+            const dbgDir = path.join(ROOT, 'build/e2e/debug', String(process.env.WDP_E2E_PROFILE_ID || 'local'));
+            fs.mkdirSync(dbgDir, { recursive: true });
+            const base = `trigger-gorunmez-${mode}-${productId || 0}`;
+            const dump = await collectHiddenTriggerDump(anyKind);
+            fs.writeFileSync(
+              path.join(dbgDir, `${base}.json`),
+              JSON.stringify({ context: ctxKind || 'misafir', mode, productId: productId || 0, detail: picked.detail, ...dump }, null, 2)
+            );
+            await page.screenshot({ path: path.join(dbgDir, `${base}.png`), fullPage: false });
+          } catch (dumpErr) {
+            catchSoft('openShellForMode:trigger-dump', dumpErr);
+          }
           return { ok: false, detail: `trigger-gorunmez ${picked.detail} (productId=${productId || 0})` };
         }
         trigger = picked.locator;
@@ -3468,7 +3502,7 @@ export async function captureAll({
         }
       }
 
-      const opened = await openShellForMode(page, mode, productId);
+      const opened = await openShellForMode(page, mode, productId, useAdmin ? 'yönetici' : 'misafir');
       if (!opened.ok) {
         if (mode === 'panel') {
           try {
