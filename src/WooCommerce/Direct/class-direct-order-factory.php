@@ -38,6 +38,9 @@ final class Direct_Order_Factory {
 	/** İstemci (IP/kullanıcı) karması: bekleyen sipariş üst sınırı için. */
 	const CLIENT_META = '_donation_panel_direct_client';
 
+	/** İstemci + tarayıcı belirteci karması (ince alt sınır). */
+	const TOKEN_META = '_donation_panel_direct_token';
+
 	/** İçerik parmak izi (karma). */
 	const FINGERPRINT_META = '_donation_panel_direct_fp';
 
@@ -100,19 +103,23 @@ final class Direct_Order_Factory {
 				}
 				return $this->done( $existing, true );
 			}
-			$token   = isset( $input['client_token'] ) && is_scalar( $input['client_token'] ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', Cart_Data::text( (string) $input['client_token'], 64 ) ) : '';
-			$client  = self::client_hash( (string) $token );
-			$waiting = $this->waiting_orders( $client );
-			if ( count( $waiting ) >= self::max_pending() ) {
-				// Sınırı aşınca YENİ sipariş açılmaz: aynı içerikli bekleyen sipariş varsa o yeniden kullanılır, yoksa uyarılır.
-				foreach ( $waiting as $candidate ) {
-					if ( $candidate->has_status( 'pending' ) && (string) $candidate->get_meta( self::FINGERPRINT_META ) === $fingerprint ) {
-						return $this->done( $candidate, true );
-					}
-				}
-				return $this->fail( 429, __( 'You have several unpaid donations waiting. Please complete or wait for them to expire before starting another.', 'woo-donation-popup' ), 'donation_panel_direct_too_many' );
+			$token = isset( $input['client_token'] ) && is_scalar( $input['client_token'] ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', Cart_Data::text( (string) $input['client_token'], 64 ) ) : '';
+			$ip    = self::client_hash();
+			$fine  = self::client_hash( (string) $token );
+
+			// Katman 1 (SERT, sunucunun zorladığı): IP/hesap başına tüm hâlâ-bekleyen/başarısız siparişler + toplam adet. İstemci
+			// belirteciyle atlatılamaz; bekleyenler Direct_Cleanup ile kısa sürede iptal edildiği için kendiliğinden boşalır.
+			$hard = $this->waiting_orders( self::CLIENT_META, $ip, 0, self::max_pending_per_ip() );
+			if ( count( $hard ) >= self::max_pending_per_ip() || $this->waiting_quantity( $hard ) + (int) $plan['quantity'] > self::max_pending_quantity() ) {
+				return $this->over_limit( $hard, $fingerprint );
 			}
-			$plan['client'] = $client;
+			// Katman 2 (ince): aynı IP içinde tarayıcı belirteci başına (ortak IP'deki bağışçılar birbirini tüketmez).
+			$fine_orders = $this->waiting_orders( self::TOKEN_META, $fine, HOUR_IN_SECONDS, self::max_pending() );
+			if ( count( $fine_orders ) >= self::max_pending() ) {
+				return $this->over_limit( $fine_orders, $fingerprint );
+			}
+			$plan['client'] = $ip;
+			$plan['token']  = $fine;
 			$order          = $this->create( $product, $plan, $key_hash, $fingerprint );
 		} finally {
 			$this->release( $key_hash );
@@ -141,15 +148,14 @@ final class Direct_Order_Factory {
 	}
 
 	/**
-	 * İstemci başına son 1 saatte bekleyen + başarısız doğrudan sipariş üst sınırı (varsayılan 10).
+	 * İnce alt sınır: IP + tarayıcı belirteci başına son 1 saatte bekleyen/başarısız doğrudan sipariş (varsayılan 10).
 	 *
 	 * @return int
 	 */
 	public static function max_pending() {
 		/**
-		 * İstemci başına son bir saatte bekleyen/başarısız doğrudan bağış siparişi sınırı (cömert; yalnız sürekli
-		 * sipariş üretimini sınırlar). İstemci = IP + tarayıcıya özel rastgele belirteç; ortak IP'deki bağışçılar
-		 * birbirinin kotasını tüketmez.
+		 * IP + tarayıcı belirteci başına son bir saatte bekleyen/başarısız doğrudan sipariş sınırı. Belirteci istemci
+		 * seçtiğinden bu sınır tek başına güvenlik sağlamaz; sert sınır `donation_panel_direct_max_pending_ip` ile ayrıdır.
 		 *
 		 * @param int $max Üst sınır.
 		 */
@@ -157,47 +163,113 @@ final class Direct_Order_Factory {
 	}
 
 	/**
-	 * İstemci kimliği karması: girişli kullanıcı hesabı, değilse IP + tarayıcı belirteci (çerezsiz; istek gövdesinde
-	 * `client_token`). Belirteç yoksa yalnız IP (API istemcileri). Kişisel veri düz saklanmaz.
+	 * SERT sınır: IP (girişliyse hesap) başına hâlâ bekleyen/başarısız doğrudan sipariş sayısı (varsayılan 50; zaman penceresi yok).
+	 *
+	 * @return int
+	 */
+	public static function max_pending_per_ip() {
+		/**
+		 * IP/hesap başına bekleyen/başarısız doğrudan bağış siparişi sert sınırı. Ortak IP'de (CGNAT, vekil) meşru
+		 * kullanımda ulaşılmayacak kadar cömert; bekleyenler kısa sürede iptal edildiği için kendiliğinden boşalır.
+		 *
+		 * @param int $max Üst sınır.
+		 */
+		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending_ip', 50 ) );
+	}
+
+	/**
+	 * IP/hesap başına bekleyen siparişlerin toplam adet sınırı (stok rezervasyonu istismarına karşı; varsayılan 500).
+	 *
+	 * @return int
+	 */
+	public static function max_pending_quantity() {
+		/**
+		 * IP/hesap başına bekleyen/başarısız doğrudan siparişlerin toplam adedi.
+		 *
+		 * @param int $max Üst sınır.
+		 */
+		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending_quantity', 500 ) );
+	}
+
+	/**
+	 * İstemci kimliği karması: girişli kullanıcı hesabı, değilse IP (+ varsa tarayıcı belirteci). Kişisel veri düz saklanmaz.
 	 * Ters vekil/CDN arkasındaki sitelerde doğru IP için `donation_panel_trusted_proxies` süzgecini ayarlayın (bkz. Client_Ip).
 	 *
-	 * @param string $token Tarayıcı belirteci (temizlenmiş).
+	 * @param string|null $token null: yalnız IP/hesap (sert sınır); metin: IP + belirteç (ince sınır).
 	 * @return string
 	 */
-	public static function client_hash( $token = '' ) {
+	public static function client_hash( $token = null ) {
 		$user_id = get_current_user_id();
-		$who     = $user_id > 0 ? 'u' . $user_id : Client_Ip::get() . '|' . $token;
+		$who     = $user_id > 0 ? 'u' . $user_id : Client_Ip::get();
+		if ( null !== $token && $user_id < 1 ) {
+			$who .= '|' . $token;
+		}
 		return md5( 'donation_panel_direct_client|' . $who );
 	}
 
 	/**
-	 * İstemcinin son 1 saatteki bekleyen/başarısız doğrudan siparişleri.
+	 * Bekleyen/başarısız doğrudan siparişler.
 	 *
-	 * @param string $client İstemci karması.
+	 * @param string $meta_key Meta anahtarı (CLIENT_META | TOKEN_META).
+	 * @param string $hash     Karma.
+	 * @param int    $window   Saniye cinsinden pencere; 0 = pencere yok.
+	 * @param int    $cap      Üst sınır (sorgu cap + 1 sipariş getirir).
 	 * @return \WC_Order[]
 	 */
-	private function waiting_orders( $client ) {
-		$orders = wc_get_orders(
-			array(
-				'limit'        => self::max_pending() + 1,
-				'status'       => array( 'pending', 'failed' ),
-				'date_created' => '>' . ( time() - HOUR_IN_SECONDS ),
-				'meta_query'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- tek anahtarlı, küçük sınırlı sorgu.
-					array(
-						'key'   => self::CLIENT_META,
-						'value' => $client,
-					),
+	private function waiting_orders( $meta_key, $hash, $window, $cap ) {
+		$args = array(
+			'limit'      => (int) $cap + 1,
+			'status'     => array( 'pending', 'failed' ),
+			'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- tek anahtarlı, küçük sınırlı sorgu.
+				array(
+					'key'   => $meta_key,
+					'value' => $hash,
 				),
-			)
+			),
 		);
+		if ( $window > 0 ) {
+			$args['date_created'] = '>' . ( time() - (int) $window );
+		}
 		return array_values(
 			array_filter(
-				$orders,
+				wc_get_orders( $args ),
 				static function ( $order ) {
 					return $order instanceof \WC_Order;
 				}
 			)
 		);
+	}
+
+	/**
+	 * Siparişlerin toplam kalem adedi.
+	 *
+	 * @param \WC_Order[] $orders Siparişler.
+	 * @return int
+	 */
+	private function waiting_quantity( array $orders ) {
+		$total = 0;
+		foreach ( $orders as $order ) {
+			foreach ( $order->get_items() as $item ) {
+				$total += (int) $item->get_quantity();
+			}
+		}
+		return $total;
+	}
+
+	/**
+	 * Sınır aşıldı: yeni sipariş AÇILMAZ; aynı içerikli bekleyen sipariş varsa o yeniden kullanılır, yoksa uyarılır.
+	 *
+	 * @param \WC_Order[] $orders      Bekleyen siparişler.
+	 * @param string      $fingerprint Yeni isteğin içerik parmak izi.
+	 * @return array<string, mixed>
+	 */
+	private function over_limit( array $orders, $fingerprint ) {
+		foreach ( $orders as $candidate ) {
+			if ( $candidate->has_status( 'pending' ) && (string) $candidate->get_meta( self::FINGERPRINT_META ) === $fingerprint ) {
+				return $this->done( $candidate, true );
+			}
+		}
+		return $this->fail( 429, __( 'You have several unpaid donations waiting. Please complete or wait for them to expire before starting another.', 'woo-donation-popup' ), 'donation_panel_direct_too_many' );
 	}
 
 	/**
@@ -384,6 +456,7 @@ final class Direct_Order_Factory {
 		$order->update_meta_data( self::FLAG_META, 'yes' );
 		$order->update_meta_data( self::KEY_META, $key_hash );
 		$order->update_meta_data( self::CLIENT_META, isset( $plan['client'] ) ? (string) $plan['client'] : '' );
+		$order->update_meta_data( self::TOKEN_META, isset( $plan['token'] ) ? (string) $plan['token'] : '' );
 		$order->update_meta_data( self::FINGERPRINT_META, $fingerprint );
 		$order->calculate_totals( true );
 		$order->add_order_note( __( 'Direct donation started. Waiting for payment.', 'woo-donation-popup' ) );

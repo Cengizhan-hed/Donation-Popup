@@ -429,6 +429,54 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$this->order_from( $this->direct( $mine( $this->donor_body( $product->get_id(), '98', 'k-cap-over-2' ) ) ) );
 	}
 
+	public function test_hard_ip_cap_cannot_be_bypassed_by_rotating_browser_tokens(): void {
+		$product = $this->direct_product();
+		$low     = static function () {
+			return 12;
+		};
+		add_filter( 'donation_panel_direct_max_pending_ip', $low );
+		try {
+			$this->assertSame( 12, \DonationPanel\WooCommerce\Direct\Direct_Order_Factory::max_pending_per_ip() );
+			$ids = array();
+			for ( $i = 1; $i <= 12; $i++ ) {
+				$res   = $this->direct( $this->donor_body( $product->get_id(), (string) ( 20 + $i ), 'k-hard-' . $i, array( 'client_token' => 'rotateTok' . $i ) ) );
+				$ids[] = $this->order_from( $res )->get_id();
+			}
+			// Her istek yeni belirteç taşıyor; sert IP sınırı yine de dolu.
+			$blocked = $this->direct( $this->donor_body( $product->get_id(), '77', 'k-hard-13', array( 'client_token' => 'brandNewToken' ) ) );
+			$this->assertSame( 429, $blocked->get_status(), wp_json_encode( $blocked->get_data() ) );
+			$this->assertSame( 0, $this->orders_for_key( 'k-hard-13' ) );
+			// Aynı içerik yeni belirteç/anahtarla: yeni sipariş yok, mevcut bekleyen yeniden kullanılır.
+			$same = $this->direct( $this->donor_body( $product->get_id(), '21', 'k-hard-same', array( 'client_token' => 'anotherToken' ) ) );
+			$this->assertSame( $ids[0], $this->order_from( $same )->get_id() );
+			$this->assertTrue( $same->get_data()['reused'] );
+			// Iptal yer açar (kendiliğinden boşalma).
+			wc_get_order( $ids[0] )->update_status( 'cancelled' );
+			$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '77', 'k-hard-13', array( 'client_token' => 'brandNewToken' ) ) ) );
+		} finally {
+			remove_filter( 'donation_panel_direct_max_pending_ip', $low );
+		}
+	}
+
+	public function test_total_reserved_quantity_per_ip_is_capped(): void {
+		$product = $this->direct_product( '5', array( '_enable_quantity' => 'yes', '_max_shares' => '500' ) );
+		$cap     = static function () {
+			return 5;
+		};
+		add_filter( 'donation_panel_direct_max_pending_quantity', $cap );
+		try {
+			$make = static function ( int $id, int $qty, string $key, string $token ) {
+				return array( 'product_id' => $id, 'quantity' => $qty, 'submission_key' => $key, 'client_token' => $token, 'donation_full_name' => 'Ali Veli ' . $token, 'donation_phone' => '+90 532 111 11 11' );
+			};
+			$this->order_from( $this->direct( $make( $product->get_id(), 3, 'k-q1', 'tokQ1' ) ) );
+			$res = $this->direct( $make( $product->get_id(), 3, 'k-q2', 'tokQ2' ) );
+			$this->assertSame( 429, $res->get_status(), 'Aynı IP toplam rezerve adedi sınırı (3+3 > 5), belirteç değişse de.' );
+			$this->order_from( $this->direct( $make( $product->get_id(), 2, 'k-q3', 'tokQ3' ) ) );
+		} finally {
+			remove_filter( 'donation_panel_direct_max_pending_quantity', $cap );
+		}
+	}
+
 	public function test_quantity_is_capped_per_direct_order(): void {
 		$product = $this->direct_product( '5', array( '_enable_quantity' => 'yes', '_max_shares' => '500' ) );
 		$body    = array( 'product_id' => $product->get_id(), 'quantity' => 21, 'submission_key' => 'k-qty', 'donation_full_name' => 'Ali Veli', 'donation_phone' => '+90 532 111 11 11' );

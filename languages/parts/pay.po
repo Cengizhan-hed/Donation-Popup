@@ -1,0 +1,54 @@
+# Turkish translations — 121-pay (doğrudan / sepetsiz bağış).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgid "Skip the cart (direct donation)"
+msgstr "Sepeti atla (doğrudan bağış)"
+
+msgid "If on, the donor goes from the form straight to payment and nothing is added to the cart."
+msgstr "Açıksa bağışçı formdan doğrudan ödemeye geçer ve sepete hiçbir şey eklenmez."
+
+msgid "The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product."
+msgstr "Bağışçı formdan doğrudan ödemeye geçer. Sepete hiçbir şey eklenmez; bağışçının mevcut sepeti olduğu gibi kalır. Bunu her ürün için ayrıca değiştirebilirsiniz."
+
+msgid "Direct donation was not paid in time and was cancelled automatically."
+msgstr "Doğrudan bağış zamanında ödenmedi ve otomatik olarak iptal edildi."
+
+msgid "The request is missing its submission key."
+msgstr "İstekte gönderim anahtarı yok."
+
+msgid "Your donation is already being processed. Please wait a moment."
+msgstr "Bağışınız zaten işleniyor. Lütfen biraz bekleyin."
+
+msgid "This submission key was already used for a different donation."
+msgstr "Bu gönderim anahtarı başka bir bağış için kullanılmış."
+
+msgid "You have several unpaid donations waiting. Please complete or wait for them to expire before starting another."
+msgstr "Ödenmeyi bekleyen birkaç bağışınız var. Yenisini başlatmadan önce onları tamamlayın ya da süresinin dolmasını bekleyin."
+
+msgid "The donation could not be started. Please try again."
+msgstr "Bağış başlatılamadı. Lütfen tekrar deneyin."
+
+msgid "This donation is not available right now."
+msgstr "Bu bağış şu anda kullanılamıyor."
+
+msgid "This donation is out of stock."
+msgstr "Bu bağışın stoğu tükendi."
+
+msgid "This donation can only be made once per order."
+msgstr "Bu bağış her siparişte yalnızca bir kez yapılabilir."
+
+msgid "This donation cannot be started right now."
+msgstr "Bu bağış şu anda başlatılamıyor."
+
+msgid "Direct donation started. Waiting for payment."
+msgstr "Doğrudan bağış başlatıldı. Ödeme bekleniyor."
+
