@@ -109,9 +109,13 @@ final class Direct_Order_Factory {
 
 			// Katman 1 (SERT, sunucunun zorladığı): IP/hesap başına tüm hâlâ-bekleyen/başarısız siparişler + toplam adet. İstemci
 			// belirteciyle atlatılamaz; bekleyenler Direct_Cleanup ile kısa sürede iptal edildiği için kendiliğinden boşalır.
-			$hard = $this->waiting_orders( self::CLIENT_META, $ip, 0, self::max_pending_per_ip() );
-			if ( count( $hard ) >= self::max_pending_per_ip() || $this->waiting_quantity( $hard ) + (int) $plan['quantity'] > self::max_pending_quantity() ) {
-				return $this->over_limit( $hard, $fingerprint );
+			// IP belirlenemiyorsa ya da özel/yerel aralıktaysa (güvenilen vekil yapılandırılmamış: herkes aynı adreste toplanır) sert IP
+			// sınırı UYGULANMAZ; yalnız belirteç alt sınırı kalır.
+			if ( self::ip_is_reliable() ) {
+				$hard = $this->waiting_orders( self::CLIENT_META, $ip, 0, self::max_pending_per_ip() );
+				if ( count( $hard ) >= self::max_pending_per_ip() || $this->waiting_quantity( $hard ) + (int) $plan['quantity'] > self::max_pending_quantity() ) {
+					return $this->over_limit( $hard, $fingerprint );
+				}
 			}
 			// Katman 2 (ince): aynı IP içinde tarayıcı belirteci başına (ortak IP'deki bağışçılar birbirini tüketmez).
 			$fine_orders = $this->waiting_orders( self::TOKEN_META, $fine, HOUR_IN_SECONDS, self::max_pending() );
@@ -189,6 +193,19 @@ final class Direct_Order_Factory {
 		 * @param int $max Üst sınır.
 		 */
 		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending_quantity', 500 ) );
+	}
+
+	/**
+	 * Sert IP sınırı için IP güvenilir mi: girişli hesap her zaman; aksi halde genel (özel/yerel/ayrılmış olmayan) geçerli IP.
+	 *
+	 * @return bool
+	 */
+	private static function ip_is_reliable() {
+		if ( get_current_user_id() > 0 ) {
+			return true;
+		}
+		$ip = Client_Ip::get();
+		return '0.0.0.0' !== $ip && false !== filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE );
 	}
 
 	/**

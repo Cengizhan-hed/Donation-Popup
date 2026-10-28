@@ -458,6 +458,32 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		}
 	}
 
+	public function test_hard_ip_cap_is_not_applied_when_the_ip_is_private_or_unknown(): void {
+		$product = $this->direct_product();
+		$low     = static function () {
+			return 2;
+		};
+		add_filter( 'donation_panel_direct_max_pending_ip', $low );
+		$saved = $_SERVER['REMOTE_ADDR'] ?? '';
+		try {
+			foreach ( array( '10.0.0.5', '192.168.1.9', '127.0.0.1' ) as $n => $addr ) {
+				$_SERVER['REMOTE_ADDR'] = $addr;
+				for ( $i = 1; $i <= 3; $i++ ) {
+					$res = $this->direct( $this->donor_body( $product->get_id(), (string) ( 30 + $i ), 'k-priv-' . $n . '-' . $i, array( 'client_token' => 'privTok' . $n . $i ) ) );
+					$this->assertSame( 200, $res->get_status(), $addr . ': ' . wp_json_encode( $res->get_data() ) );
+				}
+			}
+			// Genel IP'de aynı sınır uygulanır.
+			$_SERVER['REMOTE_ADDR'] = '8.8.4.4';
+			$this->direct( $this->donor_body( $product->get_id(), '41', 'k-pub-1', array( 'client_token' => 'pubT1' ) ) );
+			$this->direct( $this->donor_body( $product->get_id(), '42', 'k-pub-2', array( 'client_token' => 'pubT2' ) ) );
+			$this->assertSame( 429, $this->direct( $this->donor_body( $product->get_id(), '43', 'k-pub-3', array( 'client_token' => 'pubT3' ) ) )->get_status() );
+		} finally {
+			$_SERVER['REMOTE_ADDR'] = $saved;
+			remove_filter( 'donation_panel_direct_max_pending_ip', $low );
+		}
+	}
+
 	public function test_total_reserved_quantity_per_ip_is_capped(): void {
 		$product = $this->direct_product( '5', array( '_enable_quantity' => 'yes', '_max_shares' => '500' ) );
 		$cap     = static function () {
