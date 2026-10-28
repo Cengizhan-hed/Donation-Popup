@@ -190,3 +190,8 @@ Yeni kanca yok. WooCommerce kancaları: `woocommerce_add_to_cart` (30) ve `templ
 | `donation-panel/v1/admin/campaigns/{id}/carried` | POST | `manage_woocommerce` + `X-WP-Nonce` | Devreden tutarı (`_wdp_carried_amount`) düzenler. 30/dk. |
 
 Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (varsayılan boş). `wdp_donations_card_html` süzgeci korunur; `donation_panel_campaign_days_left` liste kartı rozetinde de kullanılır. Kaldırılan eylem: cron `wdp_recalculate_product_donation_total` (dışarıdan zamanlanmışsa işlevsiz kalır). WP-CLI `wp donation-panel recalc-totals` yalnız kuru çalıştırmadır.
+
+## 12.1 güvenlik notları
+- **Meta:** `_donation_panel_direct_owner` (doğrudan bağış siparişinin sahip belirteci, tuzlu karma). **Transient:** `donation_panel_direct_site_qty` (30 sn bekleyen adet sayacı).
+- **`Rate_Limiter::hit()` 4. parametre** `$donation_bucket` (varsayılan `false` = katı). Üçüncü taraf kodu bu sınıfı çağırmamalıdır; ayar için `donation_panel_trusted_proxies` süzgeci ve Araçlar → "Ziyaretçi adresi" kullanılır.
+- **REST:** `/nonce` ve `/account/session` cross-site isteklere 403 döner (CORS başlıksız).
