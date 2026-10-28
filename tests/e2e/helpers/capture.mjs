@@ -985,6 +985,27 @@ async function prepareErrorShot(page, opts = {}) {
     })
     .catch((e) => catchSoft('prepareErrorShot:blur', e));
 
+  // Klavye modu (data-dp-kb + alt çubuğun akışa taşınması) odak kalkınca BAR_RESTORE_MS gecikmeyle geri döner;
+  // çekim bu geçişle yarışmasın: klavyesiz durum (çubuk sabit altta) ≥300 ms değişmeden kalana dek bekle.
+  await page
+    .waitForFunction(
+      () => {
+        const w = window;
+        const kbOff = !document.querySelector('[data-dp-kb]');
+        const bar = document.querySelector('.donation-panel-actionbar');
+        const pos = bar ? window.getComputedStyle(bar).position : 'none';
+        const state = kbOff && pos !== 'static' ? 'stable' : 'moving';
+        if (w.__dpShotKbState !== state) {
+          w.__dpShotKbState = state;
+          w.__dpShotKbSince = performance.now();
+        }
+        return state === 'stable' && performance.now() - w.__dpShotKbSince >= 300;
+      },
+      null,
+      { timeout: 3000, polling: 50 }
+    )
+    .catch((e) => catchSoft('prepareErrorShot:kbStable', e));
+
   if (opts.shares) {
     await stabilizeShareholderErrorState(page, shellMode);
   }
