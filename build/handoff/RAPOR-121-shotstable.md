@@ -12,3 +12,5 @@
 5/5 bayt-eşit. lint:js 0 bulgu.
 ## Kalan işler
 - "Görsel durum" kümesi: k2–k5 aynı 8 ekran (list, popup-campaign/custom-errors, product-campaign/custom/fixed/shares, shop); k1'de yalnız 2 (iki errors). Fark baseline'a göre (yeni worktree baseline'ı); küme kararlı, kabul sende. k1'in farklı olma nedeni incelenmedi (olası: ilk koşuda değişen-alan kapsamı).
+## Ek madde: trigger-gorunmez (staging30 10720)
+- dp-form.mjs `waitForVisibleCandidate`: görünmeyen adaylar için (≤6) bir kez JS `el.scrollIntoView({block:'center'})` + bir rAF + isVisible; olmazsa mevcut ARIA sekme yolu. Birim testi (0x0 aday, scrollIntoView ile boyanır) eklendi: dp-form-playwright 19/0. lint:js 0. Ek yerel koşu: popup-errors hash'leri aynı (4/4), e2e quick geçti. Uzak doğrulama bende değil.

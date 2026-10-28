@@ -382,10 +382,29 @@ export async function waitForVisibleCandidate(candidates, timeout = CHECK_MS) {
   const deadline = Date.now() + timeout;
   let total = 0;
   let tabTried = false;
+  let scrollTried = false;
   for (;;) {
     total = await candidates.count();
     for (let i = 0; i < total; i += 1) {
       if (await candidates.nth(i).isVisible()) return { locator: candidates.nth(i), total, detail: '' };
+    }
+    // Ekran dışı içerik render atlanıyorsa (content-visibility vb.) kutu 0x0 kalır: JS ile kaydır (Playwright
+    // scrollIntoViewIfNeeded görünmez öğede bekler), bir rAF bekle, yeniden dene.
+    if (!scrollTried && total > 0) {
+      scrollTried = true;
+      for (let i = 0; i < Math.min(total, 6); i += 1) {
+        const ok = await candidates
+          .nth(i)
+          .evaluate(
+            (el) =>
+              new Promise((resolve) => {
+                el.scrollIntoView({ block: 'center' });
+                requestAnimationFrame(() => resolve(true));
+              })
+          )
+          .catch(() => false);
+        if (ok && (await candidates.nth(i).isVisible())) return { locator: candidates.nth(i), total, detail: '' };
+      }
     }
     if (!tabTried && total > 0) {
       tabTried = true;
