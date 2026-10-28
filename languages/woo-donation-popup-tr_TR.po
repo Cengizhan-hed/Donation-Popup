@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 08:01:00+0000\n"
-"PO-Revision-Date: 2026-10-28 08:01:00+0000\n"
+"POT-Creation-Date: 2026-10-28 11:43:20+0000\n"
+"PO-Revision-Date: 2026-10-28 11:43:20+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -1735,6 +1735,10 @@ msgstr "Bağış formu açıldı"
 msgctxt "Donation form: disabled button while no amount is chosen"
 msgid "Choose an amount"
 msgstr "Tutar seçin"
+
+msgctxt "Donation form: last step button when the donor goes straight to the payment page"
+msgid "Continue to payment"
+msgstr "Ödemeye geç"
 
 #: templates/donation-panel/experiences/form.php
 msgctxt "Donation form: next step button"
@@ -6281,6 +6285,9 @@ msgstr "Ziyaretçi adresi"
 #. YENI-SARMA
 msgid "Vivid sky blue, soft accent, emotional headline."
 msgstr "Canlı sky mavi, yumuşak vurgu, duygusal başlık."
+
+msgid "We could not open the payment page. Nothing was charged. Please try again."
+msgstr "Ödeme sayfası açılamadı. Hesabınızdan hiçbir tutar çekilmedi. Lütfen tekrar deneyin."
 
 #: includes/class-campaign-goal.php:30
 msgid "We have reached our goal, thank you for your support. Extra donations to this campaign are used in similar projects."
