@@ -48,6 +48,13 @@ class Assets {
 	private $registered = array();
 
 	/**
+	 * Engellemeyen yükleme istenen stil slug'ları: slug => (bütün çağıranlar ertelemek istedi mi).
+	 *
+	 * @var array<string, bool>
+	 */
+	private $deferred = array();
+
+	/**
 	 * Kurucu.
 	 *
 	 * @param string $plugin_dir Eklenti kök dizini.
@@ -137,10 +144,15 @@ class Assets {
 	 * öncesi çizilse de çalışır (kayıt ve kuyruk aynı çağrıdadır; çıktıyı WordPress `wp_head`/`wp_footer`'da yapar).
 	 * `DONATION_PANEL_DISABLE` açıkken hiçbir şey yapmaz.
 	 *
-	 * @param string $slug Modül slug'ı.
+	 * `$defer_style`: ana stil render engellemez (yalnız ilk görünür öğe, ör. açma düğmesi, `assets/critical/<slug>.css`
+	 * kritik CSS'iyle satır içi çizilir; ana stil betik açılınca `media` değiştirilerek etkinleşir). Sayfada aynı slug
+	 * için ertelemeyen bir çağrı da varsa (ör. sayfa içi form) stil normal, engelleyen yüklenir.
+	 *
+	 * @param string $slug        Modül slug'ı.
+	 * @param bool   $defer_style Ana stil engellemesin mi.
 	 * @return void
 	 */
-	public function enqueue( $slug ) {
+	public function enqueue( $slug, $defer_style = false ) {
 		if ( Front_Gate::disabled() ) {
 			return;
 		}
@@ -153,7 +165,53 @@ class Assets {
 		if ( wp_style_is( $handle, 'registered' ) ) {
 			wp_enqueue_style( $handle );
 			$this->add_brand_variables( $handle );
+			$this->track_deferred( $slug, $handle, (bool) $defer_style );
 		}
+	}
+
+	/**
+	 * Erteleme kaydı: ilk ertelenen çağrıda kritik CSS eklenir ve etiket süzgeci bağlanır.
+	 *
+	 * @param string $slug        Modül slug'ı.
+	 * @param string $handle      Stil tutamacı.
+	 * @param bool   $defer_style Bu çağrı ertelemek istiyor mu.
+	 * @return void
+	 */
+	private function track_deferred( $slug, $handle, $defer_style ) {
+		if ( isset( $this->deferred[ $slug ] ) ) {
+			$this->deferred[ $slug ] = $this->deferred[ $slug ] && $defer_style;
+			return;
+		}
+		$this->deferred[ $slug ] = false;
+		if ( ! $defer_style ) {
+			return;
+		}
+		$critical_file = $this->plugin_dir . 'assets/critical/' . $slug . '.css';
+		$critical      = is_file( $critical_file ) ? trim( (string) file_get_contents( $critical_file ) ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Eklenti içi yerel dosya.
+		if ( '' === $critical ) {
+			return;
+		}
+		$this->deferred[ $slug ] = true;
+		wp_add_inline_style( $handle, $critical );
+		if ( ! has_filter( 'style_loader_tag', array( $this, 'defer_style_tag' ) ) ) {
+			add_filter( 'style_loader_tag', array( $this, 'defer_style_tag' ), 10, 2 );
+		}
+	}
+
+	/**
+	 * Ertelenen stil etiketini engellemeyen yapar (`media="print"` + işaret; betik açılınca `all` olur).
+	 *
+	 * @param string $tag    Etiket HTML'i.
+	 * @param string $handle Tutamaç.
+	 * @return string
+	 */
+	public function defer_style_tag( $tag, $handle ) {
+		foreach ( $this->deferred as $slug => $deferred ) {
+			if ( $deferred && self::handle( (string) $slug ) === $handle ) {
+				return (string) preg_replace( '/media=([\'"])all\1/', 'media=$1print$1 data-dp-defer=$1$1', (string) $tag, 1 );
+			}
+		}
+		return $tag;
 	}
 
 	/**

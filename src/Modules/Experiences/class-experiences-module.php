@@ -144,7 +144,8 @@ final class Experiences_Module implements Module_Interface {
 		$html = $this->renderer()->render( $model, (string) $atts['kind'], $args );
 		if ( '' !== $html ) {
 			$this->rendered = true;
-			$this->container->get( Assets::class )->enqueue( self::SLUG );
+			// Açma düğmesi dışında görünür yüzey yoksa (popup/panel/alttan panel) ana stil render engellemez.
+			$this->container->get( Assets::class )->enqueue( self::SLUG, 'inline' !== (string) $atts['kind'] );
 		}
 		return $html;
 	}
