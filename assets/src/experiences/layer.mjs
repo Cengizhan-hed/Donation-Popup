@@ -54,6 +54,7 @@ export function createLayer(root, hooks = {}) {
   let closeTimer = 0;
   let keyboardWasUp = false;
   let keyboardDismissedFlag = false;
+  let barHome = null;
 
   const present = () => {
     root.dataset.dpPresented = presentedAs(kind, media.matches);
@@ -97,6 +98,34 @@ export function createLayer(root, hooks = {}) {
     return true;
   };
 
+  /**
+   * Klavye açıkken alt bölüm kaydırma alanının sonuna (akışa) girer; kapanınca eski yerine döner.
+   * Odak sırası değişmez (öğe zaten formun son öğesidir).
+   *
+   * @param {boolean} inFlow Akışa mı girsin.
+   */
+  const placeActionBar = (inFlow) => {
+    const bar = surface.querySelector('.donation-panel-actionbar');
+    const body = surface.querySelector('.donation-panel-surface__body');
+    if (!bar || !body) {
+      return;
+    }
+    const active = document.activeElement;
+    const hadFocus = Boolean(active && bar.contains(active));
+    if (inFlow && bar.parentNode !== body) {
+      barHome = { parent: bar.parentNode, next: bar.nextSibling };
+      body.appendChild(bar);
+    } else if (!inFlow && barHome && bar.parentNode === body) {
+      barHome.parent.insertBefore(bar, barHome.next && barHome.next.parentNode === barHome.parent ? barHome.next : null);
+      barHome = null;
+    } else {
+      return;
+    }
+    if (hadFocus && document.activeElement !== active) {
+      active.focus({ preventScroll: true }); // DOM taşıması odağı düşürür; odak sırası korunur
+    }
+  };
+
   const syncKeyboard = () => {
     if (!opened || !surface) {
       return;
@@ -118,6 +147,7 @@ export function createLayer(root, hooks = {}) {
     } else {
       root.removeAttribute('data-dp-kb');
     }
+    placeActionBar(hide);
     if (field && kb > 0 && typeof active.scrollIntoView === 'function') {
       active.scrollIntoView({ block: 'center' });
     }
@@ -245,6 +275,7 @@ export function createLayer(root, hooks = {}) {
     overlay.classList.remove('is-open');
     surface.style.removeProperty('--dp-drag');
     root.removeAttribute('data-dp-kb');
+    placeActionBar(false);
     trigger.setAttribute('aria-expanded', 'false');
     unlockPage(ownerId);
     document.removeEventListener('keydown', onKeydown, true);
