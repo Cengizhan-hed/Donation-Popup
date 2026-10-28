@@ -100,8 +100,16 @@ final class Direct_Order_Factory {
 				}
 				return $this->done( $existing, true );
 			}
-			$client = self::client_hash();
-			if ( $this->pending_count( $client ) >= self::max_pending() ) {
+			$token   = isset( $input['client_token'] ) && is_scalar( $input['client_token'] ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', Cart_Data::text( (string) $input['client_token'], 64 ) ) : '';
+			$client  = self::client_hash( (string) $token );
+			$waiting = $this->waiting_orders( $client );
+			if ( count( $waiting ) >= self::max_pending() ) {
+				// Sınırı aşınca YENİ sipariş açılmaz: aynı içerikli bekleyen sipariş varsa o yeniden kullanılır, yoksa uyarılır.
+				foreach ( $waiting as $candidate ) {
+					if ( $candidate->has_status( 'pending' ) && (string) $candidate->get_meta( self::FINGERPRINT_META ) === $fingerprint ) {
+						return $this->done( $candidate, true );
+					}
+				}
 				return $this->fail( 429, __( 'You have several unpaid donations waiting. Please complete or wait for them to expire before starting another.', 'woo-donation-popup' ), 'donation_panel_direct_too_many' );
 			}
 			$plan['client'] = $client;
@@ -133,42 +141,48 @@ final class Direct_Order_Factory {
 	}
 
 	/**
-	 * İstemci başına en çok bekleyen doğrudan sipariş (varsayılan 5).
+	 * İstemci başına son 1 saatte bekleyen + başarısız doğrudan sipariş üst sınırı (varsayılan 10).
 	 *
 	 * @return int
 	 */
 	public static function max_pending() {
 		/**
-		 * İstemci (IP ya da hesap) başına aynı anda bekleyen doğrudan bağış siparişi sınırı.
+		 * İstemci başına son bir saatte bekleyen/başarısız doğrudan bağış siparişi sınırı (cömert; yalnız sürekli
+		 * sipariş üretimini sınırlar). İstemci = IP + tarayıcıya özel rastgele belirteç; ortak IP'deki bağışçılar
+		 * birbirinin kotasını tüketmez.
 		 *
 		 * @param int $max Üst sınır.
 		 */
-		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending', 5 ) );
+		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending', 10 ) );
 	}
 
 	/**
-	 * İstemci kimliği karması (girişli: hesap, değilse IP); kişisel veri düz saklanmaz.
+	 * İstemci kimliği karması: girişli kullanıcı hesabı, değilse IP + tarayıcı belirteci (çerezsiz; istek gövdesinde
+	 * `client_token`). Belirteç yoksa yalnız IP (API istemcileri). Kişisel veri düz saklanmaz.
+	 * Ters vekil/CDN arkasındaki sitelerde doğru IP için `donation_panel_trusted_proxies` süzgecini ayarlayın (bkz. Client_Ip).
 	 *
+	 * @param string $token Tarayıcı belirteci (temizlenmiş).
 	 * @return string
 	 */
-	public static function client_hash() {
+	public static function client_hash( $token = '' ) {
 		$user_id = get_current_user_id();
-		return md5( 'donation_panel_direct_client|' . ( $user_id > 0 ? 'u' . $user_id : Client_Ip::get() ) );
+		$who     = $user_id > 0 ? 'u' . $user_id : Client_Ip::get() . '|' . $token;
+		return md5( 'donation_panel_direct_client|' . $who );
 	}
 
 	/**
-	 * İstemcinin bekleyen doğrudan sipariş sayısı.
+	 * İstemcinin son 1 saatteki bekleyen/başarısız doğrudan siparişleri.
 	 *
 	 * @param string $client İstemci karması.
-	 * @return int
+	 * @return \WC_Order[]
 	 */
-	private function pending_count( $client ) {
-		$ids = wc_get_orders(
+	private function waiting_orders( $client ) {
+		$orders = wc_get_orders(
 			array(
-				'limit'      => self::max_pending() + 1,
-				'status'     => array( 'pending' ),
-				'return'     => 'ids',
-				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- tek anahtarlı, küçük sınırlı sorgu.
+				'limit'        => self::max_pending() + 1,
+				'status'       => array( 'pending', 'failed' ),
+				'date_created' => '>' . ( time() - HOUR_IN_SECONDS ),
+				'meta_query'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- tek anahtarlı, küçük sınırlı sorgu.
 					array(
 						'key'   => self::CLIENT_META,
 						'value' => $client,
@@ -176,7 +190,14 @@ final class Direct_Order_Factory {
 				),
 			)
 		);
-		return count( $ids );
+		return array_values(
+			array_filter(
+				$orders,
+				static function ( $order ) {
+					return $order instanceof \WC_Order;
+				}
+			)
+		);
 	}
 
 	/**
@@ -196,6 +217,11 @@ final class Direct_Order_Factory {
 		}
 		if ( $product->is_sold_individually() && $quantity > 1 ) {
 			return __( 'This donation can only be made once per order.', 'woo-donation-popup' );
+		}
+		// REST isteğinde WooCommerce oturumu yüklü değildir; doğrulayıcıların `wc_add_notice` çağrısı için yalnız oturum
+		// nesnesi başlatılır (sepet yüklenmez; çerez yalnız oturumda veri varsa yazılır, ileti hemen temizlenir).
+		if ( function_exists( 'WC' ) && WC() && null === WC()->session && method_exists( WC(), 'initialize_session' ) ) {
+			WC()->initialize_session();
 		}
 		$product_id = (int) $product->get_id();
 		/** This filter is documented in woocommerce/includes/class-wc-cart.php. */

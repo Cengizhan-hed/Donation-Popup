@@ -3,7 +3,7 @@
  * REST: `POST donation-panel/v1/direct` — doğrudan (sepetsiz) bağış: bekleyen sipariş üretir, ödeme adresini döndürür.
  *
  * - JSON ister; girişli kullanıcıda WordPress çerez kimliği için `X-WP-Nonce` (bayat nonce 403, istemci tazeler).
- * - Hız sınırı: dakikada 8, saatte 40 (istemci başına); yanıt `Cache-Control: no-store`.
+ * - Hız sınırı: dakikada 30, saatte 300 (IP/hesap başına; ortak IP'deki bağışçılar için cömert; asıl sınır istemci belirteçli bekleyen sipariş sınırıdır); yanıt `Cache-Control: no-store`.
  * - Sepete DOKUNMAZ. Yanıt kişi verisi içermez: yalnız `redirect_url` (order-pay ya da teşekkür), `reused`, `order_status`.
  * - İdempotency `submission_key` ile (Direct_Order_Factory); aynı anahtar ikinci sipariş üretmez.
  *
@@ -68,11 +68,11 @@ class Direct_Donation_Controller extends Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function create( $request ) {
-		$throttled = $this->throttle( 'direct', 8 );
+		$throttled = $this->throttle( 'direct', 30 );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}
-		$throttled = $this->throttle( 'direct_hour', 40, 3600 );
+		$throttled = $this->throttle( 'direct_hour', 300, 3600 );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}
@@ -123,7 +123,7 @@ class Direct_Donation_Controller extends Rest_Controller {
 	 */
 	private function input( $request, array $model ) {
 		$input = array();
-		foreach ( array( 'amount', 'quantity', 'share_count', 'shareholders', 'donation_cover_fee', 'addon_active', 'addon_amount', 'donation_type', 'submission_key' ) as $name ) {
+		foreach ( array( 'amount', 'quantity', 'share_count', 'shareholders', 'donation_cover_fee', 'addon_active', 'addon_amount', 'donation_type', 'submission_key', 'client_token' ) as $name ) {
 			$input[ $name ] = $request->get_param( $name );
 		}
 		foreach ( (array) $model['fields'] as $field ) {

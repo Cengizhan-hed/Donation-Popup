@@ -628,6 +628,25 @@ async function readJson(response) {
   }
 }
 
+/**
+ * Tarayıcıya özel rastgele belirteç (çerez değil; yalnız doğrudan bağışta gönderilir): ortak IP'deki (mobil operatör, vekil)
+ * bağışçıların sunucu tarafı kotasını ayırır. Saklama yoksa sayfa oturumu kullanılır.
+ *
+ * @return {string} Belirteç.
+ */
+function clientToken() {
+  try {
+    let token = window.localStorage.getItem('donation_panel_client');
+    if (!token) {
+      token = Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
+      window.localStorage.setItem('donation_panel_client', token);
+    }
+    return token;
+  } catch {
+    return pageSession;
+  }
+}
+
 /** Sayfa oturumu: doğrudan bağış anahtarının sabit parçası (sayfa yenilenince değişir). */
 const pageSession = Math.random().toString(36).slice(2, 10);
 
@@ -662,7 +681,12 @@ async function addToCart(root, productId, values, direct = false) {
   const submissionKey = direct
     ? `dp-${productId}-${pageSession}-${digest(body)}`
     : `dp-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  const payload = JSON.stringify({ ...values, product_id: Number(productId), submission_key: submissionKey });
+  const payload = JSON.stringify({
+    ...values,
+    product_id: Number(productId),
+    submission_key: submissionKey,
+    ...(direct ? { client_token: clientToken() } : {}),
+  });
   const send = (nonce) =>
     window.fetch(`${root.dataset.dpRest}${direct ? 'direct' : 'cart/add'}`, {
       method: 'POST',

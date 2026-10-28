@@ -388,29 +388,45 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$this->assertSame( 55.0, (float) $order->get_total() );
 	}
 
-	public function test_pending_orders_per_client_are_capped_and_idempotent_retries_are_not_counted(): void {
+	public function test_waiting_orders_are_capped_per_ip_and_browser_token_and_shared_ip_donors_are_not_blocked(): void {
 		$product = $this->direct_product();
-		for ( $i = 1; $i <= 5; $i++ ) {
-			$this->order_from( $this->direct( $this->donor_body( $product->get_id(), (string) ( 10 + $i ), 'k-cap-' . $i ) ) );
+		$cap     = \DonationPanel\WooCommerce\Direct\Direct_Order_Factory::max_pending();
+		$this->assertSame( 10, $cap );
+		$mine = static function ( array $body ) {
+			return $body + array( 'client_token' => 'browserAAAA' );
+		};
+		$first_id = 0;
+		for ( $i = 1; $i <= $cap; $i++ ) {
+			$order    = $this->order_from( $this->direct( $mine( $this->donor_body( $product->get_id(), (string) ( 10 + $i ), 'k-cap-' . $i ) ) ) );
+			$first_id = 1 === $i ? $order->get_id() : $first_id;
 		}
-		$sixth = $this->direct( $this->donor_body( $product->get_id(), '99', 'k-cap-6' ) );
-		$this->assertSame( 429, $sixth->get_status(), wp_json_encode( $sixth->get_data() ) );
-		$this->assertSame( 0, $this->orders_for_key( 'k-cap-6' ) );
-		// Aynı anahtarın yeniden denemesi sayılmaz ve mevcut siparişi döndürür.
-		$retry = $this->direct( $this->donor_body( $product->get_id(), '11', 'k-cap-1' ) );
-		$this->assertSame( 200, $retry->get_status() );
-		$this->assertTrue( $retry->get_data()['reused'] );
-		// Başka istemci (kullanıcı) etkilenmez.
-		$user_id = self::factory_user();
-		wp_set_current_user( $user_id );
-		$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '12', 'k-cap-other' ) ) );
-		wp_set_current_user( 0 );
+		// Sınır aşıldı: yeni içerik reddedilir, sipariş açılmaz.
+		$over = $this->direct( $mine( $this->donor_body( $product->get_id(), '99', 'k-cap-over' ) ) );
+		$this->assertSame( 429, $over->get_status(), wp_json_encode( $over->get_data() ) );
+		$this->assertSame( 0, $this->orders_for_key( 'k-cap-over' ) );
+		// Aynı içerik, yeni anahtar: yeni sipariş AÇILMAZ, mevcut bekleyen sipariş yeniden kullanılır.
+		$same = $this->direct( $mine( $this->donor_body( $product->get_id(), '11', 'k-cap-new-key' ) ) );
+		$this->assertSame( 200, $same->get_status() );
+		$this->assertTrue( $same->get_data()['reused'] );
+		$this->assertSame( $first_id, $this->order_from( $same )->get_id() );
+		$this->assertSame( 0, $this->orders_for_key( 'k-cap-new-key' ) );
+		// Başarısız siparişler de pencerede sayılır.
+		wc_get_order( $first_id )->update_status( 'failed' );
+		$this->assertSame( 429, $this->direct( $mine( $this->donor_body( $product->get_id(), '98', 'k-cap-over-2' ) ) )->get_status() );
+
+		// Aynı IP, farklı tarayıcı belirteçleri (ortak mobil operatör IP'si): çok sayıda bağış engellenmez.
+		for ( $i = 1; $i <= 25; $i++ ) {
+			$res = $this->direct( $this->donor_body( $product->get_id(), (string) ( 200 + $i ), 'k-shared-' . $i, array( 'client_token' => 'browser' . $i . 'XYZ' ) ) );
+			$this->assertSame( 200, $res->get_status(), 'Ortak IP, farklı tarayıcı #' . $i . ': ' . wp_json_encode( $res->get_data() ) );
+			$this->order_ids[] = $this->order_from( $res )->get_id();
+		}
+
+		// Belirteçsiz istek (API istemcisi) yalnız IP'ye bağlanır, kendi kovasına düşer.
+		$this->assertSame( 200, $this->direct( $this->donor_body( $product->get_id(), '300', 'k-notoken' ) )->get_status() );
+
 		// Ödenen/iptal edilen sipariş yer açar.
-		$first = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '11', 'k-cap-1' ) ) );
-		$first->update_status( 'cancelled' );
-		$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '99', 'k-cap-6' ) ) );
-		require_once ABSPATH . 'wp-admin/includes/user.php';
-		wp_delete_user( $user_id );
+		wc_get_order( $first_id )->update_status( 'cancelled' );
+		$this->order_from( $this->direct( $mine( $this->donor_body( $product->get_id(), '98', 'k-cap-over-2' ) ) ) );
 	}
 
 	public function test_quantity_is_capped_per_direct_order(): void {
@@ -425,6 +441,14 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		add_filter( 'donation_panel_direct_max_quantity', $allow );
 		$this->assertContains( $this->direct( $body )->get_status(), array( 200, 400 ) );
 		remove_filter( 'donation_panel_direct_max_quantity', $allow );
+	}
+
+	public function test_works_when_the_woocommerce_session_is_not_loaded_as_in_a_bare_rest_request(): void {
+		$product = $this->direct_product();
+		WC()->session = null;
+		$res          = $this->direct( $this->donor_body( $product->get_id(), '33', 'k-nosession' ) );
+		$this->order_from( $res );
+		$this->assertNotNull( WC()->session );
 	}
 
 	public function test_stock_is_reserved_only_for_stock_managed_products(): void {
@@ -454,13 +478,13 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		add_filter( 'donation_panel_direct_max_pending', $lift );
 		$this->reset_rate_limits();
 		$last = 0;
-		for ( $i = 0; $i < 10; $i++ ) {
+		for ( $i = 0; $i < 32; $i++ ) {
 			$r    = $this->direct( $this->donor_body( $product->get_id(), '15', 'k-rl-' . $i ), false );
 			$last = $r->get_status();
 		}
 		$this->assertSame( 429, $last );
 		remove_filter( 'donation_panel_direct_max_pending', $lift );
-		$this->assertSame( 8, $this->counts['woocommerce_new_order'], 'Dakikada en çok 8 sipariş.' );
+		$this->assertSame( 30, $this->counts['woocommerce_new_order'], 'Dakikada en çok 30 sipariş.' );
 	}
 
 	public function test_fixed_price_product_uses_server_price_and_quantity(): void {
