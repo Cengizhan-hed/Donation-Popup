@@ -4,8 +4,8 @@
  */
 import path from 'node:path';
 import { withCacheBust } from './env.mjs';
-import { SEL } from './selectors.mjs';
-import { clickSubmit, formOf } from './dp-form.mjs';
+import { DP_SEL, SEL } from './selectors.mjs';
+import { advanceToDetails, clickSubmit, formOf } from './dp-form.mjs';
 import {
   applyTimeoutsToPage,
   isRemoteProfile,
@@ -354,7 +354,14 @@ export async function runRemoteSmokeChecks(ctx) {
     reloadGuard.arm();
     // İlk adım boşken ana düğme: tutar adımı varsa tutar, yoksa bilgi adımı alanları doğrulanır.
     const price = formOf(shell).locator(SEL.customPrice).first();
-    if ((await price.count()) > 0 && (await price.isVisible())) await price.fill('');
+    if ((await price.count()) > 0 && (await price.isVisible())) {
+      await price.fill('');
+      // 12.1: tutar boşken düğme pasif (aria-disabled); tıklama yok. Doğrula, tutar seç, bilgi adımında boş gönder.
+      const submitBtn = formOf(shell).locator(DP_SEL.submit).first();
+      const pending = await submitBtn.getAttribute('aria-disabled');
+      if (pending !== 'true') throw new Error(`tutar boşken düğme pasif değil (aria-disabled=${pending})`);
+      await advanceToDetails(formOf(shell));
+    }
     const name = formOf(shell).locator(SEL.donorName).first();
     if ((await name.count()) > 0 && (await name.isVisible())) await name.fill('');
     await clickAddOrGo(page, shell, timeouts.action);

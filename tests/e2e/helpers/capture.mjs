@@ -1259,6 +1259,8 @@ async function runSubmitFaultChecks({ browser, contextOpts, env, productPath, gu
           return;
         }
         const name = form.locator(SEL.donorName).first();
+        // Hata sonrası form tutar adımına dönmüş olabilir (ad alanı gizli): bilgi adımına tutar seçerek geç.
+        if (!(await name.isVisible())) await advanceToDetails(form);
         await name.fill('Fault Unlock');
         if ((await name.inputValue()) !== 'Fault Unlock') {
           failures.push(makeFailure({ check: 'submit-fault', description: `Hata sonrası ad alanı yazılamadı (${mode})` }));

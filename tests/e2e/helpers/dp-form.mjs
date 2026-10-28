@@ -40,6 +40,29 @@ export async function setChecked(input, on = true) {
 }
 
 /**
+ * Tutar adımında geçerli bir tutar seçer (hazır tutar; yoksa serbest kutuya form minimumu ya da 25) ve
+ * ana düğmenin etkinleşmesini bekler. Etkinleşmezse zaman aşımı hatası verir (gevşetme yok).
+ * @param {import('@playwright/test').Locator} form
+ * @param {number} [timeout]
+ */
+export async function selectAnyAmount(form, timeout = CHECK_MS) {
+  const preset = form.locator(DP_SEL.preset).first();
+  const custom = form.locator(DP_SEL.amount).first();
+  if ((await preset.count()) > 0) {
+    await preset.click({ timeout });
+  } else if ((await custom.count()) > 0) {
+    const min = Number.parseFloat((await form.getAttribute('data-min')) || '0');
+    await custom.fill(String(min > 0 ? min : 25));
+  }
+  const submit = form.locator(DP_SEL.submit).first();
+  const deadline = Date.now() + timeout;
+  while ((await submit.getAttribute('aria-disabled')) === 'true') {
+    if (Date.now() > deadline) throw new Error('tutar seçildi ama ana düğme etkinleşmedi');
+    await form.page().waitForTimeout(100);
+  }
+}
+
+/**
  * Bilgi adımı görünene kadar "Devam"a basar (adımlar tek sayfaysa bir şey yapmaz).
  * @param {import('@playwright/test').Locator} form
  * @param {number} [timeout]
@@ -50,7 +73,12 @@ export async function advanceToDetails(form, timeout = CHECK_MS) {
     await details.waitFor({ state: 'visible', timeout });
     return;
   }
-  await form.locator(DP_SEL.submit).first().click({ timeout });
+  // 12.1: tutar seçilmeden ana düğme pasif (aria-disabled); tıklamak zaman aşımına düşer. Önce tutar seç.
+  const submitBtn = form.locator(DP_SEL.submit).first();
+  if ((await submitBtn.getAttribute('aria-disabled')) === 'true') {
+    await selectAnyAmount(form, timeout);
+  }
+  await submitBtn.click({ timeout });
   try {
     await details.waitFor({ state: 'visible', timeout });
   } catch (err) {
