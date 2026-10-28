@@ -23,7 +23,7 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__handle::before { content: ""; display: block; inline-size: 44px; block-size: 5px; margin-inline: auto; border-radius: 99px; background: var(--dpx-line-strong); }
 .dp-ac__head { display: flex; align-items: center; gap: 12px; padding: 22px 20px 0; flex: none; }
 .dp-ac .dp-ac__title { margin: 0; font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
-.dp-ac__close { margin-inline-start: auto; margin-inline-end: -8px; inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+:root .dp .dp-ac__close { margin-inline-start: auto; margin-inline-end: -8px; inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .dp-ac__close:hover { background: var(--dpx-chip); }
 .dp-ac__body { display: flex; flex-direction: column; gap: 16px; padding: 6px 20px calc(24px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; }
 .dp-ac__lead { margin: 0; font-size: .875rem; line-height: 1.5; color: var(--dpx-muted); }
@@ -51,8 +51,8 @@ html.dp-ac-lock { overflow: hidden; }
 .dp-ac__check input:checked::after { content: ""; position: absolute; inset-inline-start: 18px; inset-block-start: 15px; inline-size: 6px; block-size: 11px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .dp-ac__check input:focus-visible { outline: 2px solid var(--dp-color-primary); outline-offset: -2px; }
 .dp-ac__links { margin: 0; }
-.dp-ac__link { min-block-size: 44px; padding: 0; border: 0; background: transparent; color: var(--dp-color-primary-strong); font: inherit; font-size: .8125rem; font-weight: 600; text-decoration: none; cursor: pointer; }
-.dp-ac__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.dp-ac__link { min-block-size: 44px; padding: 0; border: 0; background: transparent; color: var(--dp-color-primary-strong); font: inherit; font-size: .8125rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.dp-ac__link:hover { text-decoration-thickness: 2px; }
 .dp-ac__btn { inline-size: 100%; }
 .dp-ac__btn[disabled] { cursor: progress; }
 .dp-ac__sent { text-align: center; padding-block: 16px; }

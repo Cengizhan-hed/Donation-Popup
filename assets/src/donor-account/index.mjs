@@ -120,7 +120,12 @@ function mountDialog(root) {
     overlay.classList.add('is-open');
     lockPage('donor-account', root, 'dp-ac-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
-    setView('login');
+    // Dokunmatik cihazda otomatik odak yok (klavye paneli kapatmasın); odak pencereye verilir.
+    const touch = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+    setView('login', !touch);
+    if (touch) {
+      surface.focus({ preventScroll: true });
+    }
   }
 
   function close() {
