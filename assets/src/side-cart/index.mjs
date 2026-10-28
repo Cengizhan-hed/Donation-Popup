@@ -39,6 +39,8 @@ function mount(root) {
   let lastFocus = null;
   let busy = false;
   let refreshSeq = 0;
+  // Önbellek sözleşmesi: sunucu kabuğu tüm ziyaretçiler için boş iskelettir; içerik yalnız REST ile gelir.
+  let lastRefresh = 0;
 
   const triggers = () => Array.from(document.querySelectorAll('[data-dp-sc-open], [data-dp-sc-fab]'));
 
@@ -132,11 +134,16 @@ function mount(root) {
           sub.textContent = data.sub;
         }
         setCount(data.count);
+        lastRefresh = Date.now();
         document.dispatchEvent(new CustomEvent('donation-panel:cart-updated', { detail: { count: toCount(data.count) } }));
         return true;
       }
     } catch {
       return false;
+    } finally {
+      if (mine === refreshSeq) {
+        body.removeAttribute('aria-busy');
+      }
     }
     return false;
   }
@@ -296,7 +303,14 @@ function mount(root) {
     } catch {
       pushed = false;
     }
-    refresh();
+    // Sepeti dolu ziyaretçide ilk içerik gelene kadar boş durum iskeleti gizli kalır (yanlış "sepet boş" yok).
+    if (!lastRefresh && itemsInCart(document.cookie) > 0) {
+      body.setAttribute('aria-busy', 'true');
+    }
+    // Az önce yenilendiyse (ekleme olayı) ikinci istek yapılmaz.
+    if (Date.now() - lastRefresh > 1500) {
+      refresh();
+    }
   }
 
   function close() {
