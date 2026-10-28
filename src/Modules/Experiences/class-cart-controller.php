@@ -151,6 +151,7 @@ class Cart_Controller extends Rest_Controller {
 	/**
 	 * Taze REST nonce (salt okunur; önbelleğe alınmaz).
 	 *
+	 * @param \WP_REST_Request|null $request Istek.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function nonce( $request = null ) {

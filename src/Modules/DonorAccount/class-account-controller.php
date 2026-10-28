@@ -135,6 +135,7 @@ class Account_Controller extends Rest_Controller {
 	/**
 	 * GET /account/session: taze nonce + durum (önbellekli sayfalarda bayat nonce'ı önler).
 	 *
+	 * @param \WP_REST_Request|null $request Istek.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function session( $request = null ) {
