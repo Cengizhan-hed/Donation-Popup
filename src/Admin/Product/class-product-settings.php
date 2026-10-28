@@ -48,6 +48,7 @@ final class Product_Settings {
 		return array(
 			'_wdp_donation_product',
 			'_wdp_auto_place',
+			'_donation_panel_direct',
 			'_allow_custom_price',
 			'_allow_multiple_shares',
 			'_enable_progress_bar',
@@ -261,6 +262,7 @@ final class Product_Settings {
 		$meta = array(
 			'_wdp_donation_product'      => self::parse_tristate_flag( isset( $posted['donation_product'] ) ? $posted['donation_product'] : null ),
 			'_wdp_auto_place'            => 'no' === strtolower( $raw( 'auto_place' ) ) ? 'no' : '',
+			'_donation_panel_direct'     => self::parse_tristate_flag( isset( $posted['direct'] ) ? $posted['direct'] : null ),
 			'_allow_custom_price'        => $flags['allow_custom_price'] ? 'yes' : 'no',
 			'_allow_multiple_shares'     => $flags['allow_multiple_shares'] ? 'yes' : 'no',
 			'_enable_progress_bar'       => $flags['enable_progress_bar'] ? 'yes' : 'no',

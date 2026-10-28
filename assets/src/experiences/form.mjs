@@ -75,6 +75,8 @@ export function createForm(root, hooks = {}) {
   const submitLock = form.querySelector('[data-dp-submit-lock]');
   const submitArrow = form.querySelector('[data-dp-submit-arrow]');
   const addCart = form.querySelector('[data-dp-addcart]');
+  // Doğrudan (sepetsiz) bağış: gönderim siparişe gider (`POST direct`), sepet düğmesi yok, ödeme order-pay sayfasında.
+  const direct = form.dataset.direct === '1';
   const trust = form.querySelector('[data-dp-trust]');
   const legal = form.querySelector('[data-dp-legal]');
   const recapAmount = form.querySelector('[data-dp-recap-amount]');
@@ -198,7 +200,7 @@ export function createForm(root, hooks = {}) {
       submitArrow.toggleAttribute('hidden', last);
     }
     if (addCart) {
-      addCart.hidden = !last;
+      addCart.hidden = !last || direct;
     }
     if (legal) {
       legal.hidden = !last;
@@ -537,7 +539,7 @@ export function createForm(root, hooks = {}) {
     const productId = form.dataset.productId;
     dispatch({ type: 'submitStart' });
     try {
-      const outcome = await addToCart(root, productId, values);
+      const outcome = await addToCart(root, productId, values, direct);
       if (outcome.errors) {
         const earlier = firstErrorStep(
           Object.keys(outcome.errors),
@@ -574,7 +576,11 @@ export function createForm(root, hooks = {}) {
       if (hooks.onDone) {
         hooks.onDone(root);
       }
-      const target = outcome.checkoutUrl || root.dataset.dpCheckout;
+      // Doğrudan akışta hedef yalnız sunucunun verdiği ödeme adresidir (sepet ödeme sayfasına düşülmez).
+      const target = direct ? outcome.checkoutUrl : outcome.checkoutUrl || root.dataset.dpCheckout;
+      if (direct && !target) {
+        throw new Error('direct');
+      }
       if (target) {
         window.location.assign(target);
       }
@@ -622,6 +628,23 @@ async function readJson(response) {
   }
 }
 
+/** Sayfa oturumu: doğrudan bağış anahtarının sabit parçası (sayfa yenilenince değişir). */
+const pageSession = Math.random().toString(36).slice(2, 10);
+
+/**
+ * Kısa, kararlı içerik özeti (djb2; güvenlik amaçlı değil, yalnız aynı içeriği aynı anahtara bağlar).
+ *
+ * @param {string} text Metin.
+ * @return {string} Özet.
+ */
+function digest(text) {
+  let hash = 5381;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(36);
+}
+
 /**
  * Sepete ekleme: `POST /donation-panel/v1/cart/add` (sunucuda doğrulanır). Bayat nonce (403) bir kez tazelenip yeniden denenir;
  * aynı `submission_key` çift eklemeyi önler.
@@ -629,16 +652,19 @@ async function readJson(response) {
  * @param {HTMLElement} root      Kök.
  * @param {string}      productId Ürün.
  * @param {object}      values    Alan değerleri.
+ * @param {boolean}     direct    Doğrudan (sepetsiz) bağış: `POST direct`.
  * @return {Promise<{ok: boolean, errors?: Record<string, string>, checkoutUrl?: string}>} Sonuç.
  */
-async function addToCart(root, productId, values) {
-  const payload = JSON.stringify({
-    ...values,
-    product_id: Number(productId),
-    submission_key: `dp-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-  });
+async function addToCart(root, productId, values, direct = false) {
+  const body = JSON.stringify({ ...values, product_id: Number(productId) });
+  // Sepet: her gönderim yeni anahtar. Doğrudan bağış: anahtar sayfa oturumu + içerik özetidir; aynı içeriğin yeniden
+  // gönderimi (çift dokunuş, ağ hatası sonrası yeniden deneme) sunucuda AYNI siparişi bulur, ikinci sipariş üretmez.
+  const submissionKey = direct
+    ? `dp-${productId}-${pageSession}-${digest(body)}`
+    : `dp-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  const payload = JSON.stringify({ ...values, product_id: Number(productId), submission_key: submissionKey });
   const send = (nonce) =>
-    window.fetch(`${root.dataset.dpRest}cart/add`, {
+    window.fetch(`${root.dataset.dpRest}${direct ? 'direct' : 'cart/add'}`, {
       method: 'POST',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', ...(nonce ? { 'X-WP-Nonce': nonce } : {}) },
@@ -652,11 +678,11 @@ async function addToCart(root, productId, values) {
       response = await send(fresh);
     }
   }
-  const body = await readJson(response);
-  if (response.ok && body && body.success) {
-    return { ok: true, checkoutUrl: body.checkout_url || '' };
+  const result = await readJson(response);
+  if (response.ok && result && result.success) {
+    return { ok: true, checkoutUrl: result.redirect_url || result.checkout_url || '' };
   }
-  const errors = body && body.data && body.data.errors;
+  const errors = result && result.data && result.data.errors;
   if (errors && Object.keys(errors).length) {
     return { ok: false, errors };
   }

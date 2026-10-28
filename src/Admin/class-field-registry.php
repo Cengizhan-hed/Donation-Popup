@@ -453,6 +453,14 @@ final class Field_Registry {
 			);
 		}
 
+		$f['direct.enabled'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'cart',
+			'label'   => __( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
+			'help'    => __( 'The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+
 		$f['form.privacy_notice'] = array(
 			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
 			'section' => 'notice',

@@ -80,6 +80,13 @@ class Settings {
 					'default' => false,
 				),
 			),
+			// Doğrudan (sepetsiz) bağış genel varsayılanı; ürün bazında geçersiz kılınır (`_donation_panel_direct`).
+			'direct'     => array(
+				'enabled' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+			),
 			'impact'     => array(
 				'map' => array(
 					'type'    => 'text',

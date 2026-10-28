@@ -126,6 +126,8 @@ final class Form_Context {
 			'phone'          => self::phone(),
 			'fields'         => $shares ? array() : self::fields( $legacy ),
 			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
+			// Doğrudan (sepetsiz) bağış: gönderim sepete değil siparişe (order-pay) gider.
+			'direct'         => is_object( $product ) && \DonationPanel\WooCommerce\Direct\Direct_Settings::enabled_for( $product ),
 		);
 
 		// Form altı gizlilik bağlantısı: ayar açıksa ve form kişisel veri alanı topluyorsa; adres boşsa WordPress gizlilik sayfası.
