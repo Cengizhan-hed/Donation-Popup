@@ -53,6 +53,11 @@ export async function probeTouchTargets(page, scopeSel) {
           name: el.getAttribute('name') || el.className || '',
           w: Math.round(r.width),
           h: Math.round(r.height),
+          // Teşhis (yalnız yapı): sınıflar, ilk 160 karakter HTML, eklentiye aitlik, sayfa adresi.
+          classes: String(el.getAttribute('class') || '').split(/\s+/).filter(Boolean).slice(0, 8),
+          html: (el.outerHTML || '').slice(0, 160),
+          inDonationPanel: !!(el.closest && el.closest('.donation-panel, [data-dp-exp]')),
+          url: location.href,
         };
         if (el.matches && el.matches('input[type="checkbox"]')) {
           const lab =
