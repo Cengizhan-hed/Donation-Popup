@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 14:43+0300\n"
+"POT-Creation-Date: 2026-10-28 17:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -220,7 +220,7 @@ msgstr ""
 #: src/Admin/Product/class-product-data-tab.php:619
 #: src/Admin/class-pages.php:201 src/Admin/class-pages.php:209
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:287
-#: blocks/donations/index.js:181
+#: blocks/donations/index.js:180
 msgid "Progress"
 msgstr ""
 
@@ -760,7 +760,7 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-field-registry.php:59
-#: src/WooCommerce/class-cart-hooks.php:796
+#: src/WooCommerce/class-cart-hooks.php:751
 #: templates/donation-panel/experiences/form.php:373
 msgid "Add-on donation"
 msgstr ""
@@ -1503,7 +1503,7 @@ msgstr ""
 
 #: src/Admin/class-pages.php:209
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:101
-#: src/Privacy/class-order-privacy.php:123 blocks/donation-form/index.js:59
+#: src/Privacy/class-order-privacy.php:124 blocks/donation-form/index.js:59
 #: blocks/donation-form/index.js:69
 msgid "Product"
 msgstr ""
@@ -2049,7 +2049,7 @@ msgstr ""
 msgid "Product not found (ID: %d). Please check the product ID."
 msgstr ""
 
-#: src/Core/class-bootstrap.php:98
+#: src/Core/class-bootstrap.php:99
 msgid ""
 "The WooCommerce Donation Modal Popup plugin requires WooCommerce to be "
 "installed and active."
@@ -2211,13 +2211,13 @@ msgid "Goal reached"
 msgstr ""
 
 #. translators: %s: site name.
-#: src/Modules/DonorAccount/class-account-controller.php:447
+#: src/Modules/DonorAccount/class-account-controller.php:459
 #, php-format
 msgid "[%s] Confirm to link your earlier gifts"
 msgstr ""
 
 #. translators: 1: verification link, 2: validity in minutes.
-#: src/Modules/DonorAccount/class-account-controller.php:449
+#: src/Modules/DonorAccount/class-account-controller.php:461
 #, php-format
 msgid ""
 "Open this link while logged in to add the gifts you made as a guest with "
@@ -2272,7 +2272,7 @@ msgstr ""
 #: src/Modules/DonorAccount/class-account-renderer.php:86
 #: src/Modules/DonorAccount/class-account-renderer.php:96
 #: src/Modules/DonorAccount/class-account-renderer.php:103
-#: src/WooCommerce/class-cart-hooks.php:317
+#: src/WooCommerce/class-cart-hooks.php:272
 msgid "Email"
 msgstr ""
 
@@ -2545,7 +2545,7 @@ msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:121
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:161
-#: blocks/donation-form/index.js:102 blocks/donations/index.js:99
+#: blocks/donation-form/index.js:102 blocks/donations/index.js:98
 msgid "Display"
 msgstr ""
 
@@ -2563,14 +2563,14 @@ msgstr ""
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:137
 #: src/Modules/TaxRelief/class-tax-relief-module.php:191
 #: src/Modules/TaxRelief/class-tax-relief-module.php:232
-#: src/WooCommerce/class-cart-hooks.php:332
+#: src/WooCommerce/class-cart-hooks.php:287
 #: src/WooCommerce/class-order-meta-keys.php:336
-#: src/WooCommerce/class-order-meta-keys.php:340 blocks/donations/index.js:25
+#: src/WooCommerce/class-order-meta-keys.php:340 blocks/donations/index.js:24
 msgid "Yes"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:138
-#: blocks/donations/index.js:26
+#: blocks/donations/index.js:25
 msgid "No"
 msgstr ""
 
@@ -2601,13 +2601,13 @@ msgid "progress"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:78
-#: blocks/donations/index.js:56
+#: blocks/donations/index.js:55
 msgid "Query"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:82
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:141
-#: blocks/donations/index.js:77
+#: blocks/donations/index.js:76
 msgid "Title"
 msgstr ""
 
@@ -2616,17 +2616,17 @@ msgid "Categories (slugs, comma-separated)"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:96
-#: blocks/donations/index.js:58
+#: blocks/donations/index.js:57
 msgid "Exclude categories"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:103
-#: blocks/donations/index.js:59
+#: blocks/donations/index.js:58
 msgid "IDs only"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:110
-#: blocks/donations/index.js:60
+#: blocks/donations/index.js:59
 msgid "Exclude IDs"
 msgstr ""
 
@@ -2635,112 +2635,112 @@ msgid "Type"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:125
-#: blocks/donations/index.js:63
+#: blocks/donations/index.js:62
 msgid "Count"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:135
-#: blocks/donations/index.js:72
+#: blocks/donations/index.js:71
 msgid "Order by"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:139
-#: blocks/donations/index.js:75
+#: blocks/donations/index.js:74
 msgid "Menu order"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:140
-#: blocks/donations/index.js:76
+#: blocks/donations/index.js:75
 msgid "Date"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:142
-#: blocks/donations/index.js:78
+#: blocks/donations/index.js:77
 msgid "Popularity"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:143
-#: blocks/donations/index.js:79
+#: blocks/donations/index.js:78
 msgid "Random"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:150
-#: blocks/donations/index.js:86
+#: blocks/donations/index.js:85
 msgid "Direction"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:165
-#: blocks/donations/index.js:101
+#: blocks/donations/index.js:100
 msgid "Columns"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:177
-#: blocks/donations/index.js:128
+#: blocks/donations/index.js:127
 msgid "Gap (px)"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:187
-#: blocks/donations/index.js:137
+#: blocks/donations/index.js:136
 msgid "Image ratio"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:195
-#: blocks/donations/index.js:144
+#: blocks/donations/index.js:143
 msgid "Original"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:202
-#: blocks/donations/index.js:151
+#: blocks/donations/index.js:150
 msgid "Alignment"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:206
-#: blocks/donations/index.js:154
+#: blocks/donations/index.js:153
 msgid "Center"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:207
-#: blocks/donations/index.js:155
+#: blocks/donations/index.js:154
 msgid "Left"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:214
-#: blocks/donations/index.js:162
+#: blocks/donations/index.js:161
 msgid "Button"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:218
-#: blocks/donations/index.js:165
+#: blocks/donations/index.js:164
 msgid "Panel"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:219
-#: blocks/donations/index.js:166
+#: blocks/donations/index.js:165
 msgid "Popup"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:220
-#: blocks/donations/index.js:167
+#: blocks/donations/index.js:166
 msgid "Link"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:227
-#: blocks/donations/index.js:173
+#: blocks/donations/index.js:172
 msgid "Full-width button"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:243
-#: blocks/donations/index.js:175
+#: blocks/donations/index.js:174
 msgid "Tabs"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:252
-#: blocks/donations/index.js:176
+#: blocks/donations/index.js:175
 msgid "“All” tab"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:261
-#: blocks/donations/index.js:178
+#: blocks/donations/index.js:177
 msgid "All tab label"
 msgstr ""
 
@@ -2750,27 +2750,27 @@ msgid "All"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:269
-#: blocks/donations/index.js:179
+#: blocks/donations/index.js:178
 msgid "Image"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:278
-#: blocks/donations/index.js:180
+#: blocks/donations/index.js:179
 msgid "Excerpt"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:296
-#: blocks/donations/index.js:182
+#: blocks/donations/index.js:181
 msgid "Price"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:305
-#: blocks/donations/index.js:183
+#: blocks/donations/index.js:182
 msgid "Category"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:314
-#: blocks/donations/index.js:185
+#: blocks/donations/index.js:184
 msgid "Excerpt words"
 msgstr ""
 
@@ -2779,12 +2779,12 @@ msgid "Image size"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:333
-#: blocks/donations/index.js:194
+#: blocks/donations/index.js:193
 msgid "Heading tag"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:346
-#: blocks/donations/index.js:205
+#: blocks/donations/index.js:204
 msgid "CSS class"
 msgstr ""
 
@@ -2931,7 +2931,7 @@ msgstr ""
 #. translators: %d: maximum quantity or share count.
 #. translators: %d: maximum quantity.
 #: src/Modules/Experiences/class-field-validator.php:158
-#: src/WooCommerce/Direct/class-direct-order-factory.php:85
+#: src/WooCommerce/Direct/class-direct-order-factory.php:91
 #, php-format
 msgid "Please choose a number between 1 and %d."
 msgstr ""
@@ -3032,7 +3032,7 @@ msgid "Please enter your phone number."
 msgstr ""
 
 #: src/Modules/Experiences/class-form-context.php:463
-#: src/WooCommerce/class-cart-hooks.php:324
+#: src/WooCommerce/class-cart-hooks.php:279
 #: src/WooCommerce/class-order-meta-keys.php:75
 msgid "Dedication"
 msgstr ""
@@ -3187,24 +3187,24 @@ msgstr ""
 msgid "I just donated to %s."
 msgstr ""
 
-#: src/Privacy/class-order-privacy.php:48
-#: src/Privacy/class-order-privacy.php:60
+#: src/Privacy/class-order-privacy.php:49
+#: src/Privacy/class-order-privacy.php:61
 msgid "Donation details (Donation Popup)"
 msgstr ""
 
-#: src/Privacy/class-order-privacy.php:119
+#: src/Privacy/class-order-privacy.php:120
 msgid "Order number"
 msgstr ""
 
-#: src/Privacy/class-order-privacy.php:132
+#: src/Privacy/class-order-privacy.php:133
 msgid "Donation details"
 msgstr ""
 
-#: src/Privacy/class-order-privacy.php:133
+#: src/Privacy/class-order-privacy.php:134
 msgid "Donor and shareholder details entered on the donation form."
 msgstr ""
 
-#: src/Privacy/class-order-privacy.php:200
+#: src/Privacy/class-order-privacy.php:206
 msgid ""
 "Donation orders and amounts are kept for accounting; only personal fields "
 "entered on the donation form were anonymized."
@@ -3264,8 +3264,14 @@ msgstr ""
 msgid ""
 "The plugin does not set its own cookies and does not use tracking or "
 "advertising services. Cart and checkout cookies are set by WooCommerce. "
-"Request limits use a one-way hash of the visitor address and are kept for a "
-"few minutes."
+"Request limits use a salted one-way hash of the visitor address (and, where "
+"the address is not reliable, a random browser token kept in the browser's "
+"local storage); these counters are kept for at most one hour. When you start "
+"a donation without the cart, the unpaid order also stores such hashes so "
+"that the number of unpaid orders per visitor can be limited; they are "
+"removed from the order as soon as it is paid, put on hold or cancelled. A "
+"salted hash of the random browser token stays on the order to protect "
+"against duplicate submissions and is removed by the personal data eraser."
 msgstr ""
 
 #: src/Support/class-phone-countries.php:27
@@ -3748,20 +3754,20 @@ msgstr ""
 msgid "Invalid price value."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-cleanup.php:98
+#: src/WooCommerce/Direct/class-direct-cleanup.php:138
 msgid "Direct donation was not paid in time and was cancelled automatically."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:63
+#: src/WooCommerce/Direct/class-direct-order-factory.php:69
 #: src/WooCommerce/class-cart.php:149
 msgid "This campaign is no longer accepting donations."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:69
+#: src/WooCommerce/Direct/class-direct-order-factory.php:75
 msgid "The request is missing its submission key."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:74
+#: src/WooCommerce/Direct/class-direct-order-factory.php:80
 #: src/WooCommerce/class-cart.php:155
 #: templates/donation-panel/experiences/bottom-sheet.php:16
 #: templates/donation-panel/experiences/inline.php:16
@@ -3770,41 +3776,42 @@ msgstr ""
 msgid "Please check the highlighted fields."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:96
+#: src/WooCommerce/Direct/class-direct-order-factory.php:102
 msgid "Your donation is already being processed. Please wait a moment."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:102
+#: src/WooCommerce/Direct/class-direct-order-factory.php:112
 msgid "This submission key was already used for a different donation."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:141
+#: src/WooCommerce/Direct/class-direct-order-factory.php:156
 msgid "The donation could not be started. Please try again."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:323
+#: src/WooCommerce/Direct/class-direct-order-factory.php:397
+#: src/WooCommerce/Direct/class-direct-order-factory.php:431
 msgid ""
 "You have several unpaid donations waiting. Please complete or wait for them "
 "to expire before starting another."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:336
+#: src/WooCommerce/Direct/class-direct-order-factory.php:444
 msgid "This donation is not available right now."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:339
+#: src/WooCommerce/Direct/class-direct-order-factory.php:447
 msgid "This donation is out of stock."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:342
+#: src/WooCommerce/Direct/class-direct-order-factory.php:450
 msgid "This donation can only be made once per order."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:372
+#: src/WooCommerce/Direct/class-direct-order-factory.php:480
 msgid "This donation cannot be started right now."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:513
+#: src/WooCommerce/Direct/class-direct-order-factory.php:622
 msgid "Direct donation started. Waiting for payment."
 msgstr ""
 
@@ -3822,67 +3829,67 @@ msgid ""
 "the product is published."
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:173
+#: src/WooCommerce/class-cart-hooks.php:171
 msgid "Please add to cart using the donation form. Donor details are required."
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:274
+#: src/WooCommerce/class-cart-hooks.php:229
 #: src/WooCommerce/class-order-meta-keys.php:78
 msgid "Share count"
 msgstr ""
 
 #. translators: %d: shareholder number.
-#: src/WooCommerce/class-cart-hooks.php:284
+#: src/WooCommerce/class-cart-hooks.php:239
 #: templates/donation-panel/experiences/form.php:305
 #, php-format
 msgid "Shareholder %d"
 msgstr ""
 
 #. translators: %d: shareholder number.
-#: src/WooCommerce/class-cart-hooks.php:292
+#: src/WooCommerce/class-cart-hooks.php:247
 #: src/WooCommerce/class-order-meta-keys.php:94
 #, php-format
 msgid "Shareholder %d email"
 msgstr ""
 
 #. translators: %d: shareholder number.
-#: src/WooCommerce/class-cart-hooks.php:300
+#: src/WooCommerce/class-cart-hooks.php:255
 #: src/WooCommerce/class-order-meta-keys.php:96
 #, php-format
 msgid "Shareholder %d note"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:310
+#: src/WooCommerce/class-cart-hooks.php:265
 msgid "Donor"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:331
+#: src/WooCommerce/class-cart-hooks.php:286
 msgid "Keep my name private"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:338
+#: src/WooCommerce/class-cart-hooks.php:293
 #: src/WooCommerce/class-order-meta-keys.php:74
 msgid "Donation note"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:356
+#: src/WooCommerce/class-cart-hooks.php:311
 #: src/WooCommerce/class-order-meta-keys.php:77
 #: templates/donation-panel/experiences/form.php:372
 msgid "Processing fee"
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:405
+#: src/WooCommerce/class-cart-hooks.php:360
 msgid ""
 "The donation line with amount 0 was removed from the cart. Please enter a "
 "valid donation amount."
 msgstr ""
 
-#: src/WooCommerce/class-cart-hooks.php:494
+#: src/WooCommerce/class-cart-hooks.php:449
 msgid "Please enter a donation amount greater than 0."
 msgstr ""
 
 #. translators: %s: formatted minimum amount with currency
-#: src/WooCommerce/class-cart-hooks.php:499
+#: src/WooCommerce/class-cart-hooks.php:454
 #, php-format
 msgid "Please enter %s or more."
 msgstr ""
@@ -4128,7 +4135,7 @@ msgstr ""
 msgid "Current product (automatic)"
 msgstr ""
 
-#: blocks/donation-form/index.js:122 blocks/donations/index.js:174
+#: blocks/donation-form/index.js:122 blocks/donations/index.js:173
 msgid "Button text"
 msgstr ""
 
@@ -4138,30 +4145,30 @@ msgid ""
 "form appears on the product page or when an ID is provided."
 msgstr ""
 
-#: blocks/donations/index.js:57
+#: blocks/donations/index.js:56
 msgid "Categories (slugs)"
 msgstr ""
 
-#: blocks/donations/index.js:61
+#: blocks/donations/index.js:60
 msgid "Type (fixed,custom,shares,campaign)"
 msgstr ""
 
-#: blocks/donations/index.js:110
+#: blocks/donations/index.js:109
 msgid "Tablet columns"
 msgstr ""
 
-#: blocks/donations/index.js:119
+#: blocks/donations/index.js:118
 msgid "Mobile columns"
 msgstr ""
 
-#: blocks/donations/index.js:177
+#: blocks/donations/index.js:176
 msgid "List title"
 msgstr ""
 
-#: blocks/donations/index.js:210
+#: blocks/donations/index.js:209
 msgid "Donations list"
 msgstr ""
 
-#: blocks/donations/index.js:211
+#: blocks/donations/index.js:210
 msgid "At least one published donation product is required for the preview."
 msgstr ""

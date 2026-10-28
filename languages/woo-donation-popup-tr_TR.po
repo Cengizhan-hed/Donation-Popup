@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 11:43:20+0000\n"
-"PO-Revision-Date: 2026-10-28 11:43:20+0000\n"
+"POT-Creation-Date: 2026-10-28 14:10:10+0000\n"
+"PO-Revision-Date: 2026-10-28 14:10:10+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -5799,6 +5799,9 @@ msgstr "Paket içe aktarıldı ve uygulandı."
 #: src/Privacy/class-privacy-tools.php
 msgid "The plugin does not set its own cookies and does not use tracking or advertising services. Cart and checkout cookies are set by WooCommerce. Request limits use a one-way hash of the visitor address and are kept for a few minutes."
 msgstr "Eklenti kendi çerezlerini kullanmaz; izleme ya da reklam hizmeti kullanmaz. Sepet ve ödeme çerezlerini WooCommerce ayarlar. İstek sınırları ziyaretçi adresinin tek yönlü karmasını kullanır ve birkaç dakika saklanır."
+
+msgid "The plugin does not set its own cookies and does not use tracking or advertising services. Cart and checkout cookies are set by WooCommerce. Request limits use a salted one-way hash of the visitor address (and, where the address is not reliable, a random browser token kept in the browser's local storage); these counters are kept for at most one hour. When you start a donation without the cart, the unpaid order also stores such hashes so that the number of unpaid orders per visitor can be limited; they are removed from the order as soon as it is paid, put on hold or cancelled. A salted hash of the random browser token stays on the order to protect against duplicate submissions and is removed by the personal data eraser."
+msgstr "Eklenti kendi çerezlerini kullanmaz; izleme ya da reklam hizmeti kullanmaz. Sepet ve ödeme çerezlerini WooCommerce ayarlar. İstek sınırları ziyaretçi adresinin tuzlu ve tek yönlü karmasını (adres güvenilir değilse ayrıca tarayıcının yerel depolamasındaki rastgele bir tarayıcı belirtecini) kullanır; bu sayaçlar en çok bir saat saklanır. Sepete uğramadan bağış başlatırsanız ödenmemiş sipariş de bu tür karmaları saklar; böylece ziyaretçi başına ödenmemiş sipariş sayısı sınırlanabilir. Bu karmalar sipariş ödendiğinde, beklemeye alındığında ya da iptal edildiğinde siparişten silinir. Rastgele tarayıcı belirtecinin tuzlu karması, çift gönderime karşı sipariş üzerinde kalır ve kişisel veri silme aracıyla silinir."
 
 #: src/Admin/
 msgid "The plugin does not write privacy text. It only shows a short link to the page you wrote on your site."
