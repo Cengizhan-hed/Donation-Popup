@@ -16,6 +16,7 @@
 namespace DonationPanel\WooCommerce\Direct;
 
 use DonationPanel\Domain\Campaign_Goal;
+use DonationPanel\Http\Client_Ip;
 use DonationPanel\Domain\Progress_Currency;
 use DonationPanel\Modules\Experiences\Field_Validator;
 use DonationPanel\WooCommerce\Cart_Data;
@@ -33,6 +34,9 @@ final class Direct_Order_Factory {
 
 	/** İdempotency anahtarı (karma). */
 	const KEY_META = '_donation_panel_direct_key';
+
+	/** İstemci (IP/kullanıcı) karması: bekleyen sipariş üst sınırı için. */
+	const CLIENT_META = '_donation_panel_direct_client';
 
 	/** İçerik parmak izi (karma). */
 	const FINGERPRINT_META = '_donation_panel_direct_fp';
@@ -72,6 +76,11 @@ final class Direct_Order_Factory {
 		}
 
 		$plan = $this->plan( $product, $model, $input, $validated );
+		$max  = self::max_quantity();
+		if ( (int) $plan['quantity'] > $max ) {
+			/* translators: %d: maximum quantity. */
+			return $this->fail( 400, sprintf( __( 'Please choose a number between 1 and %d.', 'woo-donation-popup' ), $max ), 'donation_panel_cart_rejected', array( 'quantity' => sprintf( __( 'Please choose a number between 1 and %d.', 'woo-donation-popup' ), $max ) ) );
+		}
 		// Sipariş kalemi oluşmadan önce sepete ekleme ile aynı satın alınabilirlik/stok/ekleme doğrulamaları.
 		$purchase = $this->purchase_error( $product, (int) $plan['quantity'] );
 		if ( '' !== $purchase ) {
@@ -91,7 +100,12 @@ final class Direct_Order_Factory {
 				}
 				return $this->done( $existing, true );
 			}
-			$order = $this->create( $product, $plan, $key_hash, $fingerprint );
+			$client = self::client_hash();
+			if ( $this->pending_count( $client ) >= self::max_pending() ) {
+				return $this->fail( 429, __( 'You have several unpaid donations waiting. Please complete or wait for them to expire before starting another.', 'woo-donation-popup' ), 'donation_panel_direct_too_many' );
+			}
+			$plan['client'] = $client;
+			$order          = $this->create( $product, $plan, $key_hash, $fingerprint );
 		} finally {
 			$this->release( $key_hash );
 		}
@@ -102,6 +116,67 @@ final class Direct_Order_Factory {
 			return $this->fail( 500, __( 'The donation could not be started. Please try again.', 'woo-donation-popup' ), 'donation_panel_direct_failed' );
 		}
 		return $this->done( $order, false );
+	}
+
+	/**
+	 * Tek doğrudan siparişte en çok adet (varsayılan 20).
+	 *
+	 * @return int
+	 */
+	public static function max_quantity() {
+		/**
+		 * Tek doğrudan bağış siparişindeki en çok adet/hisse.
+		 *
+		 * @param int $max Üst sınır.
+		 */
+		return max( 1, (int) apply_filters( 'donation_panel_direct_max_quantity', 20 ) );
+	}
+
+	/**
+	 * İstemci başına en çok bekleyen doğrudan sipariş (varsayılan 5).
+	 *
+	 * @return int
+	 */
+	public static function max_pending() {
+		/**
+		 * İstemci (IP ya da hesap) başına aynı anda bekleyen doğrudan bağış siparişi sınırı.
+		 *
+		 * @param int $max Üst sınır.
+		 */
+		return max( 1, (int) apply_filters( 'donation_panel_direct_max_pending', 5 ) );
+	}
+
+	/**
+	 * İstemci kimliği karması (girişli: hesap, değilse IP); kişisel veri düz saklanmaz.
+	 *
+	 * @return string
+	 */
+	public static function client_hash() {
+		$user_id = get_current_user_id();
+		return md5( 'donation_panel_direct_client|' . ( $user_id > 0 ? 'u' . $user_id : Client_Ip::get() ) );
+	}
+
+	/**
+	 * İstemcinin bekleyen doğrudan sipariş sayısı.
+	 *
+	 * @param string $client İstemci karması.
+	 * @return int
+	 */
+	private function pending_count( $client ) {
+		$ids = wc_get_orders(
+			array(
+				'limit'      => self::max_pending() + 1,
+				'status'     => array( 'pending' ),
+				'return'     => 'ids',
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- tek anahtarlı, küçük sınırlı sorgu.
+					array(
+						'key'   => self::CLIENT_META,
+						'value' => $client,
+					),
+				),
+			)
+		);
+		return count( $ids );
 	}
 
 	/**
@@ -282,13 +357,15 @@ final class Direct_Order_Factory {
 		$order->set_customer_user_agent( wc_get_user_agent() );
 		$order->update_meta_data( self::FLAG_META, 'yes' );
 		$order->update_meta_data( self::KEY_META, $key_hash );
+		$order->update_meta_data( self::CLIENT_META, isset( $plan['client'] ) ? (string) $plan['client'] : '' );
 		$order->update_meta_data( self::FINGERPRINT_META, $fingerprint );
 		$order->calculate_totals( true );
 		$order->add_order_note( __( 'Direct donation started. Waiting for payment.', 'woo-donation-popup' ) );
 		$order->save();
 
-		// Bekleyen sipariş stoğu rezerve eder (WooCommerce ödeme akışıyla aynı); yetmiyorsa sipariş açılmaz.
-		if ( function_exists( 'wc_reserve_stock_for_order' ) ) {
+		// Yalnız stok yönetimli üründe: bekleyen sipariş stoğu rezerve eder (WooCommerce ödeme akışıyla aynı); yetmiyorsa sipariş açılmaz.
+		// Rezervasyonun kötüye kullanımı: adet üst sınırı, istemci başına bekleyen sipariş sınırı ve kısa temizleme süresiyle kısıtlıdır.
+		if ( function_exists( 'wc_reserve_stock_for_order' ) && $product->managing_stock() ) {
 			try {
 				wc_reserve_stock_for_order( $order );
 			} catch ( \Exception $e ) {

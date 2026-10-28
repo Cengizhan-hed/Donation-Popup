@@ -40,22 +40,25 @@ final class Direct_Cleanup {
 	 */
 	public static function schedule() {
 		if ( ! wp_next_scheduled( self::HOOK ) ) {
-			wp_schedule_event( time() + HOUR_IN_SECONDS, 'hourly', self::HOOK );
+			wp_schedule_event( time() + 15 * MINUTE_IN_SECONDS, 'hourly', self::HOOK );
 		}
 	}
 
 	/**
-	 * Bekleme süresi (sn).
+	 * Bekleme süresi (sn): WooCommerce stok tutma süresiyle uyumlu (`woocommerce_hold_stock_minutes`, varsayılan 60 dk);
+	 * süre kapalıysa (0) 6 saat. En az 15 dakika.
 	 *
 	 * @return int
 	 */
 	public static function ttl() {
+		$hold    = (int) get_option( 'woocommerce_hold_stock_minutes', 60 );
+		$default = $hold > 0 ? $hold * MINUTE_IN_SECONDS : 6 * HOUR_IN_SECONDS;
 		/**
-		 * Ödenmeyen doğrudan bağış siparişi kaç saniye sonra iptal edilsin (en az 1 saat).
+		 * Ödenmeyen doğrudan bağış siparişi kaç saniye sonra iptal edilsin (en az 15 dakika).
 		 *
-		 * @param int $seconds Süre (varsayılan 24 saat).
+		 * @param int $seconds Süre.
 		 */
-		return max( HOUR_IN_SECONDS, (int) apply_filters( 'donation_panel_direct_pending_ttl', DAY_IN_SECONDS ) );
+		return max( 15 * MINUTE_IN_SECONDS, (int) apply_filters( 'donation_panel_direct_pending_ttl', $default ) );
 	}
 
 	/**

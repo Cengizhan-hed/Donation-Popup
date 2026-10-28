@@ -388,8 +388,70 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$this->assertSame( 55.0, (float) $order->get_total() );
 	}
 
+	public function test_pending_orders_per_client_are_capped_and_idempotent_retries_are_not_counted(): void {
+		$product = $this->direct_product();
+		for ( $i = 1; $i <= 5; $i++ ) {
+			$this->order_from( $this->direct( $this->donor_body( $product->get_id(), (string) ( 10 + $i ), 'k-cap-' . $i ) ) );
+		}
+		$sixth = $this->direct( $this->donor_body( $product->get_id(), '99', 'k-cap-6' ) );
+		$this->assertSame( 429, $sixth->get_status(), wp_json_encode( $sixth->get_data() ) );
+		$this->assertSame( 0, $this->orders_for_key( 'k-cap-6' ) );
+		// Aynı anahtarın yeniden denemesi sayılmaz ve mevcut siparişi döndürür.
+		$retry = $this->direct( $this->donor_body( $product->get_id(), '11', 'k-cap-1' ) );
+		$this->assertSame( 200, $retry->get_status() );
+		$this->assertTrue( $retry->get_data()['reused'] );
+		// Başka istemci (kullanıcı) etkilenmez.
+		$user_id = self::factory_user();
+		wp_set_current_user( $user_id );
+		$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '12', 'k-cap-other' ) ) );
+		wp_set_current_user( 0 );
+		// Ödenen/iptal edilen sipariş yer açar.
+		$first = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '11', 'k-cap-1' ) ) );
+		$first->update_status( 'cancelled' );
+		$this->order_from( $this->direct( $this->donor_body( $product->get_id(), '99', 'k-cap-6' ) ) );
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+		wp_delete_user( $user_id );
+	}
+
+	public function test_quantity_is_capped_per_direct_order(): void {
+		$product = $this->direct_product( '5', array( '_enable_quantity' => 'yes', '_max_shares' => '500' ) );
+		$body    = array( 'product_id' => $product->get_id(), 'quantity' => 21, 'submission_key' => 'k-qty', 'donation_full_name' => 'Ali Veli', 'donation_phone' => '+90 532 111 11 11' );
+		$res     = $this->direct( $body );
+		$this->assertSame( 400, $res->get_status(), wp_json_encode( $res->get_data() ) );
+		$this->assertSame( 0, $this->orders_for_key( 'k-qty' ) );
+		$allow = static function () {
+			return 21;
+		};
+		add_filter( 'donation_panel_direct_max_quantity', $allow );
+		$this->assertContains( $this->direct( $body )->get_status(), array( 200, 400 ) );
+		remove_filter( 'donation_panel_direct_max_quantity', $allow );
+	}
+
+	public function test_stock_is_reserved_only_for_stock_managed_products(): void {
+		global $wpdb;
+		$product = $this->direct_product( '25', array( '_enable_quantity' => 'yes' ) );
+		$order   = $this->order_from( $this->direct( array( 'product_id' => $product->get_id(), 'quantity' => 3, 'submission_key' => 'k-nores', 'donation_full_name' => 'Ali Veli', 'donation_phone' => '+90 532 111 11 11' ) ) );
+		$rows    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}wc_reserved_stock WHERE order_id = %d", $order->get_id() ) ); // phpcs:ignore WordPress.DB
+		$this->assertSame( 0, $rows, 'Stok yönetimsiz bağış ürünü rezervasyon tüketmemeli.' );
+	}
+
+	public function test_cleanup_ttl_follows_the_woocommerce_hold_stock_minutes(): void {
+		$old = get_option( 'woocommerce_hold_stock_minutes', '60' );
+		update_option( 'woocommerce_hold_stock_minutes', '45' );
+		$this->assertSame( 45 * MINUTE_IN_SECONDS, Direct_Cleanup::ttl() );
+		update_option( 'woocommerce_hold_stock_minutes', '0' );
+		$this->assertSame( 6 * HOUR_IN_SECONDS, Direct_Cleanup::ttl() );
+		update_option( 'woocommerce_hold_stock_minutes', '5' );
+		$this->assertSame( 15 * MINUTE_IN_SECONDS, Direct_Cleanup::ttl(), 'En az 15 dakika.' );
+		update_option( 'woocommerce_hold_stock_minutes', $old );
+	}
+
 	public function test_rate_limit(): void {
 		$product = $this->direct_product();
+		$lift    = static function () {
+			return 100;
+		};
+		add_filter( 'donation_panel_direct_max_pending', $lift );
 		$this->reset_rate_limits();
 		$last = 0;
 		for ( $i = 0; $i < 10; $i++ ) {
@@ -397,6 +459,7 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 			$last = $r->get_status();
 		}
 		$this->assertSame( 429, $last );
+		remove_filter( 'donation_panel_direct_max_pending', $lift );
 		$this->assertSame( 8, $this->counts['woocommerce_new_order'], 'Dakikada en çok 8 sipariş.' );
 	}
 
