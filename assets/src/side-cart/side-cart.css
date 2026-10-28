@@ -55,7 +55,7 @@
 .dp-sc__step { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .dp-sc__step:hover:not([disabled]) { background: var(--dpx-line); }
 .dp-sc__step[disabled] { opacity: .4; cursor: not-allowed; }
-.dp-sc__remove { min-block-size: 44px; min-inline-size: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--dpx-muted); text-decoration: underline; text-underline-offset: 3px; font: inherit; font-size: .75rem; font-weight: 600; cursor: pointer; border-radius: 8px; }
+.dp-sc__remove { min-block-size: 44px; min-inline-size: 44px; padding: 0; text-align: start; border: 0; background: transparent; color: var(--dpx-muted); text-decoration: underline; text-underline-offset: 3px; font: inherit; font-size: .75rem; font-weight: 600; cursor: pointer; border-radius: 8px; }
 .dp-sc__remove:hover:not([disabled]) { color: var(--dp-color-text); }
 .dp-sc__remove[disabled] { opacity: .5; cursor: not-allowed; }
 
