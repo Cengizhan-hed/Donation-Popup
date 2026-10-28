@@ -304,4 +304,21 @@ describe('waitForVisibleCandidate', () => {
       assert.match(r.detail, /adaylar=1 hepsi gizli .*size=0x0 ata=div/);
     });
   });
+
+  const TABS = (tabAttrs) => `
+<div><button ${tabAttrs} onclick="document.getElementById('p1').hidden=true;document.getElementById('p2').hidden=false">B</button></div>
+<div id="p1" role="tabpanel"><p>x</p></div>
+<div id="p2" role="tabpanel" aria-labelledby="t2" hidden><button data-dp-open>Donate</button></div>`;
+  it('gizli tabpanel + role=tab: sekmeyi tıklayıp görünür adayı döner', async () => {
+    await withPage(TABS('role="tab" aria-controls="p2" id="t2" aria-selected="false"'), async (page) => {
+      const r = await waitForVisibleCandidate(page.locator('[data-dp-open]'), 2000);
+      assert.ok(r.locator);
+    });
+  });
+  it('ARIA yoksa (href/data-toggle) sekme tıklanmaz', async () => {
+    await withPage(TABS('data-toggle="tab" href="#p2" id="t2"'), async (page) => {
+      const r = await waitForVisibleCandidate(page.locator('[data-dp-open]'), 500);
+      assert.equal(r.locator, null);
+    });
+  });
 });

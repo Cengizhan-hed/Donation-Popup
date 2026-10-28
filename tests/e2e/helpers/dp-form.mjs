@@ -311,18 +311,90 @@ export async function collectHiddenTriggerDump(candidates) {
         chain.push({ el: label(el), display: cs.display, visibility: cs.visibility, opacity: cs.opacity, hidden: !!el.hidden, rect: box(el) });
         if (el === document.body) break;
       }
-      return { url: location.href, title: document.title, openCountAll: all.length, chain };
+      // Sekme/panel bilgisi (yalnız standart ARIA): ilk adayın atalarındaki id/rol/aria-labelledby + bağlı sekme.
+      const tabs = [];
+      for (let el = first; el; el = el.parentElement) {
+        const id = el.id || '';
+        const role = el.getAttribute('role') || '';
+        const lb = el.getAttribute('aria-labelledby') || '';
+        if (role === 'tabpanel' || id || lb) {
+          let tab = null;
+          if (id) {
+            for (const t of document.querySelectorAll('[role="tab"][aria-controls]')) {
+              if (t.getAttribute('aria-controls') === id) { tab = t; break; }
+            }
+          }
+          tabs.push({ el: label(el), id: id.slice(0, 60), role, labelledby: lb.slice(0, 60), tabFound: !!tab, tabSelected: tab ? tab.getAttribute('aria-selected') : null });
+        }
+        if (el === document.body) break;
+      }
+      return { url: location.href, title: document.title, openCountAll: all.length, chain, tabs: tabs.slice(0, 8) };
     })
     .catch((e) => ({ diag: String(e && e.message ? e.message : e).split('\n')[0] }));
+}
+
+/**
+ * Aday gizliyse, atalarındaki standart ARIA sekme panelini (id'si bir `[role=tab][aria-controls]` tarafından gösterilen
+ * ata; ya da `role=tabpanel` + `aria-labelledby` ile bağlı sekme) açan sekmeyi tıklar. ARIA yoksa hiçbir şey yapmaz
+ * (`href="#id"` / `data-toggle` GEÇERSİZ). Tema/oluşturucu adı ya da sınıfı kullanılmaz.
+ * @param {import('@playwright/test').Locator} candidate
+ * @returns {Promise<boolean>} bir sekme tıklandıysa true
+ */
+export async function activateAriaTabFor(candidate) {
+  const page = candidate.page();
+  const marked = await candidate
+    .evaluate((el) => {
+      document.querySelectorAll('[data-dp-tab-probe]').forEach((n) => n.removeAttribute('data-dp-tab-probe'));
+      for (let a = el.parentElement; a; a = a.parentElement) {
+        let tab = null;
+        if (a.id) {
+          for (const t of document.querySelectorAll('[role="tab"][aria-controls]')) {
+            if (t.getAttribute('aria-controls') === a.id) { tab = t; break; }
+          }
+        }
+        const lb = a.getAttribute('aria-labelledby');
+        if (!tab && a.getAttribute('role') === 'tabpanel' && lb) {
+          for (const id of lb.split(/\s+/)) {
+            const t = id ? document.getElementById(id) : null;
+            if (t && t.getAttribute('role') === 'tab') { tab = t; break; }
+          }
+        }
+        if (tab) {
+          tab.setAttribute('data-dp-tab-probe', '1');
+          return true;
+        }
+      }
+      return false;
+    })
+    .catch(() => false);
+  if (!marked) return false;
+  try {
+    await page.locator('[data-dp-tab-probe]').first().click({ timeout: 2000 });
+    return true;
+  } catch (e) {
+    return false;
+  } finally {
+    await page.evaluate(() => document.querySelectorAll('[data-dp-tab-probe]').forEach((n) => n.removeAttribute('data-dp-tab-probe'))).catch(() => {});
+  }
 }
 
 export async function waitForVisibleCandidate(candidates, timeout = CHECK_MS) {
   const deadline = Date.now() + timeout;
   let total = 0;
+  let tabTried = false;
   for (;;) {
     total = await candidates.count();
     for (let i = 0; i < total; i += 1) {
       if (await candidates.nth(i).isVisible()) return { locator: candidates.nth(i), total, detail: '' };
+    }
+    if (!tabTried && total > 0) {
+      tabTried = true;
+      for (let i = 0; i < Math.min(total, 6); i += 1) {
+        if (await activateAriaTabFor(candidates.nth(i))) {
+          await candidates.page().waitForTimeout(150);
+          if (await candidates.nth(i).isVisible()) return { locator: candidates.nth(i), total, detail: '' };
+        }
+      }
     }
     if (Date.now() > deadline) break;
     await candidates.page().waitForTimeout(100);
