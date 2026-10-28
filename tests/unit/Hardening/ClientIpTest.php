@@ -86,6 +86,20 @@ final class ClientIpTest extends TestCase {
 		$this->assertTrue( $limiter->hit( 'b', 3 ) );
 	}
 
+	public function test_admin_setting_defines_trusted_proxies(): void {
+		update_option( 'donation_panel_settings', array( 'general' => array( 'trusted_proxies' => "10.0.0.0/8\nnot-an-ip, 192.0.2.5" ) ) );
+		$this->assertSame( array( '10.0.0.0/8', '192.0.2.5' ), Client_Ip::trusted_proxies() );
+		$_SERVER['REMOTE_ADDR']          = '10.1.2.3';
+		$_SERVER['HTTP_X_FORWARDED_FOR'] = '198.51.100.20';
+		$this->assertSame( '198.51.100.20', Client_Ip::get() );
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.50';
+		$this->assertSame( '203.0.113.50', Client_Ip::get() );
+	}
+
+	public function test_empty_setting_keeps_remote_addr(): void {
+		$this->assertSame( array(), Client_Ip::trusted_proxies() );
+	}
+
 	public function test_legacy_trust_filter_still_honoured(): void {
 		add_filter( 'wdp_trust_proxy_headers', static function () {
 			return true;

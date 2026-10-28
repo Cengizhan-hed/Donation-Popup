@@ -23,7 +23,7 @@ class Settings {
 	/**
 	 * Her istekte okunan, küçük ve otomatik yüklenen seçenekler (ek sorgu yok; toplam ≤5 KB).
 	 */
-	const AUTOLOAD_FLAG    = 'donation_panel_autoload_v1';
+	const AUTOLOAD_FLAG    = 'donation_panel_autoload_v2';
 	const AUTOLOAD_OPTIONS = array(
 		'donation_panel_settings',
 		'donation_panel_migrations',
@@ -78,6 +78,11 @@ class Settings {
 				'disable_frontend'         => array(
 					'type'    => 'bool',
 					'default' => false,
+				),
+				// Güvenilen ters vekil/CDN adresleri (satır başına bir IP/CIDR); boşsa yalnız REMOTE_ADDR kullanılır.
+				'trusted_proxies'          => array(
+					'type'    => 'text',
+					'default' => '',
 				),
 			),
 			// Doğrudan (sepetsiz) bağış genel varsayılanı; ürün bazında geçersiz kılınır (`_donation_panel_direct`).
@@ -376,6 +381,9 @@ class Settings {
 			} elseif ( 'donation_panel_settings' === $name ) {
 				// Kayıt yoksa WordPress her istekte boşuna sorgular: varsayılanı (okuma davranışıyla aynı) otomatik yüklenen kayıt olarak yaz.
 				add_option( $name, self::normalize( array() ), '', true );
+			} elseif ( 'wdp_button_settings' === $name || 'wdp_success_settings' === $name ) {
+				// Kayıt yoksa her istekte tek SELECT harcanır: boş dizi (okuma varsayılanıyla aynı) otomatik yüklenen kayıt olarak yazılır.
+				add_option( $name, array(), '', true );
 			} elseif ( 'wdp_placement_settings' === $name ) {
 				add_option( $name, \DonationPanel\Domain\Placement_Settings::normalize( array( 'auto_place' => 'no' ) ), '', true );
 			}

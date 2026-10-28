@@ -61,7 +61,8 @@ final class Field_Registry {
 				'tax'    => array( __( 'Tax relief declaration', 'woo-donation-popup' ), __( 'One question at checkout. Only used when the Tax relief module is on.', 'woo-donation-popup' ) ),
 			),
 			Admin_Bootstrap::SLUG_TOOLS     => array(
-				'data' => array( __( 'Data', 'woo-donation-popup' ), __( 'What happens to plugin data when you delete the plugin.', 'woo-donation-popup' ) ),
+				'data'    => array( __( 'Data', 'woo-donation-popup' ), __( 'What happens to plugin data when you delete the plugin.', 'woo-donation-popup' ) ),
+				'network' => array( __( 'Visitor address', 'woo-donation-popup' ), __( 'Only needed when your site sits behind a proxy or CDN.', 'woo-donation-popup' ) ),
 			),
 			Admin_Bootstrap::SLUG_PRIVACY   => array(
 				'notice' => array( __( 'Privacy link under the form', 'woo-donation-popup' ), __( 'The plugin does not write privacy text. It only shows a short link to the page you wrote on your site.', 'woo-donation-popup' ) ),
@@ -453,11 +454,19 @@ final class Field_Registry {
 			);
 		}
 
+		$f['general.trusted_proxies'] = array(
+			'page'    => Admin_Bootstrap::SLUG_TOOLS,
+			'section' => 'network',
+			'label'   => __( 'Trusted proxy addresses', 'woo-donation-popup' ),
+			'help'    => __( 'Leave empty unless your site runs behind a proxy or CDN. One address or range per line (for example 10.0.0.0/8). Visitor addresses sent by these proxies are then used to tell visitors apart for rate limits. Never list addresses you do not control.', 'woo-donation-popup' ),
+			'type'    => 'textarea',
+		);
+
 		$f['direct.enabled'] = array(
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'cart',
 			'label'   => __( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
-			'help'    => __( 'The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, ask your developer to set the donation_panel_trusted_proxies filter so visitors can be told apart.', 'woo-donation-popup' ),
+			'help'    => __( 'The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 		);
 

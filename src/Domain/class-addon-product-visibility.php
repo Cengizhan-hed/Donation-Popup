@@ -49,12 +49,14 @@ class Addon_Product_Visibility {
 	public static function get_meta( $product, $key ) {
 		$legacy = self::LEGACY_META[ $key ] ?? '';
 		if ( is_object( $product ) && method_exists( $product, 'get_meta' ) ) {
-			$value = $product->get_meta( $key );
+			// WP meta önbelleğinden okunur (WC_Data::get_meta ürün başına ayrı sorgu açar); bkz. Product_Meta.
+			$value = Product_Meta::get( $product, $key );
 			if ( '' === $legacy ) {
 				return $value;
 			}
-			$has_new = method_exists( $product, 'meta_exists' ) ? $product->meta_exists( $key ) : ( '' !== $value && null !== $value );
-			return $has_new ? $value : $product->get_meta( $legacy );
+			$pid     = method_exists( $product, 'get_id' ) ? (int) $product->get_id() : 0;
+			$has_new = $pid > 0 && function_exists( 'metadata_exists' ) ? metadata_exists( 'post', $pid, $key ) : ( '' !== $value && null !== $value );
+			return $has_new ? $value : Product_Meta::get( $product, $legacy );
 		}
 		$id    = absint( $product );
 		$value = get_post_meta( $id, $key, true );

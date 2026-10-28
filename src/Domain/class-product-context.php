@@ -47,26 +47,26 @@ class Product_Context {
 	public static function build_form_context( $product ) {
 		$product_id            = (int) $product->get_id();
 		$product_price         = $product->get_price();
-		$allow_custom_price    = $product->get_meta( '_allow_custom_price' ) === 'yes';
-		$allow_multiple_shares = $product->get_meta( '_allow_multiple_shares' ) === 'yes';
-		$enable_progress_bar   = $product->get_meta( '_enable_progress_bar' ) === 'yes';
+		$allow_custom_price    = Product_Meta::get( $product, '_allow_custom_price' ) === 'yes';
+		$allow_multiple_shares = Product_Meta::get( $product, '_allow_multiple_shares' ) === 'yes';
+		$enable_progress_bar   = Product_Meta::get( $product, '_enable_progress_bar' ) === 'yes';
 
 		// Progress bar forms always collect a custom amount.
 		if ( $enable_progress_bar ) {
 			$allow_custom_price = true;
 		}
 
-		$min_price = (string) $product->get_meta( '_min_custom_price' );
+		$min_price = (string) Product_Meta::get( $product, '_min_custom_price' );
 		if ( $allow_custom_price && '' === $min_price ) {
 			$min_price = '0';
 		}
 
-		$max_shares = (string) $product->get_meta( '_max_shares' );
+		$max_shares = (string) Product_Meta::get( $product, '_max_shares' );
 		if ( $allow_multiple_shares && '' === $max_shares ) {
 			$max_shares = '7';
 		}
 
-		$progress_bar_limit       = (string) $product->get_meta( '_progress_bar_limit' );
+		$progress_bar_limit       = (string) Product_Meta::get( $product, '_progress_bar_limit' );
 		$progress_bar_limit_value = (float) $progress_bar_limit;
 
 		$progress_min_price = $min_price;
@@ -103,8 +103,8 @@ class Product_Context {
 			'progress_bar_limit'        => $progress_bar_limit_value,
 			'progress_min_price'        => $progress_min_price,
 			'total_donation'            => $total_donation,
-			'enable_product_note'       => $product->get_meta( '_enable_product_note' ) === 'yes',
-			'product_note_text'         => trim( (string) $product->get_meta( '_product_note_text' ) ),
+			'enable_product_note'       => Product_Meta::get( $product, '_enable_product_note' ) === 'yes',
+			'product_note_text'         => trim( (string) Product_Meta::get( $product, '_product_note_text' ) ),
 			'enable_addon_donation'     => Addon_Product_Visibility::get_meta( $product, '_enable_addon_donation' ) === 'yes',
 			'addon_donation_message'    => trim( (string) Addon_Product_Visibility::get_meta( $product, '_addon_donation_message' ) ),
 			'addon_min_price'           => $addon_min_price,
@@ -127,29 +127,29 @@ class Product_Context {
 			'enable_wizard'             => self::meta_flag_or_global( $product, '_enable_wizard', 'enable_multi_step' ),
 			'enable_field_icons'        => self::meta_flag_or_global( $product, '_enable_field_icons', 'enable_field_icons' ),
 			'enable_impact_line'        => self::meta_flag_default_yes( $product, '_enable_impact_line' ),
-			'impact_line_text'          => trim( (string) $product->get_meta( '_impact_line_text' ) ),
-			'amount_presets'            => trim( (string) $product->get_meta( '_amount_presets' ) ),
-			'amount_preset_recommended' => trim( (string) $product->get_meta( '_amount_preset_recommended' ) ),
+			'impact_line_text'          => trim( (string) Product_Meta::get( $product, '_impact_line_text' ) ),
+			'amount_presets'            => trim( (string) Product_Meta::get( $product, '_amount_presets' ) ),
+			'amount_preset_recommended' => trim( (string) Product_Meta::get( $product, '_amount_preset_recommended' ) ),
 			'enable_email'              => self::meta_flag_or_global( $product, '_enable_email', 'enable_donor_email' ),
 			'enable_dedication'         => self::meta_flag_or_global( $product, '_enable_dedication', 'enable_dedication' ),
 			'enable_anonymous'          => self::meta_flag_or_global( $product, '_enable_anonymous', 'enable_anonymous' ),
-			'dedication_placeholder'    => trim( (string) $product->get_meta( '_dedication_placeholder' ) ),
-			'trust_badges'              => (string) $product->get_meta( '_trust_badges' ),
-			'theme_primary'             => (string) $product->get_meta( '_theme_primary' ),
-			'theme_primary_hover'       => (string) $product->get_meta( '_theme_primary_hover' ),
-			'theme_radius'              => (string) $product->get_meta( '_theme_radius' ),
-			'theme_modal_bg'            => (string) $product->get_meta( '_theme_modal_bg' ),
-			'layout_mode'               => in_array( sanitize_key( (string) $product->get_meta( '_layout_mode' ) ), array( 'classic', 'campaign', 'story' ), true )
-				? sanitize_key( (string) $product->get_meta( '_layout_mode' ) )
+			'dedication_placeholder'    => trim( (string) Product_Meta::get( $product, '_dedication_placeholder' ) ),
+			'trust_badges'              => (string) Product_Meta::get( $product, '_trust_badges' ),
+			'theme_primary'             => (string) Product_Meta::get( $product, '_theme_primary' ),
+			'theme_primary_hover'       => (string) Product_Meta::get( $product, '_theme_primary_hover' ),
+			'theme_radius'              => (string) Product_Meta::get( $product, '_theme_radius' ),
+			'theme_modal_bg'            => (string) Product_Meta::get( $product, '_theme_modal_bg' ),
+			'layout_mode'               => in_array( sanitize_key( (string) Product_Meta::get( $product, '_layout_mode' ) ), array( 'classic', 'campaign', 'story' ), true )
+				? sanitize_key( (string) Product_Meta::get( $product, '_layout_mode' ) )
 				: 'classic',
-			'enable_campaign_media'     => $product->get_meta( '_enable_campaign_media' ) === 'yes',
-			'enable_urgency'            => $product->get_meta( '_enable_urgency' ) === 'yes',
-			'urgency_text'              => trim( (string) $product->get_meta( '_urgency_text' ) ),
-			'urgency_ends_at'           => trim( (string) $product->get_meta( '_urgency_ends_at' ) ),
-			'enable_social_proof'       => $product->get_meta( '_enable_social_proof' ) === 'yes',
-			'social_proof_text'         => trim( (string) $product->get_meta( '_social_proof_text' ) ),
-			'enable_cover_fee'          => $product->get_meta( '_enable_cover_fee' ) === 'yes',
-			'cover_fee_percent'         => Cover_Fee::clamp_percent( $product->get_meta( '_cover_fee_percent' ) ),
+			'enable_campaign_media'     => Product_Meta::get( $product, '_enable_campaign_media' ) === 'yes',
+			'enable_urgency'            => Product_Meta::get( $product, '_enable_urgency' ) === 'yes',
+			'urgency_text'              => trim( (string) Product_Meta::get( $product, '_urgency_text' ) ),
+			'urgency_ends_at'           => trim( (string) Product_Meta::get( $product, '_urgency_ends_at' ) ),
+			'enable_social_proof'       => Product_Meta::get( $product, '_enable_social_proof' ) === 'yes',
+			'social_proof_text'         => trim( (string) Product_Meta::get( $product, '_social_proof_text' ) ),
+			'enable_cover_fee'          => Product_Meta::get( $product, '_enable_cover_fee' ) === 'yes',
+			'cover_fee_percent'         => Cover_Fee::clamp_percent( Product_Meta::get( $product, '_cover_fee_percent' ) ),
 			'goal_reached_action'       => Campaign_Goal::resolve_action( $product ),
 			'goal_reached_message'      => Campaign_Goal::resolve_message( $product ),
 			'goal_reached'              => Campaign_Goal::is_goal_reached( $product_id, array( 'include_pending' => false ) ),
@@ -168,7 +168,7 @@ class Product_Context {
 	 * @return bool
 	 */
 	private static function meta_flag_default_yes( $product, $key ) {
-		$raw = $product->get_meta( $key );
+		$raw = Product_Meta::get( $product, $key );
 		if ( '' === $raw || null === $raw ) {
 			return true;
 		}
@@ -196,7 +196,7 @@ class Product_Context {
 	 * @return bool
 	 */
 	public static function resolve_flag_or_global( $product, $meta_key, $global_key ) {
-		$raw = $product->get_meta( $meta_key );
+		$raw = Product_Meta::get( $product, $meta_key );
 		if ( 'yes' === $raw ) {
 			return true;
 		}
