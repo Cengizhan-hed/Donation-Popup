@@ -21,6 +21,29 @@ class Settings {
 	const SCHEMA_VERSION = 1;
 
 	/**
+	 * Her istekte okunan, küçük ve otomatik yüklenen seçenekler (ek sorgu yok; toplam ≤5 KB).
+	 */
+	const AUTOLOAD_FLAG    = 'donation_panel_autoload_v1';
+	const AUTOLOAD_OPTIONS = array(
+		'donation_panel_settings',
+		'donation_panel_migrations',
+		'wdp_placement_settings',
+		'wdp_button_settings',
+		'wdp_success_settings',
+		'wdp_list_cache_version',
+	);
+
+	/**
+	 * Bu seçenek otomatik yüklenmeli mi (yazan kodlar `update_option` üçüncü bağımsız değişkeni için kullanır).
+	 *
+	 * @param string $name Seçenek adı.
+	 * @return bool
+	 */
+	public static function autoload_for( $name ) {
+		return in_array( (string) $name, self::AUTOLOAD_OPTIONS, true );
+	}
+
+	/**
 	 * Kurulum sihirbazı durumları: boş = henüz yapılmadı.
 	 */
 	const WIZARD_STATES = array( '', 'done', 'skipped' );
@@ -48,6 +71,11 @@ class Settings {
 		return array(
 			'general'    => array(
 				'delete_data_on_uninstall' => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				// Ön yüzü kapatır (DONATION_PANEL_DISABLE sabitiyle aynı etki): bağışçı yüzeyi çıktısı 0; sepet/sipariş sürer.
+				'disable_frontend'         => array(
 					'type'    => 'bool',
 					'default' => false,
 				),
@@ -319,7 +347,44 @@ class Settings {
 		}
 
 		$this->data = self::normalize( $current );
-		return (bool) update_option( self::OPTION_NAME, $this->data, false );
+		// Her istekte okunan küçük kayıt: otomatik yüklenir (ayrı sorgu yok; CLAUDE.md §24 autoload ≤5 KB).
+		return (bool) update_option( self::OPTION_NAME, $this->data, true );
+	}
+
+	/**
+	 * Her istekte okunan küçük seçenekleri bir kez otomatik yüklemeye çevirir (sıfır ek sorgu). Eski sürümlerde bu
+	 * kayıtlar `autoload=no` yazılmıştı; her sayfa isteğinde ayrı bir SELECT harcıyorlardı. Bayrak otomatik yüklenir,
+	 * sonraki isteklerde bu işlev sorgu yapmaz. İdempotent.
+	 *
+	 * @return void
+	 */
+	public static function ensure_autoload() {
+		if ( get_option( self::AUTOLOAD_FLAG, false ) ) {
+			return;
+		}
+		$values = array();
+		foreach ( self::AUTOLOAD_OPTIONS as $name ) {
+			if ( false !== get_option( $name, false ) ) {
+				$values[ $name ] = 'yes';
+			} elseif ( 'donation_panel_settings' === $name ) {
+				// Kayıt yoksa WordPress her istekte boşuna sorgular: varsayılanı (okuma davranışıyla aynı) otomatik yüklenen kayıt olarak yaz.
+				add_option( $name, self::normalize( array() ), '', true );
+			} elseif ( 'wdp_placement_settings' === $name ) {
+				add_option( $name, \DonationPanel\Domain\Placement_Settings::normalize( array( 'auto_place' => 'no' ) ), '', true );
+			}
+		}
+		if ( $values && function_exists( 'wp_set_option_autoload_values' ) ) {
+			wp_set_option_autoload_values( $values );
+		} elseif ( $values ) {
+			global $wpdb;
+			if ( is_object( $wpdb ) && isset( $wpdb->options ) && method_exists( $wpdb, 'update' ) ) {
+				foreach ( array_keys( $values ) as $name ) {
+					$wpdb->update( $wpdb->options, array( 'autoload' => 'yes' ), array( 'option_name' => $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- WP 6.4 öncesi yedeği; tek seferlik.
+				}
+				wp_cache_delete( 'alloptions', 'options' );
+			}
+		}
+		update_option( self::AUTOLOAD_FLAG, '1', true );
 	}
 
 	/**
@@ -385,7 +450,7 @@ class Settings {
 			return false;
 		}
 		$seed = self::normalize( array() );
-		return (bool) update_option( self::OPTION_NAME, $seed, false );
+		return (bool) update_option( self::OPTION_NAME, $seed, true );
 	}
 
 	/**

@@ -113,7 +113,7 @@ class Placement_Settings {
 			self::$cache = $clean;
 			return $clean;
 		}
-		update_option( self::OPTION, $clean, false );
+		update_option( self::OPTION, $clean, true ); // Her istekte okunur: otomatik yüklenir (ek sorgu yok).
 		self::flush();
 		do_action( 'donation_panel_totals_changed' );
 		return $clean;

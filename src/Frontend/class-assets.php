@@ -1,7 +1,7 @@
 <?php
 /**
- * Modül başına tembel varlık kaydı: tüm tanımlar yalnız KAYIT edilir (çıktı yok); bir modül
- * ihtiyaç duyduğunda `enqueue( $slug )` ile kuyruğa alınır.
+ * Modül başına tembel varlık kaydı (CLAUDE.md §24 sıfır yük): tanımlar yalnız bellekte tutulur; kayıt VE kuyruk
+ * yalnız bir yüzey çizilirken `enqueue( $slug )` ile yapılır. Koşulsuz `wp_enqueue_scripts` kancası yoktur.
  *
  * Derleme çıktısı (`wp-scripts`): `assets/build/<slug>/index.js|.css` + `index.asset.php` (bağımlılık + sürüm).
  *
@@ -41,11 +41,11 @@ class Assets {
 	private $definitions = array();
 
 	/**
-	 * `wp_enqueue_scripts` öncesi istenen, kayıttan sonra kuyruğa alınacak slug'lar.
+	 * Kaydı yapılmış slug'lar.
 	 *
 	 * @var array<string, bool>
 	 */
-	private $deferred = array();
+	private $registered = array();
 
 	/**
 	 * Kurucu.
@@ -59,7 +59,7 @@ class Assets {
 	}
 
 	/**
-	 * Modül varlıklarını tanımlar (yalnız tanım; kayıt `register_all` içinde).
+	 * Modül varlıklarını tanımlar (yalnız tanım; kayıt `register` içinde, çizim anında).
 	 *
 	 * @param string $slug   Modül slug'ı.
 	 * @param string $script Göreli betik yolu ('' = yok).
@@ -87,57 +87,66 @@ class Assets {
 	}
 
 	/**
-	 * Tanımlı modül varlıklarını kaydeder (kuyruğa ALMAZ).
+	 * Tek modülün varlıklarını kaydeder (kuyruğa ALMAZ); kayıt tembeldir: yalnız çizim anında, bir kez.
 	 *
+	 * @param string $slug Modül slug'ı.
 	 * @return void
 	 */
-	public function register_all() {
-		foreach ( $this->definitions as $slug => $definition ) {
-			$handle = self::handle( $slug );
+	public function register( $slug ) {
+		$slug = sanitize_key( $slug );
+		if ( ! isset( $this->definitions[ $slug ] ) || isset( $this->registered[ $slug ] ) ) {
+			return;
+		}
+		$this->registered[ $slug ] = true;
+		$definition                = $this->definitions[ $slug ];
+		$handle                    = self::handle( $slug );
 
-			if ( '' !== $definition['script'] && is_file( $this->plugin_dir . $definition['script'] ) ) {
-				$meta = $this->read_asset_meta( $definition['script'] );
-				wp_register_script(
-					$handle,
-					$this->plugin_url . $definition['script'],
-					$meta['dependencies'],
-					$meta['version'],
-					array(
-						'in_footer' => true,
-						'strategy'  => 'defer',
-					)
-				);
-			}
-			if ( '' !== $definition['style'] && is_file( $this->plugin_dir . $definition['style'] ) ) {
-				$meta = $this->read_asset_meta( $definition['script'] ? $definition['script'] : $definition['style'] );
-				wp_register_style( $handle, $this->plugin_url . $definition['style'], array(), $meta['version'] );
-			}
+		if ( '' !== $definition['script'] && is_file( $this->plugin_dir . $definition['script'] ) ) {
+			$meta = $this->read_asset_meta( $definition['script'] );
+			wp_register_script(
+				$handle,
+				$this->plugin_url . $definition['script'],
+				$meta['dependencies'],
+				$meta['version'],
+				array(
+					'in_footer' => true,
+					'strategy'  => 'defer',
+				)
+			);
+		}
+		if ( '' !== $definition['style'] && is_file( $this->plugin_dir . $definition['style'] ) ) {
+			$meta = $this->read_asset_meta( $definition['script'] ? $definition['script'] : $definition['style'] );
+			wp_register_style( $handle, $this->plugin_url . $definition['style'], array(), $meta['version'] );
 		}
 	}
 
 	/**
-	 * Modülün kayıtlı varlıklarını kuyruğa alır.
+	 * Tanımlı tüm modül varlıklarını kaydeder (kuyruğa ALMAZ). Çekirdek bunu bir kancaya BAĞLAMAZ (sıfır yük
+	 * kuralı); yalnız araçlar ve testler içindir.
+	 *
+	 * @return void
+	 */
+	public function register_all() {
+		foreach ( array_keys( $this->definitions ) as $slug ) {
+			$this->register( (string) $slug );
+		}
+	}
+
+	/**
+	 * Modülün varlıklarını çizim anında kaydedip kuyruğa alır. Blok temalarında içerik `wp_enqueue_scripts`
+	 * öncesi çizilse de çalışır (kayıt ve kuyruk aynı çağrıdadır; çıktıyı WordPress `wp_head`/`wp_footer`'da yapar).
+	 * `DONATION_PANEL_DISABLE` açıkken hiçbir şey yapmaz.
 	 *
 	 * @param string $slug Modül slug'ı.
 	 * @return void
 	 */
 	public function enqueue( $slug ) {
-		$handle = self::handle( $slug );
-		// Blok temalarında içerik, `wp_enqueue_scripts` çalışmadan ÖNCE çizilir: varlıklar henüz kayıtlı değildir;
-		// kayıttan sonra (öncelik 20) kuyruğa alınır. Aynı slug tek kez ertelenir.
-		if ( ! did_action( 'wp_enqueue_scripts' ) ) {
-			if ( empty( $this->deferred[ $slug ] ) ) {
-				$this->deferred[ $slug ] = true;
-				add_action(
-					'wp_enqueue_scripts',
-					function () use ( $slug ) {
-						$this->enqueue( $slug );
-					},
-					20
-				);
-			}
+		if ( Front_Gate::disabled() ) {
 			return;
 		}
+		$slug   = sanitize_key( $slug );
+		$handle = self::handle( $slug );
+		$this->register( $slug );
 		if ( wp_script_is( $handle, 'registered' ) ) {
 			wp_enqueue_script( $handle );
 		}

@@ -55,7 +55,7 @@ class Campaign_Goal {
 	public static function resolve_action( $product ) {
 		$meta = '';
 		if ( $product instanceof \WC_Product ) {
-			$meta = (string) $product->get_meta( '_goal_reached_action' );
+			$meta = (string) Product_Meta::get( $product, '_goal_reached_action' );
 		} else {
 			$meta = (string) get_post_meta( absint( $product ), '_goal_reached_action', true );
 		}
@@ -84,7 +84,7 @@ class Campaign_Goal {
 	public static function resolve_message( $product ) {
 		$meta = '';
 		if ( $product instanceof \WC_Product ) {
-			$meta = (string) $product->get_meta( '_goal_reached_message' );
+			$meta = (string) Product_Meta::get( $product, '_goal_reached_message' );
 		} else {
 			$meta = (string) get_post_meta( absint( $product ), '_goal_reached_message', true );
 		}
@@ -99,7 +99,7 @@ class Campaign_Goal {
 	public static function resolve_goal_amount( $product ) {
 		$raw = '';
 		if ( $product instanceof \WC_Product ) {
-			$raw = (string) $product->get_meta( '_progress_bar_limit' );
+			$raw = (string) Product_Meta::get( $product, '_progress_bar_limit' );
 		} else {
 			$raw = (string) get_post_meta( absint( $product ), '_progress_bar_limit', true );
 		}
@@ -205,7 +205,7 @@ class Campaign_Goal {
 	 */
 	public static function is_campaign_product( $product ) {
 		if ( $product instanceof \WC_Product ) {
-			return $product->get_meta( '_enable_progress_bar' ) === 'yes';
+			return Product_Meta::get( $product, '_enable_progress_bar' ) === 'yes';
 		}
 		return get_post_meta( absint( $product ), '_enable_progress_bar', true ) === 'yes';
 	}

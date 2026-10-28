@@ -101,7 +101,8 @@ class Donation_Scope {
 	 * @return string
 	 */
 	public static function product_flag( $product ) {
-		$raw = $product->get_meta( self::META, true );
+		// WP meta önbelleğinden (ek sorgu yok): bkz. Product_Meta.
+		$raw = Product_Meta::get( $product, self::META );
 		$raw = is_scalar( $raw ) ? strtolower( trim( (string) $raw ) ) : '';
 		return in_array( $raw, array( 'yes', 'no' ), true ) ? $raw : '';
 	}

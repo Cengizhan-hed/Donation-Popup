@@ -45,6 +45,13 @@ final class Side_Cart_Module implements Module_Interface {
 	private $container;
 
 	/**
+	 * Bu istekte tetikleyici (kısa kod/blok) çizildi mi.
+	 *
+	 * @var bool
+	 */
+	private $wanted = false;
+
+	/**
 	 * Kancaları kaydeder.
 	 *
 	 * @param Container $container Bağımlılık kabı.
@@ -60,7 +67,7 @@ final class Side_Cart_Module implements Module_Interface {
 		add_action( 'init', array( $this, 'register_shortcode' ) );
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'add_fragments' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue' ), 20 );
+		// Koşulsuz `wp_enqueue_scripts` yok (sıfır yük): çekmece ve varlıkları yalnız sayfa sonunda, sayfada bir yüzey varsa.
 		add_action( 'wp_footer', array( $this, 'print_drawer' ), 5 );
 	}
 
@@ -79,6 +86,7 @@ final class Side_Cart_Module implements Module_Interface {
 	 * @return string
 	 */
 	public function shortcode() {
+		$this->wanted = true;
 		return Side_Cart_Renderer::trigger( $this->cart_count(), '' );
 	}
 
@@ -107,12 +115,15 @@ final class Side_Cart_Module implements Module_Interface {
 	}
 
 	/**
-	 * Bu sayfada çekmece yüklensin mi: yalnız ön yüz; sepet ve ödeme sayfaları hariç (kendi sepetleri var).
+	 * Bu sayfada çekmece yüklensin mi (sayfa sonunda sorulur): yalnız sayfada bir yüzey varsa (sepet düğmesi
+	 * kısa kodu/bloğu çizildi ya da bağış formu çizildi — form sepete eklenince çekmece açılır); sepet ve ödeme
+	 * sayfaları hariç (kendi sepetleri var). Yüzeyi olmayan sayfada 0 CSS/JS/HTML. Her sayfada istenirse
+	 * `donation_panel_side_cart_load` filtresi true döner.
 	 *
 	 * @return bool
 	 */
 	public function should_load() {
-		$load = ! is_admin();
+		$load = ! is_admin() && ( $this->wanted || wp_script_is( Assets::handle( 'experiences' ), 'enqueued' ) );
 		if ( $load && function_exists( 'is_cart' ) && function_exists( 'is_checkout' ) && ( is_cart() || is_checkout() ) ) {
 			$load = false;
 		}
@@ -122,17 +133,6 @@ final class Side_Cart_Module implements Module_Interface {
 		 * @param bool $load Varsayılan karar.
 		 */
 		return (bool) apply_filters( 'donation_panel_side_cart_load', $load );
-	}
-
-	/**
-	 * Varlıkları yalnız gereken sayfada kuyruğa alır.
-	 *
-	 * @return void
-	 */
-	public function maybe_enqueue() {
-		if ( $this->should_load() ) {
-			$this->container->get( Assets::class )->enqueue( self::SLUG );
-		}
 	}
 
 	/**
@@ -146,6 +146,8 @@ final class Side_Cart_Module implements Module_Interface {
 			return;
 		}
 		$printed = true;
+		// Geç kuyruk: WordPress, `wp_footer` içinde kuyruğa alınan betiği/stili sayfa sonunda basar (betik defer).
+		$this->container->get( Assets::class )->enqueue( self::SLUG );
 
 		$lines    = array();
 		$subtotal = '';

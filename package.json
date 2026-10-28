@@ -58,6 +58,8 @@
     "e2e:donor-account": "node tests/e2e/run-donor-account.mjs",
     "e2e:admin-e7": "node tests/e2e/run-admin-e7.mjs",
     "e2e:asset-scope": "node tests/e2e/run-asset-scope.mjs",
+    "e2e:zero-load": "node tests/e2e/run-zero-load.mjs",
+    "measure:load": "node scripts/measure-load.mjs",
     "e2e:accept": "node tests/e2e/run-accept.mjs",
     "e2e:stability": "node tests/e2e/run-stability.mjs",
     "e2e:repeat": "node tests/e2e/run-repeat.mjs",

@@ -15,7 +15,7 @@ import { ensureMatrixTemplate, ensureTheme, prepareConfigSnapshot, materializeWo
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SIM_SRC = path.join(__dirname, 'helpers/wdp-scope-sim.php');
-const PORT = 8932;
+const PORT = Number(process.env.WDP_LOCAL_E2E_PORT || 8932);
 const OUT_DIR = path.join(__dirname, '../../build/e2e/asset-scope');
 
 /**

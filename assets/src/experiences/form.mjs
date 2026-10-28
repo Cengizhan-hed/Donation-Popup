@@ -644,7 +644,8 @@ async function addToCart(root, productId, values) {
       headers: { 'Content-Type': 'application/json', ...(nonce ? { 'X-WP-Nonce': nonce } : {}) },
       body: payload,
     });
-  let response = await send(root.dataset.dpNonce || '');
+  // Sayfa HTML'inde nonce yok: ilk gönderimde REST'ten alınır (sonrakilerde dataset'ten); bayatsa 403 sonrası tazelenir.
+  let response = await send(root.dataset.dpNonce || (await refreshNonce(root)));
   if (response.status === 403) {
     const fresh = await refreshNonce(root);
     if (fresh) {

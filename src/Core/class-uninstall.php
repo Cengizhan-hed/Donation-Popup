@@ -181,6 +181,21 @@ class Uninstall {
 			'wdp_addon_links_audit',
 			'wdp_sadaka_links_audit',
 			'wdp_upgrade_new_default',
+			// 12.1: otomatik yükleme bayrağı, yerleşim/ortak ayarlar ve göç bayrakları (yalnız eklentinin kendi anahtarları).
+			'donation_panel_autoload_v1',
+			'donation_panel_account_rewrite',
+			'wdp_placement_settings',
+			'wdp_shareholder_settings',
+			'wdp_progress_bar_settings',
+			'wdp_modal_layout_settings',
+			'wdp_migrated_10_29_0',
+			'wdp_migrated_10_29_1',
+			'wdp_migrated_10_30_0',
+			'wdp_migrated_10_31_0',
+			'wdp_migrated_10_32_0',
+			'wdp_migrated_10_33_0',
+			'wdp_migrated_10_34_0',
+			'wdp_sadaka_visibility_cache_cleared',
 		);
 	}
 
