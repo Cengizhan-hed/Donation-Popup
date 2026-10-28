@@ -17,17 +17,55 @@ const PAGES = [
 ];
 
 /**
+ * WordPress/WooCommerce Interactivity durumu (ör. blok tabanlı mağaza/ürün şablonlarında `wp-script-module-data-*`) sepeti
+ * çekirdek olarak HTML'e yazabilir; bu çıktı eklentiye ait değildir ve eklenti tarafından değiştirilemez.
+ *
+ * @param {string} html Ham HTML.
+ * @return {string} Çekirdek JSON durum betikleri çıkarılmış HTML.
+ */
+function stripCore(html) {
+  // Yorum formu da çekirdeğe aittir ve oturuma göre değişir (WordPress / WooCommerce değerlendirme formu).
+  return html
+    .replace(/<script\b[^>]*id="wp-script-module-data-[^"]*"[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<form\b[^>]*id="commentform"[\s\S]*?<\/form>/gi, '');
+}
+
+/**
  * Zamana/ziyaretçiye bağlı çekirdek alanları ayıklar (eklenti çıktısı hariç hiçbir şey saklanmaz).
  *
  * @param {string} html Ham HTML.
  * @return {string} Normalize HTML.
  */
 function normalize(html) {
-  return html
+  // Çekirdeğe/WooCommerce'e ait betik, stil ve bağlantı öğeleri (Interactivity durumu, speculation rules, blok stilleri)
+  // ziyaretçiye göre değişebilir ve eklentiye ait değildir: yalnız eklenti öğeleri (donation-panel / woo-donation-popup) kalır.
+  const ownedOnly = () => (m) => (/donation-panel|woo-donation-popup/i.test(m) ? m : '');
+  return stripCore(html)
+    .replace(/<script\b[\s\S]*?<\/script>/gi, ownedOnly('script'))
+    .replace(/<style\b[\s\S]*?<\/style>/gi, ownedOnly('style'))
+    .replace(/<link\b[^>]*>/gi, ownedOnly('link'))
     .replace(/<body([^>]*)\sclass="[^"]*"/i, '<body$1')
     .replace(/(nonce["'\s:=]+)[0-9a-f]{8,12}/gi, '$1N')
     .replace(/([?&](?:ver|_wpnonce|_)=)[\w.-]+/g, '$1V')
     .replace(/\s+/g, ' ');
+}
+
+/**
+ * İlk farkın çevresi (hata iletisi için).
+ *
+ * @param {string} a Beklenen.
+ * @param {string} b Gelen.
+ * @return {string} Özet.
+ */
+function firstDiff(a, b) {
+  if (a === b) {
+    return '';
+  }
+  let i = 0;
+  while (i < a.length && a[i] === b[i]) {
+    i += 1;
+  }
+  return `@${i}\n  beklenen: ${a.slice(Math.max(0, i - 80), i + 160)}\n  gelen:    ${b.slice(Math.max(0, i - 80), i + 160)}`;
 }
 
 /**
@@ -71,17 +109,19 @@ test.describe('önbellek sözleşmesi', () => {
       const ref = normalize(bodies.anon[name]);
       expect(ref.length).toBeGreaterThan(500);
       for (const kind of ['cart', 'user', 'both']) {
-        expect(normalize(bodies[kind][name]), `${kind} ≠ anon (${name})`).toBe(ref);
+        const got = normalize(bodies[kind][name]);
+        expect(got === ref, `${kind} ≠ anon (${name}) ${firstDiff(ref, got)}`).toBe(true);
       }
     });
 
     test(`${name}: sepet satırı, tutar, oturum bilgisi HTML'de yok`, () => {
       for (const kind of ['cart', 'both']) {
-        const html = bodies[kind][name];
+        const html = stripCore(bodies[kind][name]);
         expect(html).not.toContain('data-dp-sc-line');
         expect(html).not.toContain('donation-panel-sc__row');
         expect(html).not.toContain('donation-panel-sc__subtotal');
-        expect(html).not.toContain(AMOUNT);
+        const at = html.indexOf(AMOUNT);
+        expect(at, `${kind} ${name}: tutar HTML'de: ${html.slice(Math.max(0, at - 120), at + 60)}`).toBe(-1);
       }
       for (const kind of ['user', 'both']) {
         expect(bodies[kind][name]).not.toMatch(/class="[^"]*donation-panel-ac__trigger[^"]*"[^>]*href=/);
@@ -109,16 +149,32 @@ test.describe('önbellek sözleşmesi', () => {
     expect(await page.content()).not.toContain(AMOUNT);
   });
 
-  test('istemci: sepet çerezli ziyaretçide sayaç/satır REST ile gelir, girişli ziyaretçide simge Hesabım bağlantısı olur', async ({ browser, baseURL }) => {
+  test('istemci: sepet çerezli ziyaretçide sayaç/satır REST ile gelir', async ({ browser, baseURL }) => {
     const ctx = await browser.newContext({ baseURL });
     const page = await ctx.newPage();
-    await page.request.get('/?dp_cc_login=1');
     await page.request.get(`/?dp_sc_add=${PRODUCT}&amount=${AMOUNT}`);
     await page.goto('/?dp_cc_test=1');
     await expect(page.locator('[data-dp-sc-open] [data-dp-sc-count]')).toHaveText('1', { timeout: 20000 });
-    await expect(page.locator('a.donation-panel-ac__trigger')).toBeVisible({ timeout: 20000 });
     await page.locator('[data-dp-sc-open]').click();
     await expect(page.locator('[data-dp-sc-line]')).toHaveCount(1);
+    await ctx.close();
+  });
+
+  test('istemci: girişli ziyaretçide simge Hesabım bağlantısına dönüşür, misafirde düğme kalır', async ({ browser, baseURL }) => {
+    const guest = await browser.newContext({ baseURL });
+    const gp = await guest.newPage();
+    await gp.goto('/?dp_cc_test=1');
+    await expect(gp.locator('button.donation-panel-ac__trigger')).toBeVisible();
+    await gp.waitForTimeout(1500);
+    await expect(gp.locator('a.donation-panel-ac__trigger')).toHaveCount(0);
+    await guest.close();
+
+    const ctx = await browser.newContext({ baseURL });
+    const page = await ctx.newPage();
+    await page.request.get('/?dp_cc_login=1');
+    await page.goto('/?dp_cc_test=1');
+    await expect(page.locator('a.donation-panel-ac__trigger')).toHaveAttribute('href', /my-account|hesab|account/i, { timeout: 20000 });
+    await expect(page.locator('button.donation-panel-ac__trigger')).toHaveCount(0);
     await ctx.close();
   });
 });
