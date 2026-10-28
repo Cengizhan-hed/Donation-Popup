@@ -193,6 +193,8 @@ export function createLayer(root, hooks = {}) {
     if (!opened) {
       trigger.focus({ preventScroll: true });
     }
+    // Katman gerçekten kapandı (dialog artık modal değil): dışarıdan odak dönüşü için.
+    root.dispatchEvent(new CustomEvent('dp:closed', { bubbles: true }));
   };
 
   const open = () => {

@@ -128,3 +128,50 @@ test('ekran: liste (Liste)', async ({ page }, info) => {
   await page.waitForTimeout(600);
   await page.screenshot({ path: path.join(SHOTS, `liste-${info.project.name}.png`), fullPage: true });
 });
+
+test('liste: kartlar dikey, görsel üstte, satırda eşit yükseklik, yatay taşma yok', async ({ page }) => {
+  await page.goto(URL);
+  const cards = page.locator('.wdp-list__item:not([hidden]) .wdp-card');
+  const n = await cards.count();
+  expect(n).toBeGreaterThan(2);
+  const rows = new Map();
+  for (let i = 0; i < n; i++) {
+    const card = cards.nth(i);
+    const media = await card.locator('.wdp-card__media').boundingBox();
+    const body = await card.locator('.wdp-card__body').boundingBox();
+    const box = await card.boundingBox();
+    expect(media, 'görsel/yer tutucu bloğu var').not.toBeNull();
+    expect(media.y + media.height, 'görsel gövdenin üstünde').toBeLessThanOrEqual(body.y + 1);
+    expect(Math.abs(media.x - box.x), 'görsel kart genişliğinde').toBeLessThan(1);
+    const key = Math.round(box.y);
+    rows.set(key, [...(rows.get(key) || []), box.height]);
+    // Düğme kartın altında (gövde sonuna yakın).
+    const cta = await card.locator('a.wdp-card__cta').boundingBox();
+    expect(cta.y + cta.height).toBeGreaterThan(box.y + box.height - 40);
+  }
+  for (const heights of rows.values()) {
+    expect(Math.max(...heights) - Math.min(...heights), 'satırda eşit yükseklik').toBeLessThanOrEqual(1);
+  }
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test('liste: görselsiz kartta yer tutucu simge, başlıklar h2/h3, H1 yok', async ({ page }) => {
+  await page.goto(URL);
+  expect(await page.locator('.wdp-card__media--empty svg.wdp-card__ph').count()).toBeGreaterThan(0);
+  expect(await page.locator('.wdp-list-wrap h1').count()).toBe(0);
+  for (const h of await page.locator('.wdp-card__title').all()) {
+    expect(await h.evaluate((el) => el.tagName)).toBe('H3'); // listenin h2 başlığı var
+  }
+  await page.goto('/?dp_list_test=1');
+  for (const h of await page.locator('.wdp-card__title').all()) {
+    expect(await h.evaluate((el) => el.tagName)).toBe('H2');
+  }
+});
+
+test('form: panel içinde ürün/kampanya görseli yok', async ({ page }) => {
+  await page.goto(URL);
+  await page.locator('a.wdp-card__cta').first().click();
+  await expect(page.locator('.wdp-form-host [data-dp-surface]')).toBeVisible({ timeout: 15000 });
+  expect(await page.locator('.wdp-form-host .dp-form img, .wdp-form-host .dp-hero').count()).toBe(0);
+});
