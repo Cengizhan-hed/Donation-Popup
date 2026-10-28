@@ -268,7 +268,7 @@ class Donations_List {
 		}
 		self::$bumped_this_request = true;
 		$current                   = (int) get_option( self::CACHE_VERSION, 1 );
-		update_option( self::CACHE_VERSION, $current + 1, false );
+		update_option( self::CACHE_VERSION, $current + 1, true ); // Liste çiziminde okunur: otomatik yüklenir (ek sorgu yok).
 	}
 
 	/**

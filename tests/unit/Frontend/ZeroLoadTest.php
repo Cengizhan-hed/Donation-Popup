@@ -81,6 +81,29 @@ final class ZeroLoadTest extends TestCase {
 		$this->assertSame($snapshot, WDP_Test_State::$options, 'İkinci çağrı hiçbir şey yazmaz.');
 	}
 
+	public function test_uninstall_lists_every_option_key_the_plugin_writes(): void {
+		$known = \DonationPanel\Core\Uninstall::option_names();
+		$found = array();
+		$it    = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(dirname(__DIR__, 3) . '/src', \FilesystemIterator::SKIP_DOTS));
+		foreach ($it as $file) {
+			if ('php' !== $file->getExtension()) {
+				continue;
+			}
+			$code = (string) file_get_contents($file->getPathname());
+			if (preg_match_all("/(?:get|update|add|delete)_option\\(\\s*'((?:wdp|donation_panel)_[a-z0-9_]+)'|\\\$flag\\s*=\\s*'(wdp_[a-z0-9_]+)'|const\\s+[A-Z_]*(?:OPTION|FLAG|LOCK)[A-Z_]*\\s*=\\s*'((?:wdp|donation_panel)_[a-z0-9_]+)'/", $code, $m)) {
+				foreach (array_merge($m[1], $m[2], $m[3]) as $name) {
+					if ('' !== $name) {
+						$found[ $name ] = $file->getFilename();
+					}
+				}
+			}
+		}
+		$this->assertNotEmpty($found);
+		foreach ($found as $name => $where) {
+			$this->assertContains($name, $known, "Kaldırmada silinmeyen seçenek: $name ($where)");
+		}
+	}
+
 	public function test_donation_flag_is_read_from_post_meta_cache_not_from_product_meta_data(): void {
 		WDP_Test_State::$post_meta[5] = array( Donation_Scope::META => 'yes' );
 		$product                      = new class() {

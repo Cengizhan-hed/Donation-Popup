@@ -70,7 +70,9 @@ export function parsePage(html, base) {
   }
   const inlineStyles = (clean.match(/<style\b/gi) || []).length;
   const inlineScripts = (clean.match(/<script\b(?![^>]*\bsrc=)/gi) || []).length;
-  return { probe, resources, blocking, inlineStyles, inlineScripts, htmlBytes: Buffer.byteLength(clean) };
+  // Eklenti DOM'u: `.dp` kök sınıfı, `data-dp-*` öznitelikleri, `donation-panel/` yolları (ürün adı/slug'ı sayılmaz).
+  const markers = (clean.match(/\bdata-dp-[a-z-]+|class="(?:[^"]*\s)?dp(?:\s|-[a-z]|")|donation-panel\//g) || []).length;
+  return { probe, resources, blocking, inlineStyles, inlineScripts, markers, htmlBytes: Buffer.byteLength(clean) };
 }
 
 const isPlugin = (url) => /\/woo-donation-popup\//.test(url);
@@ -82,9 +84,13 @@ async function fetchSize(url, base) {
   return { raw: buf.length, gzip: zlib.gzipSync(buf, { level: 9 }).length, status: res.status };
 }
 
-async function visit(base, urlPath) {
-  const res = await fetch(`${base}${urlPath}`, { redirect: 'manual', signal: AbortSignal.timeout(120000) });
+async function visit(base, urlPath, tag = '') {
+  const res = await fetch(`${base}${urlPath}`, { redirect: 'follow', signal: AbortSignal.timeout(120000) });
   const html = await res.text();
+  if (tag && process.env.WDP_DUMP) {
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(OUT_DIR, `${tag}.html`), html.replace(/<!--wdp-probe [\s\S]*?-->/, ''));
+  }
   const cookies = typeof res.headers.getSetCookie === 'function' ? res.headers.getSetCookie() : [];
   const parsed = parsePage(html, base);
   let bytes = 0;
@@ -130,18 +136,38 @@ async function main() {
 
     for (const pg of PAGES) {
       const extra = pg.state || {};
-      const run = async (state) => {
+      const run = async (state, tag) => {
         setState({ ...extra, ...state });
         await visit(base, urls[pg.page]); // ısınma (önbellek, ilk çalıştırma işleri)
-        return visit(base, urls[pg.page]);
+        return visit(base, urls[pg.page], `${pg.id}-${tag}`);
       };
-      const off = await run({ plugin_off: 1 });
-      const on = await run({ modules_all: 1 });
-      const dis = await run({ modules_all: 1, disable: 1 });
-      const pluginFiles = on.files.filter((f) => f.plugin);
+      const off = await run({ plugin_off: 1 }, 'off');
+      // `def`: varsayılan modüller (gerçek kurulum); `all`: tüm modüller açık (yan sepet, hesap, sosyal kanıt, teşekkür, vergi indirimi).
+      const def = await run({}, 'def');
+      const all = await run({ modules_all: 1 }, 'all');
+      const dis = await run({ modules_all: 1, disable: 1 }, 'dis');
+      const qCount = (r) => r.probe.queries - r.probe.sql.filter((q) => /_transient(?:_timeout)?_wc_related_/.test(q)).length;
+      const pf = (r) => r.files.filter((f) => f.plugin);
+      const kb = (list) => +(list.reduce((n, f) => n + f.gzip, 0) / 1024).toFixed(1);
+      const allCss = pf(all).filter((f) => f.type === 'css');
+      const allJs = pf(all).filter((f) => f.type === 'js');
+      const on = def;
+      const pluginFiles = pf(on);
       const css = pluginFiles.filter((f) => f.type === 'css');
       const js = pluginFiles.filter((f) => f.type === 'js');
       const row = {
+        allReq: all.resources.length - off.resources.length,
+        allGzip: all.assetGzip - off.assetGzip,
+        allBlock: all.blocking.length - off.blocking.length,
+        allInline: all.inlineStyles + all.inlineScripts - off.inlineStyles - off.inlineScripts,
+        allCookie: all.cookies - off.cookies,
+        allQueries: qCount(all) - qCount(off),
+        allMarkers: all.markers - off.markers,
+        allCssFiles: allCss.length,
+        allJsFiles: allJs.length,
+        allCssKB: kb(allCss),
+        allJsKB: kb(allJs),
+        allFiles: pf(all).map((f) => `${f.url.split('/woo-donation-popup/')[1].split('?')[0]} ${(f.gzip / 1024).toFixed(1)}KB`),
         id: pg.id,
         ui: pg.ui,
         http: on.status,
@@ -153,34 +179,53 @@ async function main() {
         dInline: on.inlineStyles + on.inlineScripts - off.inlineStyles - off.inlineScripts,
         dCookie: on.cookies - off.cookies,
         dHtml: on.htmlBytes - off.htmlBytes,
-        dQueries: on.probe.queries - off.probe.queries,
-        queriesOn: on.probe.queries,
-        queriesOff: off.probe.queries,
+        // WooCommerce'in kendi ilgili ürün önbelleği (`wc_related_*` geçici verisi) eklentiden bağımsız ve duruma bağlı: sayılmaz.
+        dQueries: qCount(on) - qCount(off),
+        queriesOn: qCount(on),
+        queriesOff: qCount(off),
         cssKB: +(css.reduce((n, f) => n + f.gzip, 0) / 1024).toFixed(1),
         jsKB: +(js.reduce((n, f) => n + f.gzip, 0) / 1024).toFixed(1),
         cssFiles: css.length,
         jsFiles: js.length,
         pluginFiles: pluginFiles.map((f) => `${f.url.split('/woo-donation-popup/')[1]} ${(f.gzip / 1024).toFixed(1)}KB`),
         disabledReq: dis.resources.length - off.resources.length,
+        // Kapıdayken eklenti DOM'u ve varlığı 0 olmalı; HTML bayt farkı yalnız bilgi (WooCommerce'in satın alınabilirlik
+        // mantığı sepet/sipariş bütünlüğü için çalışır, ör. "Read more" ↔ "Add to cart").
+        disabledMarkers: dis.markers - off.markers,
+        onMarkers: on.markers - off.markers,
+        dMarkers: on.markers - off.markers,
         disabledHtml: dis.htmlBytes - off.htmlBytes,
-        disabledQueries: dis.probe.queries - off.probe.queries,
+        disabledQueries: qCount(dis) - qCount(off),
         autoloadBytes: on.probe.autoload,
         extraSql: on.probe.sql.filter((q) => !off.probe.sql.some((o) => o.split(' @@ ')[0] === q.split(' @@ ')[0])),
       };
       rows.push(row);
       if (!pg.ui) {
-        if (row.dReq !== 0 || row.dGzip !== 0 || row.dBlock !== 0 || row.dInline !== 0 || row.dCookie !== 0 || row.dQueries > 0) {
-          violations.push(`${pg.id}: arayüzsüz sayfada fark (istek ${row.dReq}, gzip ${row.dGzip}, engelleyen ${row.dBlock}, satır içi ${row.dInline}, çerez ${row.dCookie}, sorgu ${row.dQueries})`);
+        for (const [mode, v] of [
+          ['varsayılan modüller', [row.dReq, row.dGzip, row.dBlock, row.dInline, row.dCookie, row.dQueries]],
+          ['tüm modüller açık', [row.allReq, row.allGzip, row.allBlock, row.allInline, row.allCookie, row.allQueries]],
+        ]) {
+          if (v.some((n, i) => (i === 5 ? n > 0 : n !== 0))) {
+            violations.push(`${pg.id} [${mode}]: arayüzsüz sayfada fark (istek ${v[0]}, gzip ${v[1]}, engelleyen ${v[2]}, satır içi ${v[3]}, çerez ${v[4]}, sorgu ${v[5]})`);
+          }
         }
+        if (row.allMarkers !== 0) violations.push(`${pg.id}: tüm modüller açıkken arayüzsüz sayfada eklenti DOM'u var (${row.allMarkers})`);
       } else {
-        if (row.cssFiles > 1 || row.jsFiles > 1) violations.push(`${pg.id}: arayüzlüde ${row.cssFiles} CSS + ${row.jsFiles} JS (≤1+1)`);
+        // Çekirdek paket (deneyim): ≤1 CSS + ≤1 JS; modüller ayrı parça ve kendi bütçesiyle gelir (aşağıdaki tabloda ayrı satır).
+        const coreCss = css.filter((f) => /\/experiences\//.test(f.url)).length;
+        const coreJs = js.filter((f) => /\/experiences\//.test(f.url)).length;
+        if (coreCss > 1 || coreJs > 1) violations.push(`${pg.id}: çekirdek paket ${coreCss} CSS + ${coreJs} JS (≤1+1)`);
         if (row.dQueries > 2) violations.push(`${pg.id}: sorgu +${row.dQueries} (≤+2)`);
+        if (row.dCookie !== 0 || row.allCookie !== 0) violations.push(`${pg.id}: ilk ziyarette eklenti çerezi/oturumu açtı (çerez Δ ${row.dCookie}/${row.allCookie})`);
+        if (row.dReq - css.length - js.length !== 0) violations.push(`${pg.id}: eklenti dışı ek istek (${row.dReq - css.length - js.length})`);
         if (css.some((f) => f.gzip > BUDGET.css)) violations.push(`${pg.id}: CSS bütçesi aşıldı (${row.cssKB} KB > 12 KB)`);
         if (js.some((f) => f.gzip > BUDGET.js)) violations.push(`${pg.id}: JS bütçesi aşıldı (${row.jsKB} KB > 25 KB)`);
       }
-      if (row.disabledReq !== 0 || row.disabledHtml !== 0 || row.disabledQueries > 0) {
-        violations.push(`${pg.id}: DONATION_PANEL_DISABLE açıkken çıktı var (istek ${row.disabledReq}, HTML ${row.disabledHtml} B, sorgu ${row.disabledQueries})`);
+      if (row.disabledReq !== 0 || row.disabledMarkers !== 0 || row.disabledQueries > 0) {
+        violations.push(`${pg.id}: DONATION_PANEL_DISABLE açıkken çıktı var (istek ${row.disabledReq}, eklenti DOM ${row.disabledMarkers}, sorgu ${row.disabledQueries})`);
       }
+      if (pg.ui && pluginFiles.length < 2) violations.push(`${pg.id}: arayüzlü sayfada eklenti varlığı yok (ölçüm geçersiz)`);
+      if (!pg.ui && row.dMarkers !== 0) violations.push(`${pg.id}: arayüzsüz sayfada eklenti DOM'u var (${row.dMarkers})`);
     }
   } finally {
     await server.stop();
@@ -192,16 +237,17 @@ async function main() {
     console.log(JSON.stringify({ rows, violations }, null, 2));
   } else {
     console.log('\nArayüzsüz sayfalar: açık − kapalı farkı (hedef 0)');
-    console.log('| sayfa | istek Δ | gzip bayt Δ | engelleyen Δ | satır içi Δ | çerez Δ | HTML bayt Δ | sorgu kapalı→açık | DISABLE Δ(istek/HTML/sorgu) |');
+    console.log('| sayfa | istek Δ | gzip bayt Δ | engelleyen Δ | satır içi Δ | çerez Δ | HTML bayt Δ | sorgu kapalı→açık | DISABLE Δ(istek/DOM/sorgu) |');
     console.log('|---|---|---|---|---|---|---|---|---|');
     for (const r of rows.filter((x) => !x.ui)) {
-      console.log(`| ${r.id} | ${r.dReq} | ${r.dGzip} | ${r.dBlock} | ${r.dInline} | ${r.dCookie} | ${r.dHtml} | ${r.queriesOff}→${r.queriesOn} (${r.dQueries >= 0 ? '+' : ''}${r.dQueries}) | ${r.disabledReq}/${r.disabledHtml}/${r.disabledQueries} |`);
+      console.log(`| ${r.id} | ${r.dReq} | ${r.dGzip} | ${r.dBlock} | ${r.dInline} | ${r.dCookie} | ${r.dHtml} | ${r.queriesOff}→${r.queriesOn} (${r.dQueries >= 0 ? '+' : ''}${r.dQueries}) | ${r.disabledReq}/${r.disabledMarkers}/${r.disabledQueries} |`);
     }
     console.log('\nArayüzlü sayfalar (bütçe: CSS ≤12 KB, JS ≤25 KB gzip; ≤1 CSS + 1 JS; sorgu ≤+2)');
-    console.log('| sayfa | CSS dosya/KB | JS dosya/KB | engelleyen Δ | sorgu kapalı→açık | HTML bayt Δ | DISABLE Δ(istek/HTML/sorgu) |');
-    console.log('|---|---|---|---|---|---|---|');
+    console.log('| sayfa | CSS dosya/KB (varsayılan) | JS dosya/KB | engelleyen Δ | sorgu kapalı→açık | HTML bayt Δ | tüm modüller CSS/JS KB | DISABLE Δ(istek/DOM/sorgu) |');
+    console.log('|---|---|---|---|---|---|---|---|');
     for (const r of rows.filter((x) => x.ui)) {
-      console.log(`| ${r.id} | ${r.cssFiles}/${r.cssKB} | ${r.jsFiles}/${r.jsKB} | ${r.dBlock} | ${r.queriesOff}→${r.queriesOn} (+${r.dQueries}) | ${r.dHtml} | ${r.disabledReq}/${r.disabledHtml}/${r.disabledQueries} |`);
+      console.log(`| ${r.id} | ${r.cssFiles}/${r.cssKB} | ${r.jsFiles}/${r.jsKB} | ${r.dBlock} | ${r.queriesOff}→${r.queriesOn} (+${r.dQueries}) | ${r.dHtml} | ${r.allCssFiles}/${r.allCssKB} · ${r.allJsFiles}/${r.allJsKB} | ${r.disabledReq}/${r.disabledMarkers}/${r.disabledQueries} |`);
+      console.log(`|   ↳ dosyalar | ${r.pluginFiles.join(', ')} | | | | | ${r.allFiles.join(', ')} | |`);
     }
     console.log(`\nAutoload (eklenti seçenekleri, bayt): ${Math.max(...rows.map((r) => r.autoloadBytes))} (sınır 5120)`);
     const extra = rows.filter((r) => r.extraSql.length);

@@ -315,9 +315,9 @@ final class Settings_Store {
 			}
 			if ( '' === $legacy['key'] ) {
 				if ( false === get_option( $legacy['option'], false ) ) {
-					add_option( $legacy['option'], $out, '', false );
+					add_option( $legacy['option'], $out, '', \DonationPanel\Core\Settings::autoload_for( $legacy['option'] ) );
 				} else {
-					update_option( $legacy['option'], $out, false );
+					update_option( $legacy['option'], $out, \DonationPanel\Core\Settings::autoload_for( $legacy['option'] ) );
 				}
 				continue;
 			}
@@ -325,9 +325,9 @@ final class Settings_Store {
 			$option                   = is_array( $option ) ? $option : array();
 			$option[ $legacy['key'] ] = $out;
 			if ( false === get_option( $legacy['option'], false ) ) {
-				add_option( $legacy['option'], $option, '', false );
+				add_option( $legacy['option'], $option, '', \DonationPanel\Core\Settings::autoload_for( $legacy['option'] ) );
 			} else {
-				update_option( $legacy['option'], $option, false );
+				update_option( $legacy['option'], $option, \DonationPanel\Core\Settings::autoload_for( $legacy['option'] ) );
 			}
 			$touched = true;
 		}

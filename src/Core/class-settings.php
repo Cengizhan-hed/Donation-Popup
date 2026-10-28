@@ -24,7 +24,24 @@ class Settings {
 	 * Her istekte okunan, küçük ve otomatik yüklenen seçenekler (ek sorgu yok; toplam ≤5 KB).
 	 */
 	const AUTOLOAD_FLAG    = 'donation_panel_autoload_v1';
-	const AUTOLOAD_OPTIONS = array( 'donation_panel_settings', 'donation_panel_migrations', 'wdp_placement_settings' );
+	const AUTOLOAD_OPTIONS = array(
+		'donation_panel_settings',
+		'donation_panel_migrations',
+		'wdp_placement_settings',
+		'wdp_button_settings',
+		'wdp_success_settings',
+		'wdp_list_cache_version',
+	);
+
+	/**
+	 * Bu seçenek otomatik yüklenmeli mi (yazan kodlar `update_option` üçüncü bağımsız değişkeni için kullanır).
+	 *
+	 * @param string $name Seçenek adı.
+	 * @return bool
+	 */
+	public static function autoload_for( $name ) {
+		return in_array( (string) $name, self::AUTOLOAD_OPTIONS, true );
+	}
 
 	/**
 	 * Kurulum sihirbazı durumları: boş = henüz yapılmadı.

@@ -50,7 +50,16 @@ ob_start(
 		}
 		$queries = array();
 		foreach ( (array) $wpdb->queries as $q ) {
-			$caller    = isset( $q[2] ) ? implode( ' < ', array_slice( array_reverse( array_map( 'trim', explode( ',', (string) $q[2] ) ) ), 0, 5 ) ) : '';
+			$frames    = isset( $q[2] ) ? array_reverse( array_map( 'trim', explode( ',', (string) $q[2] ) ) ) : array();
+			$frames    = array_values(
+				array_filter(
+					$frames,
+					static function ( $f ) {
+						return ! preg_match( '/^(WP_SQLite_DB|wpdb|WC_Data|get_option|get_post_meta|update_option|get_metadata|WC_Data_Store)/', $f );
+					}
+				)
+			);
+			$caller    = implode( ' < ', array_slice( $frames, 0, 4 ) );
 			$queries[] = substr( (string) preg_replace( '/\s+/', ' ', (string) $q[0] ), 0, 120 ) . ' @@ ' . substr( $caller, 0, 240 );
 		}
 		$autoload = 0;

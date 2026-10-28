@@ -448,7 +448,7 @@ class Auto_Placement {
 		if ( ! Product_Resolver::is_wc_product( $product ) || ! Donation_Scope::is_donation_product( $product ) ) {
 			return false;
 		}
-		$override = $product->get_meta( '_wdp_auto_place', true );
+		$override = \DonationPanel\Domain\Product_Meta::get( $product, '_wdp_auto_place' ); // WP meta önbelleği: ürün başına ek sorgu yok.
 		if ( 'no' === $override ) {
 			return false;
 		}
@@ -504,7 +504,7 @@ class Auto_Placement {
 		if ( ! $product || ! Donation_Scope::is_donation_product( $product ) ) {
 			return false;
 		}
-		$override = $product->get_meta( '_wdp_auto_place', true );
+		$override = \DonationPanel\Domain\Product_Meta::get( $product, '_wdp_auto_place' );
 		if ( 'no' === $override ) {
 			return false;
 		}
