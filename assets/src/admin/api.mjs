@@ -16,10 +16,10 @@ export function createApi(cfg) {
       init.body = JSON.stringify(body);
     }
     const res = await fetch(cfg.rest + path, init);
-    let data = null;
+    let data;
     try {
       data = await res.json();
-    } catch (e) {
+    } catch {
       data = null;
     }
     if (!res.ok) {

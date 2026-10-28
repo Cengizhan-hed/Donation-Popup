@@ -18,8 +18,11 @@ export default [
     languageOptions: { globals: { ...globals.browser } },
   },
   {
-    files: ['tests/**/*.{js,mjs}'],
+    // Geliştirme kodu (pakete girmez): tarayıcı betikleri page.evaluate içinde yazılır; karmaşıklık sınırı burada yok
+    // (teknik borç RAPOR-121-clean.md'de sayıyla izlenir), önerilen kuralların geri kalanı açık.
+    files: ['tests/**/*.{js,mjs}', 'tools/**/*.{js,mjs}', 'scripts/**/*.{js,mjs}'],
     languageOptions: { globals: { ...globals.browser } },
+    rules: { complexity: 'off' },
   },
   {
     files: ['blocks/**/*.js'],

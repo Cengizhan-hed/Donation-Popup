@@ -24,10 +24,10 @@ function legacyCopy(text) {
   temp.style.opacity = '0';
   document.body.appendChild(temp);
   temp.select();
-  let ok = false;
+  let ok;
   try {
     ok = document.execCommand('copy');
-  } catch (error) {
+  } catch {
     ok = false;
   }
   temp.remove();

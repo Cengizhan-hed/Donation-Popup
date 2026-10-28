@@ -155,56 +155,57 @@ export function initialState(seed = {}) {
  * @return {object} Yeni durum (aynı nesne değil).
  */
 export function reducer(state, action) {
-  switch (action.type) {
-    case 'open':
-      return { ...state, open: true };
-    case 'close':
-      return { ...state, open: false, status: state.status === 'submitting' ? state.status : 'idle' };
-    case 'selectPreset':
-      return {
-        ...state,
-        amount: action.value,
-        preset: action.value,
-        focusPreset: action.value,
-        custom: '',
-        amountStatus: 'ok',
-        errors: omit(state.errors, 'amount'),
-      };
-    case 'setCustom': {
-      const detail = parseAmountDetailed(action.value, action.currency);
-      return {
-        ...state,
-        custom: String(action.value),
-        preset: null,
-        amount: detail.ok ? detail.amount : null,
-        amountStatus: detail.status,
-        errors: omit(state.errors, 'amount'),
-      };
-    }
-    case 'goStep':
-      return { ...state, step: Math.max(0, action.value), status: state.status === 'submitting' ? state.status : 'idle' };
-    case 'setQty':
-      return { ...state, qty: action.value, errors: omit(omit(state.errors, 'quantity'), 'share_count') };
-    case 'setFee':
-      return { ...state, fee: Boolean(action.value) };
-    case 'setAddon':
-      return { ...state, addon: Boolean(action.value), errors: action.value ? state.errors : omit(state.errors, 'addon_amount') };
-    case 'setAddonAmount':
-      return { ...state, addonAmount: String(action.value), errors: omit(state.errors, 'addon_amount') };
-    case 'setErrors':
-      return { ...state, errors: { ...action.errors }, status: 'invalid' };
-    case 'clearError':
-      return { ...state, errors: omit(state.errors, action.name) };
-    case 'submitStart':
-      return { ...state, status: 'submitting', errors: {} };
-    case 'submitFail':
-      return { ...state, status: 'failed' };
-    case 'submitDone':
-      return { ...state, status: 'done' };
-    default:
-      return state;
-  }
+  const handler = Object.hasOwn(HANDLERS, action.type) ? HANDLERS[action.type] : null;
+  return handler ? handler(state, action) : state;
 }
+
+/**
+ * @param {object} state Durum.
+ * @return {string} Gönderim sürüyorsa aynı durum, yoksa 'idle'.
+ */
+function settledStatus(state) {
+  return state.status === 'submitting' ? state.status : 'idle';
+}
+
+/** Eylem türü -> (durum, eylem) => yeni durum. */
+const HANDLERS = {
+  open: (state) => ({ ...state, open: true }),
+  close: (state) => ({ ...state, open: false, status: settledStatus(state) }),
+  selectPreset: (state, action) => ({
+    ...state,
+    amount: action.value,
+    preset: action.value,
+    focusPreset: action.value,
+    custom: '',
+    amountStatus: 'ok',
+    errors: omit(state.errors, 'amount'),
+  }),
+  setCustom: (state, action) => {
+    const detail = parseAmountDetailed(action.value, action.currency);
+    return {
+      ...state,
+      custom: String(action.value),
+      preset: null,
+      amount: detail.ok ? detail.amount : null,
+      amountStatus: detail.status,
+      errors: omit(state.errors, 'amount'),
+    };
+  },
+  goStep: (state, action) => ({ ...state, step: Math.max(0, action.value), status: settledStatus(state) }),
+  setQty: (state, action) => ({ ...state, qty: action.value, errors: omit(omit(state.errors, 'quantity'), 'share_count') }),
+  setFee: (state, action) => ({ ...state, fee: Boolean(action.value) }),
+  setAddon: (state, action) => ({
+    ...state,
+    addon: Boolean(action.value),
+    errors: action.value ? state.errors : omit(state.errors, 'addon_amount'),
+  }),
+  setAddonAmount: (state, action) => ({ ...state, addonAmount: String(action.value), errors: omit(state.errors, 'addon_amount') }),
+  setErrors: (state, action) => ({ ...state, errors: { ...action.errors }, status: 'invalid' }),
+  clearError: (state, action) => ({ ...state, errors: omit(state.errors, action.name) }),
+  submitStart: (state) => ({ ...state, status: 'submitting', errors: {} }),
+  submitFail: (state) => ({ ...state, status: 'failed' }),
+  submitDone: (state) => ({ ...state, status: 'done' }),
+};
 
 /**
  * @param {object} state Durum.

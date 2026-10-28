@@ -179,11 +179,16 @@ function mountDialog(root) {
     return box ? box.checked : true;
   };
 
-  async function submit(form) {
-    const kind = form.dataset.dpAccForm;
-    const emailInput = form.querySelector('input[type="email"]');
-    const passInput = form.querySelector('input[type="password"]');
-    showError(form, '');
+  /**
+   * Alanları doğrular; geçersizse hata iletisini yazar ve ilk hatalı alana odaklanır.
+   *
+   * @param {HTMLFormElement} form       Form.
+   * @param {string}          kind       login | register | reset.
+   * @param {HTMLInputElement|null} emailInput E-posta alanı.
+   * @param {HTMLInputElement|null} passInput  Parola alanı.
+   * @return {boolean} Geçerli mi.
+   */
+  function validateAuth(form, kind, emailInput, passInput) {
     let valid = true;
     if (emailInput) {
       const ok = isEmail(emailInput.value);
@@ -200,6 +205,16 @@ function mountDialog(root) {
       if (bad) {
         bad.focus();
       }
+    }
+    return valid;
+  }
+
+  async function submit(form) {
+    const kind = form.dataset.dpAccForm;
+    const emailInput = form.querySelector('input[type="email"]');
+    const passInput = form.querySelector('input[type="password"]');
+    showError(form, '');
+    if (!validateAuth(form, kind, emailInput, passInput)) {
       return;
     }
     busy(form, true);

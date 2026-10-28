@@ -28,6 +28,125 @@ export function phoneValue(input) {
 }
 
 /**
+ * Doğrudan akışta hedef yalnız sunucunun verdiği ödeme adresidir (sepet ödeme sayfasına düşülmez).
+ *
+ * @param {HTMLElement} root    Kök.
+ * @param {{checkoutUrl?: string}} outcome Sonuç.
+ * @param {boolean}     direct  Doğrudan bağış.
+ * @return {string} Yönlendirilecek adres (boş olabilir).
+ */
+function checkoutTarget(root, outcome, direct) {
+  const target = direct ? outcome.checkoutUrl : outcome.checkoutUrl || root.dataset.dpCheckout;
+  if (direct && !target) {
+    throw new Error('direct');
+  }
+  return target;
+}
+
+/**
+ * @param {unknown} error Yakalanan hata.
+ * @return {string} 'rate' (hız sınırı) ya da boş.
+ */
+function failKind(error) {
+  return error && error.message === 'rate' ? 'rate' : '';
+}
+
+/**
+ * Formun veri öznitelikleri (sayısal ayarlar ve Woo ayırıcıları).
+ *
+ * @param {HTMLElement} form Form.
+ * @return {object} Ayarlar.
+ */
+function readConfig(form) {
+  const num = (name, fallback) => Number(form.dataset[name] || fallback);
+  const kind = form.dataset.kind || '';
+  const decimals = num('decimals', 2);
+  return {
+    kind,
+    derived: kind === 'fixed' || kind === 'shares',
+    unit: num('unit', 0),
+    feePercent: num('fee', 0),
+    qtyMax: num('qtyMax', 1),
+    addonFixed: num('addonFixed', 0),
+    addonMin: num('addonMin', 0),
+    minAmount: num('min', 0),
+    decimals,
+    // Woo ayırıcıları: yazılan tutar sunucudakiyle AYNI kuralla ayrıştırılır (amount.mjs).
+    currency: {
+      decimals,
+      thousandSeparator: form.dataset.thousandSep ?? ',',
+      decimalSeparator: form.dataset.decimalSep ?? '.',
+    },
+  };
+}
+
+/**
+ * Öğe varsa olay dinleyicisi ekler.
+ *
+ * @param {EventTarget|null} el      Öğe.
+ * @param {string}           type    Olay.
+ * @param {Function}         handler Dinleyici.
+ */
+function on(el, type, handler) {
+  if (el) {
+    el.addEventListener(type, handler);
+  }
+}
+
+/**
+ * Telefon ülke kodu seçicileri, ithaf ve not açma/kapama düğmeleri (durumdan bağımsız).
+ *
+ * @param {HTMLFormElement} form Form.
+ */
+function bindToggles(form) {
+  form.querySelectorAll('[data-dp-dial]').forEach((select) => {
+    const label = select.closest('.donation-panel-phone__code') ? select.closest('.donation-panel-phone__code').querySelector('[data-dp-dial-label]') : null;
+    on(select, 'change', () => {
+      if (label) {
+        label.textContent = `+${select.value}`;
+      }
+    });
+  });
+  const dediToggle = form.querySelector('[data-dp-dedi-toggle]');
+  if (dediToggle) {
+    const box = form.querySelector(`#${dediToggle.getAttribute('aria-controls')}`);
+    on(dediToggle, 'change', () => {
+      if (!box) {
+        return;
+      }
+      box.hidden = !dediToggle.checked;
+      box.querySelectorAll('input').forEach((input) => {
+        input.disabled = !dediToggle.checked;
+      });
+      if (dediToggle.checked) {
+        const field = box.querySelector('input');
+        if (field) {
+          field.focus();
+        }
+      }
+    });
+  }
+  const noteToggle = form.querySelector('[data-dp-note-toggle]');
+  if (noteToggle) {
+    const noteBox = form.querySelector(`#${noteToggle.getAttribute('aria-controls')}`);
+    on(noteToggle, 'click', () => {
+      const open = noteToggle.getAttribute('aria-expanded') !== 'true';
+      noteToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (noteBox) {
+        noteBox.hidden = !open;
+        const field = noteBox.querySelector('textarea');
+        if (field) {
+          field.disabled = !open;
+          if (open) {
+            field.focus();
+          }
+        }
+      }
+    });
+  }
+}
+
+/**
  * @param {HTMLElement} root Kök (.donation-panel-exp).
  * @param {{ onDone?: Function }} [hooks] Olaylar.
  * @return {{getState: Function}} Denetleyici.
@@ -38,21 +157,7 @@ export function createForm(root, hooks = {}) {
     return { getState: () => ({}) };
   }
 
-  const kind = form.dataset.kind || '';
-  const derived = kind === 'fixed' || kind === 'shares';
-  const unit = Number(form.dataset.unit || 0);
-  const feePercent = Number(form.dataset.fee || 0);
-  const qtyMax = Number(form.dataset.qtyMax || 1);
-  const addonFixed = Number(form.dataset.addonFixed || 0);
-  const addonMin = Number(form.dataset.addonMin || 0);
-  const minAmount = Number(form.dataset.min || 0);
-  const decimals = Number(form.dataset.decimals || 2);
-  // Woo ayırıcıları: yazılan tutar sunucudakiyle AYNI kuralla ayrıştırılır (amount.mjs).
-  const currency = {
-    decimals,
-    thousandSeparator: form.dataset.thousandSep ?? ',',
-    decimalSeparator: form.dataset.decimalSep ?? '.',
-  };
+  const { kind, derived, unit, feePercent, qtyMax, addonFixed, addonMin, minAmount, decimals, currency } = readConfig(form);
   /**
    * Seçili (yazılmamış) tutarı sunucunun beklediği mağaza biçiminde yazar (binliksiz, Woo ondalık ayırıcılı).
    *
@@ -106,7 +211,6 @@ export function createForm(root, hooks = {}) {
   const addonBox = form.querySelector('[data-dp-addon-box]');
   const addonInput = form.querySelector('input[name="addon_amount"]');
   const holders = Array.from(form.querySelectorAll('[data-dp-holder]'));
-  const stepId = (index) => (sections[index] ? sections[index].dataset.dpStep : '');
   const lastStep = Math.max(0, sections.length - 1);
 
   const money = (value) => formatTotal(value, symbol, decimals, locale);
@@ -169,9 +273,7 @@ export function createForm(root, hooks = {}) {
     return needsAmount && Boolean(section && section.querySelector('[data-dp-amounts]')) && !(state.amount > 0);
   };
 
-  const paintSteps = () => {
-    const last = state.step >= lastStep;
-    const pending = amountPending();
+  const paintProgress = () => {
     // Doğrudan bağışta ödeme sayfası son (form dışı) adımdır: göstergede ek çubuk olarak sayılır.
     const extraSteps = direct ? stepsBar.length - sections.length : 0;
     const multi = sections.length + extraSteps > 1;
@@ -196,16 +298,27 @@ export function createForm(root, hooks = {}) {
     if (backButton) {
       backButton.hidden = state.step === 0;
     }
+  };
+
+  const paintSubmitLabel = (last, pending) => {
+    if (!submitLabel) {
+      return;
+    }
+    let label = last ? (form.dataset.labelSubmit || '').replace('%s', money(totals(state.fee).total)) : form.dataset.labelNext;
+    if (pending && form.dataset.labelChoose) {
+      label = form.dataset.labelChoose;
+    }
+    submitLabel.textContent = label || submitLabel.textContent;
+  };
+
+  const paintSteps = () => {
+    const last = state.step >= lastStep;
+    const pending = amountPending();
+    paintProgress();
     if (totalRow) {
       totalRow.hidden = last || pending;
     }
-    if (submitLabel) {
-      let label = last ? (form.dataset.labelSubmit || '').replace('%s', money(totals(state.fee).total)) : form.dataset.labelNext;
-      if (pending && form.dataset.labelChoose) {
-        label = form.dataset.labelChoose;
-      }
-      submitLabel.textContent = label || submitLabel.textContent;
-    }
+    paintSubmitLabel(last, pending);
     if (submitLock) {
       submitLock.hidden = !last;
     }
@@ -249,8 +362,7 @@ export function createForm(root, hooks = {}) {
     }
   };
 
-  const paint = () => {
-    paintSteps();
+  const paintChoices = () => {
     chips.forEach((chip, index) => {
       const checked = state.preset !== null && Number(chip.dataset.dpPreset) === state.preset;
       chip.setAttribute('aria-checked', checked ? 'true' : 'false');
@@ -276,6 +388,9 @@ export function createForm(root, hooks = {}) {
     if (addonBox) {
       addonBox.hidden = !state.addon;
     }
+  };
+
+  const paintTotals = () => {
     const current = totals(state.fee);
     if (total) {
       total.textContent = money(current.total);
@@ -299,6 +414,12 @@ export function createForm(root, hooks = {}) {
     setLine('fee', current.fee, current.fee > 0);
     setLine('addon', current.addon, current.addon > 0);
     setLine('total', current.total, true);
+  };
+
+  const paint = () => {
+    paintSteps();
+    paintChoices();
+    paintTotals();
     paintErrors();
     if (submit) {
       const busy = state.status === 'submitting';
@@ -326,77 +447,23 @@ export function createForm(root, hooks = {}) {
     });
   });
 
-  if (amountInput && !hiddenAmount) {
-    amountInput.addEventListener('input', () => dispatch({ type: 'setCustom', value: amountInput.value, currency }));
-  }
+  on(hiddenAmount ? null : amountInput, 'input', () => dispatch({ type: 'setCustom', value: amountInput.value, currency }));
   qtyButtons.forEach((button) => {
     button.addEventListener('click', () => dispatch({ type: 'setQty', value: clampQty(state.qty + Number(button.dataset.dpQty), qtyMax) }));
   });
-  if (feeBox) {
-    feeBox.addEventListener('change', () => dispatch({ type: 'setFee', value: feeBox.checked }));
-  }
-  if (addonToggle) {
-    addonToggle.addEventListener('change', () => {
-      dispatch({ type: 'setAddon', value: addonToggle.checked });
-      if (addonToggle.checked && addonInput) {
-        addonInput.focus();
-      }
-    });
-  }
-  if (addonInput) {
-    addonInput.addEventListener('input', () => dispatch({ type: 'setAddonAmount', value: addonInput.value }));
-  }
-  if (backButton) {
-    backButton.addEventListener('click', () => {
-      dispatch({ type: 'goStep', value: state.step - 1 });
-      focusStep();
-    });
-  }
-  form.querySelectorAll('[data-dp-dial]').forEach((select) => {
-    const label = select.closest('.donation-panel-phone__code') ? select.closest('.donation-panel-phone__code').querySelector('[data-dp-dial-label]') : null;
-    select.addEventListener('change', () => {
-      if (label) {
-        label.textContent = `+${select.value}`;
-      }
-    });
+  on(feeBox, 'change', () => dispatch({ type: 'setFee', value: feeBox.checked }));
+  on(addonToggle, 'change', () => {
+    dispatch({ type: 'setAddon', value: addonToggle.checked });
+    if (addonToggle.checked && addonInput) {
+      addonInput.focus();
+    }
   });
-  const dediToggle = form.querySelector('[data-dp-dedi-toggle]');
-  if (dediToggle) {
-    const box = form.querySelector(`#${dediToggle.getAttribute('aria-controls')}`);
-    dediToggle.addEventListener('change', () => {
-      if (!box) {
-        return;
-      }
-      box.hidden = !dediToggle.checked;
-      box.querySelectorAll('input').forEach((input) => {
-        input.disabled = !dediToggle.checked;
-      });
-      if (dediToggle.checked) {
-        const field = box.querySelector('input');
-        if (field) {
-          field.focus();
-        }
-      }
-    });
-  }
-  const noteToggle = form.querySelector('[data-dp-note-toggle]');
-  if (noteToggle) {
-    const noteBox = form.querySelector(`#${noteToggle.getAttribute('aria-controls')}`);
-    noteToggle.addEventListener('click', () => {
-      const open = noteToggle.getAttribute('aria-expanded') !== 'true';
-      noteToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if (noteBox) {
-        noteBox.hidden = !open;
-        const field = noteBox.querySelector('textarea');
-        if (field) {
-          field.disabled = !open;
-          if (open) {
-            field.focus();
-          }
-        }
-      }
-    });
-  }
+  on(addonInput, 'input', () => dispatch({ type: 'setAddonAmount', value: addonInput.value }));
+  on(backButton, 'click', () => {
+    dispatch({ type: 'goStep', value: state.step - 1 });
+    focusStep();
+  });
+  bindToggles(form);
   form.querySelectorAll('input, textarea').forEach((input) => {
     if (input.name && !['amount', 'addon_amount'].includes(input.name)) {
       input.addEventListener('input', () => {
@@ -456,6 +523,22 @@ export function createForm(root, hooks = {}) {
    *
    * @return {Record<string, string>} Alan adı -> ileti.
    */
+  const amountError = () => {
+    if (state.amountStatus === 'ambiguous') {
+      // Belirsiz biçim (ör. 3 ondalıklı para biriminde "1,250"): tahmin etmeden net biçim istenir.
+      return form.dataset.msgAmountFormat || form.dataset.msgAmount || '';
+    }
+    if (state.amount === null || !(state.amount > 0)) {
+      return form.dataset.msgAmount || '';
+    }
+    return state.amount < Math.max(minAmount, 0.01) ? form.dataset.msgMin || '' : null;
+  };
+
+  const addonError = () => {
+    const value = addonValue();
+    return value === null || !(value > 0) || (addonMin > 0 && value < addonMin) ? form.dataset.msgAddon || '' : null;
+  };
+
   const validateStep = () => {
     const errors = {};
     const section = sections[state.step];
@@ -465,19 +548,15 @@ export function createForm(root, hooks = {}) {
     // Tutar kontrolleri: tutarı bağışçının seçtiği adımda ya da tutarla bilgilerin tek adım olduğu formlarda.
     if (section.querySelector('[data-dp-amounts], [data-dp-qtyset], [data-dp-addon]')) {
       if (!derived && section.querySelector('[data-dp-amounts]')) {
-        if (state.amountStatus === 'ambiguous') {
-          // Belirsiz biçim (ör. 3 ondalıklı para biriminde "1,250"): tahmin etmeden net biçim istenir.
-          errors.amount = form.dataset.msgAmountFormat || form.dataset.msgAmount || '';
-        } else if (state.amount === null || !(state.amount > 0)) {
-          errors.amount = form.dataset.msgAmount || '';
-        } else if (state.amount < Math.max(minAmount, 0.01)) {
-          errors.amount = form.dataset.msgMin || '';
+        const message = amountError();
+        if (message !== null) {
+          errors.amount = message;
         }
       }
       if (state.addon && addonFixed <= 0 && section.querySelector('[data-dp-addon]')) {
-        const value = addonValue();
-        if (value === null || !(value > 0) || (addonMin > 0 && value < addonMin)) {
-          errors.addon_amount = form.dataset.msgAddon || '';
+        const message = addonError();
+        if (message !== null) {
+          errors.addon_amount = message;
         }
       }
     }
@@ -527,12 +606,40 @@ export function createForm(root, hooks = {}) {
   };
 
   let addOnly = false;
-  if (addCart) {
-    addCart.addEventListener('click', () => {
-      addOnly = true;
-      form.requestSubmit();
+  on(addCart, 'click', () => {
+    addOnly = true;
+    form.requestSubmit();
+  });
+
+  /** "Sepete ekle" sonrası formu başlangıç durumuna döndürür ve haber verir. */
+  const resetAfterAdd = (productId) => {
+    form.reset();
+    form.querySelectorAll('[data-dp-dedi-toggle], [data-dp-note-toggle]').forEach((el) => {
+      if (el.matches('[data-dp-dedi-toggle]')) {
+        el.dispatchEvent(new Event('change'));
+      } else if (el.getAttribute('aria-expanded') === 'true') {
+        el.click();
+      }
     });
-  }
+    state = initialState(seed);
+    paint();
+    announce(form.dataset.msgAdded || '');
+    document.dispatchEvent(new CustomEvent('donation-panel:cart-added', { detail: { productId: Number(productId) } }));
+    root.dispatchEvent(new CustomEvent('dp:added', { bubbles: true }));
+  };
+
+  /** Sunucu alan hatalarını gösterir (en erken hatalı adıma gider). */
+  const showServerErrors = (errors) => {
+    const earlier = firstErrorStep(
+      Object.keys(errors),
+      Object.fromEntries(Object.keys(errors).map((name) => [name, stepIndexOf(name)]))
+    );
+    if (earlier >= 0 && earlier !== state.step) {
+      dispatch({ type: 'goStep', value: earlier });
+    }
+    dispatch({ type: 'setErrors', errors });
+    focusFirstError();
+  };
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -558,15 +665,7 @@ export function createForm(root, hooks = {}) {
     try {
       const outcome = await addToCart(root, productId, values, direct);
       if (outcome.errors) {
-        const earlier = firstErrorStep(
-          Object.keys(outcome.errors),
-          Object.fromEntries(Object.keys(outcome.errors).map((name) => [name, stepIndexOf(name)]))
-        );
-        if (earlier >= 0 && earlier !== state.step) {
-          dispatch({ type: 'goStep', value: earlier });
-        }
-        dispatch({ type: 'setErrors', errors: outcome.errors });
-        focusFirstError();
+        showServerErrors(outcome.errors);
         return;
       }
       if (!outcome.ok) {
@@ -575,34 +674,18 @@ export function createForm(root, hooks = {}) {
       root.dataset.dpFailKind = '';
       dispatch({ type: 'submitDone' });
       if (onlyAdd) {
-        form.reset();
-        form.querySelectorAll('[data-dp-dedi-toggle], [data-dp-note-toggle]').forEach((el) => {
-          if (el.matches('[data-dp-dedi-toggle]')) {
-            el.dispatchEvent(new Event('change'));
-          } else if (el.getAttribute('aria-expanded') === 'true') {
-            el.click();
-          }
-        });
-        state = initialState(seed);
-        paint();
-        announce(form.dataset.msgAdded || '');
-        document.dispatchEvent(new CustomEvent('donation-panel:cart-added', { detail: { productId: Number(productId) } }));
-        root.dispatchEvent(new CustomEvent('dp:added', { bubbles: true }));
+        resetAfterAdd(productId);
         return;
       }
       if (hooks.onDone) {
         hooks.onDone(root);
       }
-      // Doğrudan akışta hedef yalnız sunucunun verdiği ödeme adresidir (sepet ödeme sayfasına düşülmez).
-      const target = direct ? outcome.checkoutUrl : outcome.checkoutUrl || root.dataset.dpCheckout;
-      if (direct && !target) {
-        throw new Error('direct');
-      }
+      const target = checkoutTarget(root, outcome, direct);
       if (target) {
         window.location.assign(target);
       }
     } catch (error) {
-      root.dataset.dpFailKind = error && error.message === 'rate' ? 'rate' : '';
+      root.dataset.dpFailKind = failKind(error);
       dispatch({ type: 'submitFail' });
     }
   });
@@ -693,24 +776,13 @@ function digest(text) {
  */
 async function addToCart(root, productId, values, direct = false) {
   const body = JSON.stringify({ ...values, product_id: Number(productId) });
-  // Sepet: her gönderim yeni anahtar. Doğrudan bağış: anahtar sayfa oturumu + içerik özetidir; aynı içeriğin yeniden
-  // gönderimi (çift dokunuş, ağ hatası sonrası yeniden deneme) sunucuda AYNI siparişi bulur, ikinci sipariş üretmez.
-  const submissionKey = direct
-    ? `dp-${productId}-${pageSession}-${digest(body)}`
-    : `dp-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   const payload = JSON.stringify({
     ...values,
     product_id: Number(productId),
-    submission_key: submissionKey,
+    submission_key: submissionKeyFor(direct, productId, body),
     ...(direct ? { client_token: clientToken() } : {}),
   });
-  const send = (nonce) =>
-    window.fetch(`${root.dataset.dpRest}${direct ? 'direct' : 'cart/add'}`, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', ...(nonce ? { 'X-WP-Nonce': nonce } : {}) },
-      body: payload,
-    });
+  const send = (nonce) => postJson(`${root.dataset.dpRest}${direct ? 'direct' : 'cart/add'}`, payload, nonce);
   // Sayfa HTML'inde nonce yok: ilk gönderimde REST'ten alınır (sonrakilerde dataset'ten); bayatsa 403 sonrası tazelenir.
   let response = await send(root.dataset.dpNonce || (await refreshNonce(root)));
   if (response.status === 403) {
@@ -719,7 +791,45 @@ async function addToCart(root, productId, values, direct = false) {
       response = await send(fresh);
     }
   }
-  const result = await readJson(response);
+  return outcomeFrom(response, await readJson(response));
+}
+
+/**
+ * Sepet: her gönderim yeni anahtar. Doğrudan bağış: anahtar sayfa oturumu + içerik özetidir; aynı içeriğin yeniden
+ * gönderimi (çift dokunuş, ağ hatası sonrası yeniden deneme) sunucuda AYNI siparişi bulur, ikinci sipariş üretmez.
+ *
+ * @param {boolean} direct    Doğrudan bağış.
+ * @param {string}  productId Ürün.
+ * @param {string}  body      Gönderim gövdesi.
+ * @return {string} Anahtar.
+ */
+function submissionKeyFor(direct, productId, body) {
+  return direct
+    ? `dp-${productId}-${pageSession}-${digest(body)}`
+    : `dp-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/**
+ * @param {string} url     Adres.
+ * @param {string} payload JSON gövde.
+ * @param {string} nonce   REST nonce (boş olabilir).
+ * @return {Promise<Response>} Yanıt.
+ */
+function postJson(url, payload, nonce) {
+  return window.fetch(url, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...(nonce ? { 'X-WP-Nonce': nonce } : {}) },
+    body: payload,
+  });
+}
+
+/**
+ * @param {Response}    response Yanıt.
+ * @param {object|null} result   Gövde.
+ * @return {{ok: boolean, errors?: Record<string, string>, checkoutUrl?: string, rate?: boolean}} Sonuç.
+ */
+function outcomeFrom(response, result) {
   if (response.ok && result && result.success) {
     return { ok: true, checkoutUrl: result.redirect_url || result.checkout_url || '' };
   }

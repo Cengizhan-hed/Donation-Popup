@@ -12,7 +12,6 @@
   var SelectControl = wp.components.SelectControl;
   var TextControl = wp.components.TextControl;
   var RangeControl = wp.components.RangeControl;
-  var ToggleControl = wp.components.ToggleControl;
   var Placeholder = wp.components.Placeholder;
   var ServerSideRender = wp.serverSideRender;
   var __ = wp.i18n.__;

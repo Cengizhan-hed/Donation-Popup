@@ -225,17 +225,17 @@
 
 /* Telefonda: WooCommerce'in dar sütun düzenini tek sütuna çevirir, dokunma alanı ≥44 px. */
 @media (max-width: 782px) {
+  .donation-panel-ptab__shortcode-row select,
+  .donation-panel-ptab__shortcode-row input,
+  .donation-panel-ptab__shortcode-row .button {
+    min-block-size: 44px;
+  }
+
   .donation-panel-ptab .form-field input[type='text'],
   .donation-panel-ptab .form-field input[type='number'],
   .donation-panel-ptab .form-field select,
   .donation-panel-ptab .form-field textarea {
     width: 100%;
-    min-block-size: 44px;
-  }
-
-  .donation-panel-ptab__shortcode-row select,
-  .donation-panel-ptab__shortcode-row input,
-  .donation-panel-ptab__shortcode-row .button {
     min-block-size: 44px;
   }
 
