@@ -132,8 +132,10 @@ abstract class Rest_Controller {
 		if ( '' === $origin ) {
 			return true;
 		}
-		$allowed = array_filter( array( self::origin_of( home_url() ), self::origin_of( site_url() ) ) );
-		if ( '' === self::origin_of( $origin ) || ! in_array( self::origin_of( $origin ), $allowed, true ) ) {
+		// Yalnız ana makine adı karşılaştırılır: SSL sonlandıran vekil/CDN arkasında home_url http iken tarayıcı Origin'i https gelebilir.
+		$allowed = array_filter( array( self::host_of( home_url() ), self::host_of( site_url() ) ) );
+		$host    = self::host_of( $origin );
+		if ( '' === $host || ! in_array( $host, $allowed, true ) ) {
 			return $this->error( 'donation_panel_cross_origin', 'Cross-site requests are not allowed.', 403 );
 		}
 		return true;
@@ -164,19 +166,17 @@ abstract class Rest_Controller {
 	}
 
 	/**
-	 * Adresin kökeni (küçük harfli şema://sunucu:port); geçersizse ''.
+	 * Adresin ana makine adı (küçük harfli; şema ve port yok sayılır); geçersizse ''.
 	 *
 	 * @param string $url Adres.
 	 * @return string
 	 */
-	private static function origin_of( $url ) {
+	private static function host_of( $url ) {
 		$parts = wp_parse_url( (string) $url );
 		if ( ! is_array( $parts ) || empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
 			return '';
 		}
-		$scheme = strtolower( (string) $parts['scheme'] );
-		$port   = isset( $parts['port'] ) ? (int) $parts['port'] : ( 'https' === $scheme ? 443 : 80 );
-		return $scheme . '://' . strtolower( (string) $parts['host'] ) . ':' . $port;
+		return strtolower( (string) $parts['host'] );
 	}
 
 	/**

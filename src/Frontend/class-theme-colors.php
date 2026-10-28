@@ -154,7 +154,7 @@ class Theme_Colors {
 	}
 
 	/**
-	 * Ana renk: önce ad sırası (primary/accent/secondary/contrast) — yazı olarak beyaz zeminde okunur (≥3:1) olan;
+	 * Ana renk: önce ad sırası (primary/accent/secondary/contrast) — yazı olarak beyaz zeminde okunur (≥4.5:1) olan;
 	 * yoksa paletteki ilk koyu renk (beyaz zeminde ≥4.5:1). Bulunamazsa ''.
 	 *
 	 * @param array<string, string> $flat slug => hex.
@@ -162,7 +162,7 @@ class Theme_Colors {
 	 */
 	public static function pick_primary( array $flat ) {
 		foreach ( self::PRIMARY_SLUGS as $slug ) {
-			if ( isset( $flat[ $slug ] ) && self::contrast( $flat[ $slug ], 'ffffff' ) >= 3.0 ) {
+			if ( isset( $flat[ $slug ] ) && self::contrast( $flat[ $slug ], 'ffffff' ) >= self::MIN_TEXT_CONTRAST ) {
 				return $flat[ $slug ];
 			}
 		}

@@ -155,7 +155,7 @@ export function initialState(seed = {}) {
  * @return {object} Yeni durum (aynı nesne değil).
  */
 export function reducer(state, action) {
-  const handler = Object.hasOwn(HANDLERS, action.type) ? HANDLERS[action.type] : null;
+  const handler = Object.prototype.hasOwnProperty.call(HANDLERS, action.type) ? HANDLERS[action.type] : null;
   return handler ? handler(state, action) : state;
 }
 

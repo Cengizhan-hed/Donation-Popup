@@ -72,10 +72,17 @@ final class SecurityHardeningTest extends TestCase {
 		$this->assertNotInstanceOf( WP_Error::class, $same );
 	}
 
-	public function test_origin_null_and_scheme_or_port_mismatch_are_rejected(): void {
-		foreach ( array( 'null', 'http://example.test', 'https://example.test:8443', 'https://example.test.evil.example' ) as $origin ) {
+	public function test_origin_null_and_foreign_host_are_rejected(): void {
+		foreach ( array( 'null', 'https://example.test.evil.example', 'https://evil.example:443', 'http://sub.example.test' ) as $origin ) {
 			$result = $this->nonce_controller()->nonce( $this->request( array( 'Origin' => $origin ) ) );
 			$this->assertInstanceOf( WP_Error::class, $result, $origin );
+		}
+	}
+
+	public function test_origin_scheme_and_port_differences_are_accepted_behind_a_ssl_terminating_proxy(): void {
+		foreach ( array( 'http://example.test', 'https://example.test:8443', 'https://EXAMPLE.test' ) as $origin ) {
+			$result = $this->nonce_controller()->nonce( $this->request( array( 'Origin' => $origin ) ) );
+			$this->assertNotInstanceOf( WP_Error::class, $result, $origin );
 		}
 	}
 

@@ -240,10 +240,11 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 
 	public function test_idempotent_same_key_returns_same_order(): void {
 		$product = $this->direct_product();
-		$first   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '50', 'k-idem' ) ) );
-		$res2    = $this->direct( $this->donor_body( $product->get_id(), '50', 'k-idem' ) );
+		$tok     = array( 'client_token' => 'idemTok' );
+		$first   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '50', 'k-idem', $tok ) ) );
+		$res2    = $this->direct( $this->donor_body( $product->get_id(), '50', 'k-idem', $tok ) );
 		$second  = $this->order_from( $res2 );
-		$res3    = $this->direct( $this->donor_body( $product->get_id(), '50', 'k-idem' ) );
+		$res3    = $this->direct( $this->donor_body( $product->get_id(), '50', 'k-idem', $tok ) );
 		$third   = $this->order_from( $res3 );
 
 		$this->assertSame( $first->get_id(), $second->get_id() );
@@ -564,6 +565,19 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$this->assertSame( $first->get_id(), $this->order_from( $again )->get_id() );
 	}
 
+	public function test_replay_with_empty_owner_on_both_sides_is_not_returned(): void {
+		$product = $this->direct_product();
+		$first   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '25', 'k-empty-owner' ) ) );
+		$order   = wc_get_order( $first->get_id() );
+		$order->delete_meta_data( Direct_Order_Factory::OWNER_META );
+		$order->save();
+
+		$replay = $this->direct( $this->donor_body( $product->get_id(), '25', 'k-empty-owner' ), false );
+		$this->assertSame( 422, $replay->get_status(), wp_json_encode( $replay->get_data() ) );
+		$this->assertArrayNotHasKey( 'redirect_url', (array) $replay->get_data() );
+		$this->assertSame( 1, $this->orders_for_key( 'k-empty-owner' ) );
+	}
+
 	public function test_client_hashes_are_salted_and_dropped_when_the_order_leaves_pending(): void {
 		$product = $this->direct_product();
 		$_SERVER['REMOTE_ADDR'] = '203.0.113.77';
@@ -768,31 +782,33 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 	public function test_failed_order_resubmit_returns_same_order_for_retry_and_cancelled_creates_new(): void {
 		$product = $this->direct_product();
 		$key     = 'k-retry';
-		$first   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '90', $key ) ) );
+		$tok     = array( 'client_token' => 'retryTok' );
+		$first   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '90', $key, $tok ) ) );
 		$first->set_payment_method( 'wdp_test_card' );
 		$first->save();
 		WDP_Test_Card_Gateway::$mode = 'fail';
 		WC()->payment_gateways()->payment_gateways()['wdp_test_card']->process_payment( $first->get_id() );
 		$this->assertSame( 'failed', wc_get_order( $first->get_id() )->get_status() );
 
-		$again = $this->direct( $this->donor_body( $product->get_id(), '90', $key ) );
+		$again = $this->direct( $this->donor_body( $product->get_id(), '90', $key, $tok ) );
 		$same  = $this->order_from( $again );
 		$this->assertSame( $first->get_id(), $same->get_id(), 'Başarısız ödeme aynı siparişte yeniden denenir (devam bağlantısı).' );
 		$this->assertTrue( wc_get_order( $first->get_id() )->needs_payment() );
 		$this->assertStringContainsString( 'order-pay', $again->get_data()['redirect_url'] );
 
 		wc_get_order( $first->get_id() )->update_status( 'cancelled' );
-		$fresh = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '90', $key ) ) );
+		$fresh = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '90', $key, $tok ) ) );
 		$this->assertNotSame( $first->get_id(), $fresh->get_id(), 'İptal edilmiş sipariş yerine yeni sipariş açılır.' );
 	}
 
 	public function test_paid_order_resubmit_points_to_thank_you_and_never_duplicates(): void {
 		$product = $this->direct_product();
 		$key     = 'k-paid';
-		$order   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '60', $key ) ) );
+		$tok     = array( 'client_token' => 'paidTok' );
+		$order   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '60', $key, $tok ) ) );
 		$order->payment_complete( 'txn_paid' );
 
-		$res  = $this->direct( $this->donor_body( $product->get_id(), '60', $key ) );
+		$res  = $this->direct( $this->donor_body( $product->get_id(), '60', $key, $tok ) );
 		$data = $res->get_data();
 		$this->assertSame( 200, $res->get_status() );
 		$this->assertTrue( $data['reused'] );
