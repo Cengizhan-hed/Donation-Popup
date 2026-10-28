@@ -183,6 +183,7 @@ class Uninstall {
 			'wdp_upgrade_new_default',
 			// 12.1: otomatik yükleme bayrağı, yerleşim/ortak ayarlar ve göç bayrakları (yalnız eklentinin kendi anahtarları).
 			'donation_panel_autoload_v1',
+			'donation_panel_autoload_v2',
 			'donation_panel_account_rewrite',
 			'wdp_placement_settings',
 			'wdp_shareholder_settings',
@@ -260,6 +261,11 @@ class Uninstall {
 	 */
 	public static function cleanup_site() {
 		global $wpdb;
+
+		// Zamanlanmış olay eklenti silinince çalıştıracak kodu kalmadığı için ayardan bağımsız temizlenir (doğrudan bağış temizliği).
+		if ( function_exists( 'wp_clear_scheduled_hook' ) ) {
+			wp_clear_scheduled_hook( 'donation_panel_direct_cleanup' );
+		}
 
 		if ( ! self::deletion_enabled() ) {
 			return;

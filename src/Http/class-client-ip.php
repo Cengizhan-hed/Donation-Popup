@@ -3,7 +3,8 @@
  * İstemci IP'si: varsayılan REMOTE_ADDR; vekil başlıkları yalnız güvenilen vekilden gelirse okunur.
  *
  * Başlıklar (X-Forwarded-For, X-Real-IP) istemci tarafından yazılabildiği için varsayılan olarak güvenilmez.
- * Ters vekil/CDN arkasındaki siteler vekil adreslerini `donation_panel_trusted_proxies` süzgeciyle bildirir; bildirilmezse
+ * Ters vekil/CDN arkasındaki siteler vekil adreslerini Araçlar ekranındaki "Trusted proxy addresses" ayarıyla (`general.trusted_proxies`)
+ * ya da `donation_panel_trusted_proxies` süzgeciyle bildirir; bildirilmezse
  * tüm ziyaretçiler vekilin IP'sinde toplanır ve IP başına hız sınırları (REST hız sınırı, doğrudan bağış bekleyen sipariş sınırı)
  * ortak kota gibi davranır. Doğrudan bağışta kota ayrıca tarayıcıya özel rastgele belirteçle bölünür (IP tek başına anahtar değildir).
  *
@@ -11,6 +12,8 @@
  */
 
 namespace DonationPanel\Http;
+
+use DonationPanel\Core\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -62,11 +65,35 @@ final class Client_Ip {
 		 *
 		 * @param string[] $proxies Adresler.
 		 */
-		$proxies = apply_filters( 'donation_panel_trusted_proxies', array() );
+		$proxies = apply_filters( 'donation_panel_trusted_proxies', self::configured_proxies() );
 		if ( ! is_array( $proxies ) ) {
 			return array();
 		}
 		return array_values( array_filter( array_map( 'trim', array_filter( $proxies, 'is_string' ) ) ) );
+	}
+
+	/**
+	 * Yöneticinin Araçlar ekranında tanımladığı vekiller (satır/virgül ayrımlı); tanımsızsa boş.
+	 *
+	 * @return string[]
+	 */
+	private static function configured_proxies() {
+		$raw = ( new Settings() )->get( 'general.trusted_proxies', '' );
+		if ( ! is_string( $raw ) || '' === trim( $raw ) ) {
+			return array();
+		}
+		$list = array();
+		foreach ( preg_split( '/[\s,;]+/', $raw ) as $entry ) {
+			$entry = trim( (string) $entry );
+			if ( '' === $entry ) {
+				continue;
+			}
+			$addr = false !== strpos( $entry, '/' ) ? substr( $entry, 0, (int) strpos( $entry, '/' ) ) : $entry;
+			if ( false !== filter_var( $addr, FILTER_VALIDATE_IP ) ) {
+				$list[] = $entry;
+			}
+		}
+		return $list;
 	}
 
 	/**
