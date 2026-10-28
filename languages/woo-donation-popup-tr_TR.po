@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 08:52:34+0000\n"
-"PO-Revision-Date: 2026-10-27 08:52:34+0000\n"
+"POT-Creation-Date: 2026-10-28 07:27:24+0000\n"
+"PO-Revision-Date: 2026-10-28 07:27:24+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -1614,6 +1614,12 @@ msgstr "Tanılama"
 msgid "Difference"
 msgstr "Fark"
 
+msgid "Direct donation started. Waiting for payment."
+msgstr "Doğrudan bağış başlatıldı. Ödeme bekleniyor."
+
+msgid "Direct donation was not paid in time and was cancelled automatically."
+msgstr "Doğrudan bağış zamanında ödenmedi ve otomatik olarak iptal edildi."
+
 #: includes/elementor/class-widget-donations-list.php:92
 msgid "Direction"
 msgstr "Yön"
@@ -2780,6 +2786,9 @@ msgstr "Ürün seçilmediyse mevcut ürün (otomatik) kullanılır. Ürün sayfa
 msgid "If off, you add the form to the product page yourself with a shortcode, block, or widget only."
 msgstr "Kapalıysa formu ürün sayfasına yalnızca kısa kod, blok veya widget ile siz eklersiniz."
 
+msgid "If on, the donor goes from the form straight to payment and nothing is added to the cart."
+msgstr "Açıksa bağışçı formdan doğrudan ödemeye geçer ve sepete hiçbir şey eklenmez."
+
 #: src/Privacy/class-privacy-tools.php
 msgid "If the donor account is enabled and you ask to link earlier guest donations, a short-lived confirmation request is stored with your user profile and is deleted as soon as it is used or expires."
 msgstr "Bağışçı hesabı açıksa ve önceki misafir bağışlarınızı bağlamak isterseniz, kısa ömürlü bir doğrulama isteği kullanıcı profilinizle birlikte saklanır; kullanıldığında ya da süresi dolduğunda hemen silinir."
@@ -3063,6 +3072,9 @@ msgstr "Boş bırakırsanız hazır, çevrilmiş metin kullanılır."
 #: src/Admin/
 msgid "Leave empty to use the privacy policy page set in WordPress."
 msgstr "WordPress'te atanmış gizlilik politikası sayfasını kullanmak için boş bırakın."
+
+msgid "Leave empty unless your site runs behind a proxy or CDN. One address or range per line (for example 10.0.0.0/8). Visitor addresses sent by these proxies are then used to tell visitors apart for rate limits. Never list addresses you do not control."
+msgstr "Siteniz bir vekil ya da CDN arkasında değilse boş bırakın. Her satıra bir adres ya da aralık yazın (örneğin 10.0.0.0/8). Bu vekillerin ilettiği ziyaretçi adresleri, hız sınırlarında ziyaretçileri birbirinden ayırmak için kullanılır. Kontrol etmediğiniz adresleri asla yazmayın."
 
 #: includes/class-admin-placement-tab-renderer.php:138
 msgid "Leave the setting above On. You do not need to do anything else; the Shop page and product pages become donation pages automatically."
@@ -3740,6 +3752,9 @@ msgstr "Çevrimiçi"
 #: src/Admin/
 msgid "Only for the \"In the page\" style."
 msgstr "Yalnız \"Sayfa içinde\" biçimi için."
+
+msgid "Only needed when your site sits behind a proxy or CDN."
+msgstr "Yalnızca siteniz bir vekil ya da CDN arkasındaysa gerekir."
 
 #: includes/class-admin-form-tabs-renderer.php:580
 msgid "Only on the shortcode trigger; use it for readability on a light background."
@@ -5240,6 +5255,9 @@ msgstr "Atla"
 msgid "Skip for now"
 msgstr "Şimdilik atla"
 
+msgid "Skip the cart (direct donation)"
+msgstr "Sepeti atla (doğrudan bağış)"
+
 #: includes/class-admin-layout-tabs-renderer.php:141
 msgid "Slice for the amount sitting in the cart, not yet paid."
 msgstr "Sepette duran, henüz ödenmemiş tutar dilimi."
@@ -5614,6 +5632,9 @@ msgstr "Klasik ekran tüm ayarlarınızı korur ve 12.0 sürümünde kaldırıla
 msgid "The donation amount is the product price: %s. You can change the price on the \"General\" tab."
 msgstr "Bağış tutarı ürün fiyatıdır: %s. Fiyatı \"Genel\" sekmesinden değiştirebilirsiniz."
 
+msgid "The donation could not be started. Please try again."
+msgstr "Bağış başlatılamadı. Lütfen tekrar deneyin."
+
 #: includes/class-lazy-modal.php:61 includes/class-lazy-modal.php:69
 msgid "The donation form cannot be shown right now."
 msgstr "Bağış formu şu anda gösterilemiyor."
@@ -5641,6 +5662,12 @@ msgstr "Bağışçı tutarı kendisi yazar; isterseniz en düşük tutarı belir
 #: src/Admin/Product/
 msgid "The donor enters the amount. The WooCommerce General price field may stay empty for these types."
 msgstr "Tutarı bağışçı yazar. Bu türlerde WooCommerce Genel fiyat alanı boş kalabilir."
+
+msgid "The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, ask your developer to set the donation_panel_trusted_proxies filter so visitors can be told apart."
+msgstr "Bağışçı formdan doğrudan ödemeye geçer. Sepete hiçbir şey eklenmez; bağışçının mevcut sepeti olduğu gibi kalır. Bunu her ürün için ayrıca değiştirebilirsiniz. Siteniz bir vekil ya da CDN arkasındaysa, ziyaretçilerin birbirinden ayırt edilebilmesi için geliştiricinizden donation_panel_trusted_proxies süzgecini ayarlamasını isteyin."
+
+msgid "The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart."
+msgstr "Bağışçı formdan doğrudan ödemeye geçer. Sepete hiçbir şey eklenmez; bağışçının mevcut sepeti olduğu gibi kalır. Bunu her ürün için ayrıca değiştirebilirsiniz. Siteniz bir vekil ya da CDN arkasındaysa, ziyaretçilerin birbirinden ayırt edilebilmesi için Araçlar ekranında güvenilen vekil adreslerini girin."
 
 #: includes/class-product-settings-service.php:596
 msgid "The end date must be a valid calendar day."
@@ -5795,6 +5822,9 @@ msgstr "Ürünün WooCommerce fiyatı kullanılır; bağışçı yalnızca adet 
 msgid "The question heading the donor sees."
 msgstr "Bağışçının gördüğü soru başlığı."
 
+msgid "The request is missing its submission key."
+msgstr "İstekte gönderim anahtarı yok."
+
 #: includes/class-admin-product-data-tab.php:746
 msgid "The saved end date is invalid; the strip appears with no time limit. Enter a valid Y-m-d."
 msgstr "Kayıtlı bitiş tarihi geçersiz; şerit süresiz görünür. Geçerli bir Y-m-d girin."
@@ -5874,6 +5904,18 @@ msgstr "Bu kampanya artık bağış kabul etmiyor."
 msgid "This cannot be undone. It is not saved without confirmation."
 msgstr "Bu işlem geri alınamaz. Onaylamadan kaydedilmez."
 
+msgid "This donation can only be made once per order."
+msgstr "Bu bağış her siparişte yalnızca bir kez yapılabilir."
+
+msgid "This donation cannot be started right now."
+msgstr "Bu bağış şu anda başlatılamıyor."
+
+msgid "This donation is not available right now."
+msgstr "Bu bağış şu anda kullanılamıyor."
+
+msgid "This donation is out of stock."
+msgstr "Bu bağışın stoğu tükendi."
+
 #: includes/traits/trait-wdp-assets-registry.php:348
 msgid "This field is required"
 msgstr "Bu alan zorunludur"
@@ -5926,6 +5968,9 @@ msgstr "Bu sitede kuruşlu tutar girilemez, örn. %s"
 #: templates/donation-panel/tax-relief/step.php
 msgid "This step is optional. You can continue without ticking the box."
 msgstr "Bu adım isteğe bağlıdır. Kutuyu işaretlemeden devam edebilirsiniz."
+
+msgid "This submission key was already used for a different donation."
+msgstr "Bu gönderim anahtarı başka bir bağış için kullanılmış."
 
 #: src/Modules/DonorAccount/class-account-renderer.php
 msgid "This year"
@@ -6031,6 +6076,9 @@ msgstr "Güven şeridi ikonu"
 #: includes/class-admin-design-studio-renderer.php:354
 msgid "Trust text (single-badge fallback)"
 msgstr "Güven metni (tek rozet yedek)"
+
+msgid "Trusted proxy addresses"
+msgstr "Güvenilen vekil adresleri"
 
 #: assets/js/src/form/ajax.js:433
 msgid "Try again"
@@ -6215,6 +6263,9 @@ msgstr "Vietnam"
 #: includes/traits/trait-wdp-assets-inline-styles.php:57 includes/traits/trait-wdp-assets-inline-styles.php:59
 msgid "View cart"
 msgstr "Sepete Git"
+
+msgid "Visitor address"
+msgstr "Ziyaretçi adresi"
 
 #: includes/config/style-presets.php
 #. YENI-SARMA
@@ -6577,6 +6628,9 @@ msgstr "Bu sayfayı açma yetkiniz yok."
 msgid "You entered an invalid donation amount."
 msgstr "Geçersiz bağış miktarı girdiniz."
 
+msgid "You have several unpaid donations waiting. Please complete or wait for them to expire before starting another."
+msgstr "Ödenmeyi bekleyen birkaç bağışınız var. Yenisini başlatmadan önce onları tamamlayın ya da süresinin dolmasını bekleyin."
+
 #: src/Admin/
 msgid "You have unsaved changes"
 msgstr "Kaydedilmemiş değişiklikleriniz var"
@@ -6635,6 +6689,9 @@ msgstr "Bağışınız sepete eklendi."
 #: templates/donation-panel/thanks/summary.php
 msgid "Your donation has been received. May it be a source of goodness."
 msgstr "Bağışınız alındı. Hayra vesile olsun."
+
+msgid "Your donation is already being processed. Please wait a moment."
+msgstr "Bağışınız zaten işleniyor. Lütfen biraz bekleyin."
 
 #: includes/traits/trait-wdp-assets-registry.php:370
 msgid "Your donation was added to the cart"
