@@ -1,0 +1,46 @@
+/* Donation Panel — form öğesi yalıtımı. Tema/oluşturucu stillerinin (input, button, select, textarea) eklenti
+ * öğelerine sızmasını önler: `!important` ya da global sıfırlama YOK; `:root .dp` ile yeterli özgüllük (0,3,0) ve
+ * `all: revert` (tarayıcı varsayılanına dön, sonra eklenti değerleri). Tek çerçeve, tutarlı yükseklik (50-52 px),
+ * görünür odak halkası. Yalnız `.dp` kapsamı; temaya özel seçici yok. Mantıksal özellikler (RTL). */
+.dp :where(.dp-input, .dp-textarea, .dp-select, .dp-ac__input) {
+  --_h: 52px; --_fs: 16px; --_bd: var(--dp-color-border-strong, #8a93a3); --_r: var(--dp-radius-field, 14px);
+  --_bg: var(--dp-color-surface, #fff); --_ring: var(--dp-color-primary-ring, rgb(15 118 110 / .4));
+  --_focus: var(--dp-color-primary-strong, #0b5f58); --_bad: var(--dp-color-danger, #b42318);
+}
+.dp .dp-ac__input { --_h: var(--dpx-h-field, 52px); --_fs: .9375rem; --_bd: var(--dpx-line-strong, #8a93a3); --_r: var(--dpx-r-field, 14px); --_bg: var(--dpx-card, #fff); --_bad: var(--dpx-bad, #b42318); }
+:root .dp :is(.dp-input, .dp-textarea, .dp-select, .dp-ac__input) {
+  all: revert;
+  display: block; box-sizing: border-box; inline-size: 100%; max-inline-size: 100%; min-block-size: var(--_h); margin: 0; padding: 0 14px;
+  border: 1.5px solid var(--_bd); border-radius: var(--_r); background: var(--_bg); color: var(--dp-color-text, inherit);
+  font: inherit; font-size: var(--_fs); line-height: 1.4; box-shadow: none; outline: 2px solid transparent; outline-offset: 0;
+  -webkit-appearance: none; appearance: none; transition: border-color 120ms, box-shadow 120ms;
+}
+:root .dp :is(.dp-input, .dp-textarea, .dp-select, .dp-ac__input):is(:focus, :focus-visible) {
+  border-color: var(--_focus); box-shadow: 0 0 0 4px var(--_ring); outline: 2px solid transparent;
+}
+:root .dp :is(.dp-input, .dp-textarea, .dp-select, .dp-ac__input)::placeholder { color: var(--dp-color-text-faint, #6b7280); opacity: 1; }
+:root .dp :is(.dp-input, .dp-textarea, .dp-ac__input):is([aria-invalid="true"], .has-error *) { border-color: var(--_bad); }
+:root .dp .dp-field.has-error :is(.dp-input, .dp-textarea) { border-color: var(--_bad); background: var(--dp-color-danger-soft, #fdeceb); }
+:root .dp :is(.dp-input, .dp-textarea, .dp-select, .dp-ac__input):disabled { opacity: .6; cursor: not-allowed; }
+:root .dp .dp-textarea { padding-block: 12px; min-block-size: 92px; resize: vertical; }
+:root .dp .dp-select { padding-inline-end: 36px; }
+:root .dp .dp-ac__pass .dp-ac__input { padding-inline-end: 52px; }
+
+/* Çerçeveyi saran öğeler (tutar, telefon): içteki alan çıplak; çerçeveyi ve odak halkasını kap taşır (tek çerçeve). */
+:root .dp :is(.dp-custom__in, .dp-phone__input) {
+  all: revert;
+  display: block; box-sizing: border-box; flex: 1; min-inline-size: 0; margin: 0; border: 0; border-radius: 0; background: transparent;
+  color: var(--dp-color-text, inherit); font: inherit; font-size: 16px; line-height: 1.4; box-shadow: none; outline: 0;
+  -webkit-appearance: none; appearance: none;
+}
+:root .dp .dp-custom__in { padding: 0; min-block-size: 48px; }
+:root .dp .dp-phone__input { padding: 0 14px; min-block-size: 50px; }
+:root .dp :is(.dp-custom__in, .dp-phone__input):is(:focus, :focus-visible) { box-shadow: none; outline: 0; }
+:root .dp :is(.dp-custom__in, .dp-phone__input)::placeholder { color: var(--dp-color-text-muted, #5b6475); opacity: 1; }
+:root .dp .dp-phone__select { all: revert; position: absolute; inset: 0; inline-size: 100%; block-size: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; font-size: 16px; -webkit-appearance: none; appearance: none; }
+
+/* Düğmeler: temanın düğme sızıntılarını (kenar boşluğu, büyük harf, harf aralığı, gölge) keser; değerleri sınıflar verir. */
+:root .dp button { margin: 0; text-transform: none; letter-spacing: normal; text-shadow: none; text-decoration-thickness: auto; -webkit-appearance: none; appearance: none; font-family: inherit; box-sizing: border-box; }
+/* Görünür odak halkası (klavye) */
+:root .dp :is(a, button, summary, [tabindex]:not([tabindex="-1"])):focus-visible { outline: 3px solid var(--dp-color-primary-strong, currentColor); outline-offset: 2px; }
+:root .dp :is(.dp-amount, .dp-check, .dp-switch):focus-visible { outline-offset: 0; }

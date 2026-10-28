@@ -243,5 +243,5 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wdp-list-wrap a { transition: none !important; }
+  :root .wdp-list-wrap a { transition: none; }
 }

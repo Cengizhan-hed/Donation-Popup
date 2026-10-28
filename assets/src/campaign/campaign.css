@@ -36,6 +36,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dp *, .dp *::before, .dp *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
-  .dp-bar__fill::after { display: none !important; }
+  :root .dp.dp *, :root .dp.dp *::before, :root .dp.dp *::after { animation-duration: 1ms; animation-iteration-count: 1; transition-duration: 1ms; }
+  :root .dp.dp .dp-bar__fill::after { display: none; }
 }

@@ -1,6 +1,7 @@
 /**
  * Donation Panel — Experiences giriş noktası (yalnız form görünen sayfada yüklenir).
  */
+import '../ui2-shared/controls.css';
 import './base.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';

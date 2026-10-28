@@ -3,8 +3,7 @@
 .dp { font-family: var(--dp-font-body); font-size: var(--dp-fs-base); line-height: var(--dp-lh-body); color: var(--dp-color-text); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
 .dp h1,.dp h2,.dp h3,.dp h4 { font-family: var(--dp-font-heading); line-height: var(--dp-lh-snug); margin: 0; color: var(--dp-color-text); letter-spacing: -.01em; }
 .dp p { margin: 0; }
-.dp :focus { outline: none; }
-.dp [hidden] { display: none !important; }
+.dp [hidden][hidden] { display: none; }
 /* Donation Panel — tasarım belirteçleri (design tokens)
  * Tek görsel dil. Hiçbir temaya/oluşturucuya özel seçici YOK.
  * "Tema köprüsü": değerler önce WordPress global stil / theme.json önayarlarından
@@ -136,7 +135,7 @@
 }
 
 .dp :focus-visible { box-shadow: var(--dp-shadow-focus); outline: 2px solid transparent; border-radius: var(--dp-radius-sm); }
-.dp-sr { position: absolute !important; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.dp .dp-sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .dp-num { font-variant-numeric: tabular-nums; font-family: var(--dp-font-numeric); }
 .dp-muted { color: var(--dp-color-text-muted); }
 .dp-eyebrow { font-size: var(--dp-fs-xs); font-weight: var(--dp-fw-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--dp-color-primary-strong); }

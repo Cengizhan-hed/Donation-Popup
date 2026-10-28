@@ -5,6 +5,7 @@
  */
 import '../campaign/base.css';
 import '../ui2-shared/tokens.css';
+import '../ui2-shared/controls.css';
 import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 import './donor-account.css';
 import { endpoint, errorKey, isEmail, isStrongEnough, nextFocusIndex, shouldDismissOnDrag } from './logic.mjs';
@@ -107,6 +108,15 @@ function mountDialog(root) {
   function open(opener) {
     // Safari düğmeye tıklayınca odak vermez: odak dönüşü için tıklanan düğme açıkça saklanır.
     lastFocus = opener || document.activeElement;
+    // <dialog> üst katmanı: başka eklentilerin yüzen öğeleri pencerenin üstüne çıkamaz.
+    if (typeof overlay.showModal === 'function') {
+      if (!overlay.open) {
+        overlay.showModal();
+      }
+    } else {
+      overlay.setAttribute('open', '');
+    }
+    void overlay.offsetWidth;
     overlay.classList.add('is-open');
     lockPage('donor-account', root, 'dp-ac-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
@@ -115,6 +125,13 @@ function mountDialog(root) {
 
   function close() {
     overlay.classList.remove('is-open');
+    if (typeof overlay.close === 'function') {
+      if (overlay.open) {
+        overlay.close();
+      }
+    } else {
+      overlay.removeAttribute('open');
+    }
     unlockPage('donor-account');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'false'));
     if (lastFocus && typeof lastFocus.focus === 'function') {
@@ -289,6 +306,10 @@ function mountDialog(root) {
       e.preventDefault();
       submit(form);
     }
+  });
+  overlay.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    close();
   });
   document.addEventListener('keydown', (e) => {
     if (!overlay.classList.contains('is-open') || !isTopmost('donor-account')) {
