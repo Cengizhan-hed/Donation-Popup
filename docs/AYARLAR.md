@@ -31,6 +31,8 @@ Eklentinin TEK yönetici girişi vardır: WordPress sol menüsünde üst düzey 
 
 Yönetici çubuğunda **Önizleme** düğümü (`?dp_preview=1`; yalnız oturumu açık, `manage_woocommerce` yetkili kullanıcı için etkilidir).
 
+**Renk kaynağı durumu (12.1):** "Temamın renkleri" yalnız WordPress global styles paletinden okunur (`Theme_Colors::source_status()`: `theme` / `none`); Elementor Global Colors gibi oluşturucuya özel kaynaklar OKUNMAZ. Palet okunamazsa (boş ya da hiçbir renk beyaz zeminde 4.5:1 sağlamıyor) panel kendi varsayılan renklerine düşer ve yönetici üç yerde uyarılır: Formlar ve Görünüm › Renkler (uyarı + "Özel renkleri seç" düğmesi iki renk seçiciye odaklar), kurulum sihirbazı 2. adım ("Kendi renklerimi seçeyim" varsayılan önerilir), Genel Bakış durum kutusu ("Renkler temadan okunamadı"). Okunuyorsa Renkler bölümünde okunan iki renk örneği görünür, Genel Bakış'ta satır yoktur.
+
 Renk, yazı, boşluk, köşe ve genişlik ayarları kaldırıldı: bunlar tasarım belirteçlerinden ve temadan gelir. Eski ayar -> yeni alan eşlemesi: `build/handoff/12-adm-ayar-envanteri.md` (152 eski ayar: 29 taşındı, 91 otomatik, 32 eski motora özgü olduğu için kaldırıldı; veri kaybı yok, eski `wdp_*` seçenekleri silinmez).
 
 Aşağıdaki "Genel ayar" satırları artık bu sayfalardaki karşılıklarına işaret eder.
