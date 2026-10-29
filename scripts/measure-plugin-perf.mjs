@@ -85,8 +85,14 @@ function pageObservers() {
   window.__dpPerf = { shifts: [], events: [], errors: [], fontTimes: [] };
   try {
     // Web fontu yüklenme anları (CLS atfı: font swap kaymaları ayrı sütun).
+    // `loadingdone` yalnız TÜM bekleyen yüklemeler bitince bir kez gelir; her yazı tipinin kendi bitişi için
+    // `loading` olayındaki her FontFace'in `loaded` sözü izlenir.
     if (document.fonts && document.fonts.addEventListener) {
-      document.fonts.addEventListener('loadingdone', () => window.__dpPerf.fontTimes.push(performance.now()));
+      const mark = () => window.__dpPerf.fontTimes.push(performance.now());
+      document.fonts.addEventListener('loadingdone', mark);
+      document.fonts.addEventListener('loading', (e) => {
+        for (const face of e.fontfaces || []) face.loaded.then(mark, () => {});
+      });
     }
   } catch (e) {
     window.__dpPerf.errors.push(String(e));
@@ -98,7 +104,15 @@ function pageObservers() {
           value: e.value,
           startTime: e.startTime,
           hadRecentInput: e.hadRecentInput,
-          sources: (e.sources || []).map((s) => ({ plugin: !!s.node && isPluginNode(s.node), detached: !s.node })),
+          sources: (e.sources || []).map((s) => ({
+            plugin: !!s.node && isPluginNode(s.node),
+            detached: !s.node,
+            // Tanı (JSON'a): düğüm ve dikey/yatay kayma; yalnız etiket + sınıf, içerik yok.
+            sel: s.node && s.node.nodeType === 1 ? `${s.node.tagName.toLowerCase()}.${String(s.node.className || '').trim().split(/\s+/).slice(0, 2).join('.')}` : s.node ? '#text' : '',
+            dy: Math.round(s.currentRect.y - s.previousRect.y),
+            dh: Math.round(s.currentRect.height - s.previousRect.height),
+            dx: Math.round(s.currentRect.x - s.previousRect.x),
+          })),
         });
       }
     }).observe({ type: 'layout-shift', buffered: true });
@@ -286,7 +300,8 @@ async function measureUi(browser, url, prepare, dumpName = '') {
     const fontEnds = snap.resources.filter((r) => /\.(?:woff2?|ttf|otf)(?:\?|$)/i.test(r.url) || r.type === 'font').map((r) => r.end);
     out.fontTimes = [...perf.fontTimes, ...fontEnds].filter((n) => Number.isFinite(n) && n > 0).map((n) => Math.round(n));
     out.cls = clsAttribution(perf.shifts, { fontTimes: out.fontTimes });
-    out.shifts = perf.shifts.filter((s) => !s.hadRecentInput).map((s) => ({ v: +Number(s.value).toFixed(5), t: Math.round(s.startTime), src: s.sources.map((x) => (x.plugin ? 'P' : x.detached ? 'D' : 'T')).join('') }));
+    out.foreignCss = snap.resources.filter((r) => !isPluginUrl(r.url) && kindOf(r) === 'css').map((r) => `${short(r.url).slice(-50)} @${Math.round(r.end)} ${r.blocking}`);
+    out.shifts = perf.shifts.filter((s) => !s.hadRecentInput).map((s) => ({ v: +Number(s.value).toFixed(5), t: Math.round(s.startTime), src: s.sources.map((x) => (x.plugin ? 'P' : x.detached ? 'D' : 'T')).join(''), nodes: s.sources.map((x) => `${x.sel} dy${x.dy} dh${x.dh} dx${x.dx}`) }));
     out.observerErrors = perf.errors;
     out.hasTrigger = hasTrigger;
 

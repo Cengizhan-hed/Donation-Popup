@@ -132,6 +132,25 @@ describe('clsAttribution', () => {
     assert.equal(r.pluginShifts, 3);
     assert.equal(r.total, 0.01568);
   });
+  it('FontFace olayı yokken: eklenti + tema salt yatay metin akışı ≤100 ms arayla → tema/font; dikey kayma eklentide kalır', () => {
+    const P = (dy, dh, dx) => ({ plugin: true, dy, dh, dx });
+    const T = (dy, dh, dx) => ({ plugin: false, dy, dh, dx });
+    // Storefront gözlemi: tema menü düğmesi dx4 (1854), eklenti düğme etiketi dx±3 (1888).
+    const r = clsAttribution([
+      { value: 0.00006, startTime: 1854, sources: [T(0, 0, 4)] },
+      { value: 0.00003, startTime: 1888, sources: [P(0, 0, 3), P(0, 0, -3)] },
+    ]);
+    assert.equal(r.plugin, 0);
+    assert.equal(r.font, 0.00003);
+    // Eklenti öğesi dikey kayıyor (gerçek CLS) → eklenti.
+    assert.equal(clsAttribution([{ value: 0.00006, startTime: 1854, sources: [T(0, 0, 4)] }, { value: 0.001, startTime: 1880, sources: [P(18, 0, 0)] }]).plugin, 0.001);
+    // Tema akışı 101 ms uzakta → eklenti.
+    assert.equal(clsAttribution([{ value: 0.00006, startTime: 1000, sources: [T(0, 0, 4)] }, { value: 0.00003, startTime: 1101, sources: [P(0, 0, 3)] }]).plugin, 0.00003);
+    // Yalnız eklenti akışı (tema kanıtı yok) → eklenti.
+    assert.equal(clsAttribution([{ value: 0.00003, startTime: 1888, sources: [P(0, 0, 3)] }]).plugin, 0.00003);
+    // Tema kayması dikey (metin akışı değil) → kanıt sayılmaz.
+    assert.equal(clsAttribution([{ value: 0.00006, startTime: 1854, sources: [T(12, 0, 0)] }, { value: 0.00003, startTime: 1888, sources: [P(0, 0, 3)] }]).plugin, 0.00003);
+  });
   it('font zamanı yoksa karışık kayma eklentiye yazılır; pencere sınırları', () => {
     const s = [{ value: 0.001, startTime: 500, hadRecentInput: false, sources: [{ plugin: false }, { plugin: true }] }];
     assert.equal(clsAttribution(s).plugin, 0.001);

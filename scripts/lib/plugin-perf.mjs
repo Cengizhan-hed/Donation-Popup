@@ -223,6 +223,8 @@ export function attributeTrace(trace, opts = {}) {
 /** Web fontu yüklenmesiyle "aynı kare" sayılan pencere (ms): yükleme bitişinden önce/sonra. Yavaşlatılmış CPU'da
  * yazı tipi değişimi → stil yeniden hesabı → yerleşim birkaç kare sürebilir. */
 export const FONT_SHIFT_WINDOW = { beforeMs: 50, afterMs: 300 };
+/** Eklenti ve tema metin akışı kaymalarının aynı yazı tipi değişimi sayıldığı en büyük aralık (ms; 4× CPU'da birkaç kare). */
+export const REFLOW_PAIR_MS = 100;
 
 /**
  * Kayma bir web fontu yüklenmesiyle aynı zaman penceresinde mi.
@@ -254,6 +256,21 @@ export function nearFontLoad(t, fontTimes, win = FONT_SHIFT_WINDOW) {
 export function clsAttribution(shifts, opts = {}) {
   const fontTimes = opts.fontTimes || [];
   const win = opts.window || FONT_SHIFT_WINDOW;
+  const live = (shifts || []).filter((s) => !s.hadRecentInput);
+  // Yalnız yatay metin yeniden akışı (dy=0, dh=0; genişlik/x değişir): yazı tipi metriği değişimi işareti.
+  const reflowOnly = (s) => (s.sources || []).length > 0 && (s.sources || []).every((x) => !x.detached && x.dy === 0 && x.dh === 0);
+  // İkinci kanıt: platform yazı tipi geri dönüşü FontFace olayı üretmeyebilir (Chromium/macOS). Eklenti-yalnız kayma
+  // salt yatay metin akışıysa ve ±REFLOW_PAIR_MS içinde eklenti dışı (tema) öğenin de salt yatay metin akışı varsa
+  // aynı yazı tipi değişiminin iki karesi sayılır → tema/font.
+  const themeReflowNear = (s) =>
+    live.some(
+      (o) =>
+        o !== s &&
+        Math.abs(Number(o.startTime) - Number(s.startTime)) <= REFLOW_PAIR_MS &&
+        (o.sources || []).length > 0 &&
+        (o.sources || []).every((x) => !x.plugin) &&
+        reflowOnly(o)
+    );
   let plugin = 0;
   let font = 0;
   let total = 0;
@@ -267,7 +284,7 @@ export function clsAttribution(shifts, opts = {}) {
     const src = s.sources || [];
     if (src.some((x) => x.plugin)) {
       const foreign = src.some((x) => !x.plugin && !x.detached);
-      if (foreign && nearFontLoad(Number(s.startTime), fontTimes, win)) {
+      if ((foreign && nearFontLoad(Number(s.startTime), fontTimes, win)) || (reflowOnly(s) && themeReflowNear(s))) {
         font += v;
         nf += 1;
       } else {
