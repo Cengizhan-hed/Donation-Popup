@@ -8,10 +8,13 @@ import {
   attributeTrace,
   clsAttribution,
   eventUrl,
+  INP_RUNS,
   inlinePluginStyles,
+  inpSummary,
   isPluginCookie,
   isPluginUrl,
   judgeMetric,
+  maxInteraction,
   median,
   mergeIntervals,
   nearFontLoad,
@@ -213,5 +216,40 @@ describe('judgeMetric / yardımcılar', () => {
     ]);
     assert.throws(() => parsePagesArg('ana'));
     assert.throws(() => parsePagesArg('ana=https://x'));
+  });
+});
+
+describe('INP: 5 örnek medyanı', () => {
+  it('maxInteraction: penceredeki en uzun etkileşim; kimliksiz olay sayılmaz; boşsa 0', () => {
+    const evs = [
+      { interactionId: 1, startTime: 100, duration: 40 },
+      { interactionId: 1, startTime: 101, duration: 72 },
+      { interactionId: 2, startTime: 300, duration: 120 },
+      { interactionId: 0, startTime: 150, duration: 900 },
+    ];
+    assert.equal(maxInteraction(evs, 0, 200), 72);
+    assert.equal(maxInteraction(evs, 200), 120);
+    assert.equal(maxInteraction(evs, 500), 0);
+  });
+  it('inpSummary: medyan tek aykırı örnekten etkilenmez; NaN örnek medyana girmez', () => {
+    assert.equal(INP_RUNS, 5);
+    const s = inpSummary([
+      { open: 40, amount: 24 },
+      { open: 260, amount: NaN },
+      { open: 48, amount: 30 },
+      { open: 52.4, amount: 20 },
+      { open: 44, amount: 26 },
+    ]);
+    assert.deepEqual(s.openRuns, [40, 260, 48, 52, 44]);
+    assert.equal(s.open, 48);
+    assert.deepEqual(s.amountRuns, [24, 30, 20, 26]);
+    assert.equal(s.amount, 25);
+    assert.equal(judgeMetric('inpOpen', s.open).pass, true);
+    assert.equal(judgeMetric('inpOpen', 260).pass, false);
+  });
+  it('inpSummary: hiç ölçüm yoksa NaN (ÖLÇÜLMEDİ)', () => {
+    const s = inpSummary([{ open: NaN, amount: NaN }]);
+    assert.ok(Number.isNaN(s.open));
+    assert.equal(judgeMetric('inpAmount', s.amount).pass, null);
   });
 });

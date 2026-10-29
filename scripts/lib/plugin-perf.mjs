@@ -30,8 +30,8 @@ export const THRESHOLDS = {
   mainThreadMs: { max: 50, unit: 'ms', label: 'Eklenti ana iş parçacığı (4× CPU)' },
   longTasks: { max: 0, unit: 'görev', label: 'Eklentiye atfedilen uzun görev (>50 ms)' },
   cls: { max: 0, unit: '', label: 'CLS katkısı (eklenti kaynaklı)' },
-  inpOpen: { lt: 200, unit: 'ms', label: 'INP: dokunma → panel' },
-  inpAmount: { lt: 200, unit: 'ms', label: 'INP: tutar kartı' },
+  inpOpen: { lt: 200, unit: 'ms', label: 'INP: dokunma → panel (5 örnek medyanı)' },
+  inpAmount: { lt: 200, unit: 'ms', label: 'INP: tutar kartı (5 örnek medyanı)' },
   tapToPanel: { lt: 100, unit: 'ms', label: 'Dokunuş → panel (5 koşu medyanı)' },
 };
 
@@ -65,6 +65,39 @@ export function median(a) {
   if (!s.length) return NaN;
   const m = Math.floor(s.length / 2);
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+/** INP örnek sayısı (her örnek yeni yükleme); eşik örneklerin medyanına uygulanır (tek örnek gürültülü). */
+export const INP_RUNS = 5;
+
+/**
+ * Event Timing kayıtlarından [from, to) penceresindeki en uzun etkileşim (aynı `interactionId` olayların en büyüğü).
+ * Event Timing yalnız ≥16 ms kaydeder: pencerede etkileşim yoksa 0 (= <16 ms).
+ *
+ * @param {Array<{interactionId?:number, startTime:number, duration:number}>} events Olaylar.
+ * @param {number} from Başlangıç (ms, dahil).
+ * @param {number} [to] Bitiş (ms, hariç; varsayılan sonsuz).
+ * @return {number} En uzun etkileşim süresi (ms).
+ */
+export function maxInteraction(events, from, to = Infinity) {
+  const byId = new Map();
+  for (const e of events || []) {
+    if (!e.interactionId || e.startTime < from || e.startTime >= to) continue;
+    byId.set(e.interactionId, Math.max(byId.get(e.interactionId) || 0, e.duration));
+  }
+  return byId.size ? Math.max(...byId.values()) : 0;
+}
+
+/**
+ * INP örneklerinin özeti: her etkileşim türü için örnek listesi ve medyanı (ölçülmeyen örnek NaN, medyana girmez).
+ *
+ * @param {Array<{open:number, amount:number}>} samples Örnekler.
+ * @return {{open:number, amount:number, openRuns:number[], amountRuns:number[]}} Medyanlar ve koşular.
+ */
+export function inpSummary(samples) {
+  const openRuns = (samples || []).map((s) => s.open).filter((n) => Number.isFinite(n)).map((n) => Math.round(n));
+  const amountRuns = (samples || []).map((s) => s.amount).filter((n) => Number.isFinite(n)).map((n) => Math.round(n));
+  return { open: median(openRuns), amount: median(amountRuns), openRuns, amountRuns };
 }
 
 /**

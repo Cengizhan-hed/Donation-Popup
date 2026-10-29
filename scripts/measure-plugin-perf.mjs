@@ -19,7 +19,8 @@
  *     50 ms üzeri uzun görev sayısı; soğuk yüklemede WDP_PERF_TRACE_RUNS (varsayılan 3) koşu medyanı.
  *  4) CLS katkısı: `layout-shift` kayıtlarından kaynağı eklenti öğesi (`.donation-panel*` / `[data-dp-*]`) olanlar;
  *     eklenti dışı öğe de kayıyorsa ve kayma web fontu yüklenmesiyle aynı penceredeyse "tema/font" sütununa (eşik dışı).
- *  5) INP: dokunma → panel ve tutar kartına dokunma (Event Timing `duration`), yavaş ağ + 4× CPU.
+ *  5) INP: dokunma → panel ve tutar kartına dokunma (Event Timing `duration`), yavaş ağ + 4× CPU; INP_RUNS (5)
+ *     yükleme örneğinin medyanı (eşik medyana).
  *  6) Dokunuş → panel: click → `dialog[open]` görünür + iki rAF, 5 koşu medyanı.
  *  7) Lighthouse (bilgi): ≥7 koşu medyanı; yerelde eklenti açık/kapalı, uzakta `--lh-label` ile etiketli tek mod.
  * Çıktı: konsol tablosu + build/e2e/plugin-perf/<env>[-<tema>]-<tarih>.json. Çıkış kodu: KALDI varsa 1.
@@ -32,10 +33,13 @@ import { chromium, devices } from '@playwright/test';
 import {
   attributeTrace,
   clsAttribution,
+  INP_RUNS,
   inlinePluginStyles,
+  inpSummary,
   isPluginCookie,
   isPluginUrl,
   judgeMetric,
+  maxInteraction,
   median,
   parsePagesArg,
   verdict,
@@ -267,35 +271,12 @@ async function measureUi(browser, url, prepare, dumpName = '') {
     out.totalGzip = inline.gzip + out.cssGzip + out.jsGzip;
     out.dom = await domMarkers(page);
 
-    // INP: dokunma → panel, tutar kartı (izleme kapalıyken; yavaşlatma sürer).
-    const trigger = page.locator('[data-dp-open]:visible').first();
+    // INP: dokunma → panel, tutar kartı (izleme kapalıyken; yavaşlatma sürer). İlk örnek bu yüklemeden; kalan
+    // INP_RUNS-1 örnek aşağıda yeni yüklemelerle; eşik medyana uygulanır.
     const hasTrigger = (await page.locator('[data-dp-open]:visible').count()) > 0;
-    const marks = {};
-    if (hasTrigger) {
-      marks.open = await page.evaluate(() => performance.now());
-      await trigger.tap();
-      await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
-      await settle(page);
-    }
-    const presetSel = hasTrigger ? 'dialog[open] [data-dp-preset]' : '[data-dp-preset]';
-    const presets = page.locator(`${presetSel}[aria-checked="false"]:visible`);
-    if ((await presets.count()) > 0) {
-      marks.amount = await page.evaluate(() => performance.now());
-      await presets.first().tap();
-      await settle(page);
-    }
-    await settle(page);
-    const perf = await page.evaluate(() => window.__dpPerf);
-    const inter = (from, to) => {
-      const byId = new Map();
-      for (const e of perf.events) {
-        if (!e.interactionId || e.startTime < from || e.startTime >= to) continue;
-        byId.set(e.interactionId, Math.max(byId.get(e.interactionId) || 0, e.duration));
-      }
-      return byId.size ? Math.max(...byId.values()) : 0; // Event Timing yalnız ≥16 ms kaydeder: 0 = <16 ms.
-    };
-    out.inpOpen = marks.open !== undefined ? inter(marks.open, marks.amount !== undefined ? marks.amount : Infinity) : NaN;
-    out.inpAmount = marks.amount !== undefined ? inter(marks.amount, Infinity) : NaN;
+    const first = await inpSample(page, hasTrigger);
+    const perf = first.perf;
+    const inpSamples = [first];
     // CLS: yalnız yükleme (girdi öncesi kaymalar; hadRecentInput olanlar zaten dışarıda).
     const fontEnds = snap.resources.filter((r) => /\.(?:woff2?|ttf|otf)(?:\?|$)/i.test(r.url) || r.type === 'font').map((r) => r.end);
     out.fontTimes = [...perf.fontTimes, ...fontEnds].filter((n) => Number.isFinite(n) && n > 0).map((n) => Math.round(n));
@@ -304,6 +285,16 @@ async function measureUi(browser, url, prepare, dumpName = '') {
     out.shifts = perf.shifts.filter((s) => !s.hadRecentInput).map((s) => ({ v: +Number(s.value).toFixed(5), t: Math.round(s.startTime), src: s.sources.map((x) => (x.plugin ? 'P' : x.detached ? 'D' : 'T')).join(''), nodes: s.sources.map((x) => `${x.sel} dy${x.dy} dh${x.dh} dx${x.dx}`) }));
     out.observerErrors = perf.errors;
     out.hasTrigger = hasTrigger;
+    for (let i = 1; i < INP_RUNS; i += 1) {
+      await page.goto(url, { waitUntil: 'load', timeout: 180000 });
+      await settle(page);
+      inpSamples.push(await inpSample(page, hasTrigger));
+    }
+    const inp = inpSummary(inpSamples);
+    out.inpOpen = inp.open;
+    out.inpAmount = inp.amount;
+    out.inpOpenRuns = inp.openRuns;
+    out.inpAmountRuns = inp.amountRuns;
 
     // 6) Dokunuş → panel: 5 koşu (her koşu yeni yükleme), click + 60 ms basılı kalma, dialog[open] görünür + iki rAF.
     out.tapRuns = [];
@@ -351,6 +342,37 @@ async function measureUi(browser, url, prepare, dumpName = '') {
   out.mainThreadMs = median(out.mainThreadRuns);
   out.longTasks = median(out.longTaskRuns);
   return out;
+}
+
+/**
+ * Tek INP örneği (yüklenmiş ve durulmuş sayfada): tetikleyici varsa dokunma → panel, sonra seçilmemiş tutar kartı.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {boolean} hasTrigger Panel tetikleyicisi var mı.
+ * @return {Promise<{open:number, amount:number, perf:object}>} Süreler (ms; ölçülmediyse NaN) ve gözlemci verisi.
+ */
+async function inpSample(page, hasTrigger) {
+  const marks = {};
+  if (hasTrigger) {
+    marks.open = await page.evaluate(() => performance.now());
+    await page.locator('[data-dp-open]:visible').first().tap();
+    await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
+    await settle(page);
+  }
+  const presetSel = hasTrigger ? 'dialog[open] [data-dp-preset]' : '[data-dp-preset]';
+  const presets = page.locator(`${presetSel}[aria-checked="false"]:visible`);
+  if ((await presets.count()) > 0) {
+    marks.amount = await page.evaluate(() => performance.now());
+    await presets.first().tap();
+    await settle(page);
+  }
+  await settle(page);
+  const perf = await page.evaluate(() => window.__dpPerf);
+  return {
+    open: marks.open !== undefined ? maxInteraction(perf.events, marks.open, marks.amount !== undefined ? marks.amount : Infinity) : NaN,
+    amount: marks.amount !== undefined ? maxInteraction(perf.events, marks.amount) : NaN,
+    perf,
+  };
 }
 
 /** Yalnız iz: soğuk bağlamda 4× CPU + yavaş 4G yükleme. */
@@ -409,7 +431,7 @@ function printReport(label, rows, checks, lh) {
     console.log(`| ${r.id} | ${r.m.requests} | ${r.m.bytes} | ${r.m.cookies} | ${r.m.dom} | ${fmt(r.m.queries)} |`);
   }
   console.log('\nArayüzlü sayfalar (4× CPU + yavaş 4G, Pixel 7)');
-  console.log('| sayfa | engelleyen | satır içi CSS gz (en büyük yüzey) | CSS dosyası gz | JS gz | toplam gz | ana iş ms medyan [koşular] | uzun görev | CLS eklenti | CLS tema/font | INP aç/tutar ms | dokunuş→panel medyan (5) |');
+  console.log('| sayfa | engelleyen | satır içi CSS gz (en büyük yüzey) | CSS dosyası gz | JS gz | toplam gz | ana iş ms medyan [koşular] | uzun görev | CLS eklenti | CLS tema/font | INP aç/tutar ms medyan (5) [koşular] | dokunuş→panel medyan (5) |');
   console.log('|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const r of rows.filter((x) => x.ui && !x.error)) {
     const m = r.m;
@@ -418,7 +440,7 @@ function printReport(label, rows, checks, lh) {
       continue;
     }
     console.log(
-      `| ${r.id} | ${m.blocking} | ${m.inlineCss.gzip} B (${m.inlineCss.count}; ${m.inlineCss.maxSurfaceGzip} B) | ${m.cssGzip} B | ${m.jsGzip} B | ${m.totalGzip} B | ${m.mainThreadMs} [${(m.mainThreadRuns || []).join(',')}] | ${m.longTasks} (+${m.contributedLongTasks} katkılı) | ${m.cls.plugin} | ${m.cls.font} | ${fmt(m.inpOpen)}/${fmt(m.inpAmount)} | ${fmt(m.tapMedian)} [${m.tapRuns.join(',')}] |`
+      `| ${r.id} | ${m.blocking} | ${m.inlineCss.gzip} B (${m.inlineCss.count}; ${m.inlineCss.maxSurfaceGzip} B) | ${m.cssGzip} B | ${m.jsGzip} B | ${m.totalGzip} B | ${m.mainThreadMs} [${(m.mainThreadRuns || []).join(',')}] | ${m.longTasks} (+${m.contributedLongTasks} katkılı) | ${m.cls.plugin} | ${m.cls.font} | ${fmt(m.inpOpen)}/${fmt(m.inpAmount)} [${(m.inpOpenRuns || []).join(',')}/${(m.inpAmountRuns || []).join(',')}] | ${fmt(m.tapMedian)} [${m.tapRuns.join(',')}] |`
     );
   }
   for (const r of rows.filter((x) => x.error)) console.log(`HATA ${r.id}: ${r.error}`);
