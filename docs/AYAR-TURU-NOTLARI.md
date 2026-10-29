@@ -670,3 +670,8 @@ Not: terminal sürümü kurulumu yapılmadı; skill burada plugin olarak zaten �
 - WordPress/agent-skills (commit eff3785, 2026-10-21), `~/.claude/skills`: wordpress-router, wp-plugin-development, wp-block-development, wp-interactivity-api, wp-plugin-directory-guidelines, wp-wpcli-and-ops. Kurulmadan önce okundu: 3 skill'de .mjs betiği var (detect_plugins, list_blocks, wpcli_inspect); ağ çağrısı yok, yalnız yerel dosya okur / yerel `wp` salt okunur komut (`--info`, `core version`, `option get`). Uzak siteye karşı çalıştırılmaz. Kurucu: `skills@1.7.4` (vercel-labs).
 - @playwright/cli 0.1.22 (2026-09-28) + skill `~/.claude/skills/playwright-cli` (yalnız metin). Mevcut e2e yöntemiyle süre/token karşılaştırması henüz yapılmadı.
 - code-review eklentisi her değişiklikte çalıştırılmaz; 12.0 sonunda KOD-KARNESI'ndeki bağımsız incelemede bir kez.
+
+## Ortam güncellemesi (2026-10-29; 12.1; yukarıdaki Blocksy kaydı tarihçedir, silinmedi)
+- Ikram (uzak test ortamı) teması Blocksy → Hello Elementor; Elementor 4.3.5 + Elementor Pro 4.3.2 (Advanced), SiteGround önbelleği, Slider Revolution, WooCommerce 11.2.1 GBP klasik ödeme, coming soon açık. Profil: `theme`="Hello Elementor", `pageBuilder`="Elementor Pro".
+- Uzak temalar artık: Avada (staging30) ve Hello Elementor + Elementor Pro (Ikram). Blocksy yalnız yerel uyum matrisinde (`bk-*` hücreleri) denenir; seçici yok, eklentinin kendi data-* işaretleri kullanılır.
+- Eklentide Elementor'a özel kod yok (CLAUDE.md §0); Elementor Pro uyum testi yalnız DOM'daki widget/şablon işaretlerine bakar, şablon/sayfa yoksa senaryo gerekçeyle atlanır.

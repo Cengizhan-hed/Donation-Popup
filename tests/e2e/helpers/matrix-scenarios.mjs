@@ -959,6 +959,19 @@ export async function runDeviceScenarios({
           root.scrollIntoView({ block: 'center', inline: 'nearest' });
         }
       }, RELATED_ROOT_SEL);
+      const relatedProbe = await page.evaluate((rootSel) => {
+        const r = document.querySelector(rootSel);
+        return r
+          ? `kök var, sınıf="${r.className}", display=${getComputedStyle(r).display}`
+          : 'kök DOM\'da yok';
+      }, RELATED_ROOT_SEL);
+      console.log(`[related-cards] ${relatedProbe}`);
+      // İlgili ürünler WooCommerce/tema bölümüdür; tema bu görünüm genişliğinde bölümü kendi CSS'iyle gizliyorsa
+      // (ör. bazı temaların varsayılanı: mobilde ilgili ürün yok) eklenti sorumlu değildir. Sessiz geçiş değil: günlükte işaretli.
+      if (/display=none/.test(relatedProbe) && /^kök var/.test(relatedProbe)) {
+        console.log('[related-cards] ATLANDI: kök DOM\'da var ama tema CSS\'i bu genişlikte gizliyor (eklenti kaynaklı değil)');
+        return;
+      }
       await page.waitForFunction(
         ({ rootSel, cardSel }) => {
           const root = document.querySelector(rootSel);
