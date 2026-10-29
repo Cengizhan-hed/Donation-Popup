@@ -591,7 +591,13 @@ export async function prepareLocalFullStack(port = 8899) {
   const server = await startPhpServer({ wpDir, port, host: '127.0.0.1' });
   // Kanarya "önce" görüntüsünden önce Woo'nun ilk istek yazımları biter (yerel yanlış KIRMIZI yok).
   const warm = await warmUpWooFirstRequests(`http://127.0.0.1:${port}`);
-  console.log(`[e2e] Woo ilk istekleri (yerel ısınma): ön yüz ${warm.front}, yönetici ${warm.admin} (giriş ${warm.login})`);
+  // Her cihaz koşusu (checkout-setup) çevrimdışı yöntemleri açar ve `woocommerce_gateway_order`'a yazar; bu yazım
+  // kanarya "önce" görüntüsünden sonra olursa ilk koşuda fark çıkar. Aynı idempotent işlem burada bir kez yapılır,
+  // ardından Woo'nun sıralamayı normalleştirmesi için yönetici ısınması tekrarlanır (sonraki çağrılar değer değiştirmez).
+  const gw = matrixEval(wpDir, ['enable-offline-gateways']);
+  if (gw && gw.ok === false) throw new Error(`local enable-offline-gateways: ${gw.error || ''}`);
+  const warm2 = await warmUpWooFirstRequests(`http://127.0.0.1:${port}`);
+  console.log(`[e2e] Woo ilk istekleri (yerel ısınma): ön yüz ${warm.front}+${warm2.front}, yönetici ${warm.admin}+${warm2.admin} (giriş ${warm.login}); çevrimdışı ödeme yöntemleri önceden açık`);
   return { server, wpDir, fixtures: data };
 }
 
