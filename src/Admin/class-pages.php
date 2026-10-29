@@ -106,6 +106,11 @@ final class Pages {
 					$row = str_replace( 'data-dpa-field="' . esc_attr( $id ) . '"', 'data-dpa-field="' . esc_attr( $id ) . '" data-dpa-confirm="' . esc_attr( $spec['confirm'] ) . '"', $row );
 				}
 				$body .= $row;
+				if ( 'design.colors' === $id ) {
+					$status = \DonationPanel\Frontend\Theme_Colors::source_status();
+					$vars   = \DonationPanel\Frontend\Theme_Colors::variables( \DonationPanel\Frontend\Theme_Colors::site_palette() );
+					$body  .= '<div data-dpa-when="design.colors=theme">' . Admin_View::colors_note( $status, $vars ) . '</div>';
+				}
 			}
 			if ( '' !== $body ) {
 				$html .= Admin_View::card( $head[0], $body, 'dpa-card--section', $head[1] );

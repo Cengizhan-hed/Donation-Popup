@@ -82,4 +82,19 @@ final class ThemeColorsTest extends TestCase {
 		$v = Theme_Colors::variables( array( 'theme' => array( array( 'slug' => 'primary', 'color' => 'var(--x)' ), array( 'slug' => 'accent', 'color' => 'red' ) ) ), 'javascript:1', '</style>' );
 		$this->assertSame( array(), $v );
 	}
+
+	public function test_source_status_none_for_empty_or_default_only_palette(): void {
+		$this->assertSame( 'none', Theme_Colors::source_status( array() ) );
+		$this->assertSame( 'none', Theme_Colors::source_status( 'garbage' ) );
+		$this->assertSame( 'none', Theme_Colors::source_status( array( 'default' => $this->palette( array( 'primary' => '#0000ff' ) ) ) ) );
+	}
+
+	public function test_source_status_none_when_no_color_has_enough_contrast(): void {
+		$this->assertSame( 'none', Theme_Colors::source_status( array( 'theme' => $this->palette( array( 'base' => '#ffffff', 'tint' => '#fafafa', 'soft' => '#ffe08a' ) ) ) ) );
+	}
+
+	public function test_source_status_theme_for_good_palette(): void {
+		$this->assertSame( 'theme', Theme_Colors::source_status( array( 'theme' => $this->palette( array( 'base' => '#fff', 'primary' => '#1d3557' ) ) ) ) );
+		$this->assertSame( 'theme', Theme_Colors::source_status( $this->palette( array( 'ink' => '#1a1a2e' ) ) ) );
+	}
 }

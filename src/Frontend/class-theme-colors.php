@@ -245,6 +245,21 @@ class Theme_Colors {
 	}
 
 	/**
+	 * "Temamın renkleri" kaynağı durumu: 'theme' (palet okundu ve ana renk seçildi) ya da 'none'
+	 * (palet yok/boş ya da hiçbir renk beyaz zeminde 4.5:1 kontrastı sağlamıyor; panel kendi varsayılan renklerine düşer).
+	 * Yalnız WordPress paletini inceler; `variables()` davranışını değiştirmez.
+	 *
+	 * @param mixed $palette WordPress paleti; null ise sitenin etkin paleti.
+	 * @return string 'theme' | 'none'
+	 */
+	public static function source_status( $palette = null ) {
+		if ( null === $palette ) {
+			$palette = self::site_palette();
+		}
+		return '' !== self::pick_primary( self::flatten_palette( $palette ) ) ? 'theme' : 'none';
+	}
+
+	/**
 	 * Sitenin etkin renk paleti (WordPress standart yolu). Okunamazsa boş dizi.
 	 *
 	 * @return array<mixed>

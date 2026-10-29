@@ -20,6 +20,46 @@ function wdp_ad_write_settings() {
 	add_option( 'donation_panel_settings', array( 'version' => 1 ), '', false );
 }
 
+/**
+ * Renk kaynağı senaryosu (yalnız yerel test işçisi): `dp_ad_palette_mode` = none | good ise tema paletini tümüyle
+ * değiştirir (none: palet yok; good: iyi kontrastlı iki renk). Seçenek yoksa tema olduğu gibi kalır.
+ */
+add_filter(
+	'wp_theme_json_data_theme',
+	static function ( $data ) {
+		$mode = get_option( 'dp_ad_palette_mode', '' );
+		if ( 'none' === $mode ) {
+			return new WP_Theme_JSON_Data( array( 'version' => 2 ), 'theme' );
+		}
+		if ( 'good' === $mode ) {
+			return new WP_Theme_JSON_Data(
+				array(
+					'version'  => 2,
+					'settings' => array(
+						'color' => array(
+							'palette' => array(
+								array( 'slug' => 'primary', 'name' => 'Primary', 'color' => '#1d3557' ),
+								array( 'slug' => 'accent', 'name' => 'Accent', 'color' => '#e63946' ),
+							),
+						),
+					),
+				),
+				'theme'
+			);
+		}
+		return $data;
+	}
+);
+add_action(
+	'after_setup_theme',
+	static function () {
+		if ( 'none' === get_option( 'dp_ad_palette_mode', '' ) ) {
+			remove_theme_support( 'editor-color-palette' );
+		}
+	},
+	99
+);
+
 add_action(
 	'init',
 	static function () {
@@ -79,8 +119,8 @@ add_action(
 		if ( isset( $_GET['dp_ad_opt'] ) ) {
 			// Yalnız yerel test işçisi (uzak siteye gitmez): dar bir izin listesindeki yerel örnek seçeneklerini ayarlar/siler.
 			nocache_headers();
-			$allowed = array( 'woocommerce_enable_guest_checkout', 'woocommerce_enable_myaccount_registration', 'wp_page_for_privacy_policy', 'wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall' );
-			$name    = sanitize_key( (string) $_GET['dp_ad_opt'] );
+			$allowed = array( 'woocommerce_enable_guest_checkout', 'woocommerce_enable_myaccount_registration', 'wp_page_for_privacy_policy', 'wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall', 'dp_ad_palette_mode' );
+			$name   = sanitize_key( (string) $_GET['dp_ad_opt'] );
 			if ( ! in_array( $name, $allowed, true ) ) {
 				wp_send_json( array( 'ok' => false ), 400 );
 			}
