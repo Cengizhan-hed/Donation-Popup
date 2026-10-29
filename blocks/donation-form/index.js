@@ -110,6 +110,20 @@
                 set({ display: v });
               },
             }),
+            (atts.display || "inline") === "inline"
+              ? el(SelectControl, {
+                  label: __("Layout", "woo-donation-popup"),
+                  help: __("Compact: a small card with a fixed height for sliders and hero areas.", "woo-donation-popup"),
+                  value: atts.layout || "full",
+                  options: [
+                    { label: _x("Full", "Donation form layout", "woo-donation-popup"), value: "full" },
+                    { label: _x("Compact", "Donation form layout", "woo-donation-popup"), value: "compact" },
+                  ],
+                  onChange: function (v) {
+                    set({ layout: v });
+                  },
+                })
+              : null,
             el(ToggleControl, {
               label: __("Show heading", "woo-donation-popup"),
               checked: !!atts.showTitle,

@@ -50,6 +50,7 @@ final class Field_Registry {
 			Admin_Bootstrap::SLUG_FORMS     => array(
 				'open'      => array( __( 'How should the form open?', 'woo-donation-popup' ), __( 'Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later.', 'woo-donation-popup' ) ),
 				'colors'    => array( __( 'Colors', 'woo-donation-popup' ), __( 'By default the form follows your theme. Pick your own colors only if you need to.', 'woo-donation-popup' ) ),
+				'compact'   => array( __( 'Compact card', 'woo-donation-popup' ), __( 'A small donation card with a fixed height for sliders and hero areas: [wdp_donation_form layout="compact"]. Colors and fonts come from the settings above.', 'woo-donation-popup' ) ),
 				'amounts'   => array( __( 'Amounts', 'woo-donation-popup' ), __( 'Quick amount buttons shown above the free amount field.', 'woo-donation-popup' ) ),
 				'fields'    => array( __( 'Form fields', 'woo-donation-popup' ), __( 'Optional fields the donor can fill in. Whatever donors type is saved on the order exactly as typed.', 'woo-donation-popup' ) ),
 				'shares'    => array( __( 'Share-based donations', 'woo-donation-popup' ), __( 'Wording for products where donors buy shares and enter shareholder names.', 'woo-donation-popup' ) ),
@@ -175,6 +176,33 @@ final class Field_Registry {
 				'key'    => 'popup_button_full_width',
 				'kind'   => 'flag01',
 			),
+		);
+		$f['compact.quick_amounts']    = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'compact',
+			'label'   => __( 'Quick amounts on the compact card', 'woo-donation-popup' ),
+			'help'    => __( 'How many of the product amounts appear as buttons on the compact card (layout="compact"). 0 shows only the amount field.', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => array(
+				'0' => '0',
+				'1' => '1',
+				'2' => '2',
+				'3' => '3',
+			),
+		);
+		$f['compact.first_text']       = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'compact',
+			'label'   => __( 'Text before the first gift', 'woo-donation-popup' ),
+			'help'    => __( 'Shown on the campaign bar while nothing has been raised yet. Leave empty for the built-in, translated wording.', 'woo-donation-popup' ),
+			'type'    => 'text',
+		);
+		$f['compact.reset_hidden']     = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'compact',
+			'label'   => __( 'Start over when the card is hidden', 'woo-donation-popup' ),
+			'help'    => __( 'When the card leaves the screen (for example the slider moves to another slide), it goes back to the first step. Typed details are kept.', 'woo-donation-popup' ),
+			'type'    => 'switch',
 		);
 		$f['form.presets_enabled']     = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,

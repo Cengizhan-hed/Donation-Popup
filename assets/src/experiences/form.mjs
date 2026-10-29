@@ -795,14 +795,15 @@ function digest(text) {
  * @param {string}      productId Ürün.
  * @param {object}      values    Alan değerleri.
  * @param {boolean}     direct    Doğrudan (sepetsiz) bağış: `POST direct`.
+ * @param {string}      [salt]    Doğrudan bağış anahtarına eklenen tur kimliği (compact kart "yeniden bağış": aynı içerik yeni sipariş).
  * @return {Promise<{ok: boolean, errors?: Record<string, string>, checkoutUrl?: string}>} Sonuç.
  */
-async function addToCart(root, productId, values, direct = false) {
+export async function addToCart(root, productId, values, direct = false, salt = '') {
   const body = JSON.stringify({ ...values, product_id: Number(productId) });
   const payload = JSON.stringify({
     ...values,
     product_id: Number(productId),
-    submission_key: submissionKeyFor(direct, productId, body),
+    submission_key: submissionKeyFor(direct, productId, body + salt),
     ...(direct ? { client_token: clientToken() } : {}),
   });
   const send = (nonce) => postJson(`${root.dataset.dpRest}${direct ? 'direct' : 'cart/add'}`, payload, nonce);

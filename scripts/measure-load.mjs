@@ -40,6 +40,10 @@ export const PAGES = [
   { id: 'magaza-bagis-urunleriyle', page: 'shop', ui: true },
   { id: 'bagis-urunu', page: 'donation', ui: true },
   { id: 'bagis-listesi', page: 'list', ui: true },
+  // Ürün sayfası dışında `id` ile çizilen form: ürünün yüklenmesi (wc_get_product + terim/vergi sınıfı sorguları) her yüzeyde
+  // aynıdır. Tam form bu maliyetin tabanıdır (bilgi); compact kart tabanı AŞAMAZ (yüzeyin kendi sorgusu 0).
+  { id: 'tam-form-id-ile', page: 'fullform', ui: true, byIdBase: true },
+  { id: 'compact-kart', page: 'compact', ui: true, byIdOf: 'tam-form-id-ile' },
 ];
 
 /**
@@ -224,7 +228,12 @@ async function main() {
         const coreCss = css.filter((f) => /\/experiences\//.test(f.url)).length;
         const coreJs = js.filter((f) => /\/experiences\//.test(f.url)).length;
         if (coreCss > 1 || coreJs > 1) violations.push(`${pg.id}: çekirdek paket ${coreCss} CSS + ${coreJs} JS (≤1+1)`);
-        if (row.dQueries > 2) violations.push(`${pg.id}: sorgu +${row.dQueries} (≤+2)`);
+        const base = pg.byIdOf ? rows.find((r) => r.id === pg.byIdOf) : null;
+        if (pg.byIdOf && base && row.dQueries > base.dQueries) {
+          violations.push(`${pg.id}: sorgu +${row.dQueries} > tam form tabanı +${base.dQueries}`);
+        } else if (!pg.byIdOf && !pg.byIdBase && row.dQueries > 2) {
+          violations.push(`${pg.id}: sorgu +${row.dQueries} (≤+2)`);
+        }
         if (row.dCookie !== 0 || row.allCookie !== 0) violations.push(`${pg.id}: ilk ziyarette eklenti çerezi/oturumu açtı (çerez Δ ${row.dCookie}/${row.allCookie})`);
         if (row.dReq - css.length - js.length > 0) violations.push(`${pg.id}: eklenti dışı ek istek (${row.dReq - css.length - js.length})`);
         if (css.some((f) => f.gzip > BUDGET.css)) violations.push(`${pg.id}: CSS bütçesi aşıldı (${row.cssKB} KB > 12 KB)`);

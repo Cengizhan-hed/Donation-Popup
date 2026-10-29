@@ -13,6 +13,7 @@
     "slug": { "type": "string", "default": "" },
     "sku": { "type": "string", "default": "" },
     "display": { "type": "string", "default": "inline" },
+    "layout": { "type": "string", "default": "full", "enum": ["full", "compact"] },
     "showTitle": { "type": "boolean", "default": true },
     "buttonText": { "type": "string", "default": "" }
   }
