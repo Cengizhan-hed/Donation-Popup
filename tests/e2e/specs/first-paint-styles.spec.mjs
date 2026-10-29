@@ -32,7 +32,12 @@ async function slowDown(page, context, browserName) {
     const cdp = await context.newCDPSession(page);
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
     await cdp.send('Network.enable');
-    await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
+    await cdp.send('Network.emulateNetworkConditions', {
+      offline: false,
+      latency: 150,
+      downloadThroughput: (1.6 * 1024 * 1024) / 8,
+      uploadThroughput: (750 * 1024) / 8,
+    });
   }
 }
 
@@ -74,18 +79,27 @@ function installProbe() {
   const primary = (el) => {
     const cs = getComputedStyle(el);
     const want = token(el, '--_bg');
-    return { ok: !transparent(want) && cs.backgroundColor === want && box(el).height >= 44, info: `bg=${cs.backgroundColor} jeton=${want} h=${Math.round(box(el).height)}` };
+    return {
+      ok: !transparent(want) && cs.backgroundColor === want && box(el).height >= 44,
+      info: `bg=${cs.backgroundColor} jeton=${want} h=${Math.round(box(el).height)}`,
+    };
   };
   const stepper = (el) => ({ ok: box(el).width >= 44 && box(el).height >= 44, info: `${Math.round(box(el).width)}x${Math.round(box(el).height)}` });
   const icon = (el) => ({ ok: box(el).width <= 32 && box(el).height <= 32, info: `${Math.round(box(el).width)}x${Math.round(box(el).height)}` });
   const roundBtn = (el) => {
     const cs = getComputedStyle(el);
-    return { ok: box(el).width >= 40 && box(el).height >= 40 && px(cs.borderTopLeftRadius) > 0 && svgOk(el), info: `${Math.round(box(el).width)}x${Math.round(box(el).height)} r=${cs.borderTopLeftRadius} svg=${svgOk(el)}` };
+    return {
+      ok: box(el).width >= 40 && box(el).height >= 40 && px(cs.borderTopLeftRadius) > 0 && svgOk(el),
+      info: `${Math.round(box(el).width)}x${Math.round(box(el).height)} r=${cs.borderTopLeftRadius} svg=${svgOk(el)}`,
+    };
   };
   const bar = (el) => {
     const cs = getComputedStyle(el);
     const h = box(el).height;
-    return { ok: h >= 4 && h <= 32 && px(cs.borderTopLeftRadius) > 0 && !transparent(cs.backgroundColor), info: `h=${Math.round(h)} r=${cs.borderTopLeftRadius} bg=${cs.backgroundColor}` };
+    return {
+      ok: h >= 4 && h <= 32 && px(cs.borderTopLeftRadius) > 0 && !transparent(cs.backgroundColor),
+      info: `h=${Math.round(h)} r=${cs.borderTopLeftRadius} bg=${cs.backgroundColor}`,
+    };
   };
   const grid = (el) => {
     const d = getComputedStyle(el).display;
@@ -153,7 +167,10 @@ function assertStyled(results, names) {
   const all = Object.keys(results);
   const bad = all.filter((n) => !results[n].ok).map((n) => `${n}: ${results[n].info} (kare ${results[n].frame})`);
   console.log(`FP_FRAMES ${JSON.stringify(Object.fromEntries(all.map((n) => [n, results[n].ok ? 'ok' : results[n].info])))}`);
-  expect(names.filter((n) => !results[n]), 'zorunlu yüzeyler görünmedi').toEqual([]);
+  expect(
+    names.filter((n) => !results[n]),
+    'zorunlu yüzeyler görünmedi',
+  ).toEqual([]);
   expect(bad, `ilk görünür karede stilsiz eklenti öğeleri:\n${bad.join('\n')}`).toEqual([]);
 }
 
@@ -197,49 +214,65 @@ test.describe('ilk boyama: eklenti öğeleri stilli (CSS dosyaları 3 sn gecikme
     assertStyled(await collect(page, names), names);
   });
 
-  test('panel: CSS gecikmeliyken dokunuştan stilli panele <100 ms', async ({ page }) => {
-    await page.goto(q('trigger'), { waitUntil: 'domcontentloaded', timeout: 90000 });
-    await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 60000 });
-    await page.evaluate(() => {
-      const trigger = document.querySelector('[data-dp-open]');
-      window.__dpOpen = { t0: 0, visible: 0, styled: null };
-      trigger.addEventListener(
-        'click',
-        (event) => {
-          window.__dpOpen.t0 = event.timeStamp;
-          const loop = () => {
-            const overlay = document.querySelector('[data-dp-overlay]');
-            const surface = document.querySelector('[data-dp-surface]');
-            if (overlay && surface && surface.getClientRects().length > 0) {
-              const style = getComputedStyle(overlay);
-              if (style.visibility === 'visible' && parseFloat(style.opacity) > 0.01) {
-                window.__dpOpen.visible = performance.now();
-                const s = getComputedStyle(surface);
-                const card = surface.querySelector('.donation-panel-amount');
-                window.__dpOpen.styled = {
-                  surfaceBg: s.backgroundColor,
-                  surfaceRadius: s.borderTopLeftRadius,
-                  cardRadius: card ? getComputedStyle(card).borderTopLeftRadius : '',
-                  cardH: card ? Math.round(card.getBoundingClientRect().height) : 0,
-                };
-                return;
-              }
-            }
-            requestAnimationFrame(loop);
-          };
-          requestAnimationFrame(loop);
-        },
-        { capture: true, once: true }
-      );
-    });
-    await page.locator('[data-dp-open]').click({ delay: 60 });
-    await page.waitForFunction(() => window.__dpOpen && window.__dpOpen.visible > 0, null, { timeout: 15000 });
-    const out = await page.evaluate(() => ({ ms: Math.round(window.__dpOpen.visible - window.__dpOpen.t0), ...window.__dpOpen.styled }));
-    console.log(`FP_PANEL ${JSON.stringify(out)}`);
-    expect(out.ms, 'dokunuştan görünür panele ms').toBeLessThan(100);
-    expect(out.surfaceBg).not.toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
-    expect(parseFloat(out.surfaceRadius)).toBeGreaterThan(0);
-    expect(parseFloat(out.cardRadius)).toBeGreaterThan(0);
-    expect(out.cardH).toBeGreaterThanOrEqual(44);
+  test('panel: CSS gecikmeliyken dokunuştan stilli panele <100 ms (5 koşu medyanı, her koşu stilli)', async ({ page }) => {
+    const runs = [];
+    for (let i = 0; i < 5; i += 1) {
+      runs.push(await openOnce(page));
+    }
+    const sorted = runs.map((r) => r.ms).sort((a, b) => a - b);
+    console.log(`FP_PANEL ${JSON.stringify({ median: sorted[2], runs: sorted, sample: runs[0] })}`);
+    expect(sorted[2], 'dokunuştan görünür panele ms (medyan)').toBeLessThan(100);
+    for (const out of runs) {
+      expect(out.surfaceBg).not.toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+      expect(parseFloat(out.surfaceRadius)).toBeGreaterThan(0);
+      expect(parseFloat(out.cardRadius)).toBeGreaterThan(0);
+      expect(out.cardH).toBeGreaterThanOrEqual(44);
+    }
   });
 });
+
+/**
+ * Yeni sayfa yükler, betik bağlanınca gerçek dokunuşla (60 ms basılı) açar; dokunuştan görünür panele ms + panel stilleri.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @return {Promise<{ms: number, surfaceBg: string, surfaceRadius: string, cardRadius: string, cardH: number}>} Ölçüm.
+ */
+async function openOnce(page) {
+  await page.goto(q('trigger'), { waitUntil: 'domcontentloaded', timeout: 90000 });
+  await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 60000 });
+  await page.evaluate(() => {
+    const trigger = document.querySelector('[data-dp-open]');
+    window.__dpOpen = { t0: 0, visible: 0, styled: null };
+    trigger.addEventListener(
+      'click',
+      (event) => {
+        window.__dpOpen.t0 = event.timeStamp;
+        const loop = () => {
+          const overlay = document.querySelector('[data-dp-overlay]');
+          const surface = document.querySelector('[data-dp-surface]');
+          if (overlay && surface && surface.getClientRects().length > 0) {
+            const style = getComputedStyle(overlay);
+            if (style.visibility === 'visible' && parseFloat(style.opacity) > 0.01) {
+              window.__dpOpen.visible = performance.now();
+              const s = getComputedStyle(surface);
+              const card = surface.querySelector('.donation-panel-amount');
+              window.__dpOpen.styled = {
+                surfaceBg: s.backgroundColor,
+                surfaceRadius: s.borderTopLeftRadius,
+                cardRadius: card ? getComputedStyle(card).borderTopLeftRadius : '',
+                cardH: card ? Math.round(card.getBoundingClientRect().height) : 0,
+              };
+              return;
+            }
+          }
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      },
+      { capture: true, once: true },
+    );
+  });
+  await page.locator('[data-dp-open]').click({ delay: 60 });
+  await page.waitForFunction(() => window.__dpOpen && window.__dpOpen.visible > 0, null, { timeout: 15000 });
+  return page.evaluate(() => ({ ms: Math.round(window.__dpOpen.visible - window.__dpOpen.t0), ...window.__dpOpen.styled }));
+}

@@ -46,8 +46,17 @@ function probe() {
     return el.isConnected && r.width >= 1 && r.height >= 1 && (typeof el.checkVisibility !== 'function' || el.checkVisibility({ visibilityProperty: true }));
   };
   const CHECKS = [
-    ['.donation-panel-ac__trigger, .donation-panel-sc__trigger', (el) => box(el).width >= 40 && box(el).height >= 40 && px(getComputedStyle(el).borderTopLeftRadius) > 0],
-    ['[data-dp-open], .donation-panel-btn--accent', (el) => { const w = token(el, '--_bg'); return !transparent(w) && getComputedStyle(el).backgroundColor === w && box(el).height >= 44; }],
+    [
+      '.donation-panel-ac__trigger, .donation-panel-sc__trigger',
+      (el) => box(el).width >= 40 && box(el).height >= 40 && px(getComputedStyle(el).borderTopLeftRadius) > 0,
+    ],
+    [
+      '[data-dp-open], .donation-panel-btn--accent',
+      (el) => {
+        const w = token(el, '--_bg');
+        return !transparent(w) && getComputedStyle(el).backgroundColor === w && box(el).height >= 44;
+      },
+    ],
     ['.donation-panel-bar', (el) => box(el).height >= 4 && box(el).height <= 32 && px(getComputedStyle(el).borderTopLeftRadius) > 0],
     ['.donation-panel-progress__nums, .wdp-list', (el) => /grid|flex/.test(getComputedStyle(el).display)],
     ['.donation-panel-amount', (el) => px(getComputedStyle(el).borderTopLeftRadius) > 0 && box(el).height >= 44],
@@ -106,7 +115,12 @@ async function measure(browser, url, name, opt) {
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   await cdp.send('Network.enable');
   await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
-  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
+  await cdp.send('Network.emulateNetworkConditions', {
+    offline: false,
+    latency: 150,
+    downloadThroughput: (1.6 * 1024 * 1024) / 8,
+    uploadThroughput: (750 * 1024) / 8,
+  });
   const shots = [];
   cdp.on('Page.screencastFrame', async (f) => {
     shots.push({ ts: f.metadata.timestamp, data: f.data });
