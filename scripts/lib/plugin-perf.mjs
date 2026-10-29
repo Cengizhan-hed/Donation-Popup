@@ -347,6 +347,89 @@ export function judgeMetric(key, value) {
   return { key, label: t.label, value, limit, pass };
 }
 
+/**
+ * TARAYICI tarafı (kendi içinde kapalı; `page.evaluate` ile `(${fn})(window, …)` biçiminde çalışır, dış ada başvurmaz):
+ * `selector` ile eşleşen öğelerden görünür, yatayda ekran içinde ve ortası üstte (elementFromPoint kendisi ya da
+ * çocuğu) olan ilkinin `querySelectorAll` sırasındaki indeksi; yoksa -1. Slider içindeki ekran dışı / üst üste
+ * slaytlar elenir. Dikeyde ekran dışıysa öğe ortaya kaydırılarak denenir (Playwright dokunuşu da kaydırır).
+ *
+ * @param {Window} w Pencere.
+ * @param {string} selector Saf CSS seçici (Playwright sözde seçicisi değil).
+ * @return {number} İndeks ya da -1.
+ */
+export function pickVisibleTarget(w, selector) {
+  const doc = w.document;
+  const list = Array.from(doc.querySelectorAll(selector));
+  for (let i = 0; i < list.length; i += 1) {
+    const el = list[i];
+    let r = el.getBoundingClientRect();
+    if (!(r.width > 0 && r.height > 0)) continue;
+    const cs = w.getComputedStyle(el);
+    if (cs.visibility !== 'visible' || cs.display === 'none' || Number(cs.opacity) === 0) continue;
+    const cx = r.left + r.width / 2;
+    if (cx < 0 || cx > w.innerWidth) continue;
+    let cy = r.top + r.height / 2;
+    if (cy < 0 || cy > w.innerHeight) {
+      w.scrollBy(0, cy - w.innerHeight / 2);
+      r = el.getBoundingClientRect();
+      cy = r.top + r.height / 2;
+      if (cy < 0 || cy > w.innerHeight) continue;
+    }
+    const hit = doc.elementFromPoint(r.left + r.width / 2, cy);
+    if (hit && (hit === el || el.contains(hit))) return i;
+  }
+  return -1;
+}
+
+/**
+ * TARAYICI tarafı (kendi içinde kapalı): dokunuş → panel ölçer. `selector` eşleşmelerinden `index`. öğeye
+ * yakalama evresinde `click` dinleyicisi takar; t0 = `event.timeStamp`. Görünür `dialog[open]` (getClientRects > 0
+ * ve visibility visible) MutationObserver ile (attributes ['open'], subtree, childList) yakalanır — rAF yoklaması
+ * yok, bu yüzden açılış anına kare gecikmesi eklenmez; tıklama anında zaten açıksa hemen. Açık ama henüz görünmez
+ * (ör. stil gelmedi) diyalog için yedek: her kare yeniden bakılır. Açılış anından sonra iki rAF → t1.
+ * Sonuç `w.__dpTap = {t0, tOpen, t1}` (ms, performance zaman ekseni).
+ *
+ * @param {Window} w Pencere.
+ * @param {string} selector Tetikleyici seçicisi.
+ * @param {number} index Tetikleyici indeksi.
+ * @return {boolean} Tetikleyici bulundu mu.
+ */
+export function installTapProbe(w, selector, index) {
+  const doc = w.document;
+  const state = { t0: 0, tOpen: 0, t1: 0 };
+  w.__dpTap = state;
+  const trig = doc.querySelectorAll(selector)[index];
+  if (!trig) return false;
+  const visibleDialog = () =>
+    Array.from(doc.querySelectorAll('dialog[open]')).find((x) => x.getClientRects().length > 0 && w.getComputedStyle(x).visibility === 'visible');
+  let mo = null;
+  let done = false;
+  const check = () => {
+    if (done) return true;
+    if (!visibleDialog()) return false;
+    done = true;
+    state.tOpen = w.performance.now();
+    if (mo) mo.disconnect();
+    w.requestAnimationFrame(() => w.requestAnimationFrame(() => (state.t1 = w.performance.now())));
+    return true;
+  };
+  const fallback = () => {
+    if (!check()) w.requestAnimationFrame(fallback);
+  };
+  trig.addEventListener(
+    'click',
+    (event) => {
+      state.t0 = event.timeStamp;
+      if (check()) return;
+      mo = new w.MutationObserver(() => check());
+      mo.observe(doc.documentElement, { attributes: true, attributeFilter: ['open'], subtree: true, childList: true });
+      w.requestAnimationFrame(fallback);
+    },
+    { capture: true, once: true }
+  );
+  return true;
+}
+
 /** @param {boolean|null} p Sonuç. @return {string} Etiket. */
 export const verdict = (p) => (p === null ? 'ÖLÇÜLMEDİ' : p ? 'GEÇTİ' : 'KALDI');
 

@@ -21,7 +21,8 @@
  *     eklenti dışı öğe de kayıyorsa ve kayma web fontu yüklenmesiyle aynı penceredeyse "tema/font" sütununa (eşik dışı).
  *  5) INP: dokunma → panel ve tutar kartına dokunma (Event Timing `duration`), yavaş ağ + 4× CPU; INP_RUNS (5)
  *     yükleme örneğinin medyanı (eşik medyana).
- *  6) Dokunuş → panel: click → `dialog[open]` görünür + iki rAF, 5 koşu medyanı.
+ *  6) Dokunuş → panel: click → `dialog[open]` görünür (MutationObserver ile algılanır; rAF yoklaması yok) + iki rAF,
+ *     5 koşu medyanı. INP ve dokunuşta hedef: görünür + üstte (elementFromPoint) ilk öğe; yoksa ÖLÇÜLMEDİ.
  *  7) Lighthouse (bilgi): ≥7 koşu medyanı; yerelde eklenti açık/kapalı, uzakta `--lh-label` ile etiketli tek mod.
  * Çıktı: konsol tablosu + build/e2e/plugin-perf/<env>[-<tema>]-<tarih>.json. Çıkış kodu: KALDI varsa 1.
  * Port: WDP_LOCAL_E2E_PORT (varsayılan 8964; PHP = port + 100, önünde gzip vekili).
@@ -36,12 +37,14 @@ import {
   INP_RUNS,
   inlinePluginStyles,
   inpSummary,
+  installTapProbe,
   isPluginCookie,
   isPluginUrl,
   judgeMetric,
   maxInteraction,
   median,
   parsePagesArg,
+  pickVisibleTarget,
   verdict,
 } from './lib/plugin-perf.mjs';
 
@@ -302,27 +305,12 @@ async function measureUi(browser, url, prepare, dumpName = '') {
       for (let i = 0; i < TAP_RUNS; i += 1) {
         await page.goto(url, { waitUntil: 'load', timeout: 180000 });
         await settle(page);
-        await page.evaluate(() => {
-          const trig = Array.from(document.querySelectorAll('[data-dp-open]')).find((el) => el.getClientRects().length > 0);
-          window.__dpTap = { t0: 0, t1: 0 };
-          trig.addEventListener(
-            'click',
-            (event) => {
-              window.__dpTap.t0 = event.timeStamp;
-              const loop = () => {
-                const d = Array.from(document.querySelectorAll('dialog[open]')).find((x) => x.getClientRects().length > 0 && getComputedStyle(x).visibility === 'visible');
-                if (d) {
-                  requestAnimationFrame(() => requestAnimationFrame(() => (window.__dpTap.t1 = performance.now())));
-                  return;
-                }
-                requestAnimationFrame(loop);
-              };
-              requestAnimationFrame(loop);
-            },
-            { capture: true, once: true }
-          );
-        });
-        await page.locator('[data-dp-open]:visible').first().click({ delay: 60 });
+        // Görünür ve üstteki ilk tetikleyici; yoksa ya da dokunulamazsa bu koşu ÖLÇÜLMEDİ (hata değil).
+        const idx = await visibleTargetIndex(page, '[data-dp-open]');
+        if (idx < 0) continue;
+        // Algılama MutationObserver ile (rAF yoklaması değil): açılış anına kare gecikmesi eklenmez.
+        await page.evaluate(`(${installTapProbe})(window, '[data-dp-open]', ${idx})`);
+        if (!(await tryTap(page.locator('[data-dp-open]').nth(idx), 'click'))) continue;
         await page.waitForFunction(() => window.__dpTap && window.__dpTap.t1 > 0, null, { timeout: 20000 });
         out.tapRuns.push(Math.round(await page.evaluate(() => window.__dpTap.t1 - window.__dpTap.t0)));
       }
@@ -353,18 +341,26 @@ async function measureUi(browser, url, prepare, dumpName = '') {
  */
 async function inpSample(page, hasTrigger) {
   const marks = {};
+  let opened = false;
   if (hasTrigger) {
-    marks.open = await page.evaluate(() => performance.now());
-    await page.locator('[data-dp-open]:visible').first().tap();
-    await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
-    await settle(page);
+    const idx = await visibleTargetIndex(page, '[data-dp-open]');
+    const t = await page.evaluate(() => performance.now());
+    if (idx >= 0 && (await tryTap(page.locator('[data-dp-open]').nth(idx)))) {
+      await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
+      marks.open = t;
+      opened = true;
+      await settle(page);
+    }
   }
-  const presetSel = hasTrigger ? 'dialog[open] [data-dp-preset]' : '[data-dp-preset]';
-  const presets = page.locator(`${presetSel}[aria-checked="false"]:visible`);
-  if ((await presets.count()) > 0) {
-    marks.amount = await page.evaluate(() => performance.now());
-    await presets.first().tap();
-    await settle(page);
+  // Tutar kartı: görünür ve üstteki ilk seçilmemiş kart (slider'da ekran dışı / üst üste slayt elenir); yoksa ÖLÇÜLMEDİ.
+  if (!hasTrigger || opened) {
+    const presetSel = `${hasTrigger ? 'dialog[open] ' : ''}[data-dp-preset][aria-checked="false"]`;
+    const idx = await visibleTargetIndex(page, presetSel);
+    const t = await page.evaluate(() => performance.now());
+    if (idx >= 0 && (await tryTap(page.locator(presetSel).nth(idx)))) {
+      marks.amount = t;
+      await settle(page);
+    }
   }
   await settle(page);
   const perf = await page.evaluate(() => window.__dpPerf);
@@ -373,6 +369,36 @@ async function inpSample(page, hasTrigger) {
     amount: marks.amount !== undefined ? maxInteraction(perf.events, marks.amount) : NaN,
     perf,
   };
+}
+
+/**
+ * Görünür, yatayda ekran içinde ve üstteki (elementFromPoint) ilk hedefin indeksi; yoksa -1.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {string} selector Saf CSS seçici.
+ * @return {Promise<number>} İndeks.
+ */
+async function visibleTargetIndex(page, selector) {
+  return page.evaluate(`(${pickVisibleTarget})(window, ${JSON.stringify(selector)})`);
+}
+
+/**
+ * Dokunma (ya da 60 ms basılı tıklama); hedef dokunulamazsa (ör. slider ekran dışı slayt) false → ölçüm
+ * ÖLÇÜLMEDİ sayılır, hata değil. Kısa zaman aşımı: 30 sn beklemek yerine atla.
+ *
+ * @param {import('@playwright/test').Locator} locator Hedef.
+ * @param {'tap'|'click'} [how] Yöntem.
+ * @return {Promise<boolean>} Dokunuldu mu.
+ */
+async function tryTap(locator, how = 'tap') {
+  try {
+    if (how === 'click') await locator.click({ delay: 60, timeout: 10000 });
+    else await locator.tap({ timeout: 10000 });
+    return true;
+  } catch (e) {
+    console.warn(`ÖLÇÜLMEDİ (görünür hedef yok): ${e && e.message ? e.message.split('\n')[0] : e}`);
+    return false;
+  }
 }
 
 /** Yalnız iz: soğuk bağlamda 4× CPU + yavaş 4G yükleme. */
