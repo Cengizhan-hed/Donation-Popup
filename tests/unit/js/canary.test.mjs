@@ -516,12 +516,14 @@ describe('kanarya fixture birleşimi', () => {
     assert.equal(cmp.ok, true, JSON.stringify(cmp.diffs));
   });
 
-  it('beklenmeyen sayfa farkı varken fixture TEMİZ sayılmaz', () => {
+  it('beklenmeyen sayfa farkı (WooCommerce ödeme sayfası silindi) varken fixture TEMİZ sayılmaz', () => {
     const baseline = countSnap([
       ...catalogPosts(),
       { id: 50, type: 'page', status: 'publish', modified: 'a', mark: '' },
     ]);
+    baseline.options.woocommerce_checkout_page_id = '50';
     const current = countSnap([...catalogPosts(), ...fixturePosts()]);
+    current.options.woocommerce_checkout_page_id = '50';
     current.page_count = 0;
     const r = evaluateCanaryAgainstBaseline(baseline, current, { created: [], mutated: [] }, {
       fixtures: fixtureFile(),
@@ -577,12 +579,16 @@ describe('repair kanarya + baseline (3W)', () => {
     assert.equal(next.posts.find((p) => p.id === 919).modified, 'new');
   });
 
-  it('işaretsiz ürün farkı → KIRMIZI ve baseline değişmez', () => {
+  it('işaretsiz (bağış) ürün meta farkı → KIRMIZI ve baseline değişmez', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-3w-red-'));
     const file = path.join(dir, 'baseline.json');
-    const before = countSnap([...catalogPosts(), ...fixturePosts({ modified: 'old' })]);
+    const before = countSnap([
+      { id: 1, type: 'product', status: 'publish', modified: 'a', mark: '', meta: 'm1' },
+      ...catalogPosts().slice(1),
+      ...fixturePosts({ modified: 'old' }),
+    ]);
     const after = countSnap([
-      { id: 1, type: 'product', status: 'publish', modified: 'hacked', mark: '' },
+      { id: 1, type: 'product', status: 'publish', modified: 'hacked', mark: '', meta: 'm2' },
       ...catalogPosts().slice(1),
       ...fixturePosts({ modified: 'new' }),
     ]);
@@ -594,7 +600,7 @@ describe('repair kanarya + baseline (3W)', () => {
     };
     const cmp = compareWithRegistry(before, after, registry, { fixtures: fixtureFile() });
     assert.equal(cmp.ok, false);
-    assert.ok(cmp.diffs.some((d) => d.id === 1 && d.change === 'modified'));
+    assert.ok(cmp.diffs.some((d) => d.id === 1 && d.change === 'meta'));
     const upd = updateCanaryBaselineIfClean('local', after, cmp, {
       file,
       markedIds: FIXTURE_IDS,

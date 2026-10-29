@@ -127,6 +127,12 @@ final class Admin_Assets {
 						'carriedSaved' => __( 'The carried-over amount was saved.', 'woo-donation-popup' ),
 						'manualSaved'  => __( 'The amount added by hand was saved.', 'woo-donation-popup' ),
 						'badImport'    => __( 'The file does not look like a Donation Panel settings export.', 'woo-donation-popup' ),
+						'colorBad'     => __( 'Enter a color like #12305A or a CSS variable like var(--brand).', 'woo-donation-popup' ),
+						/* translators: %s: resolved color, e.g. #12305a. */
+						'colorVarOk'   => __( 'On this page the variable resolves to %s. On your site it follows your theme.', 'woo-donation-popup' ),
+						'colorVarNone' => __( 'This variable is not defined on this page. It will be resolved on your site, and the contrast will be checked there.', 'woo-donation-popup' ),
+						/* translators: %s: contrast ratio, e.g. 3.2. */
+						'colorLow'     => __( 'Low contrast on white (%s:1). Headings and amounts may be hard to read; choose a darker color.', 'woo-donation-popup' ),
 					),
 				)
 			) . ';',

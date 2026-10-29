@@ -172,11 +172,13 @@ final class Settings_Store {
 			case 'textarea':
 				return is_scalar( $value ) ? sanitize_textarea_field( (string) $value ) : '';
 			case 'color':
-				$hex = is_scalar( $value ) ? sanitize_hex_color( (string) $value ) : '';
-				if ( '' !== (string) $value && ! $hex ) {
-					return new \WP_Error( 'invalid_color', __( 'Enter a color like #12305A.', 'woo-donation-popup' ) );
+				// Hex ya da CSS değişkeni (`var(--ad)`, `var(--ad, #yedek)`); başka her şey reddedilir (CSS enjeksiyonu yok).
+				$raw   = is_scalar( $value ) ? trim( (string) $value ) : '';
+				$color = \DonationPanel\Frontend\Theme_Colors::sanitize_color( $raw );
+				if ( '' !== $raw && '' === $color ) {
+					return new \WP_Error( 'invalid_color', __( 'Enter a color like #12305A or a CSS variable like var(--brand).', 'woo-donation-popup' ) );
 				}
-				return (string) $hex;
+				return $color;
 			case 'url':
 				$raw = is_scalar( $value ) ? trim( (string) $value ) : '';
 				return '' === $raw ? '' : esc_url_raw( $raw );

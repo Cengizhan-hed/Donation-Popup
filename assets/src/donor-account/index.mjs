@@ -7,6 +7,7 @@ import '../campaign/base.css';
 import '../ui2-shared/tokens.css';
 import '../ui2-shared/controls.css';
 import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
+import { syncColors } from '../ui2-shared/color-sync.mjs';
 import './donor-account.css';
 import { endpoint, errorKey, isEmail, isStrongEnough, nextFocusIndex, shouldDismissOnDrag } from './logic.mjs';
 
@@ -493,6 +494,7 @@ async function upgradeTriggers(root) {
 }
 
 function init() {
+  syncColors();
   document.querySelectorAll('[data-dp-acc]').forEach(mountDialog);
   document.querySelectorAll('[data-dp-acc]').forEach(upgradeTriggers);
   document.querySelectorAll('[data-dp-acc-page]').forEach(mountPage);

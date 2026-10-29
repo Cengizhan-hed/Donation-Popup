@@ -201,7 +201,6 @@ Kural: amacı tek satırda yazılamayan dosya silinir. `src/` ve `assets/src/` d
 | `assets/src/admin/` | Yönetici ekranları: REST istemcisi, sihirbaz, kampanyalar, `admin.css` (jQuery yok). |
 | `assets/src/admin-products/` | Ürün "Donation" sekmesi: alan gösterme, kısa kod kopyalama, `products.css`. |
 | `assets/src/ui2-shared/` | Paketler arası ortak: `scroll-lock.mjs` (sayfa kilidi), `controls.css` (form öğesi yalıtımı), `tokens.css` (yüzey belirteçleri). |
-| `assets/critical/experiences.css` | Arayüzlü sayfada satır içi basılan kritik CSS (≤ ~3 KB). |
 | `blocks/donation-form/`, `blocks/donations/` | Gutenberg blok tanımı (`block.json`) + editör betiği (`index.js`). |
 | `templates/donation-panel/experiences/` | Kap ve form şablonları (popup, yan panel, sayfa içi, alttan panel, form); temadan geçersiz kılınabilir. |
 | `templates/donation-panel/tax-relief/step.php`, `templates/donation-panel/thanks/summary.php` | Vergi indirimi ek adımı ve teşekkür özeti şablonları. |

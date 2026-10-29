@@ -44,6 +44,9 @@ add_action(
 			echo '<section id="fp-inline">' . do_shortcode( '[donation_panel_experience id="' . $id . '" kind="inline"]' ) . '</section>'; // phpcs:ignore
 			echo '<section id="fp-list">' . do_shortcode( '[wdp_donations limit="3" button="link"]' ) . '</section>'; // phpcs:ignore
 		}
+		if ( 'form' === $view ) {
+			echo do_shortcode( '[wdp_donation_form id="' . $id . '"]' ); // phpcs:ignore
+		}
 		if ( 'page' === $view || 'slider' === $view ) {
 			// Slider benzetimi: kap gizli başlar, betik 500 ms sonra görünür yapar.
 			echo '<section id="fp-slider" style="display:none">' . do_shortcode( '[donation_panel_experience id="' . $fixed . '" kind="inline"]' ) . '</section>'; // phpcs:ignore

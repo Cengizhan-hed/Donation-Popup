@@ -31,7 +31,12 @@ import { blockedActivePlugins } from './remote-discover-lib.mjs';
 import { loadProfile, resolveAllowedRemoteTarget, setActiveProfile } from '../../tests/e2e/helpers/profile.mjs';
 import { runSnapshot } from '../migration-snapshot.mjs';
 import { runCompare } from '../migration-compare.mjs';
-import { evaluateCanaryHealth, snapshotCanary } from '../../tests/e2e/helpers/canary.mjs';
+import {
+  evaluateCanaryHealth,
+  snapshotCanary,
+  formatCanaryReportLines,
+  persistAutoAcceptedBaseline,
+} from '../../tests/e2e/helpers/canary.mjs';
 import { loadRegistry } from '../../tests/e2e/helpers/run-registry.mjs';
 import { acquireEnvLock, releaseEnvLock } from '../../tests/e2e/helpers/env-lock.mjs';
 import { loadFixtures } from '../../tests/e2e/helpers/fixtures.mjs';
@@ -984,9 +989,14 @@ export async function runShip(opts = {}) {
         envId: profile.id,
       });
   if (!canaryBefore.ok) {
-    fail(`Kanarya KIRMIZI — kurulum yok (${(canaryBefore.diffs || []).length} fark)`);
+    fail(
+      `Kanarya KIRMIZI — kurulum yok (${(canaryBefore.diffs || []).length} fark)\n` +
+        formatCanaryReportLines('önce', canaryBefore).join('\n')
+    );
   }
-  lines.push(`kanarya önce: TEMİZ`);
+  // §25: yönetici içerik düzenlemesi dış değişiklik (otomatik kabul) → rapora + tabana.
+  lines.push(...formatCanaryReportLines('önce', canaryBefore));
+  if (!opts.canaryFn) persistAutoAcceptedBaseline(profile.id, canaryBefore);
 
   let plugins;
   if (opts.pluginsFn) {
@@ -1104,8 +1114,10 @@ export async function runShip(opts = {}) {
     : evaluateCanaryHealth(snapshotCanary(), envName, loadRegistry(profile.id), {
         fixtures: loadFixtures(profile.id),
         envId: profile.id,
+        installPhase: true,
       });
-  lines.push(`kanarya sonra: ${canaryAfter.ok ? 'TEMİZ' : 'KIRMIZI'}`);
+  lines.push(...formatCanaryReportLines('sonra', canaryAfter));
+  if (!opts.canaryFn) persistAutoAcceptedBaseline(profile.id, canaryAfter);
 
   let exitCode = EXIT_OK;
   if (compare?.fail) {

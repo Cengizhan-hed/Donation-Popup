@@ -382,6 +382,31 @@
 	background: #fff;
 	cursor: pointer;
 }
+.dpa .dpa-colorfield {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	inline-size: 100%;
+}
+.dpa .dpa-colorfield .dpa-color {
+	flex: none;
+}
+.dpa .dpa-row__control .dpa-colorfield .dpa-input--color {
+	flex: 1 1 auto;
+	min-inline-size: 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.dpa .dpa-colorfield__status {
+	margin: 6px 0 0;
+	font-size: 12.5px;
+	color: var(--dpa-muted);
+}
+.dpa .dpa-colorfield__status:empty {
+	display: none;
+}
+.dpa .dpa-colorfield__status.is-warn {
+	color: var(--dpa-warn);
+}
 .dpa [data-dpa-when][hidden] {
 	display: none;
 }

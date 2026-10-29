@@ -64,7 +64,7 @@ const COMPRESSIBLE = /^(?:text\/|application\/(?:javascript|json|xml)|image\/svg
  * @param {number} target Hedef (PHP) port.
  * @return {Promise<import('node:http').Server>} Sunucu.
  */
-function startGzipProxy(listen, target) {
+export function startGzipProxy(listen, target) {
   return new Promise((resolve, reject) => {
     const srv = http.createServer((req, res) => {
       const up = http.request({ host: '127.0.0.1', port: target, method: req.method, path: req.url, headers: { ...req.headers, 'accept-encoding': 'identity' } }, (r) => {
@@ -96,10 +96,10 @@ function startGzipProxy(listen, target) {
 }
 
 /** Eşzamansız çalışır (aynı süreçteki gzip vekili yanıt verebilsin). */
-function runLighthouse(url) {
+function runLighthouse(url, extraFlags = []) {
   const bin = path.join(ROOT, 'node_modules/.bin/lighthouse');
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, [url, '--output=json', '--quiet', '--only-categories=performance', '--form-factor=mobile', '--chrome-flags=--headless=new --no-sandbox --disable-gpu'], {
+    const child = spawn(bin, [url, '--output=json', '--quiet', '--only-categories=performance', '--form-factor=mobile', '--chrome-flags=--headless=new --no-sandbox --disable-gpu', ...extraFlags], {
       env: { ...process.env, CHROME_PATH: chromium.executablePath() },
     });
     const out = [];
@@ -115,8 +115,8 @@ function runLighthouse(url) {
   });
 }
 
-async function lighthouse(url, diagTag = '') {
-  const j = JSON.parse(await runLighthouse(url));
+export async function lighthouse(url, diagTag = '', extraFlags = []) {
+  const j = JSON.parse(await runLighthouse(url, extraFlags));
   if (diagTag) {
     fs.mkdirSync(OUT_DIR, { recursive: true });
     const a2 = j.audits;
