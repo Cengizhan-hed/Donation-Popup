@@ -136,7 +136,16 @@ final class Admin_View {
 				$control = '<textarea class="dpa-input" rows="4" id="' . esc_attr( $dom ) . '"' . $desc . $av . '>' . esc_textarea( (string) $value ) . '</textarea>';
 				break;
 			case 'color':
-				$control = '<input type="color" class="dpa-color" id="' . esc_attr( $dom ) . '"' . $desc . ' value="' . esc_attr( '' !== (string) $value ? (string) $value : '#12305a' ) . '"' . $av . ( '' === (string) $value ? ' data-dpa-empty="1"' : '' ) . '>';
+				// Metin alanı kaydedilen değerdir (#hex ya da `var(--ad[, #yedek])`); renk seçici yalnız hex yazar. Durum satırı
+				// (değişken bu sayfada çözülebildi mi, kontrast) tarayıcıda doldurulur.
+				$str     = (string) $value;
+				$parsed  = \DonationPanel\Frontend\Theme_Colors::parse_var( $str );
+				$picker  = \DonationPanel\Frontend\Theme_Colors::normalize_hex( null !== $parsed ? '#' . $parsed['fallback'] : $str );
+				$control = '<span class="dpa-colorfield">'
+					. '<input type="color" class="dpa-color" data-dpa-color-picker aria-label="' . esc_attr( sprintf( /* translators: %s: color setting name. */ __( '%s: color picker', 'woo-donation-popup' ), $spec['label'] ) ) . '" value="' . esc_attr( '#' . ( '' !== $picker ? $picker : '12305a' ) ) . '">'
+					. '<input type="text" class="dpa-input dpa-input--color" id="' . esc_attr( $dom ) . '" aria-describedby="' . esc_attr( $dom . '-desc ' . $dom . '-status' ) . '" value="' . esc_attr( $str ) . '" placeholder="#12305A" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="120" data-dpa-color' . ( ! empty( $spec['text_contrast'] ) ? ' data-dpa-color-text="1"' : '' ) . $av . '>'
+					. '</span>'
+					. '<p class="dpa-colorfield__status" id="' . esc_attr( $dom . '-status' ) . '" data-dpa-color-status aria-live="polite"></p>';
 				break;
 			case 'int':
 				$control = '<input type="number" min="0" step="1" class="dpa-input dpa-input--short" id="' . esc_attr( $dom ) . '"' . $desc . ' value="' . esc_attr( (string) (int) $value ) . '"' . $av . '>';

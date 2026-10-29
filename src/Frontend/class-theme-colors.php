@@ -32,6 +32,58 @@ class Theme_Colors {
 	const MIN_TEXT_CONTRAST = 4.5;
 
 	/**
+	 * Değişkenin ve yedeğinin bulunmadığı durumda ana renk yedeği (base.css varsayılanı ile aynı).
+	 */
+	const DEFAULT_PRIMARY = '0f766e';
+
+	/**
+	 * Yönetici renk alanında kabul edilen CSS değişkeni: `var(--ad)` ya da `var(--ad, #yedek)`.
+	 * Ad yalnız [a-zA-Z0-9_-]; yedek yalnız #hex. Başka her şey (url(), expression, `;`, `}` vb.) reddedilir.
+	 */
+	const VAR_PATTERN = '/^var\(\s*--([a-zA-Z0-9_-]{1,100})\s*(?:,\s*(#[0-9a-fA-F]{3}|#[0-9a-fA-F]{6})\s*)?\)$/D';
+
+	/**
+	 * Yönetici renk değerini doğrular: '#rgb'/'#rrggbb' (olduğu gibi) ya da kanonik `var(--ad)` / `var(--ad, #yedek)`.
+	 * Geçersiz ya da boş ise ''.
+	 *
+	 * @param mixed $value Ham değer.
+	 * @return string
+	 */
+	public static function sanitize_color( $value ) {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+		$value = trim( (string) $value );
+		if ( 1 === preg_match( '/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/D', $value ) ) {
+			return $value;
+		}
+		$var = self::parse_var( $value );
+		if ( null === $var ) {
+			return '';
+		}
+		return 'var(--' . $var['name'] . ( '' !== $var['fallback'] ? ', #' . $var['fallback'] : '' ) . ')';
+	}
+
+	/**
+	 * `var(--ad)` / `var(--ad, #yedek)` ayrıştırır.
+	 *
+	 * @param mixed $value Ham değer.
+	 * @return array{name: string, fallback: string}|null Ad ve 'rrggbb' yedek ('' = yok); geçersizse null.
+	 */
+	public static function parse_var( $value ) {
+		if ( ! is_scalar( $value ) ) {
+			return null;
+		}
+		if ( 1 !== preg_match( self::VAR_PATTERN, trim( (string) $value ), $m ) ) {
+			return null;
+		}
+		return array(
+			'name'     => $m[1],
+			'fallback' => isset( $m[2] ) ? self::normalize_hex( $m[2] ) : '',
+		);
+	}
+
+	/**
 	 * Geçerli '#rgb' / '#rrggbb' değerini 'rrggbb' (küçük harf) olarak verir; değilse ''.
 	 *
 	 * @param mixed $value Ham değer.
@@ -223,9 +275,17 @@ class Theme_Colors {
 	 * @return array<string, string> değişken adı => değer (boş = tema CSS varsayılanları).
 	 */
 	public static function variables( $palette, $custom_brand = '', $custom_accent = '' ) {
-		$flat    = self::flatten_palette( $palette );
-		$primary = self::normalize_hex( $custom_brand );
-		$action  = self::normalize_hex( $custom_accent );
+		$flat        = self::flatten_palette( $palette );
+		$primary     = self::normalize_hex( $custom_brand );
+		$action      = self::normalize_hex( $custom_accent );
+		$primary_var = '' === $primary ? self::parse_var( $custom_brand ) : null;
+		$action_var  = '' === $action ? self::parse_var( $custom_accent ) : null;
+		if ( null !== $primary_var ) {
+			$primary = $primary_var['fallback'];
+		}
+		if ( null !== $action_var ) {
+			$action = $action_var['fallback'];
+		}
 		if ( '' === $primary ) {
 			$primary = self::pick_primary( $flat );
 		}
@@ -233,13 +293,26 @@ class Theme_Colors {
 			$action = self::pick_action( $flat, $primary );
 		}
 		$vars = array();
-		if ( '' !== $primary ) {
+		if ( null !== $primary_var ) {
+			// Değişken sunucuda çözülemez: tarayıcıda çözülür; yedek tema/varsayılan rengi. Yazı rengi yedeğe göre güvenli,
+			// tarayıcı betiği çözülen renge göre yalnız gerekirse günceller (`--dp-color-dynamic`).
+			$primary                       = '' !== $primary ? $primary : self::DEFAULT_PRIMARY;
+			$vars['--dp-color-primary']    = 'var(--' . $primary_var['name'] . ', #' . $primary . ')';
+			$vars['--dp-color-on-primary'] = self::text_on( $primary );
+		} elseif ( '' !== $primary ) {
 			$vars['--dp-color-primary']    = '#' . $primary;
 			$vars['--dp-color-on-primary'] = self::text_on( $primary );
 		}
-		if ( '' !== $action ) {
+		if ( null !== $action_var ) {
+			$action                       = '' !== $action ? $action : ( '' !== $primary ? $primary : self::DEFAULT_PRIMARY );
+			$vars['--dp-accent']          = 'var(--' . $action_var['name'] . ', #' . $action . ')';
+			$vars['--dp-color-on-accent'] = self::text_on( $action );
+		} elseif ( '' !== $action ) {
 			$vars['--dp-accent']          = '#' . $action;
 			$vars['--dp-color-on-accent'] = self::text_on( $action );
+		}
+		if ( null !== $primary_var || null !== $action_var ) {
+			$vars['--dp-color-dynamic'] = '1';
 		}
 		return $vars;
 	}
@@ -287,8 +360,61 @@ class Theme_Colors {
 	 * @return string `--dp-color-primary:#xxxxxx;...` biçiminde bildirimler.
 	 */
 	public static function declarations( $custom_brand = '', $custom_accent = '' ) {
+		return self::join( self::variables( self::site_palette(), $custom_brand, $custom_accent ) );
+	}
+
+	/**
+	 * Formun `style` özniteliği için yalnız verilen (geçerli) özel renklerin bildirimleri: #hex için renk + okunur yazı
+	 * rengi; `var(--ad[, #yedek])` için `variables()` çıktısındaki değişken + yedeğe göre güvenli yazı rengi + dinamik işaret.
+	 * Geçersiz/boş değer bildirim üretmez (tema/belirteç rengi kalır).
+	 *
+	 * @param string $brand  Ana renk.
+	 * @param string $accent Düğme rengi.
+	 * @return string
+	 */
+	public static function form_style( $brand, $accent ) {
+		$slots = array(
+			'brand'  => array( '--dp-color-primary', '--dp-color-on-primary' ),
+			'accent' => array( '--dp-accent', '--dp-color-on-accent' ),
+		);
+		$given = array(
+			'brand'  => (string) $brand,
+			'accent' => (string) $accent,
+		);
+		$vars  = null;
+		$out   = array();
+		foreach ( $slots as $slot => $names ) {
+			$hex = self::normalize_hex( $given[ $slot ] );
+			if ( '' !== $hex ) {
+				$out[ $names[0] ] = '#' . $hex;
+				$out[ $names[1] ] = self::text_on( $hex );
+				continue;
+			}
+			if ( null === self::parse_var( $given[ $slot ] ) ) {
+				continue;
+			}
+			if ( null === $vars ) {
+				$vars = self::variables( self::site_palette(), $given['brand'], $given['accent'] );
+			}
+			foreach ( $names as $name ) {
+				if ( isset( $vars[ $name ] ) ) {
+					$out[ $name ] = $vars[ $name ];
+				}
+			}
+			$out['--dp-color-dynamic'] = '1';
+		}
+		return self::join( $out );
+	}
+
+	/**
+	 * Değişken => değer dizisini `ad:değer;` dizgesine çevirir (boş değerler atlanır).
+	 *
+	 * @param array<string, string> $vars Değişkenler.
+	 * @return string
+	 */
+	private static function join( array $vars ) {
 		$out = '';
-		foreach ( self::variables( self::site_palette(), $custom_brand, $custom_accent ) as $name => $value ) {
+		foreach ( $vars as $name => $value ) {
 			if ( '' !== $value ) {
 				$out .= $name . ':' . $value . ';';
 			}

@@ -34,7 +34,7 @@ async function login(page, role = 'administrator') {
 }
 async function reset(page) {
   expect((await page.request.get('/?dp_ad_reset=1')).status()).toBe(200);
-  for (const name of ['wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall', 'dp_ad_palette_mode']) {
+  for (const name of ['wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall', 'dp_ad_palette_mode', 'dp_ad_css_vars']) {
     await page.request.get(`/?dp_ad_opt=${name}&del=1`);
   }
 }
@@ -152,6 +152,84 @@ test('renk kaynağı: palet okunamazsa uyarı + Genel Bakış satırı + düğme
   await expect(page.locator('[data-dpa-wstep="2"]')).toBeVisible();
   await expect(page.locator('[data-dpa-colors-note="none"]')).toHaveCount(0);
   await expect(page.locator('#dpa-w-colors-theme')).toBeChecked();
+});
+
+/** WCAG kontrastı (rgb() dizgeleri). */
+function wcag(a, b) {
+  const lum = (s) => {
+    const [r, g, bl] = s.match(/[\d.]+/g).slice(0, 3).map(Number).map((c) => {
+      const v = c / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+  };
+  const [x, y] = [lum(a), lum(b)];
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+
+async function saveBrand(page, value) {
+  await page.goto(P('donation-panel-forms'));
+  await page.selectOption('#dpa-f-design-colors', 'custom');
+  await page.fill('#dpa-f-design-brand', value);
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
+}
+
+async function triggerColors(page) {
+  await page.goto(`/?p=${process.env.WDP_EXP_PRODUCT_ID}`);
+  const btn = page.locator('.donation-panel-trigger').first();
+  await expect(btn).toBeVisible();
+  await page.waitForLoadState('load');
+  return btn.evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, fg: getComputedStyle(el).color }));
+}
+
+test('renk alanı CSS değişkeni kabul eder: yönetici "sitede çözülecek" der; ön yüzde çözülür, yazı kontrastı ≥4.5; tanımsızsa yedek', async ({ page }, info) => {
+  test.skip(!process.env.WDP_EXP_PRODUCT_ID, 'ürün yok');
+  await setOpt(page, 'dp_ad_css_vars', '1');
+  await page.goto(P('donation-panel-forms'));
+  await page.selectOption('#dpa-f-design-colors', 'custom');
+  const brand = page.locator('#dpa-f-design-brand');
+  const status = page.locator('#dpa-f-design-brand-status');
+  // Geçersiz değer: anında uyarı + kayıt reddedilir (CSS enjeksiyonu yok).
+  await brand.fill('var(--test-brand);color:red');
+  await expect(status).toContainText(/CSS variable|CSS değişkeni/);
+  await expect(brand).toHaveAttribute('aria-invalid', 'true');
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('.dpa-notice--error')).toBeVisible();
+  // Değişken yönetici sayfasında tanımlı değil: "sitede çözülecek" bilgisi, renk okunamadı uyarısı yok.
+  await brand.fill('var(--test-brand)');
+  await expect(status).toContainText(/not defined on this page|bu sayfada tanımlı değil/);
+  await expect(brand).toHaveAttribute('aria-invalid', 'false');
+  await expect(page.locator('[data-dpa-colors-note="none"]')).toBeHidden();
+  // Yönetici sayfasında tanımlı bir değişken tarayıcıda çözülür ve kontrast uyarısı ona göre verilir.
+  await page.evaluate(() => document.documentElement.style.setProperty('--dp-admin-probe', '#ffd60a'));
+  await brand.fill('var(--dp-admin-probe)');
+  await expect(status).toContainText(/#ffd60a/);
+  await expect(status).toContainText(/Low contrast|düşük kontrast/i);
+  await brand.fill('var(--test-brand)');
+  expect(await axe(page)).toEqual([]);
+  await shot(page, info, 'AdminFormlar', 'renk-degisken');
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
+  expect((await state(page)).settings.design.brand).toBe('var(--test-brand)');
+
+  // Ön yüz: değişken temada tanımlı (#ffd60a, açık sarı) -> düğme o renkte, yazı siyah (≥4.5:1).
+  let c = await triggerColors(page);
+  expect(c.bg).toBe('rgb(255, 214, 10)');
+  expect(c.fg).toBe('rgb(0, 0, 0)');
+  expect(wcag(c.bg, c.fg)).toBeGreaterThanOrEqual(4.5);
+
+  // Tanımlı koyu değişken -> okunur (beyaz) yazı.
+  await saveBrand(page, 'var(--test-ink)');
+  c = await triggerColors(page);
+  expect(c.bg).toBe('rgb(18, 52, 86)');
+  expect(wcag(c.bg, c.fg)).toBeGreaterThanOrEqual(4.5);
+
+  // Tanımsız değişken -> verilen yedek renk.
+  await saveBrand(page, 'var(--test-missing, #1d3557)');
+  c = await triggerColors(page);
+  expect(c.bg).toBe('rgb(29, 53, 87)');
+  expect(wcag(c.bg, c.fg)).toBeGreaterThanOrEqual(4.5);
 });
 
 test('modül anahtarı REST ile kaydedilir ve kalıcıdır', async ({ page }) => {
