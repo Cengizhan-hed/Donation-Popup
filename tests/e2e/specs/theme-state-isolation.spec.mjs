@@ -175,6 +175,63 @@ async function pickAmount(page, root) {
   }
 }
 
+const REST_PROPS = ['backgroundColor', 'color', 'borderTopColor', 'borderTopWidth', 'borderTopStyle', 'borderBottomWidth', 'borderBottomStyle', 'boxShadow', 'textDecorationLine'];
+// Genel (temaya özel olmayan) tema düğme/bağlantı kuralı: özgüllük (0,0,1) ve (0,1,0) varyantları.
+const THEME_RULE =
+  'button,[type=button],[type=submit],[type=reset]{background-color:transparent;border:1px solid #c36;color:#c36}' +
+  '[type=button]:not(:hover):not(:focus),button:not(:hover):not(:focus){background-color:transparent;border:1px solid #c36;color:#c36}' +
+  'a,a[href]{color:#c36;text-decoration:underline}';
+
+/**
+ * VARSAYILAN (durumsuz) görünüm: genel bir tema düğme kuralı enjekte edilince eklenti kontrollerinin
+ * dinlenme stili (arka plan, yazı, kenarlık, gölge) DEĞİŞMEMELİ.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {import('@playwright/test').Locator} root Kök.
+ * @param {string} label Etiket.
+ * @return {Promise<{checked:number,bad:string[]}>} Sonuç.
+ */
+async function defaultAudit(page, root, label) {
+  const sel = 'button,[role="radio"],[role="checkbox"],a[href]';
+  const read = () =>
+    root.locator(sel).evaluateAll((els, props) => {
+      return els.map((e) => {
+        const cs = getComputedStyle(e);
+        const r = e.getBoundingClientRect();
+        const o = {
+          vis: r.width > 0 && r.height > 0 && cs.opacity !== '0' && cs.visibility !== 'hidden',
+          d: `${e.tagName.toLowerCase()}.${String(e.className).split(/\s+/).slice(0, 2).join('.')}`,
+        };
+        props.forEach((p) => {
+          o[p] = cs[p];
+        });
+        return o;
+      });
+    }, REST_PROPS);
+  await page.mouse.move(0, 0);
+  await page.evaluate(() => document.activeElement && document.activeElement.blur && document.activeElement.blur());
+  const before = await read();
+  await page.evaluate((css) => {
+    const st = document.createElement('style');
+    st.id = 'dp-theme-rule';
+    st.textContent = css;
+    document.head.appendChild(st);
+  }, THEME_RULE);
+  const after = await read();
+  await page.evaluate(() => document.getElementById('dp-theme-rule')?.remove());
+  const bad = [];
+  let checked = 0;
+  before.forEach((b, i) => {
+    const a = after[i];
+    if (!a || !b.vis) return;
+    checked += 1;
+    REST_PROPS.forEach((p) => {
+      if (a[p] !== b[p]) bad.push(`${label} ${b.d} varsayılan ${p}: ${b[p]} -> ${a[p]}`);
+    });
+  });
+  return { checked, bad };
+}
+
 const SURFACES = [
   { name: 'inline-fixed', role: 'fixed', kind: 'inline' },
   { name: 'inline-custom', role: 'custom', kind: 'inline' },
@@ -212,18 +269,29 @@ test.describe(`tema durum yalıtımı (${THEME})`, () => {
         all.bad.push(...r.bad);
       };
       add(await audit(page, scope, leak, 'amount'));
+      const def = { checked: 0, bad: [] };
+      const addDef = (r) => {
+        def.checked += r.checked;
+        def.bad.push(...r.bad);
+      };
+      addDef(await defaultAudit(page, scope, 'amount'));
       await pickAmount(page, sf.kind === 'inline' ? '[data-dp-form]' : '[data-dp-overlay].is-open [data-dp-surface]');
       add(await audit(page, scope, leak, 'amount+sel'));
+      addDef(await defaultAudit(page, scope, 'amount+sel'));
       const submit = scope.locator('[data-dp-submit]').first();
       if ((await submit.count()) && (await submit.isEnabled())) {
         await submit.click();
         await page.waitForTimeout(500);
         add(await audit(page, scope, leak, 'step2'));
+        addDef(await defaultAudit(page, scope, 'step2'));
       }
       test.info().annotations.push({ type: 'ölçüm', description: `${THEME} ${sf.name}: kontrol×durum=${all.checked}, sızıntı=${all.bad.length}, tema renk sayısı=${leak.size}` });
       expect(all.checked).toBeGreaterThan(0);
       const uniq = [...new Set(all.bad.map((b) => b.replace(/^\S+ /, '')))];
       expect(uniq, uniq.join('\n')).toEqual([]);
+      expect(def.checked).toBeGreaterThan(0);
+      const uniqDef = [...new Set(def.bad.map((b) => b.replace(/^\S+ /, '')))];
+      expect(uniqDef, `varsayılan görünüm temadan etkilendi:\n${uniqDef.join('\n')}`).toEqual([]);
     });
   }
 });

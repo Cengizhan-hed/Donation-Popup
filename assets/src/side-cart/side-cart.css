@@ -105,6 +105,12 @@ html.donation-panel-sc-lock { overflow: hidden; }
 .donation-panel-sc__fab .donation-panel-sc__count { inset-block-start: -2px; inset-inline-end: -2px; background: var(--dpx-accent); }
 .donation-panel-sc__fab.is-entering { animation: dp-sc-fab-in 420ms var(--dp-ease-spring) both; }
 .donation-panel-sc__fab.is-pulse { animation: dp-sc-fab-pulse 700ms var(--dp-ease-spring) 2; }
+/* Varsayılan (durumsuz) görünüm: temanın genel düğme kuralı ezemesin (özgüllük 0,3,0). */
+:root :is(.donation-panel-sc__trigger, .donation-panel-sc__close, .donation-panel-sc__fab, .donation-panel-sc__step, .donation-panel-sc__remove) { border: 0; }
+:root :is(.donation-panel-sc__trigger, .donation-panel-sc__close):not(:is(:hover, :focus, :active)) { background-color: var(--dpx-chip); color: inherit; }
+:root .donation-panel-sc__fab:not(:is(:hover, :focus, :active)) { background-color: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); }
+:root .donation-panel-sc__step:not(:is(:hover, :focus, :active)) { background-color: transparent; color: inherit; }
+:root .donation-panel-sc__remove:not(:is(:hover, :focus, :active)) { background-color: transparent; color: var(--dpx-muted); }
 /* Tema durum yalıtımı (özgüllük 0,3,0; bkz. ui2-shared/states.css): durum renkleri bileşenin kendi jetonlarından. */
 :root :is(.donation-panel-sc__trigger, .donation-panel-sc__close):is(:hover, :focus, :active) { background-color: var(--dpx-chip); color: inherit; }
 :root :is(.donation-panel-sc__trigger, .donation-panel-sc__close):hover { background-color: var(--dpx-line); }
