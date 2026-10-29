@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 17:36:57+0000\n"
-"PO-Revision-Date: 2026-10-29 17:36:57+0000\n"
+"POT-Creation-Date: 2026-10-29 19:18:03+0000\n"
+"PO-Revision-Date: 2026-10-29 19:18:03+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -295,6 +295,9 @@ msgstr "Basitleştirilmiş bir taslak. Renk ve yazı temanızdan gelir. Mobilde 
 #: src/Admin/
 msgid "A slide-in cart so donors can review their gift without leaving the page."
 msgstr "Bağışçılar sayfadan ayrılmadan bağışlarını gözden geçirebilsin diye kayarak açılan sepet."
+
+msgid "A small donation card with a fixed height for sliders and hero areas: [wdp_donation_form layout=\"compact\"]. Colors and fonts come from the settings above."
+msgstr "Kaydırıcı ve büyük görsel alanları için yüksekliği sabit küçük bağış kartı: [wdp_donation_form layout=\"compact\"]. Renk ve yazı tipi yukarıdaki ayarlardan gelir."
 
 #: src/Admin/
 msgid "A warm confirmation after the order"
@@ -762,6 +765,9 @@ msgstr "Bar Yüksekliği (px)"
 msgid "Bar height."
 msgstr "Çubuk yüksekliği."
 
+msgid "Be the first to give"
+msgstr "İlk bağışı siz yapın"
+
 #: includes/class-phone-field.php:29
 msgid "Belarus"
 msgstr "Belarus"
@@ -1224,6 +1230,9 @@ msgstr "Kapat Butonu Ayarları"
 msgid "Close new donations + show a message"
 msgstr "Yeni bağışı kapat + mesaj göster"
 
+msgid "Close payment window"
+msgstr "Ödeme penceresini kapat"
+
 #: includes/templates/class-modal-shell-renderer.php:363
 msgid "Close popup"
 msgstr "Modalı Kapat"
@@ -1271,6 +1280,24 @@ msgstr "Topluluk"
 #: includes/class-admin-design-studio-renderer.php:197
 msgid "Compact"
 msgstr "Kompakt"
+
+msgid "Compact card"
+msgstr "Kompakt kart"
+
+msgctxt "Compact donation card: amount suggested by the site"
+msgid "Recommended"
+msgstr "Önerilen"
+
+msgctxt "Compact donation card: previous step"
+msgid "Back"
+msgstr "Geri"
+
+msgctxt "Compact donation card: screen reader announcement"
+msgid "Step %1$d of %2$d: %3$s"
+msgstr "Adım %1$d / %2$d: %3$s"
+
+msgid "Compact: a small card with a fixed height for sliders and hero areas."
+msgstr "Kompakt: kaydırıcı ve büyük görsel alanları için yüksekliği sabit küçük kart."
 
 #: includes/class-admin-form-tabs-renderer.php:195
 #: includes/class-admin-form-tabs-renderer.php:239
@@ -1360,6 +1387,10 @@ msgstr "Hızlı kuruluma devam et"
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Continue to checkout"
 msgstr "Ödemeye geç"
+
+#. translators: %s: formatted amount.
+msgid "Continue to checkout · %s"
+msgstr "Ödemeye geç · %s"
 
 #: src/Privacy/class-privacy-tools.php
 msgid "Cookies and tracking"
@@ -1685,6 +1716,10 @@ msgstr "Bağış Yap"
 msgid "Donate %s"
 msgstr "%s bağışla"
 
+#. translators: %s: formatted amount.
+msgid "Donate %s securely"
+msgstr "%s güvenle bağışla"
+
 #: src/Admin/
 msgid "Donate button text"
 msgstr "Bağış düğmesi metni"
@@ -1696,6 +1731,9 @@ msgstr "Bağış yap"
 #: templates/donation-panel/experiences/form.php
 msgid "Donate on behalf of someone"
 msgstr "Birinin adına bağışla"
+
+msgid "Donate securely"
+msgstr "Güvenle bağışla"
 
 #: includes/class-admin-product-data-tab.php:65
 msgid "Donation"
@@ -1749,6 +1787,14 @@ msgstr "%s için bağış formu"
 #, php-format
 msgid "Donation form hidden: product #%d is outside the donation scope. Mark it as a donation product (Donation Panel settings, \"Which products are donation products\") or change the scope."
 msgstr "Bağış formu gizlendi: #%d numaralı ürün bağış kapsamı dışında. Ürünü bağış ürünü olarak işaretleyin (Donation Panel ayarları, \"Hangi ürünler bağış ürünü\") ya da kapsamı değiştirin."
+
+msgctxt "Donation form layout"
+msgid "Compact"
+msgstr "Kompakt"
+
+msgctxt "Donation form layout"
+msgid "Full"
+msgstr "Tam"
 
 #: assets/js/src/modal.js:500
 msgid "Donation form opened"
@@ -2703,6 +2749,9 @@ msgstr "Hover gölge rengi (hex)"
 #: includes/class-admin-form-tabs-renderer.php:563
 msgid "Hover shadow: X/Y/blur/spread (px)"
 msgstr "Hover gölge: X/Y/bulanık/yayılım (px)"
+
+msgid "How many of the product amounts appear as buttons on the compact card (layout=\"compact\"). 0 shows only the amount field."
+msgstr "Ürün tutarlarından kaçının kompakt kartta (layout=\"compact\") düğme olarak görüneceği. 0 seçilirse yalnız tutar alanı görünür."
 
 #: src/Admin/
 msgid "How should the donation form open?"
@@ -3881,6 +3930,9 @@ msgstr "WooCommerce ayarlarını aç"
 msgid "Open your products"
 msgstr "Ürünlerinizi açın"
 
+msgid "Opening the secure payment page…"
+msgstr "Güvenli ödeme sayfası açılıyor…"
+
 #: src/Admin/
 msgid "Opens a centered window"
 msgstr "Ortada pencere açar"
@@ -4002,6 +4054,9 @@ msgstr "Ödeme Yap Butonu Rengi"
 #: includes/class-admin-form-tabs-renderer.php:506
 msgid "Pay button hover color"
 msgstr "Ödeme Yap Butonu Hover Rengi"
+
+msgid "Payment"
+msgstr "Ödeme"
 
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Payment method and any taxes are shown at checkout."
@@ -4551,6 +4606,9 @@ msgstr "Serbest tutar alanının üstünde gösterilen hızlı tutar düğmeleri
 msgid "Quick amount buttons, quantity, and processing fee"
 msgstr "Hızlı tutar düğmeleri, adet ve işlem ücreti"
 
+msgid "Quick amounts on the compact card"
+msgstr "Kompakt kartta hızlı tutarlar"
+
 #: src/Admin/
 msgid "Quick setup"
 msgstr "Hızlı kurulum"
@@ -4794,6 +4852,9 @@ msgstr "Ürün ara"
 msgctxt "section title"
 msgid "View"
 msgstr "Görünüm"
+
+msgid "Secure payment"
+msgstr "Güvenli ödeme"
 
 #: includes/class-admin-form-tabs-renderer.php:436
 msgid "Secure payment · Instant confirmation"
@@ -5187,6 +5248,9 @@ msgstr "CTA altında güven metnini göster"
 msgid "Shown after the order. Only used when the Thank-you screen module is on."
 msgstr "Siparişten sonra gösterilir. Yalnız Teşekkür ekranı modülü açıkken kullanılır."
 
+msgid "Shown on the campaign bar while nothing has been raised yet. Leave empty for the built-in, translated wording."
+msgstr "Henüz bağış toplanmamışken kampanya çubuğunda görünür. Hazır, çevrilmiş metin için boş bırakın."
+
 #: src/Admin/
 msgid "Shown on the thank-you screen after a donation."
 msgstr "Bağıştan sonra teşekkür ekranında gösterilir."
@@ -5417,6 +5481,9 @@ msgstr "Normal form ayarları başarıyla kaydedildi."
 msgid "Star"
 msgstr "Yıldız"
 
+msgid "Start over when the card is hidden"
+msgstr "Kart gizlenince başa dön"
+
 #: src/Admin/
 msgid "Start quick setup"
 msgstr "Hızlı kurulumu başlat"
@@ -5594,6 +5661,9 @@ msgstr "Test sayfası — sepete ekleme kapalı."
 msgid "Text"
 msgstr "Metin"
 
+msgid "Text before the first gift"
+msgstr "İlk bağıştan önceki metin"
+
 #: includes/class-product-settings-service.php:419
 msgid "Text contrast with «%1$s» is %2$s:1 (recommended minimum 4.5:1). Saved; choose a lighter or darker background."
 msgstr "«%1$s» ile metin kontrastı %2$s:1 (önerilen en az 4.5:1). Kayıt yapıldı; daha açık veya koyu bir arka plan seçin."
@@ -5622,9 +5692,15 @@ msgstr "Hisseli bağış formundaki metinler, kart görünümü ve hissedar alan
 msgid "Thailand"
 msgstr "Tayland"
 
+msgid "Thank you"
+msgstr "Teşekkürler"
+
 #: templates/donation-panel/thanks/summary.php
 msgid "Thank you!"
 msgstr "Teşekkür ederiz!"
+
+msgid "Thank you! Your donation was received."
+msgstr "Teşekkür ederiz! Bağışınız alındı."
 
 #: src/Admin/
 msgid "Thank-you message"
@@ -6112,6 +6188,9 @@ msgstr "Yalnız gerçek bağışlardan oluşan toplu sayılar. Hiçbir kişi bil
 msgid "Track (empty part) color."
 msgstr "Track (boş kısım) rengi."
 
+msgid "Trouble paying here? Open the payment page instead"
+msgstr "Burada ödeyemiyor musunuz? Ödeme sayfasını açın"
+
 #: src/Admin/
 msgid "Troubleshooting: the button does not show"
 msgstr "Sorun giderme: düğme görünmüyor"
@@ -6496,6 +6575,9 @@ msgstr "Açıldığında form adım adım ilerler. Hisseli: Hisseler → Onay. S
 msgid "When the campaign reaches its goal, should donations keep being accepted, or should they be closed?"
 msgstr "Kampanya hedefe ulaştığında bağış almaya devam edilsin mi, yoksa kapatılsın mı."
 
+msgid "When the card leaves the screen (for example the slider moves to another slide), it goes back to the first step. Typed details are kept."
+msgstr "Kart ekrandan çıkınca (örneğin kaydırıcı başka slayta geçince) ilk adıma döner. Yazılan bilgiler korunur."
+
 #: includes/class-admin-product-data-tab.php:641
 msgid "When the goal is reached"
 msgstr "Hedefe ulaşınca"
@@ -6716,6 +6798,12 @@ msgstr "Kaydedilmemiş değişiklikleriniz var."
 msgid "You have unsaved changes. Are you sure you want to leave this tab?"
 msgstr "Kaydedilmemiş değişiklikleriniz var. Bu sekmeden ayrılmak istediğinize emin misiniz?"
 
+msgid "You will complete your donation on the secure checkout page."
+msgstr "Bağışınızı güvenli ödeme sayfasında tamamlayacaksınız."
+
+msgid "You will pay in a secure payment window. Your card details never pass through this form."
+msgstr "Ödemeyi güvenli ödeme penceresinde yapacaksınız. Kart bilgileriniz bu formdan geçmez."
+
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Your basket is empty"
 msgstr "Sepetiniz boş"
@@ -6762,6 +6850,10 @@ msgstr "Bağışınız alındı. Hayra vesile olsun."
 
 msgid "Your donation is already being processed. Please wait a moment."
 msgstr "Bağışınız zaten işleniyor. Lütfen biraz bekleyin."
+
+#. translators: 1: formatted amount, 2: product name.
+msgid "Your donation of %1$s to %2$s was received."
+msgstr "%2$s için %1$s bağışınız alındı."
 
 #: includes/traits/trait-wdp-assets-registry.php:370
 msgid "Your donation was added to the cart"

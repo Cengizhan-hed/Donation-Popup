@@ -436,3 +436,13 @@ Blok: **Bağış listesi** (`wdp/donations`). Elementor: **Bağış Listesi** (`
 **10.28.5:** Alt bağış bağlantısı bir ürünün görünürlüğünü veya bağış ürünü olmasını etkilemez. Aynı ürün hem kendi sayfasında/listelerde bağış ürünü olabilir hem de başka bir ürünün alt bağışı olarak seçilebilir. Listede gizlemek isterseniz WooCommerce ürün ayarında **Katalog görünürlüğü: Gizli** kullanın. Ürünler tablosunda bilgi rozeti: “Alt bağış olarak kullanılıyor (N)” (üzerine gelince ana ürün adları).
 
 - **Renkler (12.2):** Ana renk ve Buton rengi hex (#12305A) ya da CSS değişkeni (`var(--e-global-color-primary)`, `var(--wp--preset--color--primary, #12305a)`) alır. Değişken sitede tarayıcıda çözülür; tanımsızsa yedek/tema rengi. Düğme yazı rengi okunurluğa göre otomatik.
+
+## Compact kart (12.2)
+## Ayarlar (Formlar ve Görünüm → Compact kart)
+| Anahtar | Tür | Varsayılan | Not |
+|---|---|---|---|
+| `compact.quick_amounts` | 0–3 | 3 | 0: yalnız alan; geçersiz değer → 3 / sınırlanır |
+| `compact.first_text` | metin | '' (çevrilmiş "Be the first to give") | toplanan 0 iken |
+| `compact.reset_hidden` | anahtar | kapalı | kart görünmez olunca (IntersectionObserver) başa döner; yazılan bilgiler korunur |
+
+CSS değişkenleri: `--dp-compact-h` (masaüstü asgari yükseklik), `--dp-compact-h-md` (≤1023 px), `--dp-compact-h-sm` (≤639 px), `--dp-compact-w` (azami genişlik, 480 px), `--dp-compact-radius` (18 px), `--dp-compact-slot` (48 px; 0 → vergi satırı yeri kalkar). Renk/yazı/köşe `--dp-*` (Formlar ve Görünüm, colorvar dahil).
