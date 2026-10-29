@@ -81,6 +81,8 @@ for (const kind of KINDS) {
       const throttled = await throttle(page, context, browserName);
       await page.goto(url(kind), { waitUntil: 'load', timeout: 90000 });
       await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 60000 });
+      // Ertelenmiş ana stil gelmeden tık bilerek <=1200 ms bekler (aşağıdaki "ertelenmiş ana stil" testleri); bu ölçüm stil yüklüyken.
+      await page.waitForFunction(() => Array.from(document.querySelectorAll('link[data-dp-css]')).every((l) => l.sheet), null, { timeout: 15000 });
       // 1) Soğuk, anlık tık (basılı kalma 0: hazırlık tık anında yapılır — en kötü durum).
       const cold = await measureOpen(page, 0);
       await page.keyboard.press('Escape');
@@ -259,6 +261,9 @@ test.describe('ertelenmiş ana stil: yavaş ağda panel stilsiz açılmaz', () =
       await page.locator('[data-dp-open]').click();
       await expect(page.locator('[data-dp-overlay]')).toHaveClass(/is-open/, { timeout: 4000 });
       const waited = await page.evaluate(() => Math.round(window.__dpWait.open - window.__dpWait.t0));
+      // Stilsiz açılış yasak: ya ana stil yüklenmiş olmalı ya da zaman aşımı (~1200 ms) dolmuş olmalı.
+      const sheetReady = await page.evaluate(() => Array.from(document.querySelectorAll('link[data-dp-css]')).every((l) => l.sheet));
+      expect(sheetReady || waited >= 1100).toBe(true);
       console.log(`CSS_WAIT_MS ${kind} ${waited}`);
       expect(waited).toBeLessThan(1500);
       const stepper = page.locator('.donation-panel-stepper button').first();
