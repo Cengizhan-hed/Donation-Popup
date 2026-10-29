@@ -104,6 +104,12 @@ html.donation-panel-ac-lock { overflow: hidden; }
 .donation-panel .donation-panel-ac__link-msg { margin: 12px 0 0; font-weight: 650; }
 .donation-panel-ac__checkout-note { margin: 0 0 12px; padding: 12px 14px; border-radius: var(--dpx-r-field); background: var(--dpx-warm); color: var(--dp-color-text); font-size: .875rem; }
 
+/* Tema durum yalıtımı (özgüllük 0,3,0; bkz. ui2-shared/states.css) */
+:root .donation-panel-ac__trigger:is(:hover, :focus, :active) { background-color: var(--dpx-soft); color: var(--dp-color-primary-strong); }
+:root .donation-panel-ac__trigger:hover { background-color: var(--dpx-line); }
+:root .donation-panel-ac__close:is(:hover, :focus, :active) { background-color: transparent; color: inherit; }
+:root .donation-panel-ac__close:hover { background-color: var(--dpx-chip); }
+:root .donation-panel-ac__link:is(:hover, :focus, :active) { background-color: transparent; color: var(--dp-color-primary-strong); text-decoration-line: underline; }
 @media (max-width: 639.98px) {
   .donation-panel-ac__overlay { place-items: end center; padding: 0; }
   .donation-panel-ac__surface { inline-size: 100%; max-block-size: 92dvh; border-end-start-radius: 0; border-end-end-radius: 0; transform: translateY(100%); }

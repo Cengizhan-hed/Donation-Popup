@@ -156,13 +156,13 @@
 .donation-panel-btn--lg { min-block-size: 56px; font-size: var(--dp-fs-md); border-radius: var(--dp-radius-lg); }
 .donation-panel-btn--secondary { --_bg: var(--dp-color-primary-soft); --_fg: var(--dp-color-primary-strong); box-shadow: none; }
 .donation-panel-btn--ghost { --_bg: transparent; --_fg: var(--dp-color-text); box-shadow: inset 0 0 0 1.5px var(--dp-color-border-strong); }
-.donation-panel-btn--ghost:hover { background: var(--dp-color-surface-2); filter: none; }
+.donation-panel-btn--ghost:hover { --_bg: var(--dp-color-surface-2); filter: none; }
 .donation-panel-btn--text { --_bg: transparent; --_fg: var(--dp-color-primary-strong); box-shadow: none; padding-inline: var(--dp-space-3); min-block-size: 44px; }
 .donation-panel-btn[disabled], .donation-panel-btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; filter: none; }
-.donation-panel-btn.is-loading { pointer-events: none; color: transparent; }
+.donation-panel-btn.is-loading { pointer-events: none; --_fg: transparent; color: transparent; }
 .donation-panel-btn.is-loading::after { content: ""; position: absolute; inline-size: 22px; block-size: 22px; border-radius: 50%; border: 3px solid color-mix(in oklab, var(--dp-color-on-primary) 35%, transparent); border-block-start-color: var(--dp-color-on-primary); animation: dp-spin .7s linear infinite; }
-.donation-panel-iconbtn { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; background: transparent; color: inherit; border-radius: 50%; cursor: pointer; transition: background var(--dp-dur-fast), transform var(--dp-dur-fast) var(--dp-ease-spring); }
-.donation-panel-iconbtn:hover { background: var(--dp-color-surface-3); }
+.donation-panel-iconbtn { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; --dp-s-bg: transparent; background: var(--dp-s-bg); color: inherit; border-radius: 50%; cursor: pointer; transition: background var(--dp-dur-fast), transform var(--dp-dur-fast) var(--dp-ease-spring); }
+.donation-panel-iconbtn:hover { --dp-s-bg: var(--dp-color-surface-3); }
 .donation-panel-iconbtn:active { transform: scale(.9); }
 .donation-panel-ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 /* ---------- Katman (overlay) ve yüzeyler: popup / yan panel / alt panel ---------- */
@@ -216,12 +216,12 @@
 .donation-panel-legend { font-weight: var(--dp-fw-semibold); font-size: var(--dp-fs-sm); margin-block-end: var(--dp-space-3); display: block; padding: 0; }
 .donation-panel-fieldset { border: 0; padding: 0; margin: 0 0 var(--dp-space-5); min-inline-size: 0; }
 .donation-panel-amounts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.donation-panel-amount { position: relative; text-align: start; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 3px; align-content: center; min-block-size: 68px; padding: 12px 14px; border-radius: var(--dp-radius-card); border: 1.5px solid var(--dp-color-border); background: var(--dp-color-surface); color: var(--dp-color-text); font: inherit; cursor: pointer; transition: transform var(--dp-dur-fast) var(--dp-ease-spring), border-color var(--dp-dur-base), background var(--dp-dur-base), box-shadow var(--dp-dur-base); }
+.donation-panel-amount { position: relative; text-align: start; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 3px; align-content: center; min-block-size: 68px; padding: 12px 14px; border-radius: var(--dp-radius-card); border: 1.5px solid var(--dp-color-border); --dp-s-bg: var(--dp-color-surface); --dp-s-fg: var(--dp-color-text); background: var(--dp-s-bg); color: var(--dp-s-fg); font: inherit; cursor: pointer; transition: transform var(--dp-dur-fast) var(--dp-ease-spring), border-color var(--dp-dur-base), background var(--dp-dur-base), box-shadow var(--dp-dur-base); }
 .donation-panel-amount:hover { border-color: var(--dp-color-border-strong); }
 .donation-panel-amount:active { transform: scale(var(--dp-press-scale)); }
 .donation-panel-amount__v { font-size: 18px; font-weight: 800; letter-spacing: 0; }
 .donation-panel-amount__i { font-size: 12px; line-height: 1.3; color: var(--dp-color-text-muted); }
-.donation-panel-amount[aria-checked="true"] { border: 2px solid var(--dp-color-primary); padding: 11.5px 13.5px; background: var(--dp-color-primary-soft); box-shadow: none; }
+.donation-panel-amount[aria-checked="true"] { border: 2px solid var(--dp-color-primary); padding: 11.5px 13.5px; --dp-s-bg: var(--dp-color-primary-soft); box-shadow: none; }
 .donation-panel-amount[aria-checked="true"] .donation-panel-amount__i { color: color-mix(in oklab, var(--dp-bridge-text) 78%, var(--dp-color-surface)); }
 
 /* ---------- Alan ---------- */
@@ -314,8 +314,8 @@ html.donation-panel-lock { overflow: hidden; }
 .donation-panel-exp:not([data-dp-presented="sheet"]) .donation-panel-head { padding-block-start: 24px; }
 .donation-panel-head__t { flex: 1; min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
 .donation-panel-head .donation-panel-surface__title { font-size: 21px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; overflow-wrap: anywhere; }
-.donation-panel-head .donation-panel-iconbtn { flex: none; background: var(--dp-color-surface-3); margin: 0; }
-.donation-panel-head .donation-panel-iconbtn:hover { background: var(--dp-color-border); }
+.donation-panel-head .donation-panel-iconbtn { flex: none; --dp-s-bg: var(--dp-color-surface-3); margin: 0; }
+.donation-panel-head .donation-panel-iconbtn:hover { --dp-s-bg: var(--dp-color-border); }
 .donation-panel-head .donation-panel-surface__close { margin-inline-start: auto; }
 .donation-panel-steplabel { margin: 0; padding: 0; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--dp-color-text-muted); }
 .donation-panel-pill { display: inline-flex; align-items: center; align-self: flex-start; margin-block-start: 4px; padding: 5px 10px; border-radius: 999px; background: var(--dp-color-primary-soft); color: var(--dp-color-primary-strong); font-size: 13px; font-weight: 600; }

@@ -20,7 +20,7 @@ describe('e2e matrix covering', () => {
     assert.equal(MATRIX_JSON, path.join(ROOT, 'tests/e2e/matrix.json'));
     const matrix = loadMatrix();
     assertCovering(matrix);
-    assert.equal(matrix.configs.length, 6);
+    assert.equal(matrix.configs.length, 8);
     const ids = matrix.configs.map((c) => c.id);
     assert.deepEqual(ids, [
       'tt5-try-blocks-hpos',
@@ -29,6 +29,8 @@ describe('e2e matrix covering', () => {
       'sf-gbp-classic-hpos',
       'bk-gbp-classic-hpos',
       'bk-usd-blocks-nohpos',
+      'he-gbp-classic-hpos',
+      'he-try-blocks-nohpos',
     ]);
   });
 
@@ -90,7 +92,7 @@ describe('e2e matrix covering', () => {
     const matrix = loadMatrix();
     const rtl = rtlSpec(matrix);
     assert.deepEqual(rtl.locales, ['ar', 'he_IL']);
-    assert.equal(matrix.configs.length, 6);
+    assert.equal(matrix.configs.length, 8);
   });
 
   it('PHP -S hücre işçisi PHP_CLI_SERVER_WORKERS ile açılır', () => {
