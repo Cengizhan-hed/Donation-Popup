@@ -423,7 +423,8 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 			$checkout = wdp_e2e_catalog_page_entry($id, is_string($url) ? $url : '');
 		}
 
-		$list = null;
+		$list            = null;
+		$list_candidates = array();
 		if (isset($GLOBALS['wpdb']) && is_object($GLOBALS['wpdb'])) {
 			global $wpdb;
 			$likes = array();
@@ -431,11 +432,18 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 				$likes[] = $wpdb->prepare('p.post_content LIKE %s', '%' . $wpdb->esc_like($n) . '%');
 				$likes[] = $wpdb->prepare('pm.meta_value LIKE %s', '%' . $wpdb->esc_like($n) . '%');
 			}
-			$sql     = "SELECT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID WHERE p.post_status = 'publish' AND p.post_type IN ('page','post') AND (" . implode(' OR ', $likes) . ') GROUP BY p.ID ORDER BY p.ID ASC LIMIT 1';
-			$list_id = (int) $wpdb->get_var($sql);
-			if ($list_id > 0 && function_exists('get_permalink')) {
-				$url  = get_permalink($list_id);
-				$list = wdp_e2e_catalog_page_entry($list_id, is_string($url) ? $url : '');
+			$sql     = "SELECT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID WHERE p.post_status = 'publish' AND p.post_type IN ('page','post') AND (" . implode(' OR ', $likes) . ') GROUP BY p.ID ORDER BY p.ID ASC LIMIT 5';
+			foreach ((array) $wpdb->get_col($sql) as $cand_id) {
+				$cand_id = (int) $cand_id;
+				if ($cand_id <= 0 || !function_exists('get_permalink')) {
+					continue;
+				}
+				$url   = get_permalink($cand_id);
+				$entry = wdp_e2e_catalog_page_entry($cand_id, is_string($url) ? $url : '');
+				$list_candidates[] = $entry;
+				if (null === $list) {
+					$list = $entry;
+				}
 			}
 		}
 
@@ -482,6 +490,7 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 			'cart'             => $cart,
 			'checkout'         => $checkout,
 			'list'             => $list,
+			'list_candidates'  => $list_candidates,
 			'products'         => $products,
 			'fixture_related'  => $fixture_related,
 		);

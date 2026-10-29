@@ -7,6 +7,7 @@ import { loadFixtures } from './fixtures.mjs';
 import { isRemoteProfile } from './profile.mjs';
 import {
   applyRemoteCatalog,
+  verifyRenderedListPage,
   parseCatalogJson,
   DONATION_ROLES,
   pickFixtureNavTarget,
@@ -32,6 +33,16 @@ export async function fetchRemoteCatalog() {
     const msg = e && e.message ? String(e.message) : String(e);
     return { ok: false, reason: msg.slice(0, 120) };
   }
+}
+
+/** Yalnız GET; çizilmiş HTML (aday liste sayfası doğrulaması). */
+function makeGetHtml(env) {
+  const base = String(env.E2E_BASE_URL || '').replace(/\/$/, '');
+  return async (path) => {
+    if (!base) return null;
+    const res = await fetch(base + path, { method: 'GET', signal: AbortSignal.timeout(20000) });
+    return res.ok ? await res.text() : null;
+  };
 }
 
 /**
@@ -64,6 +75,9 @@ export async function fillMissingProductSlugs(env, opts = {}) {
       return env;
     }
     applyRemoteCatalog(env, fetched.catalog);
+    if (String(process.env.WDP_UNIT_TEST || '') !== '1' && !opts.skipListVerify) {
+      await verifyRenderedListPage(env, makeGetHtml(env));
+    }
     const fx = Object.prototype.hasOwnProperty.call(opts, 'fixtures')
       ? opts.fixtures
       : loadFixtures(env);
