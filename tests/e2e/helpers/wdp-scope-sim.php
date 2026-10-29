@@ -18,6 +18,13 @@ add_action(
 		$post = wp_insert_post(array('post_title' => 'Scope blog', 'post_content' => 'Plain text.', 'post_status' => 'publish', 'post_type' => 'post'));
 		$list = wp_insert_post(array('post_title' => 'Scope list', 'post_content' => '[wdp_donations]', 'post_status' => 'publish', 'post_type' => 'page'));
 		$page = wp_insert_post(array('post_title' => 'Scope plain page', 'post_content' => 'Plain page.', 'post_status' => 'publish', 'post_type' => 'page'));
+		// Compact kart sayfası (serbest tutarlı test bağış ürünü; yoksa ilk yayımlanmış ürün).
+		$donation = get_posts(array('post_type' => 'product', 'post_status' => 'publish', 'title' => 'WDP E2E Custom', 'numberposts' => 1, 'fields' => 'ids'));
+		if (!$donation) {
+			$donation = get_posts(array('post_type' => 'product', 'post_status' => 'publish', 'numberposts' => 1, 'fields' => 'ids'));
+		}
+		$compact = wp_insert_post(array('post_title' => 'Scope compact card', 'post_content' => '[wdp_donation_form id="' . (int) ($donation ? $donation[0] : 0) . '" layout="compact"]', 'post_status' => 'publish', 'post_type' => 'page'));
+		$full    = wp_insert_post(array('post_title' => 'Scope full form', 'post_content' => '[wdp_donation_form id="' . (int) ($donation ? $donation[0] : 0) . '"]', 'post_status' => 'publish', 'post_type' => 'page'));
 		$prod = new WC_Product_Simple();
 		$prod->set_name('Scope non donation');
 		$prod->set_regular_price('10');
@@ -33,6 +40,8 @@ add_action(
 					'blog'      => $path(get_permalink($post)),
 					'page'      => $path(get_permalink($page)),
 					'list'      => $path(get_permalink($list)),
+					'compact'   => $path(get_permalink($compact)),
+					'fullform'  => $path(get_permalink($full)),
 					'plainprod' => $path(get_permalink($prod->get_id())),
 					'shop'      => $path(wc_get_page_permalink('shop')),
 					'cart'      => $path(wc_get_page_permalink('cart')),
