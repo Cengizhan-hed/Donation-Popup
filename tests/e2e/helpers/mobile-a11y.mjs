@@ -1,6 +1,9 @@
 /**
  * Mobil + masaüstü davranış denetimleri (eklenti kodu değiştirilmez; hata bulgudur).
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { ROOT } from './env.mjs';
 import { SEL } from './selectors.mjs';
 import { waitLayerSettled } from './settle-layer.mjs';
 import { clickShellTrigger, makeFailure, openShellLocator, waitForShellClosed } from './checks.mjs';
@@ -75,8 +78,59 @@ export async function probeTouchTargets(page, scopeSel) {
             }
           }
         }
-        if (r.width + 1 < min || r.height + 1 < min) bad.push(row);
-        else ok.push(row);
+        if (r.width + 1 < min || r.height + 1 < min) {
+          // Yalnız teşhis (eşik/davranış değişmez); değer/kimlik bilgisi yazılmaz.
+          try {
+            const cs = getComputedStyle(el);
+            const dlg = el.closest('dialog');
+            const openDlg = el.closest('dialog[open]');
+            const exp = el.closest('[data-dp-exp]');
+            const stepper = el.closest('.donation-panel-stepper');
+            const scs = stepper ? getComputedStyle(stepper) : null;
+            const cx = Math.round(r.left + r.width / 2);
+            const cy = Math.round(r.top + r.height / 2);
+            const top = document.elementFromPoint(cx, cy);
+            let layerAnims = -1;
+            const layer = openDlg || exp;
+            if (layer && layer.getAnimations) layerAnims = layer.getAnimations({ subtree: true }).length;
+            const sheets = Array.from(document.querySelectorAll('link[rel~="stylesheet"]'))
+              .filter((l) => /donation-panel|woo-donation-popup|wdp/i.test(l.href))
+              .map((l) => {
+                let loaded;
+                try {
+                  loaded = l.sheet ? (l.sheet.cssRules ? l.sheet.cssRules.length : 0) : 'no-sheet';
+                } catch (e) {
+                  loaded = 'cors';
+                }
+                let p = l.href;
+                try { p = new URL(l.href).pathname; } catch (e) { /* yoksay */ }
+                return { path: p, media: l.media || '', sheet: loaded };
+              });
+            Object.assign(row, {
+              inDialog: !!dlg,
+              dialogOpen: openDlg ? true : dlg ? false : null,
+              kind: exp ? exp.getAttribute('data-dp-kind') : null,
+              product: exp ? exp.getAttribute('data-dp-product') : null,
+              cssW: cs.width,
+              cssH: cs.height,
+              minW: cs.minWidth,
+              padding: cs.padding,
+              display: cs.display,
+              boxSizing: cs.boxSizing,
+              hasStepper: !!stepper,
+              stepperDisplay: scs ? scs.display : null,
+              stepperHeight: scs ? scs.height : null,
+              pluginSheets: sheets,
+              fontsStatus: document.fonts ? document.fonts.status : null,
+              reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+              layerAnimations: layerAnims,
+              topIsSelf: top === el || (top ? el.contains(top) : false),
+            });
+          } catch (e) {
+            row.diagError = String(e && e.message ? e.message : e).slice(0, 80);
+          }
+          bad.push(row);
+        } else ok.push(row);
       }
       return { bad, okCount: ok.length, min };
     },
@@ -282,6 +336,13 @@ export async function runMobileA11yChecks({
     const touch = await probeTouchTargets(page, shellSel);
     const tCheck = `a11y-touch-${device.id}`;
     if (device.isMobile && touch.bad.length) {
+      try {
+        const dbgDir = path.join(ROOT, 'build/e2e/debug', String(profile.id || process.env.WDP_E2E_PROFILE_ID || 'local'));
+        fs.mkdirSync(dbgDir, { recursive: true });
+        await page.screenshot({ path: path.join(dbgDir, `${tCheck}.png`), fullPage: true });
+      } catch {
+        // teşhis görüntüsü alınamazsa bulgu yine raporlanır
+      }
       knownFindings.push({
         check: tCheck,
         env: profile.id,
