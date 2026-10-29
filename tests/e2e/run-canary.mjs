@@ -31,6 +31,7 @@ import {
   acceptUserOptionChanges,
   acceptUserContentChanges,
   readBaseline,
+  persistAutoAcceptedBaseline,
 } from './helpers/canary.mjs';
 
 function fail(msg, code = 1) {
@@ -119,10 +120,16 @@ export function runCanary(opts) {
     return runCanary({ ...opts, acceptContent: [], baseline: acc.baseline });
   }
 
+  const external = health.external || [];
   if (!ok) {
     writeCanaryAlert(alertDiff, `e2e:canary --env ${envName}`);
-  } else if (warnings.length) {
-    console.warn(formatCanaryDiff({ ok: true, diffs: [], warnings }));
+  } else if (warnings.length || external.length) {
+    console.warn(formatCanaryDiff({ ok: true, diffs: [], warnings, external }));
+  }
+  // Dış değişiklik (otomatik kabul): taban yalnız diskteki tabanla karşılaştırıldıysa güncellenir.
+  if (ok && !opts.updateBaseline && opts.baseline === undefined) {
+    const w = persistAutoAcceptedBaseline(envName, health);
+    if (w.written) console.log(`baseline güncellendi (dış değişiklik, otomatik kabul): ${w.file}`);
   }
 
   if (opts.updateBaseline) {
@@ -140,7 +147,7 @@ export function runCanary(opts) {
   if (!ok) {
     console.error(formatCanaryDiff(alertDiff));
   }
-  return { status, ok, diffs, warnings, evald, pre, current };
+  return { status, ok, diffs, warnings, external, evald, pre, current };
 }
 
 async function main() {
