@@ -16,7 +16,7 @@
  *     `encodedBodySize`) ayrı ayrı ve toplam.
  *  3) Eklenti betiklerinin ana iş parçacığı süresi: CDP Tracing (devtools.timeline + v8), 4× CPU + yavaş 4G'de yükleme;
  *     eklenti dizinindeki betiklerin derleme + değerlendirme + çağrı aralıkları birleşimi (ms) ve eklentiye atfedilen
- *     50 ms üzeri uzun görev sayısı.
+ *     50 ms üzeri uzun görev sayısı; soğuk yüklemede WDP_PERF_TRACE_RUNS (varsayılan 3) koşu medyanı.
  *  4) CLS katkısı: `layout-shift` kayıtlarından kaynağı eklenti öğesi (`.donation-panel*` / `[data-dp-*]`) olanlar.
  *  5) INP: dokunma → panel ve tutar kartına dokunma (Event Timing `duration`), yavaş ağ + 4× CPU.
  *  6) Dokunuş → panel: click → `dialog[open]` görünür + iki rAF, 5 koşu medyanı.
@@ -49,6 +49,7 @@ const TRACE_CATEGORIES = ['devtools.timeline', 'disabled-by-default-devtools.tim
 /** Lighthouse "slow 4G" (mevcut anında açılma ölçümüyle aynı). */
 const SLOW_NET = { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 };
 const TAP_RUNS = 5;
+const TRACE_RUNS = Math.max(1, Number(process.env.WDP_PERF_TRACE_RUNS || 3));
 const REMOTE_ENVS = new Set(['staging-hedef', 'ikram-aid']);
 
 /** Yerel sayfa kümesi: measure:load ile aynı kimlikler + sayfa içi form / compact kart. */
@@ -310,7 +311,30 @@ async function measureUi(browser, url, prepare, dumpName = '') {
   } finally {
     await context.close();
   }
+  // Ana iş parçacığı tek izde gürültülü (aynı sayfa 34–113 ms görüldü): ek soğuk yüklemelerle TRACE_RUNS koşu medyanı.
+  out.mainThreadRuns = [out.mainThreadMs];
+  out.longTaskRuns = [out.longTasks];
+  for (let i = 1; i < TRACE_RUNS; i += 1) {
+    const t = await traceLoad(browser, url, prepare);
+    out.mainThreadRuns.push(t.scriptMs);
+    out.longTaskRuns.push(t.longTasks);
+  }
+  out.mainThreadMs = median(out.mainThreadRuns);
+  out.longTasks = median(out.longTaskRuns);
   return out;
+}
+
+/** Yalnız iz: soğuk bağlamda 4× CPU + yavaş 4G yükleme. */
+async function traceLoad(browser, url, prepare) {
+  const { context, page } = await openPage(browser, { throttle: true, prepare });
+  try {
+    await browser.startTracing(page, { categories: TRACE_CATEGORIES });
+    await page.goto(url, { waitUntil: 'load', timeout: 180000 });
+    await settle(page);
+    return attributeTrace(JSON.parse((await browser.stopTracing()).toString('utf8')));
+  } finally {
+    await context.close();
+  }
 }
 
 /** Ölçüm satırlarını eşiklerle değerlendirir. */
@@ -355,7 +379,7 @@ function printReport(label, rows, checks, lh) {
     console.log(`| ${r.id} | ${r.m.requests} | ${r.m.bytes} | ${r.m.cookies} | ${r.m.dom} | ${fmt(r.m.queries)} |`);
   }
   console.log('\nArayüzlü sayfalar (4× CPU + yavaş 4G, Pixel 7)');
-  console.log('| sayfa | engelleyen | satır içi CSS gz | CSS gz | JS gz | toplam gz | ana iş ms | uzun görev | CLS | INP aç/tutar ms | dokunuş→panel medyan (5) |');
+  console.log('| sayfa | engelleyen | satır içi CSS gz | CSS gz | JS gz | toplam gz | ana iş ms medyan [koşular] | uzun görev | CLS | INP aç/tutar ms | dokunuş→panel medyan (5) |');
   console.log('|---|---|---|---|---|---|---|---|---|---|---|');
   for (const r of rows.filter((x) => x.ui && !x.error)) {
     const m = r.m;
@@ -364,7 +388,7 @@ function printReport(label, rows, checks, lh) {
       continue;
     }
     console.log(
-      `| ${r.id} | ${m.blocking} | ${m.inlineCss.gzip} B (${m.inlineCss.count}) | ${m.cssGzip} B | ${m.jsGzip} B | ${m.totalGzip} B | ${m.mainThreadMs} | ${m.longTasks} (+${m.contributedLongTasks} katkılı) | ${m.cls.plugin} | ${fmt(m.inpOpen)}/${fmt(m.inpAmount)} | ${fmt(m.tapMedian)} [${m.tapRuns.join(',')}] |`
+      `| ${r.id} | ${m.blocking} | ${m.inlineCss.gzip} B (${m.inlineCss.count}) | ${m.cssGzip} B | ${m.jsGzip} B | ${m.totalGzip} B | ${m.mainThreadMs} [${(m.mainThreadRuns || []).join(',')}] | ${m.longTasks} (+${m.contributedLongTasks} katkılı) | ${m.cls.plugin} | ${fmt(m.inpOpen)}/${fmt(m.inpAmount)} | ${fmt(m.tapMedian)} [${m.tapRuns.join(',')}] |`
     );
   }
   for (const r of rows.filter((x) => x.error)) console.log(`HATA ${r.id}: ${r.error}`);
