@@ -422,6 +422,51 @@ export function pickListPage(pages) {
   return null;
 }
 
+/** Eklentinin liste kabuğu işareti (kendi sınıfı / data özniteliği). */
+export function renderedListMarkerPresent(html) {
+  return /class="[^"]*\bwdp-list-wrap\b|\bdata-wdp-list-id=/.test(String(html || ''));
+}
+
+/**
+ * WP verisinden gelen liste adaylarını ÇİZİLMİŞ HTML'de doğrular (yalnız GET).
+ * Profil listPage doluysa dokunmaz. Hiçbiri çizmiyorsa liste boşaltılır + gerekçeli atlama.
+ * @param {object} env applyRemoteCatalog sonrası
+ * @param {(path: string) => Promise<string|null>} fetchHtml
+ */
+export async function verifyRenderedListPage(env, fetchHtml) {
+  const cands = Array.isArray(env._catalog?.listCandidates) ? env._catalog.listCandidates : [];
+  if (env._listFromProfile || cands.length === 0 || typeof fetchHtml !== 'function') return env;
+  const tried = [];
+  for (const c of cands) {
+    const path = pathFromMaybeUrl(c?.path || c?.url || '');
+    if (!path) continue;
+    let html = null;
+    try {
+      html = await fetchHtml(path);
+    } catch {
+      html = null;
+    }
+    tried.push(path);
+    if (renderedListMarkerPresent(html)) {
+      env.E2E_LIST_PAGE = path;
+      return env;
+    }
+  }
+  env.E2E_LIST_PAGE = '';
+  env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];
+  if (!env._roleSkips.some((s) => s.check === 'list-page')) {
+    env._roleSkips.push(
+      makeSkip({
+        check: 'list-page',
+        reason: SKIP_REASONS.NO_LIST_PAGE,
+        evidence: SKIP_EVIDENCE.WP_DATA,
+        detail: `liste ızgarası çizen sayfa bulunamadı (${tried.join(', ')})`,
+      })
+    );
+  }
+  return env;
+}
+
 /**
  * Yayımlanmış + katalogda görünür, fixture değil. Rol başına ilk (id sırası çağıranda).
  * @param {Array<object>} products
@@ -458,12 +503,16 @@ export function applyRemoteCatalog(env, catalog) {
   env.E2E_CART_PAGE = pathFromMaybeUrl(cat.cart?.path || cat.cart?.url || '');
   env.E2E_CHECKOUT_PAGE = pathFromMaybeUrl(cat.checkout?.path || cat.checkout?.url || '');
   const list = cat.list;
-  env.E2E_LIST_PAGE = list ? pathFromMaybeUrl(list.path || list.url || '') : '';
+  // Profilde açık listPage varsa WP içerik taramasından önce gelir.
+  const profileList = String(env._profile?.listPage || '').trim();
+  env._listFromProfile = profileList !== '';
+  env.E2E_LIST_PAGE = profileList || (list ? pathFromMaybeUrl(list.path || list.url || '') : '');
   env._catalog = {
     shop: cat.shop || null,
     cart: cat.cart || null,
     checkout: cat.checkout || null,
     list: list || null,
+    listCandidates: Array.isArray(cat.list_candidates) ? cat.list_candidates : [],
     fixtureRelated: cat.fixture_related && typeof cat.fixture_related === 'object' ? cat.fixture_related : {},
   };
   env._roleSkips = Array.isArray(env._roleSkips) ? env._roleSkips : [];

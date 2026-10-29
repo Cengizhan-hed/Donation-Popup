@@ -23,7 +23,7 @@
   },
   "theme": "Hello Elementor",
   "pageBuilder": "Elementor Pro",
-  "listPage": "",
+  "listPage": "/appeals/",
   "shopPage": "",
   "cachePurge": "sg-purge",
   "wpCliAuth": true,

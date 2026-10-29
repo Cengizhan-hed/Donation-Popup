@@ -599,3 +599,50 @@ describe('katalog --explain raporu', () => {
     assert.equal(CATALOG_EVAL_FILE.includes('catalog-resolve.php'), true);
   });
 });
+
+import {
+  renderedListMarkerPresent,
+  verifyRenderedListPage,
+} from '../../../tests/e2e/helpers/catalog-core.mjs';
+
+describe('liste sayfası: profil önceliği + çizilmiş HTML doğrulaması', () => {
+  const cat = {
+    shop: { path: '/shop/' },
+    list: { path: '/' },
+    list_candidates: [{ path: '/' }, { path: '/donate/' }, { path: '/appeals/' }],
+    products: [],
+  };
+  const html = (p) => (p === '/appeals/' ? '<div class="donation-panel wdp-list-wrap" data-wdp-list-id="x">' : '<div>elementor</div>');
+
+  it('işaret: yalnız eklentinin kendi sınıfı/data özniteliği', () => {
+    assert.equal(renderedListMarkerPresent('<div class="a wdp-list-wrap b">'), true);
+    assert.equal(renderedListMarkerPresent('<div data-wdp-list-id="u">'), true);
+    assert.equal(renderedListMarkerPresent('[wdp_donations]'), false);
+  });
+
+  it('profil listPage doluysa WP adayı ezilmez', async () => {
+    const env = { _profile: { ...loadProfile('staging'), listPage: '/appeals/' }, _roleSkips: [], _resolvedProducts: {} };
+    applyRemoteCatalog(env, cat);
+    let calls = 0;
+    await verifyRenderedListPage(env, async () => { calls += 1; return ''; });
+    assert.equal(env.E2E_LIST_PAGE, '/appeals/');
+    assert.equal(calls, 0);
+  });
+
+  it('çizilmemiş adaylar atlanır, çizen seçilir', async () => {
+    const env = { _profile: { ...loadProfile('staging'), listPage: '' }, _roleSkips: [], _resolvedProducts: {} };
+    applyRemoteCatalog(env, cat);
+    await verifyRenderedListPage(env, async (p) => html(p));
+    assert.equal(env.E2E_LIST_PAGE, '/appeals/');
+  });
+
+  it('hiçbiri çizmiyorsa gerekçeli atlama', async () => {
+    const env = { _profile: { ...loadProfile('staging'), listPage: '' }, _roleSkips: [], _resolvedProducts: {} };
+    applyRemoteCatalog(env, cat);
+    await verifyRenderedListPage(env, async () => '<div>yok</div>');
+    assert.equal(env.E2E_LIST_PAGE, '');
+    const s = env._roleSkips.find((x) => x.check === 'list-page');
+    assert.ok(s);
+    assert.match(String(s.detail || ''), /çizen sayfa bulunamadı/);
+  });
+});
