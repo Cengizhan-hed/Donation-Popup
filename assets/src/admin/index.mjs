@@ -7,6 +7,7 @@ import { qsa, valueOf, whenMatches } from './dom.mjs';
 import { createApi } from './api.mjs';
 import { initWizard } from './wizard.mjs';
 import { initCampaigns } from './campaigns.mjs';
+import { initColorFields } from './color-field.mjs';
 
 const cfg = window.donationPanelAdmin || { rest: '', nonce: '', i18n: {} };
 const t = (key, fallback) => (cfg.i18n && cfg.i18n[key]) || fallback;
@@ -253,6 +254,7 @@ if (root) {
   root.classList.add('dpa-js');
   initModules(root);
   initCopy(root);
+  initColorFields(root, t);
   if (root.getAttribute('data-dpa-page') === 'wizard') {
     initWizard(root, api, notify, t, syncWhen);
   } else {

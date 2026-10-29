@@ -434,3 +434,5 @@ Blok: **Bağış listesi** (`wdp/donations`). Elementor: **Bağış Listesi** (`
 10.28.4 bir kerelik `_sadaka_wc_product_id` temizliği `wdp_migration_log` ve (silinmeyen) `wdp_sadaka_links_audit` seçeneğinde durur. 10.33.0’dan itibaren Gelişmiş sekmesinde denetim tablosu yoktur.
 
 **10.28.5:** Alt bağış bağlantısı bir ürünün görünürlüğünü veya bağış ürünü olmasını etkilemez. Aynı ürün hem kendi sayfasında/listelerde bağış ürünü olabilir hem de başka bir ürünün alt bağışı olarak seçilebilir. Listede gizlemek isterseniz WooCommerce ürün ayarında **Katalog görünürlüğü: Gizli** kullanın. Ürünler tablosunda bilgi rozeti: “Alt bağış olarak kullanılıyor (N)” (üzerine gelince ana ürün adları).
+
+- **Renkler (12.2):** Ana renk ve Buton rengi hex (#12305A) ya da CSS değişkeni (`var(--e-global-color-primary)`, `var(--wp--preset--color--primary, #12305a)`) alır. Değişken sitede tarayıcıda çözülür; tanımsızsa yedek/tema rengi. Düğme yazı rengi okunurluğa göre otomatik.

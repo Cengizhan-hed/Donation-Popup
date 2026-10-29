@@ -7,6 +7,7 @@ import './campaign.css';
 import { initProgress } from './progress.mjs';
 import { initImpact } from './impact.mjs';
 import { initFeed } from './social.mjs';
+import { syncColors } from '../ui2-shared/color-sync.mjs';
 
 /**
  * Köke bağlı tüm parçaları başlatır.
@@ -20,6 +21,7 @@ function scan(scope) {
 }
 
 function init() {
+  syncColors();
   scan(document);
   // Form sonradan eklenirse (ör. REST ile gelen parça) etki ifadesi de eklenir.
   new window.MutationObserver((records) => {

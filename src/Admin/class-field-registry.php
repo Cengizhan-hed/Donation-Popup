@@ -125,13 +125,14 @@ final class Field_Registry {
 			),
 		);
 		$f['design.brand']       = array(
-			'page'      => Admin_Bootstrap::SLUG_FORMS,
-			'section'   => 'colors',
-			'label'     => __( 'Main color', 'woo-donation-popup' ),
-			'help'      => __( 'Headings, selected amounts and progress bars. Used only when you choose your own colors.', 'woo-donation-popup' ),
-			'type'      => 'color',
-			'only_when' => array( 'design.colors', 'custom' ),
-			'legacy'    => array(
+			'page'          => Admin_Bootstrap::SLUG_FORMS,
+			'section'       => 'colors',
+			'label'         => __( 'Main color', 'woo-donation-popup' ),
+			'help'          => __( 'Headings, selected amounts and progress bars. Used only when you choose your own colors.', 'woo-donation-popup' ) . ' ' . self::color_hint(),
+			'type'          => 'color',
+			'text_contrast' => true,
+			'only_when'     => array( 'design.colors', 'custom' ),
+			'legacy'        => array(
 				'option' => 'wdp_button_settings',
 				'key'    => 'brand_color',
 				'kind'   => 'raw',
@@ -141,7 +142,7 @@ final class Field_Registry {
 			'page'      => Admin_Bootstrap::SLUG_FORMS,
 			'section'   => 'colors',
 			'label'     => __( 'Button color', 'woo-donation-popup' ),
-			'help'      => __( 'The main donate button. Choose a color that keeps white text easy to read.', 'woo-donation-popup' ),
+			'help'      => __( 'The main donate button. Choose a color that keeps white text easy to read.', 'woo-donation-popup' ) . ' ' . self::color_hint(),
 			'type'      => 'color',
 			'only_when' => array( 'design.colors', 'custom' ),
 			'legacy'    => array(
@@ -546,5 +547,14 @@ final class Field_Registry {
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * Renk alanlarının ortak ipucu: hex ya da CSS değişkeni (tema/sayfa oluşturucu renkleri eklentiye özel kod olmadan bağlanır).
+	 *
+	 * @return string
+	 */
+	private static function color_hint() {
+		return __( 'Hex or CSS variable (e.g. var(--e-global-color-primary)).', 'woo-donation-popup' );
 	}
 }

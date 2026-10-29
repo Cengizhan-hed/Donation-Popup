@@ -59,18 +59,11 @@ $donation_panel_privacy_label = isset( $donation_panel_model['privacy_label'] ) 
 if ( '' === $donation_panel_privacy_label || \DonationPanel\Domain\Privacy_Notice::default_link_label() === $donation_panel_privacy_label ) {
 	$donation_panel_privacy_label = __( 'privacy notice', 'woo-donation-popup' );
 }
-$donation_panel_style = '';
-foreach ( array(
-	'brand'  => '--dp-color-primary',
-	'accent' => '--dp-accent',
-) as $donation_panel_slot => $donation_panel_var ) {
-	$donation_panel_hex = isset( $donation_panel_model[ $donation_panel_slot ] ) ? (string) $donation_panel_model[ $donation_panel_slot ] : '';
-	if ( 1 === preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', $donation_panel_hex ) ) {
-		$donation_panel_style .= $donation_panel_var . ':' . $donation_panel_hex . ';';
-		$donation_panel_on     = \DonationPanel\Frontend\Theme_Colors::text_on( $donation_panel_hex );
-		$donation_panel_style .= '' !== $donation_panel_on ? ( 'brand' === $donation_panel_slot ? '--dp-color-on-primary:' : '--dp-color-on-accent:' ) . $donation_panel_on . ';' : '';
-	}
-}
+// Özel renkler (#hex ya da doğrulanmış `var(--ad[, #yedek])`): bildirimler Theme_Colors'ta üretilir.
+$donation_panel_style     = \DonationPanel\Frontend\Theme_Colors::form_style(
+	isset( $donation_panel_model['brand'] ) ? (string) $donation_panel_model['brand'] : '',
+	isset( $donation_panel_model['accent'] ) ? (string) $donation_panel_model['accent'] : ''
+);
 $donation_panel_lock_icon = '<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
 /**

@@ -5,6 +5,7 @@ import '../campaign/base.css';
 import '../ui2-shared/tokens.css';
 import './thanks.css';
 import { prefersReducedMotion, confettiSpec, shareOrCopy } from './logic.mjs';
+import { syncColors } from '../ui2-shared/color-sync.mjs';
 
 const CONFETTI_MS = 4500;
 
@@ -67,6 +68,7 @@ function wireShare(root) {
 }
 
 function init() {
+  syncColors();
   document.querySelectorAll('[data-dp-thanks]').forEach((root) => {
     wireShare(root);
     if (root.dataset.celebrate === '1') {

@@ -60,6 +60,20 @@ add_action(
 	99
 );
 
+/**
+ * Renk değişkeni senaryosu (yalnız yerel test işçisi; 12.2 colorvar): `dp_ad_css_vars` = 1 ise ön yüzde (yönetici
+ * ekranında DEĞİL) bir tema/sayfa oluşturucunun yapacağı gibi `:root` üzerinde test renk değişkenlerini tanımlar.
+ */
+add_action(
+	'wp_head',
+	static function () {
+		if ( '1' === (string) get_option( 'dp_ad_css_vars', '' ) ) {
+			echo '<style id="dp-ad-css-vars">:root{--test-brand:#ffd60a;--test-ink:#123456}</style>' . "\n";
+		}
+	},
+	1
+);
+
 add_action(
 	'init',
 	static function () {
@@ -119,7 +133,7 @@ add_action(
 		if ( isset( $_GET['dp_ad_opt'] ) ) {
 			// Yalnız yerel test işçisi (uzak siteye gitmez): dar bir izin listesindeki yerel örnek seçeneklerini ayarlar/siler.
 			nocache_headers();
-			$allowed = array( 'woocommerce_enable_guest_checkout', 'woocommerce_enable_myaccount_registration', 'wp_page_for_privacy_policy', 'wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall', 'dp_ad_palette_mode' );
+			$allowed = array( 'woocommerce_enable_guest_checkout', 'woocommerce_enable_myaccount_registration', 'wp_page_for_privacy_policy', 'wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall', 'dp_ad_palette_mode', 'dp_ad_css_vars' );
 			$name   = sanitize_key( (string) $_GET['dp_ad_opt'] );
 			if ( ! in_array( $name, $allowed, true ) ) {
 				wp_send_json( array( 'ok' => false ), 400 );

@@ -6,6 +6,7 @@ import './base.css';
 import '../ui2-shared/states.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
+import { syncColors } from '../ui2-shared/color-sync.mjs';
 
 /**
  * @param {HTMLElement} root Kök.
@@ -17,7 +18,12 @@ function mount(root) {
   root.dataset.dpMounted = '1';
   if (root.dataset.dpKind !== 'inline') {
     // Katman formu ihtiyaçta (yaklaşma/dokunma/ilk açılış) oluşturulur; form o anda bağlanır.
-    const layer = createLayer(root, { onBuild: (built) => createForm(built) });
+    const layer = createLayer(root, {
+      onBuild: (built) => {
+        syncColors(built);
+        createForm(built);
+      },
+    });
     // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
     root.addEventListener('dp:added', () => layer && layer.close());
   } else {
@@ -27,6 +33,8 @@ function mount(root) {
 }
 
 function init() {
+  // Özel renk CSS değişkeniyle verildiyse düğme yazı rengi çözülen renge göre (yalnız gerekirse) ayarlanır.
+  syncColors();
   document.querySelectorAll('[data-dp-exp]').forEach(mount);
 }
 
