@@ -25,7 +25,7 @@ final class Side_Cart_Renderer {
 	 * @return string
 	 */
 	private static function cart_icon() {
-		return '<svg class="donation-panel-sc__ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.2"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>';
+		return '<svg class="donation-panel-sc__ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.2"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>';
 	}
 
 	/**
@@ -144,9 +144,9 @@ final class Side_Cart_Renderer {
 		$stepper = '';
 		if ( ! empty( $line['can_quantity'] ) ) {
 			$stepper = '<div class="donation-panel-sc__stepper" role="group" aria-label="' . esc_attr__( 'Quantity', 'woo-donation-popup' ) . '">'
-				. '<button type="button" class="donation-panel-sc__step" data-dp-sc-qty="-1" data-dp-sc-key="' . esc_attr( $key ) . '" aria-label="' . esc_attr__( 'Decrease quantity', 'woo-donation-popup' ) . '"' . ( $qty <= 1 ? ' disabled' : '' ) . '><svg class="donation-panel-sc__ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>'
+				. '<button type="button" class="donation-panel-sc__step" data-dp-sc-qty="-1" data-dp-sc-key="' . esc_attr( $key ) . '" aria-label="' . esc_attr__( 'Decrease quantity', 'woo-donation-popup' ) . '"' . ( $qty <= 1 ? ' disabled' : '' ) . '><svg class="donation-panel-sc__ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>'
 				. '<output class="donation-panel-sc__num" aria-live="polite">' . esc_html( (string) $qty ) . '</output>'
-				. '<button type="button" class="donation-panel-sc__step" data-dp-sc-qty="1" data-dp-sc-key="' . esc_attr( $key ) . '" aria-label="' . esc_attr__( 'Increase quantity', 'woo-donation-popup' ) . '"><svg class="donation-panel-sc__ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>';
+				. '<button type="button" class="donation-panel-sc__step" data-dp-sc-qty="1" data-dp-sc-key="' . esc_attr( $key ) . '" aria-label="' . esc_attr__( 'Increase quantity', 'woo-donation-popup' ) . '"><svg class="donation-panel-sc__ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>';
 		}
 
 		$thumb = ! empty( $line['image'] )
@@ -203,7 +203,7 @@ final class Side_Cart_Renderer {
 			. '<div class="donation-panel-sc__handle" aria-hidden="true"></div>'
 			. '<div class="donation-panel-sc__head"><div class="donation-panel-sc__headtext"><h2 class="donation-panel-sc__title" id="' . esc_attr( self::DRAWER_ID ) . '-title">' . esc_html__( 'Your donation basket', 'woo-donation-popup' ) . '</h2>'
 			. '<span class="donation-panel-sc__sub" data-dp-sc-sub>' . esc_html( $sub ) . '</span></div>'
-			. '<button type="button" class="donation-panel-sc__close" data-dp-sc-close aria-label="' . esc_attr__( 'Close basket', 'woo-donation-popup' ) . '"><svg class="donation-panel-sc__ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
+			. '<button type="button" class="donation-panel-sc__close" data-dp-sc-close aria-label="' . esc_attr__( 'Close basket', 'woo-donation-popup' ) . '"><svg class="donation-panel-sc__ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
 			. '<div class="donation-panel-sc__body" data-dp-sc-body aria-live="polite">' . $body_html . '</div>'
 			. '</div></dialog></div>';
 	}

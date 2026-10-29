@@ -27,24 +27,21 @@ class Admin_Notice {
 	 * @return string Safe HTML (or '').
 	 */
 	public static function admin_notice_html( $message ) {
-		$in_editor = Builder_Detect::is_builder_preview();
-		$in_admin  = function_exists( 'is_admin' ) && is_admin()
-			&& ! ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() );
-		if ( ! $in_editor && ! $in_admin ) {
+		if ( ! self::notes_visible() ) {
 			return '';
 		}
 		$message = trim( (string) $message );
 		if ( '' === $message ) {
 			return '';
 		}
-		self::enqueue_admin_notice_style();
-		return '<div class="wdp-admin-notice" role="note">' . esc_html( $message ) . '</div>';
+		return self::style_tag() . '<div class="wdp-admin-notice" role="note">' . esc_html( $message ) . '</div>';
 	}
 
 	/**
-	 * Mağaza yöneticisine (`manage_woocommerce`) ön yüzde de görünen ipucu; ziyaretçiye her zaman boş döner.
+	 * Mağaza yöneticisine (`manage_woocommerce`) ipucu; ziyaretçiye her zaman boş döner. Ön yüzde YALNIZ editör
+	 * önizlemesinde görünür (CLAUDE.md §25: yönetici notları canlı sayfada ne ziyaretçiye ne yöneticiye görünür).
 	 *
-	 * Kısa kod/blok yanlış yapılandırıldığında (ör. bağış kapsamı dışı ürün) yönetici nedenini görsün,
+	 * Kısa kod/blok yanlış yapılandırıldığında (ör. bağış kapsamı dışı ürün) yönetici nedenini editörde görsün,
 	 * ziyaretçi hata görmesin diye kullanılır.
 	 *
 	 * @param string $message Düz metin ileti.
@@ -52,26 +49,35 @@ class Admin_Notice {
 	 */
 	public static function manager_notice_html( $message ) {
 		$message = trim( (string) $message );
-		if ( '' === $message || ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( '' === $message || ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_woocommerce' ) || ! self::notes_visible() ) {
 			return '';
 		}
-		self::enqueue_admin_notice_style();
-		return '<div class="wdp-admin-notice" role="note">' . esc_html( $message ) . '</div>';
+		return self::style_tag() . '<div class="wdp-admin-notice" role="note">' . esc_html( $message ) . '</div>';
 	}
 
 	/**
-	 * Tiny stylesheet for .wdp-admin-notice (printed in the footer when content is already rendering).
+	 * Notlar bu istekte görünür mü: editör önizlemesi (blok editörü sunucu çizimi, WP önizlemesi/Özelleştirici,
+	 * ince uyumluluk katmanının işaretlediği oluşturucu editörü) ya da yönetim ekranı (AJAX değil).
 	 *
-	 * @return void
+	 * @return bool
 	 */
-	private static function enqueue_admin_notice_style() {
+	private static function notes_visible() {
+		$in_admin = function_exists( 'is_admin' ) && is_admin()
+			&& ! ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() );
+		return $in_admin || Builder_Detect::is_editor_preview();
+	}
+
+	/**
+	 * Notun küçük stili: notun hemen önünde satır içi, istek başına bir kez (stilsiz kare yok, CLAUDE.md §25).
+	 *
+	 * @return string
+	 */
+	private static function style_tag() {
 		static $done = false;
-		if ( $done || ! function_exists( 'wp_register_style' ) || ! function_exists( 'wp_add_inline_style' ) ) {
-			return;
+		if ( $done ) {
+			return '';
 		}
 		$done = true;
-		wp_register_style( 'wdp-admin-notice', false, array(), defined( 'WDP_VERSION' ) ? WDP_VERSION : false );
-		wp_enqueue_style( 'wdp-admin-notice' );
-		wp_add_inline_style( 'wdp-admin-notice', '.wdp-admin-notice{box-sizing:border-box;margin:12px 0;padding:10px 14px;border:1px solid #f0b849;border-left-width:4px;border-radius:4px;background:#fcf9e8;color:#1e1e1e;font-size:14px;line-height:1.5}' );
+		return '<style id="donation-panel-inline-notice">.wdp-admin-notice{box-sizing:border-box;margin:12px 0;padding:10px 14px;border:1px solid #f0b849;border-left-width:4px;border-radius:4px;background:#fcf9e8;color:#1e1e1e;font-size:14px;line-height:1.5}</style>';
 	}
 }

@@ -75,7 +75,15 @@ final class RenderGuardTest extends TestCase {
 		WDP_Test_State::$is_admin = true;
 		$html = \DonationPanel\Support\Admin_Notice::admin_notice_html('<b>Ürün</b> bulunamadı');
 
-		$this->assertSame('<div class="wdp-admin-notice" role="note">&lt;b&gt;Ürün&lt;/b&gt; bulunamadı</div>', $html);
+		// Notun küçük stili notun önünde satır içi (istek başına bir kez; stilsiz kare yok, §25).
+		$this->assertSame('<div class="wdp-admin-notice" role="note">&lt;b&gt;Ürün&lt;/b&gt; bulunamadı</div>', preg_replace('#^<style id="donation-panel-inline-notice">[^<]*</style>#', '', $html));
+
+		// Eklentinin kendi ön yüz anahtarı (ayar önizlemesi) canlı sayfadır: yöneticiye de not yok.
+		WDP_Test_State::$is_admin = false;
+		$_GET['dp_preview']       = '1';
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$this->assertSame('', \DonationPanel\Support\Admin_Notice::admin_notice_html('Ayar önizlemesi'));
+		unset($_GET['dp_preview']);
 
 		WDP_Test_State::$is_admin = false;
 		WDP_Test_State::$caps     = array('edit_products');

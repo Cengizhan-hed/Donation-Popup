@@ -195,7 +195,8 @@ class Shortcodes {
 		$product  = Product_Resolver::resolve( $atts, $context );
 
 		$preview_notice = '';
-		if ( $product && Builder_Detect::is_builder_preview() ) {
+		if ( $product && ! $explicit ) {
+			// Yalnız editör önizlemesinde ve örnek ürün gösterilirken (Builder_Detect::preview_notice).
 			$preview_notice = Builder_Detect::preview_notice( $product );
 		}
 

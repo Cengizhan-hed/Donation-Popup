@@ -63,7 +63,7 @@ final class Progress_Renderer {
 		<div class="donation-panel-bar__fill" style="--p:<?php echo esc_attr( (string) $percent ); ?>"></div>
 		<?php foreach ( $milestones as $milestone ) : ?>
 			<span class="donation-panel-bar__ms<?php echo ! empty( $milestone['hit'] ) ? ' is-hit' : ''; ?>" style="--at:<?php echo esc_attr( (string) $milestone['at'] ); ?>" data-dp-ms="<?php echo esc_attr( (string) $milestone['at'] ); ?>"<?php echo $milestone['at'] >= 88 ? ' data-dp-edge="end"' : ( $milestone['at'] <= 12 ? ' data-dp-edge="start"' : '' ); ?>>
-				<svg class="donation-panel-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>
+				<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>
 				<span class="donation-panel-bar__ms-label"><?php echo esc_html( (string) $milestone['label'] ); ?></span>
 			</span>
 		<?php endforeach; ?>

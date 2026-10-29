@@ -154,7 +154,8 @@ final class Campaign_Module implements Module_Interface {
 				'donors'     => ! $no( $atts['donors'] ),
 			)
 		);
-		$this->container->get( Assets::class )->enqueue( 'campaign' );
-		return $html;
+		$assets = $this->container->get( Assets::class );
+		$assets->enqueue( 'campaign' );
+		return $assets->inline_styles() . $html;
 	}
 }

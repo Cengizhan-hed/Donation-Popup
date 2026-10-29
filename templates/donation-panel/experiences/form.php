@@ -71,7 +71,7 @@ foreach ( array(
 		$donation_panel_style .= '' !== $donation_panel_on ? ( 'brand' === $donation_panel_slot ? '--dp-color-on-primary:' : '--dp-color-on-accent:' ) . $donation_panel_on . ';' : '';
 	}
 }
-$donation_panel_lock_icon = '<svg class="donation-panel-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+$donation_panel_lock_icon = '<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
 /**
  * Telefon alanı: ülke ön eki seçici + ulusal numara (ön ek mağaza ülkesinden).
@@ -90,7 +90,7 @@ $donation_panel_phone_field = static function ( $name, $id, $required, $extra ) 
 		<?php if ( $list ) : ?>
 			<span class="donation-panel-phone__code">
 				<span class="donation-panel-phone__dial donation-panel-num" aria-hidden="true" data-dp-dial-label>+<?php echo esc_html( $dial ); ?></span>
-				<svg class="donation-panel-ico donation-panel-phone__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+				<svg class="donation-panel-ico donation-panel-phone__chev" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
 				<select class="donation-panel-phone__select" data-dp-dial aria-label="<?php esc_attr_e( 'Country code', 'woo-donation-popup' ); ?>">
 					<?php foreach ( $list as $donation_panel_country ) : ?>
 						<option value="<?php echo esc_attr( (string) $donation_panel_country['dial'] ); ?>"<?php echo (string) $donation_panel_country['iso'] === $iso ? ' selected' : ''; ?>><?php echo esc_html( (string) $donation_panel_country['name'] . ' (+' . (string) $donation_panel_country['dial'] . ')' ); ?></option>
@@ -146,7 +146,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 ?>
 <form class="donation-panel-form" method="post" action="" novalidate data-dp-form<?php echo '' !== $donation_panel_style ? ' style="' . esc_attr( $donation_panel_style ) . '"' : ''; ?> data-product-id="<?php echo esc_attr( (string) (int) $donation_panel_model['product_id'] ); ?>" data-title="<?php echo esc_attr( (string) $donation_panel_model['title'] ); ?>" data-min="<?php echo esc_attr( (string) $donation_panel_model['min'] ); ?>" data-decimals="<?php echo esc_attr( (string) $donation_panel_decimals ); ?>" data-thousand-sep="<?php echo esc_attr( $donation_panel_currency['thousandSeparator'] ); ?>" data-decimal-sep="<?php echo esc_attr( $donation_panel_currency['decimalSeparator'] ); ?>" data-msg-amount-format="<?php echo esc_attr( \DonationPanel\Support\Price::get_ambiguous_amount_message( array( 'decimals' => $donation_panel_decimals ) ) ); ?>" data-kind="<?php echo esc_attr( $donation_panel_kind ); ?>"<?php echo $donation_panel_direct ? ' data-direct="1" data-msg-failed-direct="' . esc_attr__( 'We could not open the payment page. Nothing was charged. Please try again.', 'woo-donation-popup' ) . '"' : ''; ?> data-unit="<?php echo esc_attr( (string) $donation_panel_unit ); ?>" data-fee="<?php echo esc_attr( (string) $donation_panel_fee ); ?>" data-qty-max="<?php echo esc_attr( (string) (int) $donation_panel_qty['max'] ); ?>" data-addon-fixed="<?php echo esc_attr( (string) ( isset( $donation_panel_addon['fixed'] ) ? (float) $donation_panel_addon['fixed'] : 0 ) ); ?>" data-addon-min="<?php echo esc_attr( (string) ( isset( $donation_panel_addon['min'] ) ? (float) $donation_panel_addon['min'] : 0 ) ); ?>" data-msg-amount="<?php echo esc_attr__( 'Please enter a donation amount.', 'woo-donation-popup' ); ?>" data-label-choose="<?php echo esc_attr_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ); ?>" data-msg-min="<?php /* translators: %s: minimum amount. */ echo esc_attr( sprintf( __( 'Minimum amount is %s.', 'woo-donation-popup' ), $donation_panel_format( max( (float) $donation_panel_model['min'], 0.01 ) ) ) ); ?>" data-msg-addon="<?php echo esc_attr__( 'Please enter a valid add-on donation amount.', 'woo-donation-popup' ); ?>" data-msg-step="<?php /* translators: 1: current step, 2: number of steps. */ echo esc_attr__( 'Step %1$d of %2$d', 'woo-donation-popup' ); ?>" data-label-next="<?php echo esc_attr_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?>" data-label-submit="<?php echo esc_attr( $donation_panel_submit_label ); ?>" data-msg-added="<?php echo esc_attr__( 'Added to your cart.', 'woo-donation-popup' ); ?>">
 	<div class="donation-panel-head">
-		<button type="button" class="donation-panel-iconbtn donation-panel-head__back" data-dp-back aria-label="<?php esc_attr_e( 'Back', 'woo-donation-popup' ); ?>" hidden><svg class="donation-panel-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+		<button type="button" class="donation-panel-iconbtn donation-panel-head__back" data-dp-back aria-label="<?php esc_attr_e( 'Back', 'woo-donation-popup' ); ?>" hidden><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
 		<div class="donation-panel-head__t">
 			<?php if ( ! $donation_panel_closed ) : ?>
 				<p class="donation-panel-steplabel" data-dp-steplabel aria-live="polite"></p>
@@ -157,7 +157,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 			<?php endif; ?>
 		</div>
 		<?php if ( $donation_panel_close ) : ?>
-			<button type="button" class="donation-panel-iconbtn donation-panel-surface__close" data-dp-close aria-label="<?php esc_attr_e( 'Close popup', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+			<button type="button" class="donation-panel-iconbtn donation-panel-surface__close" data-dp-close aria-label="<?php esc_attr_e( 'Close popup', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 		<?php endif; ?>
 	</div>
 	<?php if ( ! $donation_panel_closed && count( $donation_panel_steps ) + ( $donation_panel_direct ? 1 : 0 ) > 1 ) : ?>
@@ -275,9 +275,9 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 							<div class="donation-panel-qtybox__row">
 								<?php if ( ! empty( $donation_panel_qty['enabled'] ) ) : ?>
 									<div class="donation-panel-stepper" role="group" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-qty-label">
-										<button type="button" data-dp-qty="-1" aria-label="<?php esc_attr_e( 'Decrease', 'woo-donation-popup' ); ?>" disabled><svg class="donation-panel-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+										<button type="button" data-dp-qty="-1" aria-label="<?php esc_attr_e( 'Decrease', 'woo-donation-popup' ); ?>" disabled><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
 										<output class="donation-panel-num" data-dp-qty-out aria-live="polite">1</output>
-										<button type="button" data-dp-qty="1" aria-label="<?php esc_attr_e( 'Increase', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+										<button type="button" data-dp-qty="1" aria-label="<?php esc_attr_e( 'Increase', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 									</div>
 								<?php endif; ?>
 								<div class="donation-panel-qtybox__sum">
@@ -340,7 +340,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 					</label>
 						<?php elseif ( 'donation_note' === $donation_panel_name ) : ?>
 					<div class="donation-panel-note" data-dp-note>
-						<button type="button" class="donation-panel-linkbtn" data-dp-note-toggle aria-expanded="false" aria-controls="<?php echo esc_attr( $donation_panel_id ); ?>-box"><svg class="donation-panel-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><?php esc_html_e( 'Add a note (optional)', 'woo-donation-popup' ); ?></button>
+						<button type="button" class="donation-panel-linkbtn" data-dp-note-toggle aria-expanded="false" aria-controls="<?php echo esc_attr( $donation_panel_id ); ?>-box"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><?php esc_html_e( 'Add a note (optional)', 'woo-donation-popup' ); ?></button>
 						<div class="donation-panel-field" id="<?php echo esc_attr( $donation_panel_id ); ?>-box" data-dp-field="<?php echo esc_attr( $donation_panel_name ); ?>" hidden>
 							<label for="<?php echo esc_attr( $donation_panel_id ); ?>"><?php echo esc_html( (string) $donation_panel_field['label'] ); ?></label>
 							<textarea class="donation-panel-textarea" id="<?php echo esc_attr( $donation_panel_id ); ?>" name="<?php echo esc_attr( $donation_panel_name ); ?>" rows="3" maxlength="<?php echo esc_attr( (string) (int) $donation_panel_field['maxlength'] ); ?>" aria-describedby="<?php echo esc_attr( $donation_panel_id ); ?>-err" disabled></textarea>
@@ -397,7 +397,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 			<button class="donation-panel-btn donation-panel-btn--lg donation-panel-btn--accent" data-dp-submit type="submit">
 				<span class="donation-panel-btn__lock" data-dp-submit-lock hidden><?php echo $donation_panel_lock_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?></span>
 				<span data-dp-submit-label><?php echo esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span>
-				<svg class="donation-panel-ico donation-panel-btn__arrow" viewBox="0 0 24 24" aria-hidden="true" data-dp-submit-arrow><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+				<svg class="donation-panel-ico donation-panel-btn__arrow" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" data-dp-submit-arrow><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 			</button>
 			<button class="donation-panel-btn donation-panel-btn--outline" type="button" data-dp-addcart hidden><?php echo esc_html( $donation_panel_single ? __( 'Add to cart', 'woo-donation-popup' ) : __( 'Add to cart, choose another', 'woo-donation-popup' ) ); ?></button>
 			<p class="donation-panel-trust" data-dp-trust><?php echo $donation_panel_lock_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?><?php esc_html_e( 'Secure payment · Your details are encrypted', 'woo-donation-popup' ); ?></p>

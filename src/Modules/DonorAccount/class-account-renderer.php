@@ -24,7 +24,7 @@ final class Account_Renderer {
 	 * @return string
 	 */
 	private static function icon() {
-		return '<svg class="donation-panel-ac__ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+		return '<svg class="donation-panel-ac__ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
 	}
 
 	/**
@@ -53,7 +53,7 @@ final class Account_Renderer {
 		$input = '<input class="donation-panel-ac__input" id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" type="' . esc_attr( $type ) . '" autocomplete="' . esc_attr( $autocomplete ) . '" required aria-describedby="' . esc_attr( $id ) . '-err"' . ( 'email' === $type ? ' inputmode="email" autocapitalize="none" spellcheck="false"' : '' ) . '>';
 		if ( 'password' === $type ) {
 			$input = '<span class="donation-panel-ac__pass">' . $input
-				. '<button type="button" class="donation-panel-ac__reveal" data-dp-acc-reveal aria-controls="' . esc_attr( $id ) . '" aria-pressed="false" aria-label="' . esc_attr__( 'Show password', 'woo-donation-popup' ) . '" data-label-show="' . esc_attr__( 'Show password', 'woo-donation-popup' ) . '" data-label-hide="' . esc_attr__( 'Hide password', 'woo-donation-popup' ) . '"><svg class="donation-panel-ac__ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span>';
+				. '<button type="button" class="donation-panel-ac__reveal" data-dp-acc-reveal aria-controls="' . esc_attr( $id ) . '" aria-pressed="false" aria-label="' . esc_attr__( 'Show password', 'woo-donation-popup' ) . '" data-label-show="' . esc_attr__( 'Show password', 'woo-donation-popup' ) . '" data-label-hide="' . esc_attr__( 'Hide password', 'woo-donation-popup' ) . '"><svg class="donation-panel-ac__ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span>';
 		}
 		return '<div class="donation-panel-ac__field"><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>' . $input
 			. '<p class="donation-panel-ac__fielderr" id="' . esc_attr( $id ) . '-err" hidden>' . esc_html( $error ) . '</p></div>';
@@ -105,14 +105,14 @@ final class Account_Renderer {
 			. '<p>' . esc_html__( 'If this email matches an account, a link is on its way. It arrives within a few minutes; if not, check your spam folder.', 'woo-donation-popup' ) . '</p>'
 			. '<button type="button" class="dpx-btn dpx-btn--outline donation-panel-ac__btn" data-dp-acc-view-btn="login">' . esc_html__( 'Back to log in', 'woo-donation-popup' ) . '</button></div>';
 
-		$guard = '<div class="donation-panel-ac__guard" data-dp-acc-guard><svg class="donation-panel-ac__ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>' . esc_html__( 'Gifts you made earlier with this email are added to your account automatically once you verify your email.', 'woo-donation-popup' ) . '</span></div>';
+		$guard = '<div class="donation-panel-ac__guard" data-dp-acc-guard><svg class="donation-panel-ac__ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><span>' . esc_html__( 'Gifts you made earlier with this email are added to your account automatically once you verify your email.', 'woo-donation-popup' ) . '</span></div>';
 
 		return '<div class="donation-panel donation-panel-ac" data-dp-acc' . $data . '>'
 			. '<dialog class="donation-panel-ac__overlay" id="' . esc_attr( self::DIALOG_ID ) . '" role="dialog" aria-modal="true" aria-labelledby="' . esc_attr( self::DIALOG_ID ) . '-title" data-dp-acc-overlay>'
 			. '<div class="donation-panel-ac__surface" tabindex="-1" data-dp-acc-surface>'
 			. '<div class="donation-panel-ac__handle" aria-hidden="true"></div>'
 			. '<div class="donation-panel-ac__head"><h2 class="donation-panel-ac__title" id="' . esc_attr( self::DIALOG_ID ) . '-title" data-dp-acc-title>' . esc_html__( 'Welcome', 'woo-donation-popup' ) . '</h2>'
-			. '<button type="button" class="donation-panel-ac__close" data-dp-acc-close aria-label="' . esc_attr__( 'Close', 'woo-donation-popup' ) . '"><svg class="donation-panel-ac__ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
+			. '<button type="button" class="donation-panel-ac__close" data-dp-acc-close aria-label="' . esc_attr__( 'Close', 'woo-donation-popup' ) . '"><svg class="donation-panel-ac__ico" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>'
 			. '<div class="donation-panel-ac__body"><p class="donation-panel-ac__lead" data-dp-acc-lead>' . esc_html( (string) ( isset( $attributes['lead-login'] ) ? $attributes['lead-login'] : '' ) ) . '</p>' . $tabs . $login . $register . $reset . $sent . $guard . '</div>'
 			. '</div></dialog></div>';
 	}
@@ -156,7 +156,7 @@ final class Account_Renderer {
 		}
 		$thumb = ! empty( $row['image'] )
 			? '<img class="donation-panel-ac__thumb" src="' . esc_url( (string) $row['image'] ) . '" alt="" loading="lazy" width="52" height="52">'
-			: '<span class="donation-panel-ac__thumb donation-panel-ac__thumb--ph" aria-hidden="true"><svg class="donation-panel-ac__ico" viewBox="0 0 24 24" focusable="false"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>';
+			: '<span class="donation-panel-ac__thumb donation-panel-ac__thumb--ph" aria-hidden="true"><svg class="donation-panel-ac__ico" width="22" height="22" viewBox="0 0 24 24" focusable="false"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span>';
 		$pill  = '<span class="donation-panel-ac__pill donation-panel-ac__pill--' . esc_attr( $tone ) . ' donation-panel-ac__tag--' . esc_attr( $status ) . '"><span class="donation-panel-ac__dot" aria-hidden="true"></span>' . esc_html( (string) ( isset( $row['status_text'] ) ? $row['status_text'] : '' ) ) . '</span>';
 
 		$progress = '';
