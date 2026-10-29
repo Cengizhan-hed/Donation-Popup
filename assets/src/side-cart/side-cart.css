@@ -105,6 +105,16 @@ html.donation-panel-sc-lock { overflow: hidden; }
 .donation-panel-sc__fab .donation-panel-sc__count { inset-block-start: -2px; inset-inline-end: -2px; background: var(--dpx-accent); }
 .donation-panel-sc__fab.is-entering { animation: dp-sc-fab-in 420ms var(--dp-ease-spring) both; }
 .donation-panel-sc__fab.is-pulse { animation: dp-sc-fab-pulse 700ms var(--dp-ease-spring) 2; }
+/* Tema durum yalıtımı (özgüllük 0,3,0; bkz. ui2-shared/states.css): durum renkleri bileşenin kendi jetonlarından. */
+:root :is(.donation-panel-sc__trigger, .donation-panel-sc__close):is(:hover, :focus, :active) { background-color: var(--dpx-chip); color: inherit; }
+:root :is(.donation-panel-sc__trigger, .donation-panel-sc__close):hover { background-color: var(--dpx-line); }
+:root .donation-panel-sc__fab:is(:hover, :focus, :active) { background-color: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); }
+:root .donation-panel-sc__step:is(:hover, :focus, :active) { background-color: transparent; color: inherit; }
+:root .donation-panel-sc__step:hover:not([disabled]) { background-color: var(--dpx-line); }
+:root .donation-panel-sc__remove:is(:hover, :focus, :active) { background-color: transparent; color: var(--dpx-muted); text-decoration-line: underline; }
+:root .donation-panel-sc__remove:hover:not([disabled]) { color: var(--dp-color-text); }
+:root .donation-panel-sc__suggest-btn.dpx-btn:is(:hover, :focus, :active) { background-color: var(--dpx-card); color: var(--dp-color-primary-strong); }
+:root .donation-panel-sc__suggest-btn.dpx-btn:hover { background-color: var(--dpx-soft); }
 @keyframes dp-sc-fab-in { from { opacity: 0; transform: translateY(24px) scale(.6); } to { opacity: 1; transform: none; } }
 @keyframes dp-sc-fab-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
 @media (prefers-reduced-motion: reduce) { .donation-panel-sc__fab { transition: none; animation: none; } .donation-panel-sc__fab.is-entering, .donation-panel-sc__fab.is-pulse { animation: none; } }

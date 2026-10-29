@@ -3,6 +3,7 @@
  */
 import '../ui2-shared/controls.css';
 import './base.css';
+import '../ui2-shared/states.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
 

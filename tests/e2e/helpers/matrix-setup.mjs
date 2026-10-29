@@ -271,6 +271,7 @@ export function ensureMatrixTemplate() {
   ensureTheme(wpDir, 'twentytwentyfive');
   ensureTheme(wpDir, 'storefront');
   ensureTheme(wpDir, 'blocksy');
+  ensureTheme(wpDir, 'hello-elementor');
   installCurrentPlugin(wpDir);
   copyRouter(wpDir);
   writeWpConfig(wpDir, { homeUrl: 'http://127.0.0.1:8899' });
