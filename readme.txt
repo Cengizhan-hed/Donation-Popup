@@ -47,7 +47,7 @@ Write it on your site; the form only shows a link to the page you choose.
 == Upgrade Notice ==
 
 = 12.2.0 =
-No unstyled flash: donation surfaces are styled from the very first frame on every theme and page builder, with no render-blocking files. New compact donation card (`layout="compact"`) for sliders and hero areas. Color settings accept CSS variables. Three new compact card settings are added; rolling back to 12.1.1 is safe. Back up before updating.
+No unstyled flash: forms are styled from the first frame, nothing render-blocking. New compact donation card for sliders. Colors accept CSS variables. Rolling back to 12.1.1 is safe. Back up before updating.
 
 = 12.1.1 =
 Caching fix. The page HTML is now identical for every visitor, so page caches can store it safely; cart, account state and campaign totals load in the browser. Nothing new is written to the database; rolling back to 12.1.0 is safe. Back up before updating.
