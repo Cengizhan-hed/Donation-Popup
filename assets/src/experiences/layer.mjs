@@ -171,7 +171,7 @@ export function createLayer(root, hooks = {}) {
 
   /** Klavyesiz kararlı yükseklik: iOS'ta innerHeight değişmez, Chrome Android'de küçülür; en büyük değer tutulur. */
   const updateBaseline = () => {
-    const height = Math.max(window.innerHeight, document.documentElement.clientHeight);
+    const height = window.innerHeight; // clientHeight okumak açılışta zorunlu düzen hesabı tetikler (açılış ms bütçesi)
     if (!baseline || window.innerWidth !== baselineWidth || (!keyboardUp && height > baseline)) {
       baseline = height;
       baselineWidth = window.innerWidth;
