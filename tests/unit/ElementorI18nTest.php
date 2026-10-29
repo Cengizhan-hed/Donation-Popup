@@ -207,6 +207,26 @@ final class ElementorI18nTest extends TestCase {
 		$this->assertSame('medium', $san['image_size']);
 	}
 
+	public function test_empty_all_label_follows_visitor_locale(): void {
+		$atts = \DonationPanel\Modules\EntryPoints\Elementor\Donations_List_Widget::atts_from_settings(array('tabs' => 'yes', 'tab_all' => 'yes', 'tab_all_label' => ''));
+		$this->assertSame('', $atts['tab_all_label']);
+		$prev = $GLOBALS['wdp_test_locale'] ?? null;
+		try {
+			$GLOBALS['wdp_test_locale'] = 'en_US';
+			$san = \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts($atts);
+			$this->assertSame('All', $san['tab_all_label']);
+			$GLOBALS['wdp_test_locale'] = 'tr_TR';
+			$san = \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts($atts);
+			$this->assertSame('Tümü', $san['tab_all_label']);
+		} finally {
+			if ($prev === null) {
+				unset($GLOBALS['wdp_test_locale']);
+			} else {
+				$GLOBALS['wdp_test_locale'] = $prev;
+			}
+		}
+	}
+
 	public function test_widget_files_hold_no_editor_special_cases(): void {
 		foreach (array('src/Modules/EntryPoints/Elementor/class-elementor-compat.php', 'src/Modules/EntryPoints/Elementor/class-donation-form-widget.php', 'src/Modules/EntryPoints/Elementor/class-donations-list-widget.php') as $f) {
 			$src = (string) file_get_contents(WDP_PLUGIN_DIR . $f);

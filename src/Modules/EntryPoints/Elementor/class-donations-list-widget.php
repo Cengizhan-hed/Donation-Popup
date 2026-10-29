@@ -258,9 +258,11 @@ class Donations_List_Widget extends \Elementor\Widget_Base {
 		$this->add_control(
 			'tab_all_label',
 			array(
-				'label'   => __( 'All tab label', 'woo-donation-popup' ),
-				'type'    => \Elementor\Controls_Manager::TEXT,
-				'default' => __( 'All', 'woo-donation-popup' ),
+				'label'       => __( 'All tab label', 'woo-donation-popup' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'default'     => '',
+				'placeholder' => __( 'All', 'woo-donation-popup' ),
+				'description' => __( 'Leave empty to show “All” in the site language.', 'woo-donation-popup' ),
 			)
 		);
 		$this->add_control(
