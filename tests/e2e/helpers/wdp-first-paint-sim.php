@@ -8,6 +8,7 @@
  *   /?dp_fp=ajax&dp_fixed=ID                                -> yalnız boş kap; form HTML'i fetch + innerHTML ile gelir
  *   /?dp_fp=fragment&dp_fixed=ID                            -> yalnız kısa kod çıktısı (wp_head/wp_footer yok)
  *   /?dp_fp=trigger&dp_product=ID                           -> yalnız açma düğmesi (popup)
+ *   /?dp_fp=single&dp_fixed=ID                              -> tek adımlı sayfa içi form (ek adımlar süzülür)
  */
 add_action(
 	'template_redirect',
@@ -22,6 +23,24 @@ add_action(
 		$cmp   = isset( $_GET['dp_campaign'] ) ? (int) $_GET['dp_campaign'] : $id;
 		// phpcs:enable
 		nocache_headers();
+		if ( 'single' === $view ) {
+			// Tek adımlı form benzetimi: ek modül adımları (ör. vergi beyanı) olmayan sitedeki sabit tutarlı ürün → yalnız
+			// "details" adımı (ilk adım = son adım; düğme "%s bağışla").
+			add_filter(
+				'donation_panel_form_steps',
+				static function ( $steps ) {
+					return array_values(
+						array_filter(
+							(array) $steps,
+							static function ( $step ) {
+								return in_array( $step['id'], array( 'amount', 'details' ), true );
+							}
+						)
+					);
+				},
+				99
+			);
+		}
 		if ( 'fragment' === $view ) {
 			echo do_shortcode( '[donation_panel_experience id="' . $fixed . '" kind="inline"]' ); // phpcs:ignore
 			exit;
@@ -45,6 +64,9 @@ add_action(
 		}
 		if ( 'form' === $view ) {
 			echo do_shortcode( '[wdp_donation_form id="' . $id . '"]' ); // phpcs:ignore
+		}
+		if ( 'single' === $view ) {
+			echo '<section id="fp-single">' . do_shortcode( '[donation_panel_experience id="' . $fixed . '" kind="inline"]' ) . '</section>'; // phpcs:ignore
 		}
 		if ( 'page' === $view || 'slider' === $view ) {
 			// Slider benzetimi: kap gizli başlar, betik 500 ms sonra görünür yapar.
