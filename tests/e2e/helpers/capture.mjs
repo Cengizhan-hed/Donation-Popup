@@ -994,12 +994,13 @@ async function prepareErrorShot(page, opts = {}) {
         const kbOff = !document.querySelector('[data-dp-kb]');
         const bar = document.querySelector('.donation-panel-actionbar');
         const pos = bar ? window.getComputedStyle(bar).position : 'none';
-        const state = kbOff && pos !== 'static' ? 'stable' : 'moving';
+        // Klavye modu olmayan cihazda çubuk zaten static olabilir: koşul "durum imzası 300 ms değişmedi".
+        const state = `${kbOff}|${pos}`;
         if (w.__dpShotKbState !== state) {
           w.__dpShotKbState = state;
           w.__dpShotKbSince = performance.now();
         }
-        return state === 'stable' && performance.now() - w.__dpShotKbSince >= 300;
+        return performance.now() - w.__dpShotKbSince >= 300;
       },
       null,
       { timeout: 3000, polling: 50 }
@@ -4228,7 +4229,23 @@ export async function captureAll({
     for (const slug of ['donation-panel', 'donation-panel-campaigns', 'donation-panel-forms', 'donation-panel-checkout', 'donation-panel-account', 'donation-panel-privacy', 'donation-panel-tools', 'donation-panel-guide']) {
       await admin.goto(withCacheBust(env.E2E_BASE_URL, `/wp-admin/admin.php?page=${slug}`), { waitUntil: 'domcontentloaded' });
       const panel = admin.locator('.dpa').first();
-      await panel.waitFor({ state: 'visible', timeout: CHECK_MS });
+      try {
+        await panel.waitFor({ state: 'visible', timeout: CHECK_MS });
+      } catch (e) {
+        // Koşucuyu düşürme (çocuk süreç takılıyordu): hangi ekran, nereye yönlendi, başlık ne — hata metnine yaz.
+        const where = admin.url().replace(/wdp_e2e=[^&]*/, '');
+        const title = await admin.title().catch(() => '');
+        failures.push(
+          makeFailure({
+            check: `admin-screen-${slug}`,
+            description: `Yönetici ekranında .dpa görünmüyor (${slug})`,
+            detail: `url=${where} başlık=${title}${/wp-login\.php/.test(where) ? ' (oturum düştü: giriş sayfasına yönlendi)' : ''}`,
+            error: e,
+            screenshot: `admin-screen-${slug}.png`,
+          })
+        );
+        continue;
+      }
       const fields = await panel.locator('input, select, textarea, table, a, button').count();
       if (runFunctional && fields < 1) {
         failures.push(
@@ -4531,8 +4548,7 @@ export async function captureAll({
                     knownFindings: a11yFindings,
                   }),
                   rejectAfter(90000, 'mobile-a11y 90s zaman aşımı'),
-                ]);
-              }
+                ]);              }
               if (want('checkout-flow')) {
                 await Promise.race([
                   runDonationFlowChecks({

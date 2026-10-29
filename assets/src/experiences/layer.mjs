@@ -281,7 +281,22 @@ export function createLayer(root, hooks = {}) {
     }
     syncKeyboard();
     // Otomatik alan odağı yok (mobilde klavye açılmasın): odak başlığa.
-    (titleNode || surface).focus({ preventScroll: true });
+    const focusStart = () => (titleNode || surface).focus({ preventScroll: true });
+    focusStart();
+    if (!overlay.contains(document.activeElement)) {
+      // Açılış karesinde katman hâlâ visibility:hidden ise (stil/geçiş yerleşmedi; sayfa yeni yüklendiyse sık) focus()
+      // sessizce düşer ve modal tuzak odağı dışarıda bırakır: görünür olana dek (en çok ~30 kare) yeniden dene.
+      let tries = 0;
+      const retry = () => {
+        if (!opened || !overlay || overlay.contains(document.activeElement) || tries >= 30) {
+          return;
+        }
+        tries += 1;
+        focusStart();
+        window.requestAnimationFrame(retry);
+      };
+      window.requestAnimationFrame(retry);
+    }
     root.dispatchEvent(new CustomEvent('dp:open', { bubbles: true }));
   };
 
