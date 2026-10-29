@@ -25,6 +25,17 @@ add_action(
 			'panel'   => '[donation_panel_experience id="' . $id . '" kind="side_panel"]',
 			'sheet'   => '[donation_panel_experience id="' . $id . '" kind="bottom_sheet"]',
 		);
+		// Slider benzetimi: yatay kayan şerit içinde 6 form (genel CSS; ilk slayt görünür, diğerleri yatayda ekran dışı).
+		// Yüklemeden sonra betik (wp_footer, aşağıda) slayt genişliğini piksel olarak yazar — kaydırıcıların genel davranışı.
+		$slider            = static function ( $inner ) {
+			$slides = '';
+			for ( $i = 0; $i < 6; $i++ ) {
+				$slides .= '<div class="sim-slide" style="flex:0 0 100%;min-width:0;padding:0 8px">' . $inner . '</div>';
+			}
+			return '<!-- wp:html --><div class="sim-slider" style="overflow:hidden"><div class="sim-track" style="display:flex">' . $slides . '</div></div><!-- /wp:html -->';
+		};
+		$pages['slider6']  = $slider( '[wdp_donation_form id="' . $id . '"]' );
+		$pages['slider6c'] = $slider( '[wdp_donation_form id="' . $id . '" layout="compact"]' );
 		$urls  = array();
 		foreach ( $pages as $key => $content ) {
 			$post_id      = wp_insert_post( array( 'post_title' => 'Perf ' . $key, 'post_content' => $content, 'post_status' => 'publish', 'post_type' => 'page' ) );
@@ -33,4 +44,13 @@ add_action(
 		file_put_contents( $out, wp_json_encode( $urls ) );
 	},
 	100
+);
+
+// Slider benzetimi betiği (yalnız .sim-slider olan sayfada iş yapar): yüklemeden sonra slayt genişliği piksel.
+add_action(
+	'wp_footer',
+	static function () {
+		echo '<script>addEventListener("load",function(){document.querySelectorAll(".sim-slider").forEach(function(s){var w=s.clientWidth;s.querySelectorAll(".sim-slide").forEach(function(x){x.style.flex="0 0 "+w+"px";});});});</script>';
+	},
+	99
 );

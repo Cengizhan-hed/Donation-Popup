@@ -4,7 +4,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { installTapProbe, pickVisibleTarget } from '../../../scripts/lib/plugin-perf.mjs';
+import { forcedLayoutsInClick, installTapProbe, pickVisibleTarget } from '../../../scripts/lib/plugin-perf.mjs';
 
 /** Sahte pencere: elle ilerleyen saat, rAF kuyruğu, elle tetiklenen MutationObserver. */
 function fakeWindow({ triggers = [], dialogs = [] } = {}) {
@@ -125,7 +125,7 @@ function layoutWindow(build, hitFor) {
 }
 
 describe('pickVisibleTarget', () => {
-  it('ekran dışı slayt, sıfır boyut, gizli ve üstü örtülü öğeler atlanır; ilk uygun seçilir', () => {
+  it('ekran dışı slayt, sıfır boyut, gizli ve üstü örtülü öğeler atlanır; ilk uygun seçilir', async () => {
     const cover = {};
     const { w } = layoutWindow(
       (win) => [
@@ -144,24 +144,87 @@ describe('pickVisibleTarget', () => {
         return hit && hit.covered ? cover : hit;
       }
     );
-    assert.equal(pickVisibleTarget(w, '[data-dp-preset]'), 4);
+    const t = await pickVisibleTarget(w, '[data-dp-preset]');
+    assert.equal(t.index, 4);
+    assert.equal(t.reason, '');
+    assert.ok(t.x > 10 && t.x < 90, 'nokta öğenin içinde');
   });
 
-  it('çocuk öğe isabeti kabul; dikeyde ekran dışı öğe kaydırılıp denenir', () => {
-    const child = {};
+  it('çocuk öğe (SVG yolu gibi) isabeti kabul; dikeyde ekran dışı öğe ortalanıp denenir', async () => {
+    const child = { tagName: 'path' };
     const { w } = layoutWindow(
       (win) => [el(win, { x: 10, y: 1500, w: 100, h: 44 }, { child })],
       () => child
     );
-    assert.equal(pickVisibleTarget(w, '[data-dp-open]'), 0);
+    const t = await pickVisibleTarget(w, '[data-dp-open]');
+    assert.equal(t.index, 0);
     assert.ok(w.scrollY > 0);
+    assert.ok(t.y >= 0 && t.y <= w.innerHeight, 'nokta görünümde');
   });
 
-  it('uygun hedef yoksa -1', () => {
+  it('ekran içindeki öğe de ortalanır: yapışkan üstbilgi altında kalan tetikleyici ortaya alınınca seçilir', async () => {
+    const header = { tagName: 'DIV', id: '', className: 'sim-sticky-header' };
+    const { w } = layoutWindow(
+      (win) => [el(win, { x: 10, y: 20, w: 100, h: 44 })],
+      // Üstteki 72 px sabit üstbilgi örter.
+      (list, x, y) => (y < 72 ? header : list[0])
+    );
+    w.scrollY = 0;
+    const t = await pickVisibleTarget(w, '[data-dp-open]');
+    // Ortalama kaydırması (y=20 → görünümün ortası) negatif kaydırma üretir; sahte pencere bunu da uygular.
+    assert.equal(t.index, 0);
+    assert.ok(t.y >= 72);
+  });
+
+  it('örtülüyse neden üstteki öğeyi adlandırır', async () => {
+    const header = { tagName: 'HEADER', id: 'masthead', className: 'site-header is-sticky' };
+    const { w } = layoutWindow(
+      (win) => [el(win, { x: 10, y: 400, w: 100, h: 44 })],
+      () => header
+    );
+    const t = await pickVisibleTarget(w, '[data-dp-open]');
+    assert.equal(t.index, -1);
+    assert.match(t.reason, /üstte header#masthead\.site-header\.is-sticky/);
+  });
+
+  it('uygun hedef yoksa -1 ve nedenler', async () => {
     const { w } = layoutWindow(
       (win) => [el(win, { x: -200, y: 100, w: 80, h: 44 }), el(win, { x: 10, y: 100, w: 80, h: 44 }, { opacity: '0' })],
       () => null
     );
-    assert.equal(pickVisibleTarget(w, '[data-dp-preset]'), -1);
+    const t = await pickVisibleTarget(w, '[data-dp-preset]');
+    assert.equal(t.index, -1);
+    assert.match(t.reason, /#0 yatayda ekran dışı/);
+    assert.match(t.reason, /#1 opacity:0/);
+  });
+});
+
+describe('forcedLayoutsInClick', () => {
+  const ev = (name, ts, durMs, extra = {}) => ({ name, ph: 'X', pid: 1, tid: 2, ts, dur: durMs * 1000, ...extra });
+  it('click işleyicisinin içindeki zorunlu stil/düzen hesaplarını sayar; küçükleri ve dışarıdakileri ayırır', () => {
+    const trace = {
+      traceEvents: [
+        ev('EventDispatch', 1000, 130, { args: { data: { type: 'click' } } }),
+        ev('EventDispatch', 500, 5, { args: { data: { type: 'pointerdown' } } }),
+        ev('UpdateLayoutTree', 1100, 36.7, { args: { elementCount: 1198 } }),
+        ev('Layout', 40000, 21.7),
+        ev('UpdateLayoutTree', 70000, 0.2, { args: { elementCount: 1 } }),
+        ev('UpdateLayoutTree', 600, 3), // pointerdown içinde: sayılmaz
+        ev('UpdateLayoutTree', 200000, 9), // tıklamadan sonra (kare): sayılmaz
+        { ...ev('Layout', 50000, 8), tid: 9 }, // başka iş parçacığı
+      ],
+    };
+    const r = forcedLayoutsInClick(trace);
+    assert.equal(r.clicks, 1);
+    assert.equal(r.clickMs, 130);
+    assert.equal(r.forced, 2);
+    assert.equal(r.small, 1);
+    assert.equal(r.styleMs, 36.9);
+    assert.equal(r.layoutMs, 21.7);
+    assert.deepEqual(r.items[0], { name: 'UpdateLayoutTree', ms: 36.7, elements: 1198 });
+  });
+
+  it('click yoksa sıfır', () => {
+    assert.equal(forcedLayoutsInClick([]).forced, 0);
   });
 });

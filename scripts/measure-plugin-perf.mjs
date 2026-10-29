@@ -21,6 +21,8 @@
  *     eklenti dışı öğe de kayıyorsa ve kayma web fontu yüklenmesiyle aynı penceredeyse "tema/font" sütununa (eşik dışı).
  *  5) INP: dokunma → panel ve tutar kartına dokunma (Event Timing `duration`), yavaş ağ + 4× CPU; INP_RUNS (5)
  *     yükleme örneğinin medyanı (eşik medyana).
+ *  6b) İsteğe bağlı `--forced-layout`: açılış tıklamasının (EventDispatch click) içindeki zorunlu eşzamanlı
+ *     UpdateLayoutTree/Layout sayısı ve süresi (CDP izi, 3 koşu medyanı). Yerelde `--heavy-css`: ağır tema CSS'i benzetimi.
  *  6) Dokunuş → panel: click → `dialog[open]` görünür (MutationObserver ile algılanır; rAF yoklaması yok) + iki rAF,
  *     5 koşu medyanı. INP ve dokunuşta hedef: görünür + üstte (elementFromPoint) ilk öğe; yoksa ÖLÇÜLMEDİ.
  *  7) Lighthouse (bilgi): ≥7 koşu medyanı; yerelde eklenti açık/kapalı, uzakta `--lh-label` ile etiketli tek mod.
@@ -57,6 +59,9 @@ const TRACE_CATEGORIES = ['devtools.timeline', 'disabled-by-default-devtools.tim
 /** Lighthouse "slow 4G" (mevcut anında açılma ölçümüyle aynı). */
 const SLOW_NET = { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 };
 const TAP_RUNS = 5;
+/** İsteğe bağlı (`--forced-layout`): açılış tıklamasında zorunlu stil/düzen sayısı (CDP izi), FORCED_RUNS koşu medyanı. */
+const FORCED_LAYOUT = process.argv.includes('--forced-layout');
+const FORCED_RUNS = 3;
 const TRACE_RUNS = Math.max(1, Number(process.env.WDP_PERF_TRACE_RUNS || 3));
 const REMOTE_ENVS = new Set(['staging-hedef', 'ikram-aid']);
 
@@ -78,6 +83,8 @@ const LOCAL_PAGES = [
   { id: 'popup', key: 'popup', ui: true },
   { id: 'sag-panel', key: 'panel', ui: true },
   { id: 'alttan-panel', key: 'sheet', ui: true },
+  { id: 'slider-6-form', key: 'slider6', ui: true },
+  { id: 'slider-6-compact', key: 'slider6c', ui: true },
 ];
 
 /** Sayfada çalışan gözlemciler: layout-shift (kaynak düğüm atfı) ve Event Timing. */
@@ -298,24 +305,48 @@ async function measureUi(browser, url, prepare, dumpName = '') {
     out.inpAmount = inp.amount;
     out.inpOpenRuns = inp.openRuns;
     out.inpAmountRuns = inp.amountRuns;
+    out.inpSkips = inpSamples.flatMap((s) => s.skips || []);
 
     // 6) Dokunuş → panel: 5 koşu (her koşu yeni yükleme), click + 60 ms basılı kalma, dialog[open] görünür + iki rAF.
     out.tapRuns = [];
+    out.tapSkips = [];
     if (hasTrigger) {
       for (let i = 0; i < TAP_RUNS; i += 1) {
         await page.goto(url, { waitUntil: 'load', timeout: 180000 });
         await settle(page);
-        // Görünür ve üstteki ilk tetikleyici; yoksa ya da dokunulamazsa bu koşu ÖLÇÜLMEDİ (hata değil).
-        const idx = await visibleTargetIndex(page, '[data-dp-open]');
-        if (idx < 0) continue;
+        // Görünür ve üstteki ilk tetikleyici; yoksa ya da dokunulamazsa bu koşu ÖLÇÜLMEDİ (hata değil; neden satıra).
+        const target = await visibleTarget(page, '[data-dp-open]');
+        if (target.index < 0) {
+          out.tapSkips.push(target.reason);
+          continue;
+        }
         // Algılama MutationObserver ile (rAF yoklaması değil): açılış anına kare gecikmesi eklenmez.
-        await page.evaluate(`(${installTapProbe})(window, '[data-dp-open]', ${idx})`);
-        if (!(await tryTap(page.locator('[data-dp-open]').nth(idx), 'click'))) continue;
+        await page.evaluate(`(${installTapProbe})(window, '[data-dp-open]', ${target.index})`);
+        if (!(await tapAt(page, target, 'click'))) continue;
         await page.waitForFunction(() => window.__dpTap && window.__dpTap.t1 > 0, null, { timeout: 20000 });
         out.tapRuns.push(Math.round(await page.evaluate(() => window.__dpTap.t1 - window.__dpTap.t0)));
       }
     }
     out.tapMedian = out.tapRuns.length ? median(out.tapRuns) : NaN;
+    // İsteğe bağlı: açılış tıklamasının içindeki zorunlu eşzamanlı stil/düzen hesapları (CDP izi).
+    if (FORCED_LAYOUT && hasTrigger) {
+      const runs = [];
+      for (let i = 0; i < FORCED_RUNS; i += 1) {
+        await page.goto(url, { waitUntil: 'load', timeout: 180000 });
+        await settle(page);
+        const target = await visibleTarget(page, '[data-dp-open]');
+        if (target.index < 0) continue;
+        await browser.startTracing(page, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline'] });
+        const tapped = await tapAt(page, target, 'click');
+        if (tapped) await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
+        await settle(page);
+        const trace = JSON.parse((await browser.stopTracing()).toString('utf8'));
+        if (tapped) runs.push(forcedLayoutsInClick(trace));
+      }
+      out.forcedLayout = runs.length
+        ? { forced: median(runs.map((r) => r.forced)), clickMs: median(runs.map((r) => r.clickMs)), styleMs: median(runs.map((r) => r.styleMs)), layoutMs: median(runs.map((r) => r.layoutMs)), runs: runs.map((r) => r.forced), items: runs[runs.length - 1].items }
+        : null;
+    }
   } finally {
     await context.close();
   }
@@ -341,11 +372,13 @@ async function measureUi(browser, url, prepare, dumpName = '') {
  */
 async function inpSample(page, hasTrigger) {
   const marks = {};
+  const skips = [];
   let opened = false;
   if (hasTrigger) {
-    const idx = await visibleTargetIndex(page, '[data-dp-open]');
+    const target = await visibleTarget(page, '[data-dp-open]');
+    if (target.index < 0) skips.push(target.reason);
     const t = await page.evaluate(() => performance.now());
-    if (idx >= 0 && (await tryTap(page.locator('[data-dp-open]').nth(idx)))) {
+    if (target.index >= 0 && (await tapAt(page, target))) {
       await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
       marks.open = t;
       opened = true;
@@ -355,9 +388,10 @@ async function inpSample(page, hasTrigger) {
   // Tutar kartı: görünür ve üstteki ilk seçilmemiş kart (slider'da ekran dışı / üst üste slayt elenir); yoksa ÖLÇÜLMEDİ.
   if (!hasTrigger || opened) {
     const presetSel = `${hasTrigger ? 'dialog[open] ' : ''}[data-dp-preset][aria-checked="false"]`;
-    const idx = await visibleTargetIndex(page, presetSel);
+    const target = await visibleTarget(page, presetSel);
+    if (target.index < 0) skips.push(target.reason);
     const t = await page.evaluate(() => performance.now());
-    if (idx >= 0 && (await tryTap(page.locator(presetSel).nth(idx)))) {
+    if (target.index >= 0 && (await tapAt(page, target))) {
       marks.amount = t;
       await settle(page);
     }
@@ -368,35 +402,41 @@ async function inpSample(page, hasTrigger) {
     open: marks.open !== undefined ? maxInteraction(perf.events, marks.open, marks.amount !== undefined ? marks.amount : Infinity) : NaN,
     amount: marks.amount !== undefined ? maxInteraction(perf.events, marks.amount) : NaN,
     perf,
+    skips,
   };
 }
 
 /**
- * Görünür, yatayda ekran içinde ve üstteki (elementFromPoint) ilk hedefin indeksi; yoksa -1.
+ * Görünür, yatayda ekran içinde, dikeyde ortalanmış ve üstteki (elementFromPoint kendisi/soyu) ilk hedef ve doğrulanmış
+ * dokunma noktası; yoksa `index:-1` ve neden (konsola da yazılır).
  *
  * @param {import('@playwright/test').Page} page Sayfa.
  * @param {string} selector Saf CSS seçici.
- * @return {Promise<number>} İndeks.
+ * @return {Promise<{index:number, x:number, y:number, reason:string}>} Hedef.
  */
-async function visibleTargetIndex(page, selector) {
-  return page.evaluate(`(${pickVisibleTarget})(window, ${JSON.stringify(selector)})`);
+async function visibleTarget(page, selector) {
+  const t = await page.evaluate(`(${pickVisibleTarget})(window, ${JSON.stringify(selector)})`);
+  if (t.index < 0) console.warn(`ÖLÇÜLMEDİ (${selector}): ${t.reason}`);
+  return t;
 }
 
 /**
- * Dokunma (ya da 60 ms basılı tıklama); hedef dokunulamazsa (ör. slider ekran dışı slayt) false → ölçüm
- * ÖLÇÜLMEDİ sayılır, hata değil. Kısa zaman aşımı: 30 sn beklemek yerine atla.
+ * Doğrulanmış noktaya dokunma (ya da 60 ms basılı tıklama). Playwright'ın kendi kaydırması/isabet denetimi kullanılmaz
+ * (yapışkan üstbilgi altına kaydırıp "örtülü" sayabiliyordu); nokta `pickVisibleTarget` ile az önce doğrulandı ve
+ * arada kaydırma yok. Hata olursa false → ÖLÇÜLMEDİ (hata değil).
  *
- * @param {import('@playwright/test').Locator} locator Hedef.
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {{x:number, y:number}} target Nokta.
  * @param {'tap'|'click'} [how] Yöntem.
  * @return {Promise<boolean>} Dokunuldu mu.
  */
-async function tryTap(locator, how = 'tap') {
+async function tapAt(page, target, how = 'tap') {
   try {
-    if (how === 'click') await locator.click({ delay: 60, timeout: 10000 });
-    else await locator.tap({ timeout: 10000 });
+    if (how === 'click') await page.mouse.click(target.x, target.y, { delay: 60 });
+    else await page.touchscreen.tap(target.x, target.y);
     return true;
   } catch (e) {
-    console.warn(`ÖLÇÜLMEDİ (görünür hedef yok): ${e && e.message ? e.message.split('\n')[0] : e}`);
+    console.warn(`ÖLÇÜLMEDİ (dokunma): ${e && e.message ? e.message.split('\n')[0] : e}`);
     return false;
   }
 }
@@ -469,6 +509,20 @@ function printReport(label, rows, checks, lh) {
       `| ${r.id} | ${m.blocking} | ${m.inlineCss.gzip} B (${m.inlineCss.count}; ${m.inlineCss.maxSurfaceGzip} B) | ${m.cssGzip} B | ${m.jsGzip} B | ${m.totalGzip} B | ${m.mainThreadMs} [${(m.mainThreadRuns || []).join(',')}] | ${m.longTasks} (+${m.contributedLongTasks} katkılı) | ${m.cls.plugin} | ${m.cls.font} | ${fmt(m.inpOpen)}/${fmt(m.inpAmount)} [${(m.inpOpenRuns || []).join(',')}/${(m.inpAmountRuns || []).join(',')}] | ${fmt(m.tapMedian)} [${m.tapRuns.join(',')}] |`
     );
   }
+  for (const r of rows.filter((x) => x.ui && !x.error && x.m && !x.m.skipped)) {
+    const skips = [...new Set([...(r.m.tapSkips || []), ...(r.m.inpSkips || [])])];
+    if (skips.length) console.log(`ÖLÇÜLMEDİ nedeni ${r.id}: ${skips.join(' | ')}`);
+  }
+  const forcedRows = rows.filter((x) => x.ui && !x.error && x.m && x.m.forcedLayout);
+  if (forcedRows.length) {
+    console.log('\nAçılış tıklamasında zorunlu eşzamanlı stil/düzen (CDP izi, ≥0.5 ms; medyan [koşular])');
+    console.log('| sayfa | zorunlu sayı | click işleyici ms | stil ms | düzen ms | son koşu ayrıntı |');
+    console.log('|---|---|---|---|---|---|');
+    for (const r of forcedRows) {
+      const f = r.m.forcedLayout;
+      console.log(`| ${r.id} | ${f.forced} [${f.runs.join(',')}] | ${f.clickMs} | ${f.styleMs} | ${f.layoutMs} | ${f.items.map((i) => `${i.name === 'Layout' ? 'L' : 'S'}${i.ms}${i.elements ? `/${i.elements}` : ''}`).join(' ')} |`);
+    }
+  }
   for (const r of rows.filter((x) => x.error)) console.log(`HATA ${r.id}: ${r.error}`);
   if (lh && lh.length) {
     console.log('\nLighthouse (bilgi; medyan) | sayfa | mod | koşu | puan | LCP | CLS | TBT |');
@@ -529,9 +583,12 @@ async function runLocal(argv) {
   const probeMeta = meta.probe || meta;
   const wpDir = materializeWorker(resolved.id, PORT, snap, { hpos: true });
   const mu = path.join(wpDir, 'wp-content/mu-plugins');
-  for (const f of ['wdp-scope-sim.php', 'wdp-load-probe.php', 'wdp-perf-pages.php']) fs.copyFileSync(path.join(ROOT, 'tests/e2e/helpers', f), path.join(mu, f));
+  for (const f of ['wdp-scope-sim.php', 'wdp-load-probe.php', 'wdp-perf-pages.php', 'wdp-heavy-css-sim.php']) fs.copyFileSync(path.join(ROOT, 'tests/e2e/helpers', f), path.join(mu, f));
   restoreSqlite(wpDir, snap);
   const wc = (f) => path.join(wpDir, 'wp-content', f);
+  // `--heavy-css`: ağır tema CSS'i + kalabalık DOM + sabit üstbilgi benzetimi (tema adı yok; tests/e2e/helpers/wdp-heavy-css-sim.php).
+  const heavy = argv.includes('--heavy-css');
+  fs.writeFileSync(wc('wdp-heavy-css.json'), JSON.stringify(heavy ? { rules: 3000, nodes: 1000, sticky: 1 } : {}));
   for (const f of ['wdp-scope-sim-urls.json', 'wdp-perf-pages-urls.json']) fs.rmSync(wc(f), { force: true });
   const setState = (s) => fs.writeFileSync(wc('wdp-load-probe.json'), JSON.stringify(s));
   setState({});
@@ -598,7 +655,7 @@ async function runLocal(argv) {
     proxy.close();
     await server.stop();
   }
-  return { label: `local-${theme}`, theme, rows, lh };
+  return { label: `local-${theme}${heavy ? '-agir-css' : ''}`, theme, rows, lh };
 }
 
 /** Uzak (ya da çalışan yerel site): yalnız GET gezinme, dokunma ile panel açma; gönderim yok. */
