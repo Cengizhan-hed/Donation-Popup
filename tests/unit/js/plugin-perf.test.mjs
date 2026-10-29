@@ -14,6 +14,7 @@ import {
   judgeMetric,
   median,
   mergeIntervals,
+  nearFontLoad,
   parsePagesArg,
 } from '../../../scripts/lib/plugin-perf.mjs';
 
@@ -103,9 +104,61 @@ describe('clsAttribution', () => {
     assert.equal(r.pluginShifts, 2);
     assert.equal(r.total, 0.084);
     assert.equal(r.unknown, 1);
+    assert.equal(r.font, 0);
   });
   it('kayma yoksa 0', () => {
-    assert.deepEqual(clsAttribution([]), { plugin: 0, total: 0, pluginShifts: 0, unknown: 0 });
+    assert.deepEqual(clsAttribution([]), { plugin: 0, font: 0, total: 0, pluginShifts: 0, fontShifts: 0, unknown: 0 });
+  });
+  it('font swap: eklenti + tema öğesi aynı karede ve font yüklemesi penceresinde → tema/font sütunu', () => {
+    const fontTimes = [1200];
+    const r = clsAttribution(
+      [
+        // Tema başlığı + eklenti formu birlikte, font bitişinden 40 ms sonra → font.
+        { value: 0.00058, startTime: 1240, hadRecentInput: false, sources: [{ plugin: false }, { plugin: true }] },
+        // Yalnız eklenti öğesi kayıyor (font penceresinde bile) → eklenti.
+        { value: 0.002, startTime: 1250, hadRecentInput: false, sources: [{ plugin: true }] },
+        // Karışık ama font penceresi dışında → eklenti (muhafazakâr).
+        { value: 0.003, startTime: 3000, hadRecentInput: false, sources: [{ plugin: false }, { plugin: true }] },
+        // Eklenti + yalnız belgeden çıkmış düğüm (eklenti dışı kanıt yok) → eklenti.
+        { value: 0.0001, startTime: 1210, hadRecentInput: false, sources: [{ plugin: true }, { plugin: false, detached: true }] },
+        // Yalnız tema → hiçbirine yazılmaz.
+        { value: 0.01, startTime: 1230, hadRecentInput: false, sources: [{ plugin: false }] },
+      ],
+      { fontTimes }
+    );
+    assert.equal(r.font, 0.00058);
+    assert.equal(r.fontShifts, 1);
+    assert.equal(r.plugin, 0.0051);
+    assert.equal(r.pluginShifts, 3);
+    assert.equal(r.total, 0.01568);
+  });
+  it('FontFace olayı yokken: eklenti + tema salt yatay metin akışı ≤100 ms arayla → tema/font; dikey kayma eklentide kalır', () => {
+    const P = (dy, dh, dx) => ({ plugin: true, dy, dh, dx });
+    const T = (dy, dh, dx) => ({ plugin: false, dy, dh, dx });
+    // Storefront gözlemi: tema menü düğmesi dx4 (1854), eklenti düğme etiketi dx±3 (1888).
+    const r = clsAttribution([
+      { value: 0.00006, startTime: 1854, sources: [T(0, 0, 4)] },
+      { value: 0.00003, startTime: 1888, sources: [P(0, 0, 3), P(0, 0, -3)] },
+    ]);
+    assert.equal(r.plugin, 0);
+    assert.equal(r.font, 0.00003);
+    // Eklenti öğesi dikey kayıyor (gerçek CLS) → eklenti.
+    assert.equal(clsAttribution([{ value: 0.00006, startTime: 1854, sources: [T(0, 0, 4)] }, { value: 0.001, startTime: 1880, sources: [P(18, 0, 0)] }]).plugin, 0.001);
+    // Tema akışı 101 ms uzakta → eklenti.
+    assert.equal(clsAttribution([{ value: 0.00006, startTime: 1000, sources: [T(0, 0, 4)] }, { value: 0.00003, startTime: 1101, sources: [P(0, 0, 3)] }]).plugin, 0.00003);
+    // Yalnız eklenti akışı (tema kanıtı yok) → eklenti.
+    assert.equal(clsAttribution([{ value: 0.00003, startTime: 1888, sources: [P(0, 0, 3)] }]).plugin, 0.00003);
+    // Tema kayması dikey (metin akışı değil) → kanıt sayılmaz.
+    assert.equal(clsAttribution([{ value: 0.00006, startTime: 1854, sources: [T(12, 0, 0)] }, { value: 0.00003, startTime: 1888, sources: [P(0, 0, 3)] }]).plugin, 0.00003);
+  });
+  it('font zamanı yoksa karışık kayma eklentiye yazılır; pencere sınırları', () => {
+    const s = [{ value: 0.001, startTime: 500, hadRecentInput: false, sources: [{ plugin: false }, { plugin: true }] }];
+    assert.equal(clsAttribution(s).plugin, 0.001);
+    assert.equal(clsAttribution(s, { fontTimes: [450] }).font, 0.001); // +50 ms
+    assert.equal(clsAttribution(s, { fontTimes: [550] }).font, 0.001); // −50 ms (sınır)
+    assert.equal(clsAttribution(s, { fontTimes: [551] }).plugin, 0.001); // pencere önü dışı
+    assert.equal(clsAttribution(s, { fontTimes: [199] }).plugin, 0.001); // +301 ms dışı
+    assert.equal(nearFontLoad(NaN, [1]), false);
   });
 });
 
@@ -118,7 +171,22 @@ describe('inlinePluginStyles', () => {
     assert.equal(r.raw, css.length * 2);
     assert.equal(r.gzip, zlib.gzipSync(Buffer.from(css + css), { level: 9 }).length);
     assert.deepEqual(r.ids, ['donation-panel-inline-form', 'donation-panel-inline-list']);
-    assert.deepEqual(inlinePluginStyles('<style>x</style>'), { count: 0, raw: 0, gzip: 0, ids: [] });
+    const one = zlib.gzipSync(Buffer.from(css), { level: 9 }).length;
+    assert.deepEqual(r.surfaces, { 'donation-panel-inline-form': one, 'donation-panel-inline-list': one });
+    assert.equal(r.maxSurfaceGzip, one);
+    assert.deepEqual(inlinePluginStyles('<style>x</style>'), { count: 0, raw: 0, gzip: 0, ids: [], surfaces: {}, maxSurfaceGzip: 0 });
+  });
+});
+
+describe('§25 bütçe eşikleri', () => {
+  it('yüzey ≤9216 B, sayfa ≤16384 B gzip; CSS dosyası 0; engelleyen 0', () => {
+    assert.equal(judgeMetric('inlineCssSurfaceGzip', 9216).pass, true);
+    assert.equal(judgeMetric('inlineCssSurfaceGzip', 9217).pass, false);
+    assert.equal(judgeMetric('inlineCssGzip', 16384).pass, true);
+    assert.equal(judgeMetric('inlineCssGzip', 16385).pass, false);
+    assert.equal(judgeMetric('cssGzip', 0).pass, true);
+    assert.equal(judgeMetric('cssGzip', 1).pass, false);
+    assert.equal(judgeMetric('blocking', 0).pass, true);
   });
 });
 

@@ -394,21 +394,31 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 			$donation_panel_has_rec = $donation_panel_has_rec || ( null !== $donation_panel_model['recommended'] && abs( (float) $donation_panel_model['recommended'] - (float) $donation_panel_preset ) < 0.005 );
 		}
 		$donation_panel_pending = ! in_array( $donation_panel_kind, array( 'fixed', 'shares' ), true ) && ! $donation_panel_single && ! empty( $donation_panel_model['allow_custom'] ) && ! $donation_panel_has_rec;
+		// Tek adımlı form (ilk adım aynı zamanda son adım; form.mjs paintSteps `last`): düğme "%s bağışla" + tutar (ya da
+		// doğrudan bağışta "Ödemeye geç"), kilit görünür, ok gizli, toplam satırı gizli, sepet düğmesi (doğrudan değilse) ve
+		// yasal not görünür, yasal not varsa güven satırı gizli. Tutar betikle aynı: tutarı türetilen türde birim fiyat × 1.
+		$donation_panel_last        = 1 === count( $donation_panel_steps );
+		$donation_panel_first_label = $donation_panel_pending ? _x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : _x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' );
+		if ( $donation_panel_last && ! $donation_panel_pending ) {
+			$donation_panel_first_amount = in_array( $donation_panel_kind, array( 'fixed', 'shares' ), true ) ? $donation_panel_unit : 0.0;
+			$donation_panel_first_label  = str_replace( '%s', $donation_panel_symbol . $donation_panel_format( $donation_panel_first_amount ), $donation_panel_submit_label );
+		}
+		$donation_panel_hide_total = $donation_panel_pending || $donation_panel_last;
 		?>
 		<div class="donation-panel-actionbar" data-single="<?php echo $donation_panel_single ? '1' : '0'; ?>">
-			<div class="donation-panel-actionbar__total" aria-live="polite" data-dp-total-row<?php echo $donation_panel_pending ? ' hidden' : ''; ?>>
+			<div class="donation-panel-actionbar__total" aria-live="polite" data-dp-total-row<?php echo $donation_panel_hide_total ? ' hidden' : ''; ?>>
 				<span><?php esc_html_e( 'Total', 'woo-donation-popup' ); ?></span>
 				<strong class="donation-panel-num" data-dp-total data-symbol="<?php echo esc_attr( $donation_panel_symbol ); ?>"><?php echo esc_html( $donation_panel_symbol . '0' ); ?></strong>
 			</div>
 			<button class="donation-panel-btn donation-panel-btn--lg donation-panel-btn--accent<?php echo $donation_panel_pending ? ' is-pending' : ''; ?>" data-dp-submit type="submit"<?php echo $donation_panel_pending ? ' aria-disabled="true"' : ''; ?>>
-				<span class="donation-panel-btn__lock" data-dp-submit-lock hidden><?php echo $donation_panel_lock_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?></span>
-				<span data-dp-submit-label><?php echo $donation_panel_pending ? esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span>
-				<svg class="donation-panel-ico donation-panel-btn__arrow" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" data-dp-submit-arrow><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+				<span class="donation-panel-btn__lock" data-dp-submit-lock<?php echo $donation_panel_last ? '' : ' hidden'; ?>><?php echo $donation_panel_lock_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?></span>
+				<span data-dp-submit-label><?php echo esc_html( $donation_panel_first_label ); ?></span>
+				<svg class="donation-panel-ico donation-panel-btn__arrow" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" data-dp-submit-arrow<?php echo $donation_panel_last ? ' hidden' : ''; ?>><path d="M5 12h14M13 6l6 6-6 6"/></svg>
 			</button>
-			<button class="donation-panel-btn donation-panel-btn--outline" type="button" data-dp-addcart hidden><?php echo esc_html( $donation_panel_single ? __( 'Add to cart', 'woo-donation-popup' ) : __( 'Add to cart, choose another', 'woo-donation-popup' ) ); ?></button>
-			<p class="donation-panel-trust" data-dp-trust><?php echo $donation_panel_lock_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?><?php esc_html_e( 'Secure payment · Your details are encrypted', 'woo-donation-popup' ); ?></p>
+			<button class="donation-panel-btn donation-panel-btn--outline" type="button" data-dp-addcart<?php echo $donation_panel_last && ! $donation_panel_direct ? '' : ' hidden'; ?>><?php echo esc_html( $donation_panel_single ? __( 'Add to cart', 'woo-donation-popup' ) : __( 'Add to cart, choose another', 'woo-donation-popup' ) ); ?></button>
+			<p class="donation-panel-trust" data-dp-trust<?php echo $donation_panel_last && '' !== $donation_panel_privacy ? ' hidden' : ''; ?>><?php echo $donation_panel_lock_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?><?php esc_html_e( 'Secure payment · Your details are encrypted', 'woo-donation-popup' ); ?></p>
 			<?php if ( '' !== $donation_panel_privacy ) : ?>
-				<p class="donation-panel-legal" data-dp-legal hidden>
+				<p class="donation-panel-legal" data-dp-legal<?php echo $donation_panel_last ? '' : ' hidden'; ?>>
 					<?php
 					echo wp_kses(
 						sprintf(

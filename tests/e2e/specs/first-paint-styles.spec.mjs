@@ -11,6 +11,7 @@
  *  - Panel: CSS isteği 3000 ms gecikmeliyken dokunuştan görünür, stilli panele <100 ms.
  */
 import { test, expect } from '@playwright/test';
+import { clsAttribution } from '../../../scripts/lib/plugin-perf.mjs';
 
 const IDS = JSON.parse(process.env.WDP_FP_IDS || '{"product":0,"fixed":0,"campaign":0}');
 const q = (view) => `/?dp_fp=${view}&dp_product=${IDS.product}&dp_fixed=${IDS.fixed}&dp_campaign=${IDS.campaign}`;
@@ -140,6 +141,7 @@ function installProbe() {
     ...form('#fp-inline'),
     ...form('#fp-slider'),
     ...form('#fp-ajax'),
+    ...form('#fp-single'),
   ];
   const frame = () => {
     state.frames += 1;
@@ -235,6 +237,65 @@ test.describe('ilk boyama: eklenti öğeleri stilli (CSS dosyaları 3 sn gecikme
     await page.goto(q('ajax'), { waitUntil: 'domcontentloaded', timeout: 90000 });
     const names = fixedNames('#fp-ajax');
     assertStyled(await collect(page, names), names);
+  });
+
+  test('tek adımlı form: ilk düğme durumu sunucuda betikle aynı ("%s bağışla"), eklenti CLS 0', async ({ page }) => {
+    await page.addInitScript(() => {
+      const isPlugin = (node) => {
+        for (let el = node && (node.nodeType === 1 ? node : node.parentElement); el; el = el.parentElement) {
+          if (el.classList && Array.from(el.classList).some((c) => c === 'donation-panel' || c.indexOf('donation-panel-') === 0)) return true;
+          if (el.getAttributeNames && el.getAttributeNames().some((a) => a.indexOf('data-dp-') === 0)) return true;
+        }
+        return false;
+      };
+      window.__fpShifts = [];
+      window.__fpFonts = [];
+      if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => window.__fpFonts.push(performance.now()));
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) {
+          window.__fpShifts.push({
+            value: e.value,
+            startTime: e.startTime,
+            hadRecentInput: e.hadRecentInput,
+            sources: (e.sources || []).map((s) => ({ plugin: !!s.node && isPlugin(s.node), detached: !s.node })),
+          });
+        }
+      }).observe({ type: 'layout-shift', buffered: true });
+    });
+    const res = await page.goto(q('single'), { waitUntil: 'domcontentloaded', timeout: 90000 });
+    const html = res ? await res.text() : '';
+    const server = (html.match(/data-dp-submit-label>([^<]*)</) || [])[1] || '';
+    expect(html, 'tek adımlı form (yalnız details adımı)').not.toMatch(/data-dp-step="(?!details")/);
+    expect(server, 'sunucu ilk etiketi tutar içerir').toMatch(/\d/);
+    const names = fixedNames('#fp-single');
+    assertStyled(await collect(page, names), names);
+    await expect(page.locator('#fp-single [data-dp-exp][data-dp-mounted="1"]')).toHaveCount(1, { timeout: 60000 });
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const after = await page.evaluate(() => {
+      const root = document.querySelector('#fp-single');
+      const q1 = (s) => root.querySelector(s);
+      return {
+        label: q1('[data-dp-submit-label]').textContent.trim(),
+        totalHidden: q1('[data-dp-total-row]').hidden,
+        lockHidden: q1('[data-dp-submit-lock]').hidden,
+        arrowHidden: q1('[data-dp-submit-arrow]').hasAttribute('hidden'),
+        shifts: window.__fpShifts,
+        fontTimes: [
+          ...window.__fpFonts,
+          ...performance
+            .getEntriesByType('resource')
+            .filter((r) => /\.(?:woff2?|ttf|otf)(?:\?|$)/i.test(r.name))
+            .map((r) => r.responseEnd),
+        ],
+      };
+    });
+    const cls = clsAttribution(after.shifts, { fontTimes: after.fontTimes });
+    console.log(`FP_SINGLE ${JSON.stringify({ server, label: after.label, cls })}`);
+    expect(after.label, 'betik bağlandıktan sonra etiket sunucudakiyle aynı').toBe(server.trim());
+    expect(after.totalHidden).toBe(true);
+    expect(after.lockHidden).toBe(false);
+    expect(after.arrowHidden).toBe(true);
+    expect(cls.plugin, 'eklenti kaynaklı kayma (tema font swap ayrı sütunda)').toBe(0);
   });
 
   test('panel: CSS gecikmeliyken dokunuştan stilli panele <100 ms (5 koşu medyanı, her koşu stilli)', async ({ page }) => {
