@@ -9,6 +9,7 @@
  *   /?dp_fp=fragment&dp_fixed=ID                            -> yalnız kısa kod çıktısı (wp_head/wp_footer yok)
  *   /?dp_fp=trigger&dp_product=ID                           -> yalnız açma düğmesi (popup)
  *   /?dp_fp=single&dp_fixed=ID                              -> tek adımlı sayfa içi form (ek adımlar süzülür)
+ *   /?dp_fp=compact&dp_product=ID&dp_campaign=ID            -> compact kart (görünür) + gizli kapta compact kart (slider)
  */
 add_action(
 	'template_redirect',
@@ -72,6 +73,12 @@ add_action(
 			// Slider benzetimi: kap gizli başlar, betik 500 ms sonra görünür yapar.
 			echo '<section id="fp-slider" style="display:none">' . do_shortcode( '[donation_panel_experience id="' . $fixed . '" kind="inline"]' ) . '</section>'; // phpcs:ignore
 			echo '<script>setTimeout(function(){document.getElementById("fp-slider").style.display="block";document.dispatchEvent(new Event("dp:scan"));},500);</script>';
+		}
+		if ( 'compact' === $view ) {
+			// Compact kart: görünür kart + slider benzetimi (gizli kap 500 ms sonra görünür).
+			echo '<section id="fp-compact">' . do_shortcode( '[wdp_donation_form id="' . $id . '" layout="compact"]' ) . '</section>'; // phpcs:ignore
+			echo '<section id="fp-compact-slider" style="display:none">' . do_shortcode( '[wdp_donation_form id="' . $cmp . '" layout="compact"]' ) . '</section>'; // phpcs:ignore
+			echo '<script>setTimeout(function(){document.getElementById("fp-compact-slider").style.display="block";document.dispatchEvent(new Event("dp:scan"));},500);</script>';
 		}
 		if ( 'page' === $view || 'ajax' === $view ) {
 			// AJAX benzetimi: kısa kod HTML'i fetch ile alınır, innerHTML ile eklenir.

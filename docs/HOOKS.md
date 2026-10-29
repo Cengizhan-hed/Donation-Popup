@@ -200,3 +200,6 @@ Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (v
 ## 12.1.1 notları
 - `donation_panel_cart_pending_total` yalnız sepete ekleme kapısında etkilidir; görünümde (kampanya "ulaşıldı" iletisi, döngü fiyat süzgeçleri) bekleyen toplam sayılmaz.
 - `donation_panel_side_cart_load` aynı kalır.
+
+## 12.2 notları
+- `donation_panel_compact_text` (string $text, int $product_id) — hedefsiz üründe kart etki cümlesi (düz metin, '' = gizle). Şablonlar: `donation-panel/experiences/compact.php`, `donation-panel/payment/embed.php`. Sorgu bayrağı `donation_panel_embed=1` (yalnız order-pay). Olay `dp:scan` compact kartları da bağlar.

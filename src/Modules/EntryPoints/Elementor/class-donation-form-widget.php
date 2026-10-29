@@ -130,6 +130,20 @@ class Donation_Form_Widget extends \Elementor\Widget_Base {
 		);
 
 		$this->add_control(
+			'layout',
+			array(
+				'label'     => __( 'Layout', 'woo-donation-popup' ),
+				'type'      => \Elementor\Controls_Manager::SELECT,
+				'default'   => 'full',
+				'options'   => array(
+					'full'    => _x( 'Full', 'Donation form layout', 'woo-donation-popup' ),
+					'compact' => _x( 'Compact', 'Donation form layout', 'woo-donation-popup' ),
+				),
+				'condition' => array( 'display' => 'inline' ),
+			)
+		);
+
+		$this->add_control(
 			'show_title',
 			array(
 				'label'        => __( 'Show heading', 'woo-donation-popup' ),
@@ -187,6 +201,9 @@ class Donation_Form_Widget extends \Elementor\Widget_Base {
 		}
 		if ( 'panel' === $display ) {
 			return array( 'wdp_donation_button_panel', $atts );
+		}
+		if ( isset( $settings['layout'] ) && 'compact' === $settings['layout'] ) {
+			$atts['layout'] = 'compact';
 		}
 		return array( 'wdp_donation_form', $atts );
 	}
