@@ -1,0 +1,11 @@
+# Turkish translations for woo-donation-popup (part alllabel).
+msgid ""
+msgstr ""
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php
+msgid "Leave empty to show “All” in the site language."
+msgstr "Boş bırakırsanız sitenin dilinde “Tümü” görünür."
