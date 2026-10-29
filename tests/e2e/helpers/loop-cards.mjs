@@ -53,7 +53,7 @@ export const RELATED_ROOT_SEL =
 export const RELATED_CARD_SEL = 'li.product, li.wc-block-product, .wc-block-product-template > li';
 
 export const RELATED_TITLE_SEL =
-  '.woocommerce-loop-product__title, .product-title, .wp-block-post-title, .fusion-title, h2, h3';
+  '.woocommerce-loop-product__title, .product-title, .wp-block-post-title, h2, h3';
 
 /** Mağaza [products] / klasik döngü / Woo blok kartı. */
 export const SHOP_CARD_SEL =
