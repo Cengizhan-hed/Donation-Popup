@@ -104,6 +104,10 @@ html.donation-panel-ac-lock { overflow: hidden; }
 .donation-panel .donation-panel-ac__link-msg { margin: 12px 0 0; font-weight: 650; }
 .donation-panel-ac__checkout-note { margin: 0 0 12px; padding: 12px 14px; border-radius: var(--dpx-r-field); background: var(--dpx-warm); color: var(--dp-color-text); font-size: .875rem; }
 
+/* Varsayılan (durumsuz) görünüm: temanın genel düğme kuralı ezemesin (özgüllük 0,3,0). */
+:root :is(.donation-panel-ac__trigger, .donation-panel-ac__link) { border: 0; }
+:root .donation-panel-ac__trigger:not(:is(:hover, :focus, :active)) { background-color: var(--dpx-soft); color: var(--dp-color-primary-strong); }
+:root .donation-panel-ac__link:not(:is(:hover, :focus, :active)) { background-color: transparent; color: var(--dp-color-primary-strong); }
 /* Tema durum yalıtımı (özgüllük 0,3,0; bkz. ui2-shared/states.css) */
 :root .donation-panel-ac__trigger:is(:hover, :focus, :active) { background-color: var(--dpx-soft); color: var(--dp-color-primary-strong); }
 :root .donation-panel-ac__trigger:hover { background-color: var(--dpx-line); }
