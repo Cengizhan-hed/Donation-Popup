@@ -73,17 +73,29 @@ final class SecurityHardeningTest extends TestCase {
 	}
 
 	public function test_origin_null_and_foreign_host_are_rejected(): void {
-		foreach ( array( 'null', 'https://example.test.evil.example', 'https://evil.example:443', 'http://sub.example.test' ) as $origin ) {
+		// home https iken: farklı port, http (düşürme yok), alt alan adı, null, yabancı host red.
+		foreach ( array( 'null', 'https://example.test.evil.example', 'https://evil.example:443', 'http://sub.example.test', 'https://example.test:8443', 'http://example.test', 'http://example.test:8080' ) as $origin ) {
 			$result = $this->nonce_controller()->nonce( $this->request( array( 'Origin' => $origin ) ) );
 			$this->assertInstanceOf( WP_Error::class, $result, $origin );
 		}
 	}
 
-	public function test_origin_scheme_and_port_differences_are_accepted_behind_a_ssl_terminating_proxy(): void {
-		foreach ( array( 'http://example.test', 'https://example.test:8443', 'https://EXAMPLE.test' ) as $origin ) {
+	public function test_configured_origin_is_accepted_with_case_and_default_port_normalized(): void {
+		foreach ( array( 'https://example.test', 'https://EXAMPLE.test', 'https://example.test:443' ) as $origin ) {
 			$result = $this->nonce_controller()->nonce( $this->request( array( 'Origin' => $origin ) ) );
 			$this->assertNotInstanceOf( WP_Error::class, $result, $origin );
 		}
+	}
+
+	public function test_allowed_origins_filter_adds_an_origin(): void {
+		WDP_Test_State::$filters['donation_panel_allowed_origins'] = static function ( $list ) {
+			$list[] = 'https://example.test:8443';
+			return $list;
+		};
+		$added = $this->nonce_controller()->nonce( $this->request( array( 'Origin' => 'https://example.test:8443' ) ) );
+		$this->assertNotInstanceOf( WP_Error::class, $added );
+		$other = $this->nonce_controller()->nonce( $this->request( array( 'Origin' => 'https://example.test:9000' ) ) );
+		$this->assertInstanceOf( WP_Error::class, $other );
 	}
 
 	public function test_nonce_route_registration_adds_a_cors_stripping_filter(): void {

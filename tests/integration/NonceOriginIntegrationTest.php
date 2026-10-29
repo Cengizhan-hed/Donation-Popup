@@ -83,6 +83,49 @@ final class NonceOriginIntegrationTest extends WDP_Integration_Test_Case {
 	}
 
 	/** @dataProvider routes */
+	public function test_origin_matches_full_origin_with_forced_https_variant( string $route ): void {
+		$force = static function () {
+			return 'http://shop.example.test';
+		};
+		add_filter( 'pre_option_home', $force );
+		add_filter( 'pre_option_siteurl', $force );
+		try {
+			// Yapılandırılmış origin ve zorunlu https varyantı kabul.
+			foreach ( array( 'http://shop.example.test', 'https://shop.example.test' ) as $origin ) {
+				$this->assertSame( 200, $this->get( $route, array( 'Origin' => $origin ) )->get_status(), $origin );
+			}
+			// Farklı port, alt alan adı, null, yabancı host red.
+			foreach ( array( 'http://shop.example.test:8080', 'https://shop.example.test:8443', 'http://evil.shop.example.test', 'null', 'https://evil.example' ) as $origin ) {
+				$this->assertSame( 403, $this->get( $route, array( 'Origin' => $origin ) )->get_status(), $origin );
+			}
+			// Süzgeçle eklenen origin kabul.
+			$allow = static function ( $list ) {
+				$list[] = 'https://partner.example.test:8443';
+				return $list;
+			};
+			add_filter( 'donation_panel_allowed_origins', $allow );
+			$this->assertSame( 200, $this->get( $route, array( 'Origin' => 'https://partner.example.test:8443' ) )->get_status() );
+			remove_filter( 'donation_panel_allowed_origins', $allow );
+		} finally {
+			remove_filter( 'pre_option_home', $force );
+			remove_filter( 'pre_option_siteurl', $force );
+		}
+		// https yapılandırılmışken http Origin red (düşürme yok).
+		$https = static function () {
+			return 'https://shop.example.test';
+		};
+		add_filter( 'pre_option_home', $https );
+		add_filter( 'pre_option_siteurl', $https );
+		try {
+			$this->assertSame( 403, $this->get( $route, array( 'Origin' => 'http://shop.example.test' ) )->get_status() );
+			$this->assertSame( 200, $this->get( $route, array( 'Origin' => 'https://shop.example.test' ) )->get_status() );
+		} finally {
+			remove_filter( 'pre_option_home', $https );
+			remove_filter( 'pre_option_siteurl', $https );
+		}
+	}
+
+	/** @dataProvider routes */
 	public function test_cors_headers_are_removed_from_the_served_response( string $route ): void {
 		$request = new WP_REST_Request( 'GET', $route );
 		$request->set_header( 'Origin', home_url() );

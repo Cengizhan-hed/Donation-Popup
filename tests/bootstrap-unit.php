@@ -1119,6 +1119,11 @@ if (!function_exists('site_url')) {
 		return 'https://example.test' . $path;
 	}
 }
+if (!function_exists('set_url_scheme')) {
+	function set_url_scheme($url, $scheme = null) {
+		return preg_replace('#^[a-z][a-z0-9+.-]*://#i', $scheme . '://', (string) $url);
+	}
+}
 if (!function_exists('wp_parse_url')) {
 	function wp_parse_url($url, $component = -1) {
 		return $component === -1 ? parse_url((string) $url) : parse_url((string) $url, $component);
