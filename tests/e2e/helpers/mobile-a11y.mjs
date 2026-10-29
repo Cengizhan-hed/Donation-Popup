@@ -198,11 +198,28 @@ export async function probeKeyboardVisibility(page, field) {
  * @param {import('@playwright/test').Page} page
  */
 export async function probeDesktopFocus(page) {
+  // Açılış anı yarışı: odak açılışın hemen ardından başlığa gider; kısa süre bekle (açık panel yoksa hemen döner).
+  try {
+    await page.waitForFunction(
+      () => {
+        const m = document.querySelector('[data-dp-overlay].is-open');
+        return !m || m.contains(document.activeElement);
+      },
+      null,
+      { timeout: 1500, polling: 50 }
+    );
+  } catch {
+    // zaman aşımı: aşağıdaki yoklama gerçek durumu raporlar
+  }
   return page.evaluate(() => {
     const modal = document.querySelector('[data-dp-overlay].is-open');
     if (!modal) return { open: false };
     const ae = document.activeElement;
     return {
+      dialogOpen: modal.tagName === 'DIALOG' ? modal.open : null,
+      docHasFocus: document.hasFocus(),
+      titleId: modal.querySelector('[data-dp-title]')?.id || null,
+      visibility: getComputedStyle(modal).visibility,
       open: true,
       focusInside: !!(ae && modal.contains(ae)),
       active: ae ? `${ae.tagName}.${ae.className}` : null,

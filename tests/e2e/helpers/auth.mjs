@@ -116,6 +116,10 @@ function markAuthValidated(profileId, env) {
 function wasAuthValidated(profileId, env) {
   const key = authValidatedKey(profileId, env);
   if (validatedProfileIds.has(key)) return true;
+  // Yerel profil: WP veritabanı her koşuda anlık görüntüden yeniden kurulur (oturum kaydı silinir) ama origin
+  // (127.0.0.1:port) aynı kalır → önceki koşunun diskteki işareti geçersiz oturumu "doğrulanmış" gösterip
+  // yönetici ekranlarını giriş sayfasına düşürüyordu. Yalnız süreç içi doğrulama güvenilir; uzakta işaret sürer.
+  if (!isRemoteProfile(env?._profile)) return false;
   try {
     return fs.existsSync(authValidatedMarker(profileId, env));
   } catch {
