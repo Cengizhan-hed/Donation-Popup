@@ -165,6 +165,21 @@ class Settings {
 					'default' => 'panel',
 				),
 			),
+			// Compact bağış kartı (`layout="compact"`): hızlı tutar sayısı (0–3), ilk bağış çağrısı, gizlenince başa dönme.
+			'compact'    => array(
+				'quick_amounts' => array(
+					'type'    => 'int',
+					'default' => 3,
+				),
+				'first_text'    => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'reset_hidden'  => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+			),
 			'form'       => array(
 				'presets_enabled'  => array(
 					'type'    => 'bool',

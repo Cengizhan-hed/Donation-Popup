@@ -18,6 +18,7 @@ use DonationPanel\Http\Rest\Direct_Donation_Controller;
 use DonationPanel\Modules\EntryPoints\Product_Resolver;
 use DonationPanel\WooCommerce\Cart;
 use DonationPanel\WooCommerce\Direct\Direct_Cleanup;
+use DonationPanel\WooCommerce\Direct\Pay_Embed;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,6 +68,7 @@ final class Experiences_Module implements Module_Interface {
 		$this->container = $container;
 
 		$container->get( Assets::class )->define( self::SLUG, 'assets/build/experiences/index.js', 'assets/build/experiences/index.css' );
+		$container->get( Assets::class )->define( Compact_Card::ASSET, 'assets/build/compact/index.js', 'assets/build/compact/index.css' );
 
 		$this->cart = new Cart();
 		$this->cart->register();
@@ -74,6 +76,8 @@ final class Experiences_Module implements Module_Interface {
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
 		// Doğrudan (sepetsiz) bağış: yarım siparişleri temizleyen olay işleyicisi (zamanlama ilk siparişte kurulur).
 		Direct_Cleanup::register();
+		// Compact kartın ödeme katmanı: order-pay sayfasının yalın (gömülü) görünümü.
+		Pay_Embed::register();
 		add_action( 'init', array( $this, 'register_shortcode' ) );
 	}
 
@@ -141,6 +145,14 @@ final class Experiences_Module implements Module_Interface {
 			$args['button_text'] = sanitize_text_field( (string) $atts['button_text'] );
 		}
 
+		if ( Compact_Card::LAYOUT === sanitize_key( (string) $atts['kind'] ) ) {
+			$compact = $this->compact( $model, $args );
+			if ( null !== $compact ) {
+				return $compact;
+			}
+			$atts['kind'] = 'inline'; // Hisseli bağış kartın sabit yüksekliğine sığmaz: bugünkü sayfa içi form.
+		}
+
 		$html = $this->renderer()->render( $model, (string) $atts['kind'], $args );
 		if ( '' !== $html ) {
 			$this->rendered = true;
@@ -150,6 +162,28 @@ final class Experiences_Module implements Module_Interface {
 			$html = $assets->inline_styles() . $html;
 		}
 		return $html;
+	}
+
+	/**
+	 * Compact kart: form/katman CSS'i (`experiences`) + kartın kendi betiği ve stili (`compact`), çıktının hemen önünde satır içi.
+	 *
+	 * @param array<string, mixed> $model Form modeli.
+	 * @param array<string, mixed> $args  REST/ödeme adresleri.
+	 * @return string|null Kart HTML'i; bu bağış türü kartta çizilemiyorsa null.
+	 */
+	private function compact( array $model, array $args ) {
+		if ( ! Compact_Card::supports( $model ) ) {
+			return null;
+		}
+		$html = ( new Compact_Card( $this->container->get( Template_Loader::class ) ) )->render( $model, $args );
+		if ( '' === $html ) {
+			return null;
+		}
+		$this->rendered = true;
+		$assets         = $this->container->get( Assets::class );
+		$assets->require_style( self::SLUG );
+		$assets->enqueue( Compact_Card::ASSET );
+		return $assets->inline_styles() . $html;
 	}
 
 	/**

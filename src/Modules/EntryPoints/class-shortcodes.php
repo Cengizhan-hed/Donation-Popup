@@ -118,7 +118,7 @@ class Shortcodes {
 	/**
 	 * Ortak sayfa içi form çizici.
 	 *
-	 * @param array<string, mixed> $atts    Öznitelikler (`id`, `slug`, `sku`, `title`, `show_title`, `class`).
+	 * @param array<string, mixed> $atts    Öznitelikler (`id`, `slug`, `sku`, `title`, `show_title`, `class`, `layout` = ''|compact).
 	 * @param array<string, mixed> $context Blok bağlamı.
 	 * @return string
 	 */
@@ -134,10 +134,13 @@ class Shortcodes {
 				'title'       => '',
 				'show_title'  => 'yes',
 				'class'       => '',
+				'layout'      => '',
 			),
 			$raw,
 			'wdp_donation_form'
 		);
+		// `layout="compact"`: slider/hero için yüksekliği sabit kart; başka/boş değer bugünkü formu AYNEN çizer.
+		$kind = 'compact' === sanitize_key( (string) $atts['layout'] ) ? 'compact' : 'inline';
 
 		$resolved = self::resolve_for_output( $atts, $context );
 		if ( is_string( $resolved ) ) {
@@ -158,7 +161,7 @@ class Shortcodes {
 			return Render_Registry::duplicate_form_notice( $product_id );
 		}
 
-		return $resolved['notice'] . Experience_Renderer::render( $product_id, 'inline', '', self::sanitize_class_list( $atts['class'] ) );
+		return $resolved['notice'] . Experience_Renderer::render( $product_id, $kind, '', self::sanitize_class_list( $atts['class'] ) );
 	}
 
 	/**

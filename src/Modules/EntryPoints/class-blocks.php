@@ -86,6 +86,9 @@ class Blocks {
 					'button_text' => $label,
 					'show_title'  => ( ! empty( $atts['showTitle'] ) && 'no' !== $atts['showTitle'] ) ? 'yes' : 'no',
 				);
+				if ( isset( $atts['layout'] ) && 'compact' === $atts['layout'] ) {
+					$short['layout'] = 'compact';
+				}
 				if ( 'popup' === $display ) {
 					return Shortcodes::render_button( $short, 'wdp_donation_button', 'popup', $context );
 				}
