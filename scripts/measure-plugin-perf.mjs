@@ -62,9 +62,13 @@ const LOCAL_PAGES = [
   { id: 'hesabim-misafir', key: 'account', ui: false },
   { id: 'magaza', key: 'shop', ui: true },
   { id: 'bagis-urunu', key: 'donation', ui: true },
+  { id: 'bagis-urunu-tutar', key: 'donation_custom', ui: true },
   { id: 'bagis-listesi', key: 'list', ui: true },
   { id: 'sayfa-ici-form', key: 'form', ui: true },
   { id: 'compact-kart', key: 'compact', ui: true },
+  { id: 'popup', key: 'popup', ui: true },
+  { id: 'sag-panel', key: 'panel', ui: true },
+  { id: 'alttan-panel', key: 'sheet', ui: true },
 ];
 
 /** Sayfada çalışan gözlemciler: layout-shift (kaynak düğüm atfı) ve Event Timing. */
@@ -196,13 +200,17 @@ async function measureUiLess(browser, url, prepare) {
 /**
  * Arayüzlü sayfa: yük izi (4× CPU + yavaş 4G), baytlar, engelleyenler, CLS, INP; sonra 5 koşu dokunuş → panel.
  */
-async function measureUi(browser, url, prepare) {
+async function measureUi(browser, url, prepare, dumpName = '') {
   const out = {};
   const { context, page } = await openPage(browser, { throttle: true, prepare });
   try {
     await browser.startTracing(page, { categories: TRACE_CATEGORIES });
     const res = await page.goto(url, { waitUntil: 'load', timeout: 180000 });
     const html = res ? await res.text() : '';
+    if (dumpName && process.env.WDP_PERF_DUMP) {
+      fs.mkdirSync(OUT_DIR, { recursive: true });
+      fs.writeFileSync(path.join(OUT_DIR, `${dumpName}.html`), html);
+    }
     await settle(page);
     const trace = JSON.parse((await browser.stopTracing()).toString('utf8'));
     const t = attributeTrace(trace);
@@ -426,7 +434,7 @@ async function runLocal(argv) {
   const setState = (s) => fs.writeFileSync(wc('wdp-load-probe.json'), JSON.stringify(s));
   setState({});
   fs.writeFileSync(wc('wdp-scope-sim.json'), '{}');
-  fs.writeFileSync(wc('wdp-perf-pages.json'), JSON.stringify({ product_id: probeMeta.products.fixed.id }));
+  fs.writeFileSync(wc('wdp-perf-pages.json'), JSON.stringify({ product_id: probeMeta.products.custom.id }));
 
   const phpPort = PORT + 100;
   const server = await startPhpServer({ wpDir, port: phpPort });
@@ -439,6 +447,7 @@ async function runLocal(argv) {
     await fetch(`${base}/`, { signal: AbortSignal.timeout(120000) }); // tohumlama (sayfalar oluşur)
     const urls = { ...JSON.parse(fs.readFileSync(wc('wdp-scope-sim-urls.json'), 'utf8')), ...JSON.parse(fs.readFileSync(wc('wdp-perf-pages-urls.json'), 'utf8')) };
     urls.donation = probeMeta.products.fixed.path;
+    urls.donation_custom = probeMeta.products.custom.path;
     const queries = async (p) => {
       const q = async (s) => {
         setState(s);
@@ -468,7 +477,7 @@ async function runLocal(argv) {
               continue;
             }
           }
-          rows.push({ id: pg.id, ui: true, url: urls[pg.key], m: await measureUi(browser, url) });
+          rows.push({ id: pg.id, ui: true, url: urls[pg.key], m: await measureUi(browser, url, undefined, `local-${theme}-${pg.id}`) });
         }
         console.error(`[plugin-perf] ${theme}/${pg.id} tamam`);
       } catch (e) {
@@ -476,6 +485,7 @@ async function runLocal(argv) {
       }
     }
     if (!argv.includes('--no-lh')) {
+      await browser.close(); // bellek: Lighthouse kendi Chrome'unu açar
       const runs = Math.max(7, Number(arg(argv, '--lh-runs', '7')));
       const ids = String(arg(argv, '--lh-pages', 'bagis-urunu')).split(',').filter(Boolean);
       const lhUrls = LOCAL_PAGES.filter((p) => ids.includes(p.id)).map((p) => ({ id: p.id, url: `${base}${urls[p.key]}` }));
