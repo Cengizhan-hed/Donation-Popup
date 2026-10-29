@@ -118,7 +118,7 @@ abstract class Rest_Controller {
 
 	/**
 	 * Çerez kimliğiyle nonce/oturum veren uçlar için kökenler arası isteği reddeder: `Sec-Fetch-Site: cross-site` ya da
-	 * site kökeniyle eşleşmeyen `Origin` 403 verir. Başlık yoksa (eski tarayıcı, aynı köken GET) izin verilir.
+	 * tam kaynakla (şema+host+port) izinli kümede olmayan `Origin` 403 verir. Başlık yoksa (eski tarayıcı, aynı köken GET) izin verilir.
 	 *
 	 * @param \WP_REST_Request $request Istek.
 	 * @return true|\WP_Error
@@ -132,10 +132,8 @@ abstract class Rest_Controller {
 		if ( '' === $origin ) {
 			return true;
 		}
-		// Yalnız ana makine adı karşılaştırılır: SSL sonlandıran vekil/CDN arkasında home_url http iken tarayıcı Origin'i https gelebilir.
-		$allowed = array_filter( array( self::host_of( home_url() ), self::host_of( site_url() ) ) );
-		$host    = self::host_of( $origin );
-		if ( '' === $host || ! in_array( $host, $allowed, true ) ) {
+		$candidate = self::origin_of( $origin );
+		if ( '' === $candidate || ! in_array( $candidate, self::allowed_origins(), true ) ) {
 			return $this->error( 'donation_panel_cross_origin', 'Cross-site requests are not allowed.', 403 );
 		}
 		return true;
@@ -166,17 +164,56 @@ abstract class Rest_Controller {
 	}
 
 	/**
-	 * Adresin ana makine adı (küçük harfli; şema ve port yok sayılır); geçersizse ''.
+	 * İzinli kökenler: home_url/site_url kökeni ve bunların zorunlu https varyantı (SSL sonlandıran vekil arkasında
+	 * home_url http iken tarayıcı https Origin'i gelebilir). http varyantı yalnız yapılandırılmış adres http ise vardır
+	 * (https yapılandırılmışsa http Origin reddedilir). `donation_panel_allowed_origins` süzgeci kümeyi değiştirir.
+	 *
+	 * @return string[] Tam kökenler (şema://ana-makine[:port]).
+	 */
+	private static function allowed_origins() {
+		$list = array();
+		// site_url() şemayı isteğin SSL durumundan türetir (vekil arkasında https yapılandırmayı http'ye düşürür); yapılandırılan değer ham seçenekten okunur.
+		$site = (string) get_option( 'siteurl', '' );
+		foreach ( array( home_url(), '' !== $site ? $site : site_url() ) as $url ) {
+			$list[] = self::origin_of( $url );
+			$list[] = self::origin_of( set_url_scheme( (string) $url, 'https' ) );
+		}
+		$list    = array_values( array_unique( array_filter( $list ) ) );
+		$allowed = apply_filters( 'donation_panel_allowed_origins', $list );
+		if ( ! is_array( $allowed ) ) {
+			return $list;
+		}
+		$out = array();
+		foreach ( $allowed as $item ) {
+			$norm = is_string( $item ) ? self::origin_of( $item ) : '';
+			if ( '' !== $norm ) {
+				$out[] = $norm;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Adresin tam kökeni (küçük harfli şema://ana-makine; varsayılan port 80/443 atılır); http(s) değilse ya da geçersizse ''.
 	 *
 	 * @param string $url Adres.
 	 * @return string
 	 */
-	private static function host_of( $url ) {
+	private static function origin_of( $url ) {
 		$parts = wp_parse_url( (string) $url );
 		if ( ! is_array( $parts ) || empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
 			return '';
 		}
-		return strtolower( (string) $parts['host'] );
+		$scheme = strtolower( (string) $parts['scheme'] );
+		if ( 'http' !== $scheme && 'https' !== $scheme ) {
+			return '';
+		}
+		$out  = $scheme . '://' . strtolower( (string) $parts['host'] );
+		$port = isset( $parts['port'] ) ? (int) $parts['port'] : 0;
+		if ( $port > 0 && ! ( ( 'http' === $scheme && 80 === $port ) || ( 'https' === $scheme && 443 === $port ) ) ) {
+			$out .= ':' . $port;
+		}
+		return $out;
 	}
 
 	/**
