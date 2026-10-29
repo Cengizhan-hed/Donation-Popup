@@ -44,6 +44,11 @@ final class ThemeColorsTest extends TestCase {
 		$this->assertSame( '#1a1a2e', $v['--dp-color-primary'] );
 	}
 
+	public function test_named_primary_below_45_contrast_is_not_picked(): void {
+		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'primary' => '#8c8c8c', 'secondary' => '#14532d' ) ) ) );
+		$this->assertSame( '#14532d', $v['--dp-color-primary'], 'Beyazda ~3.4:1 olan adlı renk seçilmez.' );
+	}
+
 	public function test_light_primary_name_is_skipped_for_unreadable_color(): void {
 		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'primary' => '#ffe08a', 'secondary' => '#14532d' ) ) ) );
 		$this->assertSame( '#14532d', $v['--dp-color-primary'], 'Beyaz zeminde okunmayan ana renk atlanır.' );

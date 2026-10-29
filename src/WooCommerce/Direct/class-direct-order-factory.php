@@ -108,7 +108,9 @@ final class Direct_Order_Factory {
 			if ( $existing ) {
 				// Mevcut siparişin ödeme/teşekkür adresi yalnız anahtarı üreten istemciye (aynı tarayıcı belirteci) döner;
 				// anahtarı bilen ya da tahmin eden başkası adresi (order key dahil) alamaz.
-				if ( (string) $existing->get_meta( self::OWNER_META ) !== $owner || (string) $existing->get_meta( self::FINGERPRINT_META ) !== $fingerprint ) {
+				// Sahip karması iki tarafta da boş olmamalı ('' === '' geçmez) ve sabit zamanlı eşit olmalı.
+				$stored_owner = (string) $existing->get_meta( self::OWNER_META );
+				if ( '' === $stored_owner || '' === $owner || ! hash_equals( $stored_owner, $owner ) || (string) $existing->get_meta( self::FINGERPRINT_META ) !== $fingerprint ) {
 					return $this->fail( 422, __( 'This submission key was already used for a different donation.', 'woo-donation-popup' ), 'donation_panel_direct_key_reused' );
 				}
 				return $this->done( $existing, true );
