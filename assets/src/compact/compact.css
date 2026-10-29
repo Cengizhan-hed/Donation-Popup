@@ -186,14 +186,14 @@
 .donation-panel-compact__recap dd { min-inline-size: 0; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .donation-panel-compact__note { font-size: 13px; line-height: 1.4; color: var(--dp-color-text-muted); }
 
-/* Teşekkür */
-.donation-panel-compact__thanks { display: flex; align-items: center; gap: 12px; }
-.donation-panel-compact__thanks p { font-size: 15px; line-height: 1.4; }
-.donation-panel-compact__tick { flex: none; fill: none; stroke: var(--dp-color-success); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.donation-panel-compact__closed { margin: auto 0; text-align: center; color: var(--dp-color-text-muted); }
+/* Teşekkür: içerik kartın ortasında, düğme altta. */
+.donation-panel-compact__thanks { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+.donation-panel-compact__thanks p { max-inline-size: 34ch; font-size: 15px; line-height: 1.45; }
+.donation-panel-compact__tick { flex: none; inline-size: 48px; block-size: 48px; fill: none; stroke: var(--dp-color-success); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.donation-panel .donation-panel-compact__closed { margin: auto 0; text-align: center; color: var(--dp-color-text-muted); }
 
 /* Tek hata satırı: iki satırlık yer HER ZAMAN ayrılır (görünmesi yüksekliği değiştirmez). */
-.donation-panel-compact__err {
+.donation-panel .donation-panel-compact__err {
   block-size: 2.7em;
   font-size: 13px;
   font-weight: 650;
@@ -206,6 +206,8 @@
   margin-block-start: auto;
 }
 .donation-panel-compact .donation-panel-compact__cta { min-block-size: 52px; margin: 0; }
+/* Düğme metni değişince ("Tutar seçin" → "Devam et") kutu yerinde kalır: metin tam genişlikte ortalanır (kayma 0). */
+.donation-panel-compact__cta > [data-dp-cnext-label], .donation-panel-compact__cta > [data-dp-cpay-label] { flex: 1 1 auto; min-inline-size: 0; text-align: center; }
 .donation-panel-compact .donation-panel-compact__cta.is-pending { opacity: .6; }
 .donation-panel-compact .donation-panel-btn--ghost.donation-panel-compact__cta { inline-size: 100%; margin-block-start: auto; }
 
@@ -213,9 +215,12 @@
 .donation-panel-surface.donation-panel-compact__paysurface { inline-size: min(100%, 600px); block-size: min(100%, 780px); }
 .donation-panel-compact__paybody { position: relative; flex: 1 1 auto; display: flex; min-block-size: 0; padding: 8px 0 0; }
 .donation-panel-compact__frame { flex: 1 1 auto; inline-size: 100%; min-block-size: 0; border: 0; background: var(--dp-color-surface); }
-.donation-panel-compact__payload { margin: auto; padding: 24px; text-align: center; color: var(--dp-color-text-muted); }
-.donation-panel-compact__payalt { flex: none; margin: 0; padding: 8px var(--dp-gutter) max(14px, env(safe-area-inset-bottom)); font-size: 13px; text-align: center; }
+.donation-panel-compact__paybody[data-loading] .donation-panel-compact__frame { visibility: hidden; }
+.donation-panel .donation-panel-compact__payload { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; text-align: center; color: var(--dp-color-text-muted); }
+.donation-panel-compact__paybody:not([data-loading]) .donation-panel-compact__payload { display: none; }
+.donation-panel-compact__payalt { flex: none; margin: 0; padding: 8px var(--dp-gutter) max(14px, env(safe-area-inset-bottom)); font-size: 13px; line-height: 1.4; text-align: center; }
 .donation-panel-compact__payalt a { color: var(--dp-color-primary-strong); }
+.donation-panel-compact__payalt a.is-off { visibility: hidden; }
 .donation-panel-compact__payalt a.is-alert { font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) {

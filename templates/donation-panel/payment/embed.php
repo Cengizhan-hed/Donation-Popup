@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?php wp_head(); ?>
-<style id="donation-panel-embed">.donation-panel-embed__main{box-sizing:border-box;max-inline-size:640px;margin-inline:auto;padding:16px}</style>
+<style id="donation-panel-embed">.donation-panel-embed__main{box-sizing:border-box;max-inline-size:640px;margin-inline:auto;padding:16px;overflow-x:auto}</style>
 </head>
 <body <?php body_class( 'donation-panel-embed' ); ?>>
 <?php wp_body_open(); ?>

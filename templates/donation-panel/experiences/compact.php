@@ -156,7 +156,9 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 				<?php endif; ?>
 				</div>
 				<p class="donation-panel-compact__err" id="<?php echo esc_attr( $donation_panel_key ); ?>-e1" data-dp-cerr></p>
-				<button type="submit" class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta" data-dp-cnext><span data-dp-cnext-label><?php echo esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
+				<?php // İlk durum sunucuda çizilir (betik yüklenince metin/genişlik değişmesin: CLS 0): tutar seçilmemişken pasif "Tutar seçin". ?>
+				<?php $donation_panel_pending = empty( $donation_panel_view['fixed'] ); ?>
+				<button type="submit" class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta<?php echo $donation_panel_pending ? ' is-pending' : ''; ?>" aria-disabled="<?php echo $donation_panel_pending ? 'true' : 'false'; ?>" data-dp-cnext><span data-dp-cnext-label><?php echo $donation_panel_pending ? esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
 			</section>
 
 			<section class="donation-panel-compact__step" data-dp-cstep="details" data-step-name="<?php esc_attr_e( 'Your details', 'woo-donation-popup' ); ?>" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-t2" inert aria-hidden="true">
@@ -239,11 +241,12 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 									</div>
 									<button type="button" class="donation-panel-iconbtn donation-panel-surface__close" data-dp-close aria-label="<?php esc_attr_e( 'Close payment window', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 								</div>
-								<div class="donation-panel-compact__paybody" data-dp-cpaybody>
-									<p class="donation-panel-compact__payload" data-dp-cpayload role="status"><?php esc_html_e( 'Opening the secure payment page…', 'woo-donation-popup' ); ?></p>
-									<iframe class="donation-panel-compact__frame" title="<?php esc_attr_e( 'Secure payment', 'woo-donation-popup' ); ?>" data-dp-cframe hidden></iframe>
+								<?php // Yükleniyor iletisi çerçevenin ÜSTÜNDE durur, bağlantı satırının yeri ayrılmıştır: çerçeve yüklenince katmanda kayma olmaz. ?>
+								<div class="donation-panel-compact__paybody" data-dp-cpaybody data-loading="1">
+									<iframe class="donation-panel-compact__frame" title="<?php esc_attr_e( 'Secure payment', 'woo-donation-popup' ); ?>" data-dp-cframe></iframe>
+									<p class="donation-panel-compact__payload" role="status"><?php esc_html_e( 'Opening the secure payment page…', 'woo-donation-popup' ); ?></p>
 								</div>
-								<p class="donation-panel-compact__payalt"><a href="#" target="_top" data-dp-cpayalt hidden><?php esc_html_e( 'Trouble paying here? Open the payment page instead', 'woo-donation-popup' ); ?></a></p>
+								<p class="donation-panel-compact__payalt"><a href="#" target="_top" class="is-off" data-dp-cpayalt><?php esc_html_e( 'Trouble paying here? Open the payment page instead', 'woo-donation-popup' ); ?></a></p>
 							</div>
 						</dialog>
 					</template>

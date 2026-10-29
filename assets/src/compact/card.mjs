@@ -82,6 +82,7 @@ export function createCompact(root) {
   const payButton = form.querySelector('[data-dp-cpay]');
   const payLabel = form.querySelector('[data-dp-cpay-label]');
   const paySection = sections[2];
+  const payDefault = payLabel ? payLabel.textContent : '';
   const state = { step: 0, qty: 1, quick: null, busy: false, payUrl: '', round: 0, value: null };
 
   const money = (value) => formatTotal(value, symbol, decimals, locale);
@@ -126,7 +127,7 @@ export function createCompact(root) {
       node.textContent = shown;
     });
     if (payLabel && payButton) {
-      payLabel.textContent = fill(payButton.dataset.label || '', [shown]);
+      payLabel.textContent = shown !== '' ? fill(payButton.dataset.label || '', [shown]) : payDefault;
     }
     if (qtyIn) {
       qtyIn.value = String(state.qty);
@@ -312,7 +313,7 @@ export function createCompact(root) {
   // ---- Ödeme adımı ----
   let layer = null;
   let frame = null;
-  let loader = null;
+  let body = null;
   let alt = null;
 
   const onFrameLoad = () => {
@@ -320,10 +321,9 @@ export function createCompact(root) {
     if (probe && probe.blank) {
       return;
     }
-    if (loader) {
-      loader.hidden = true;
+    if (body) {
+      body.removeAttribute('data-loading');
     }
-    frame.hidden = false;
     const status = frameState(probe);
     if (alt) {
       alt.classList.toggle('is-alert', status === 'unknown');
@@ -338,7 +338,7 @@ export function createCompact(root) {
       return Boolean(frame);
     }
     frame = paySection.querySelector('[data-dp-cframe]');
-    loader = paySection.querySelector('[data-dp-cpayload]');
+    body = paySection.querySelector('[data-dp-cpaybody]');
     alt = paySection.querySelector('[data-dp-cpayalt]');
     if (frame) {
       frame.addEventListener('load', onFrameLoad);
@@ -355,12 +355,11 @@ export function createCompact(root) {
     }
     if (alt) {
       alt.href = url;
-      alt.hidden = false;
+      alt.classList.remove('is-off');
     }
-    if (loader) {
-      loader.hidden = false;
+    if (body) {
+      body.setAttribute('data-loading', '1');
     }
-    frame.hidden = true;
     frame.src = target;
   };
 
@@ -373,8 +372,13 @@ export function createCompact(root) {
     }
     const finish = () => {
       if (frame) {
-        frame.removeAttribute('src');
-        frame.hidden = true;
+        frame.src = 'about:blank';
+      }
+      if (body) {
+        body.setAttribute('data-loading', '1');
+      }
+      if (alt) {
+        alt.classList.add('is-off');
       }
       show(3);
       if (live && ds.msgPaid) {
