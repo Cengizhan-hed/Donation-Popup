@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: woo-donation-popup 12.0.0\n"
+"Project-Id-Version: woo-donation-popup 12.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 17:10+0300\n"
+"POT-Creation-Date: 2026-10-29 13:06+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -208,17 +208,17 @@ msgid "Progress toward goal"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:617
-#: src/Admin/class-pages.php:190 src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:195 src/Admin/class-pages.php:214
 msgid "Carried over"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:618
-#: src/Admin/class-pages.php:195 src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:200 src/Admin/class-pages.php:214
 msgid "Added by hand"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:619
-#: src/Admin/class-pages.php:201 src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:206 src/Admin/class-pages.php:214
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:287
 #: blocks/donations/index.js:180
 msgid "Progress"
@@ -457,7 +457,7 @@ msgid "View"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:813
-#: src/Admin/class-admin-view.php:215
+#: src/Admin/class-admin-view.php:246
 msgid "Copy"
 msgstr ""
 
@@ -565,7 +565,7 @@ msgstr ""
 msgid "The processing fee percentage must be 0 (off) or between 0.5 and 15."
 msgstr ""
 
-#: src/Admin/class-admin-assets.php:114 src/Admin/class-admin-view.php:193
+#: src/Admin/class-admin-assets.php:114 src/Admin/class-admin-view.php:224
 msgid "Saved"
 msgstr ""
 
@@ -573,14 +573,14 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
-#: src/Admin/class-admin-assets.php:116 src/Admin/class-admin-view.php:193
+#: src/Admin/class-admin-assets.php:116 src/Admin/class-admin-view.php:224
 msgid "You have unsaved changes"
 msgstr ""
 
 #: src/Admin/class-admin-assets.php:117
-#: src/Modules/DonorAccount/class-donor-account-module.php:245
-#: src/Modules/DonorAccount/class-donor-account-module.php:279
-#: src/Modules/SideCart/class-side-cart-module.php:200
+#: src/Modules/DonorAccount/class-donor-account-module.php:243
+#: src/Modules/DonorAccount/class-donor-account-module.php:277
+#: src/Modules/SideCart/class-side-cart-module.php:182
 #: templates/donation-panel/experiences/bottom-sheet.php:16
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
@@ -642,12 +642,12 @@ msgstr ""
 
 #: src/Admin/class-admin-bootstrap.php:255
 #: src/Admin/class-admin-bootstrap.php:256
-#: src/Admin/class-admin-bootstrap.php:268 src/Admin/class-pages.php:145
+#: src/Admin/class-admin-bootstrap.php:268 src/Admin/class-pages.php:150
 msgid "Donation Panel"
 msgstr ""
 
 #: src/Admin/class-admin-bootstrap.php:283
-#: src/Admin/class-admin-bootstrap.php:284 src/Admin/class-setup-wizard.php:150
+#: src/Admin/class-admin-bootstrap.php:284 src/Admin/class-setup-wizard.php:157
 msgid "Quick setup"
 msgstr ""
 
@@ -664,7 +664,23 @@ msgstr ""
 msgid "Needs attention:"
 msgstr ""
 
-#: src/Admin/class-admin-view.php:194
+#: src/Admin/class-admin-view.php:197
+msgid "Choose custom colors"
+msgstr ""
+
+#: src/Admin/class-admin-view.php:206
+msgid "Colors are read from your theme:"
+msgstr ""
+
+#: src/Admin/class-admin-view.php:215
+msgid ""
+"Your theme colors could not be read from the WordPress palette (some themes "
+"and page builders keep colors in their own settings). The panel is using its "
+"own default colors now. To pick your own colors, choose \"Choose my own "
+"colors\" and set the two colors."
+msgstr ""
+
+#: src/Admin/class-admin-view.php:225
 msgid "Save changes"
 msgstr ""
 
@@ -672,29 +688,29 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:29 src/Admin/class-pages.php:173
+#: src/Admin/class-field-registry.php:29 src/Admin/class-pages.php:178
 msgid "Campaigns"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:30 src/Admin/class-pages.php:271
+#: src/Admin/class-field-registry.php:30 src/Admin/class-pages.php:276
 msgid "Forms and appearance"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:31 src/Admin/class-pages.php:290
+#: src/Admin/class-field-registry.php:31 src/Admin/class-pages.php:295
 msgid "Cart and checkout"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:32 src/Admin/class-pages.php:312
-#: src/Admin/class-pages.php:313 src/Admin/class-settings-store.php:68
+#: src/Admin/class-field-registry.php:32 src/Admin/class-pages.php:317
+#: src/Admin/class-pages.php:318 src/Admin/class-settings-store.php:68
 #: src/Privacy/class-privacy-tools.php:184
 msgid "Donor account"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:33 src/Admin/class-pages.php:336
+#: src/Admin/class-field-registry.php:33 src/Admin/class-pages.php:341
 msgid "Privacy"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:34 src/Admin/class-pages.php:368
+#: src/Admin/class-field-registry.php:34 src/Admin/class-pages.php:373
 msgid "Tools"
 msgstr ""
 
@@ -721,7 +737,7 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-field-registry.php:52 src/Admin/class-field-registry.php:119
-#: src/Admin/class-setup-wizard.php:105
+#: src/Admin/class-setup-wizard.php:112
 msgid "Colors"
 msgstr ""
 
@@ -857,11 +873,11 @@ msgid ""
 "automatically."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:123 src/Admin/class-setup-wizard.php:106
+#: src/Admin/class-field-registry.php:123 src/Admin/class-setup-wizard.php:113
 msgid "Use my theme colors"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:124 src/Admin/class-setup-wizard.php:107
+#: src/Admin/class-field-registry.php:124 src/Admin/class-setup-wizard.php:114
 msgid "Choose my own colors"
 msgstr ""
 
@@ -1375,7 +1391,7 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-guide.php:92 src/Admin/class-pages.php:60
-#: src/Admin/class-setup-wizard.php:133
+#: src/Admin/class-setup-wizard.php:140
 msgid "You do not have permission to open this page."
 msgstr ""
 
@@ -1395,128 +1411,128 @@ msgstr ""
 msgid "Open the full guide"
 msgstr ""
 
-#: src/Admin/class-pages.php:137
+#: src/Admin/class-pages.php:142
 msgid "Setup is complete"
 msgstr ""
 
-#: src/Admin/class-pages.php:138
+#: src/Admin/class-pages.php:143
 msgid "Everything is in place. You can change any setting later."
 msgstr ""
 
-#: src/Admin/class-pages.php:140
+#: src/Admin/class-pages.php:145
 msgid "Setup is almost complete"
 msgstr ""
 
-#: src/Admin/class-pages.php:140
+#: src/Admin/class-pages.php:145
 msgid "Let's finish setting up"
 msgstr ""
 
 #. translators: %s: list of remaining steps.
-#: src/Admin/class-pages.php:142
+#: src/Admin/class-pages.php:147
 #, php-format
 msgid "Remaining: %s."
 msgstr ""
 
-#: src/Admin/class-pages.php:145
+#: src/Admin/class-pages.php:150
 msgid "Your whole donation experience in one place."
 msgstr ""
 
 #. translators: 1: done steps, 2: total steps.
-#: src/Admin/class-pages.php:146
+#: src/Admin/class-pages.php:151
 #, php-format
 msgid "%1$d of %2$d setup steps done"
 msgstr ""
 
-#: src/Admin/class-pages.php:149
+#: src/Admin/class-pages.php:154
 msgid "Continue the quick setup"
 msgstr ""
 
-#: src/Admin/class-pages.php:154 src/Admin/class-pages.php:213
-#: src/Admin/class-pages.php:292 src/Admin/class-setup-wizard.php:58
+#: src/Admin/class-pages.php:159 src/Admin/class-pages.php:218
+#: src/Admin/class-pages.php:297 src/Admin/class-setup-wizard.php:58
 msgid "Modules"
 msgstr ""
 
-#: src/Admin/class-pages.php:160 src/Admin/class-pages.php:202
-#: src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:165 src/Admin/class-pages.php:207
+#: src/Admin/class-pages.php:214
 msgid "Status"
 msgstr ""
 
-#: src/Admin/class-pages.php:173
+#: src/Admin/class-pages.php:178
 msgid "Products with a goal. Set a goal on the product's Donation tab."
 msgstr ""
 
-#: src/Admin/class-pages.php:182
+#: src/Admin/class-pages.php:187
 msgid "(no title)"
 msgstr ""
 
-#: src/Admin/class-pages.php:183
+#: src/Admin/class-pages.php:188
 msgid "The beginning"
 msgstr ""
 
-#: src/Admin/class-pages.php:187 src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:192 src/Admin/class-pages.php:214
 msgid "Goal"
 msgstr ""
 
-#: src/Admin/class-pages.php:188 src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:193 src/Admin/class-pages.php:214
 msgid "Raised"
 msgstr ""
 
-#: src/Admin/class-pages.php:189
+#: src/Admin/class-pages.php:194
 msgid "Total not calculated yet. Recalculate to count the earlier donations."
-msgstr ""
-
-#. translators: %s: product name.
-#: src/Admin/class-pages.php:191
-#, php-format
-msgid "Carried-over amount for %s"
-msgstr ""
-
-#: src/Admin/class-pages.php:194 src/Admin/class-pages.php:199
-msgid "Save"
 msgstr ""
 
 #. translators: %s: product name.
 #: src/Admin/class-pages.php:196
 #, php-format
+msgid "Carried-over amount for %s"
+msgstr ""
+
+#: src/Admin/class-pages.php:199 src/Admin/class-pages.php:204
+msgid "Save"
+msgstr ""
+
+#. translators: %s: product name.
+#: src/Admin/class-pages.php:201
+#, php-format
 msgid "Amount added by hand for %s"
 msgstr ""
 
-#: src/Admin/class-pages.php:200 src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:205 src/Admin/class-pages.php:214
 msgid "Counting since"
 msgstr ""
 
 #. translators: %d: percent.
-#: src/Admin/class-pages.php:201
+#: src/Admin/class-pages.php:206
 #, php-format
 msgid "%d percent of the goal"
 msgstr ""
 
-#: src/Admin/class-pages.php:203
+#: src/Admin/class-pages.php:208
 msgid "Recalculate"
 msgstr ""
 
-#: src/Admin/class-pages.php:207
+#: src/Admin/class-pages.php:212
 msgid ""
 "No campaigns yet. Open a product, choose the Donation tab and set a goal "
 "amount."
 msgstr ""
 
-#: src/Admin/class-pages.php:209
+#: src/Admin/class-pages.php:214
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:101
 #: src/Privacy/class-order-privacy.php:124 blocks/donation-form/index.js:59
 #: blocks/donation-form/index.js:69
 msgid "Product"
 msgstr ""
 
-#: src/Admin/class-pages.php:211
+#: src/Admin/class-pages.php:216
 msgid "Add a product"
 msgstr ""
 
-#: src/Admin/class-pages.php:212
+#: src/Admin/class-pages.php:217
 msgid "Campaign products"
 msgstr ""
 
-#: src/Admin/class-pages.php:212
+#: src/Admin/class-pages.php:217
 msgid ""
 "Raised = carried-over amount + paid donations since the campaign started + "
 "the amount added by hand in this table. Recalculating shows a preview first "
@@ -1524,268 +1540,268 @@ msgid ""
 msgstr ""
 
 #. translators: %s: product name.
-#: src/Admin/class-pages.php:230
+#: src/Admin/class-pages.php:235
 #, php-format
 msgid ""
 "Recalculate \"%s\": carried-over amount plus paid donations in the dates you "
 "choose. Nothing changes until you approve the preview."
 msgstr ""
 
-#: src/Admin/class-pages.php:232
+#: src/Admin/class-pages.php:237
 msgid "Count donations from"
 msgstr ""
 
-#: src/Admin/class-pages.php:233
+#: src/Admin/class-pages.php:238
 msgid "Until (optional)"
 msgstr ""
 
-#: src/Admin/class-pages.php:234 src/Admin/class-pages.php:371
+#: src/Admin/class-pages.php:239 src/Admin/class-pages.php:376
 msgid "Preview"
 msgstr ""
 
-#: src/Admin/class-pages.php:238
+#: src/Admin/class-pages.php:243
 msgid "Stored total"
 msgstr ""
 
-#: src/Admin/class-pages.php:239
+#: src/Admin/class-pages.php:244
 msgid "Calculated total"
 msgstr ""
 
-#: src/Admin/class-pages.php:240
+#: src/Admin/class-pages.php:245
 msgid "Difference"
 msgstr ""
 
-#: src/Admin/class-pages.php:241
+#: src/Admin/class-pages.php:246
 msgid "Orders counted"
 msgstr ""
 
-#: src/Admin/class-pages.php:244
+#: src/Admin/class-pages.php:249
 msgid "Apply this total"
 msgstr ""
 
-#: src/Admin/class-pages.php:256
+#: src/Admin/class-pages.php:261
 msgid "Live"
 msgstr ""
 
-#: src/Admin/class-pages.php:257
+#: src/Admin/class-pages.php:262
 msgid "Draft"
 msgstr ""
 
-#: src/Admin/class-pages.php:258
+#: src/Admin/class-pages.php:263
 msgid "Private"
 msgstr ""
 
-#: src/Admin/class-pages.php:259
+#: src/Admin/class-pages.php:264
 msgid "Pending review"
 msgstr ""
 
-#: src/Admin/class-pages.php:271
+#: src/Admin/class-pages.php:276
 msgid "How the donation form looks and where the donate button appears."
 msgstr ""
 
-#: src/Admin/class-pages.php:285 src/Admin/class-status.php:158
+#: src/Admin/class-pages.php:290 src/Admin/class-status.php:158
 msgid "Fix"
 msgstr ""
 
-#: src/Admin/class-pages.php:287
+#: src/Admin/class-pages.php:292
 msgid "Guest checkout is on"
 msgstr ""
 
-#: src/Admin/class-pages.php:287
+#: src/Admin/class-pages.php:292
 msgid "Guest checkout is off: donors must create an account to give"
 msgstr ""
 
-#: src/Admin/class-pages.php:287 src/Admin/class-pages.php:307
-#: src/Admin/class-pages.php:309 src/Admin/class-status.php:192
+#: src/Admin/class-pages.php:292 src/Admin/class-pages.php:312
+#: src/Admin/class-pages.php:314 src/Admin/class-status.php:192
 msgid "Open WooCommerce settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:288
+#: src/Admin/class-pages.php:293
 msgid ""
 "Payment methods, taxes and currency are set in WooCommerce. Donation Panel "
 "works with both the block and the classic checkout."
 msgstr ""
 
-#: src/Admin/class-pages.php:290
+#: src/Admin/class-pages.php:295
 msgid "What donors see after they choose an amount."
 msgstr ""
 
-#: src/Admin/class-pages.php:291 src/Admin/class-pages.php:420
+#: src/Admin/class-pages.php:296 src/Admin/class-pages.php:425
 msgid "Checkout"
 msgstr ""
 
-#: src/Admin/class-pages.php:307
+#: src/Admin/class-pages.php:312
 msgid "Guest checkout is on: donors can give without an account"
 msgstr ""
 
-#: src/Admin/class-pages.php:307
+#: src/Admin/class-pages.php:312
 msgid "Guest checkout is off: every donor must create an account"
 msgstr ""
 
-#: src/Admin/class-pages.php:309
+#: src/Admin/class-pages.php:314
 msgid "Registration on My Account is on"
 msgstr ""
 
-#: src/Admin/class-pages.php:309
+#: src/Admin/class-pages.php:314
 msgid ""
 "Registration on My Account is off: donors cannot create an account themselves"
 msgstr ""
 
-#: src/Admin/class-pages.php:310
+#: src/Admin/class-pages.php:315
 msgid ""
 "Sign-in, registration and password reset use WordPress and WooCommerce. The "
 "plugin never stores passwords. Account options are set in WooCommerce."
 msgstr ""
 
-#: src/Admin/class-pages.php:312
+#: src/Admin/class-pages.php:317
 msgid "Optional. Off by default; donors can always give as guests."
 msgstr ""
 
-#: src/Admin/class-pages.php:313
+#: src/Admin/class-pages.php:318
 msgid ""
 "Adds a sign-in icon, a sign-in and register panel, and a \"My donations\" "
 "tab in My Account with receipts and a quick way to give again."
 msgstr ""
 
-#: src/Admin/class-pages.php:314
+#: src/Admin/class-pages.php:319
 msgid "WooCommerce account settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:328
+#: src/Admin/class-pages.php:333
 msgid "Privacy policy page is set in WordPress"
 msgstr ""
 
-#: src/Admin/class-pages.php:328
+#: src/Admin/class-pages.php:333
 msgid "Privacy policy page is not set in WordPress"
 msgstr ""
 
-#: src/Admin/class-pages.php:328 src/Admin/class-status.php:182
+#: src/Admin/class-pages.php:333 src/Admin/class-status.php:182
 msgid "Set it"
 msgstr ""
 
-#: src/Admin/class-pages.php:329
+#: src/Admin/class-pages.php:334
 msgid "The plugin sets no cookie of its own"
 msgstr ""
 
-#: src/Admin/class-pages.php:332
+#: src/Admin/class-pages.php:337
 msgid "WordPress \"Export personal data\" includes donor details on orders"
 msgstr ""
 
-#: src/Admin/class-pages.php:332
+#: src/Admin/class-pages.php:337
 msgid "Donor details are not part of \"Export personal data\""
 msgstr ""
 
-#: src/Admin/class-pages.php:333
+#: src/Admin/class-pages.php:338
 msgid "WordPress \"Erase personal data\" covers donor details on orders"
 msgstr ""
 
-#: src/Admin/class-pages.php:333
+#: src/Admin/class-pages.php:338
 msgid "Donor details are not part of \"Erase personal data\""
 msgstr ""
 
-#: src/Admin/class-pages.php:334
+#: src/Admin/class-pages.php:339
 msgid "Export personal data"
 msgstr ""
 
-#: src/Admin/class-pages.php:334
+#: src/Admin/class-pages.php:339
 msgid "Erase personal data"
 msgstr ""
 
-#: src/Admin/class-pages.php:336
+#: src/Admin/class-pages.php:341
 msgid "Donor details are handled with the WordPress privacy tools."
 msgstr ""
 
-#: src/Admin/class-pages.php:337
+#: src/Admin/class-pages.php:342
 msgid "WordPress privacy tools"
 msgstr ""
 
-#: src/Admin/class-pages.php:337
+#: src/Admin/class-pages.php:342
 msgid ""
 "Donor name, dedication, phone and email are saved on the order exactly as "
 "typed. Write your privacy text on your own site."
 msgstr ""
 
-#: src/Admin/class-pages.php:368
+#: src/Admin/class-pages.php:373
 msgid "Preview, move your settings, and check that everything is working."
 msgstr ""
 
-#: src/Admin/class-pages.php:370
+#: src/Admin/class-pages.php:375
 msgid ""
 "See every module on your site as visitors would, without changing any "
 "setting. Only you can see it, and it never saves anything."
 msgstr ""
 
-#: src/Admin/class-pages.php:370
+#: src/Admin/class-pages.php:375
 msgid "Open preview"
 msgstr ""
 
-#: src/Admin/class-pages.php:373
+#: src/Admin/class-pages.php:378
 msgid ""
 "Export downloads your plugin settings as a file. Import reads such a file. "
 "Orders, donors and products are not included."
 msgstr ""
 
-#: src/Admin/class-pages.php:374
+#: src/Admin/class-pages.php:379
 msgid "Export settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:375
+#: src/Admin/class-pages.php:380
 msgid "Import settings"
 msgstr ""
 
-#: src/Admin/class-pages.php:376
+#: src/Admin/class-pages.php:381
 msgid "Export and import"
 msgstr ""
 
-#: src/Admin/class-pages.php:389
+#: src/Admin/class-pages.php:394
 msgid "Copy for support"
 msgstr ""
 
-#: src/Admin/class-pages.php:390
+#: src/Admin/class-pages.php:395
 msgid "Diagnostics"
 msgstr ""
 
-#: src/Admin/class-pages.php:390
+#: src/Admin/class-pages.php:395
 msgid "No personal or order data is included."
 msgstr ""
 
-#: src/Admin/class-pages.php:415
+#: src/Admin/class-pages.php:420
 msgid "Plugin version"
 msgstr ""
 
-#: src/Admin/class-pages.php:416
+#: src/Admin/class-pages.php:421
 msgid "WordPress"
 msgstr ""
 
-#: src/Admin/class-pages.php:417
+#: src/Admin/class-pages.php:422
 msgid "WooCommerce"
 msgstr ""
 
-#: src/Admin/class-pages.php:418
+#: src/Admin/class-pages.php:423
 msgid "PHP"
 msgstr ""
 
-#: src/Admin/class-pages.php:419
+#: src/Admin/class-pages.php:424
 msgid "Order storage"
 msgstr ""
 
-#: src/Admin/class-pages.php:421
+#: src/Admin/class-pages.php:426
 msgid "Currency"
 msgstr ""
 
-#: src/Admin/class-pages.php:422
+#: src/Admin/class-pages.php:427
 msgid "Guest checkout"
 msgstr ""
 
-#: src/Admin/class-pages.php:423
+#: src/Admin/class-pages.php:428
 msgid "Donation products"
 msgstr ""
 
-#: src/Admin/class-pages.php:424
+#: src/Admin/class-pages.php:429
 msgid "Modules on"
 msgstr ""
 
-#: src/Admin/class-pages.php:425
+#: src/Admin/class-pages.php:430
 msgid "REST API address"
 msgstr ""
 
@@ -1866,7 +1882,7 @@ msgstr ""
 msgid "Donation form"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:59 src/Admin/class-setup-wizard.php:164
+#: src/Admin/class-setup-wizard.php:59 src/Admin/class-setup-wizard.php:171
 msgid "Finish"
 msgstr ""
 
@@ -1924,42 +1940,42 @@ msgid ""
 "and use its Donation tab to turn it into a donation product."
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:106
+#: src/Admin/class-setup-wizard.php:113
 msgid "The form follows your site colors and font automatically"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:107
+#: src/Admin/class-setup-wizard.php:114
 msgid "Main color and button color"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:123
+#: src/Admin/class-setup-wizard.php:130
 msgid "On a product page the shortcode finds its own product. No ID needed."
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:151
+#: src/Admin/class-setup-wizard.php:158
 msgid "Setup progress"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:161
+#: src/Admin/class-setup-wizard.php:168
 #: templates/donation-panel/experiences/form.php:149
 msgid "Back"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:162
+#: src/Admin/class-setup-wizard.php:169
 msgid "Skip for now"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:163
+#: src/Admin/class-setup-wizard.php:170
 #: templates/donation-panel/experiences/form.php:147
 #: templates/donation-panel/experiences/form.php:399
 msgid "Continue"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:167
+#: src/Admin/class-setup-wizard.php:174
 msgid "Live preview"
 msgstr ""
 
-#: src/Admin/class-setup-wizard.php:167
+#: src/Admin/class-setup-wizard.php:174
 msgid "LIVE PREVIEW"
 msgstr ""
 
@@ -2015,27 +2031,35 @@ msgid ""
 "checkout in WooCommerce."
 msgstr ""
 
-#: src/Admin/class-status.php:208
-msgid "prepare the checkout page"
+#: src/Admin/class-status.php:199
+msgid "Colors could not be read from your theme. Choose your own colors."
 msgstr ""
 
-#: src/Admin/class-status.php:213
-msgid "publish a donation product"
+#: src/Admin/class-status.php:201
+msgid "Choose colors"
 msgstr ""
 
 #: src/Admin/class-status.php:218
-msgid "finish the quick setup"
+msgid "prepare the checkout page"
 msgstr ""
 
 #: src/Admin/class-status.php:223
-msgid "link your privacy page"
+msgid "publish a donation product"
 msgstr ""
 
 #: src/Admin/class-status.php:228
-msgid "allow guest checkout"
+msgid "finish the quick setup"
 msgstr ""
 
 #: src/Admin/class-status.php:233
+msgid "link your privacy page"
+msgstr ""
+
+#: src/Admin/class-status.php:238
+msgid "allow guest checkout"
+msgstr ""
+
+#: src/Admin/class-status.php:243
 msgid "create your first campaign"
 msgstr ""
 
@@ -2229,152 +2253,152 @@ msgid ""
 "this, ignore this email."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:39
+#: src/Modules/DonorAccount/class-account-renderer.php:38
 msgid "My account"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:41
+#: src/Modules/DonorAccount/class-account-renderer.php:38
 msgid "Log in or sign up"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:59
+#: src/Modules/DonorAccount/class-account-renderer.php:56
 msgid "Show password"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:59
+#: src/Modules/DonorAccount/class-account-renderer.php:56
 msgid "Hide password"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:77
-#: src/Modules/DonorAccount/class-donor-account-module.php:247
+#: src/Modules/DonorAccount/class-account-renderer.php:74
+#: src/Modules/DonorAccount/class-donor-account-module.php:245
 msgid "Enter a valid email address."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:78
-#: src/Modules/DonorAccount/class-donor-account-module.php:248
+#: src/Modules/DonorAccount/class-account-renderer.php:75
+#: src/Modules/DonorAccount/class-donor-account-module.php:246
 msgid "Password must be at least 8 characters."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:81
+#: src/Modules/DonorAccount/class-account-renderer.php:78
 msgid "Account"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:81
-#: src/Modules/DonorAccount/class-account-renderer.php:90
+#: src/Modules/DonorAccount/class-account-renderer.php:78
+#: src/Modules/DonorAccount/class-account-renderer.php:87
 msgid "Log in"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:81
-#: src/Modules/DonorAccount/class-account-renderer.php:98
+#: src/Modules/DonorAccount/class-account-renderer.php:78
+#: src/Modules/DonorAccount/class-account-renderer.php:95
 msgid "Create account"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:86
-#: src/Modules/DonorAccount/class-account-renderer.php:96
-#: src/Modules/DonorAccount/class-account-renderer.php:103
+#: src/Modules/DonorAccount/class-account-renderer.php:83
+#: src/Modules/DonorAccount/class-account-renderer.php:93
+#: src/Modules/DonorAccount/class-account-renderer.php:100
 #: src/WooCommerce/class-cart-hooks.php:272
 msgid "Email"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:87
-#: src/Modules/DonorAccount/class-account-renderer.php:97
+#: src/Modules/DonorAccount/class-account-renderer.php:84
+#: src/Modules/DonorAccount/class-account-renderer.php:94
 msgid "Password"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:87
+#: src/Modules/DonorAccount/class-account-renderer.php:84
 msgid "Enter your password."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:88
+#: src/Modules/DonorAccount/class-account-renderer.php:85
 msgid "Remember me"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:89
+#: src/Modules/DonorAccount/class-account-renderer.php:86
 msgid "Forgot password?"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:104
+#: src/Modules/DonorAccount/class-account-renderer.php:101
 msgid "Send link"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:105
-#: src/Modules/DonorAccount/class-account-renderer.php:109
+#: src/Modules/DonorAccount/class-account-renderer.php:102
+#: src/Modules/DonorAccount/class-account-renderer.php:106
 msgid "Back to log in"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:107
-#: src/Modules/DonorAccount/class-donor-account-module.php:255
+#: src/Modules/DonorAccount/class-account-renderer.php:104
+#: src/Modules/DonorAccount/class-donor-account-module.php:253
 msgid "Check your email"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:108
+#: src/Modules/DonorAccount/class-account-renderer.php:105
 msgid ""
 "If this email matches an account, a link is on its way. It arrives within a "
 "few minutes; if not, check your spam folder."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:111
+#: src/Modules/DonorAccount/class-account-renderer.php:108
 msgid ""
 "Gifts you made earlier with this email are added to your account "
 "automatically once you verify your email."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:117
-#: src/Modules/DonorAccount/class-account-renderer.php:210
-#: src/Modules/DonorAccount/class-donor-account-module.php:249
+#: src/Modules/DonorAccount/class-account-renderer.php:114
+#: src/Modules/DonorAccount/class-account-renderer.php:207
+#: src/Modules/DonorAccount/class-donor-account-module.php:247
 msgid "Welcome"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:118
+#: src/Modules/DonorAccount/class-account-renderer.php:115
 msgid "Close"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:131
+#: src/Modules/DonorAccount/class-account-renderer.php:128
 msgid "No gifts yet"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:131
+#: src/Modules/DonorAccount/class-account-renderer.php:128
 msgid "Your gifts will appear here after your first donation."
 msgstr ""
 
 #. translators: %s: dedication text typed by the donor.
-#: src/Modules/DonorAccount/class-account-renderer.php:158
+#: src/Modules/DonorAccount/class-account-renderer.php:155
 #: src/Modules/SideCart/class-side-cart-renderer.php:137
 #, php-format
 msgid "In honour of: %s"
 msgstr ""
 
 #. translators: %s: percentage number, for example 62.
-#: src/Modules/DonorAccount/class-account-renderer.php:168
+#: src/Modules/DonorAccount/class-account-renderer.php:165
 #: templates/donation-panel/thanks/summary.php:24
 #, php-format
 msgid "%s%%"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:169
+#: src/Modules/DonorAccount/class-account-renderer.php:166
 msgid "Campaign progress"
 msgstr ""
 
 #. translators: %s: percentage, for example 62%.
-#: src/Modules/DonorAccount/class-account-renderer.php:170
+#: src/Modules/DonorAccount/class-account-renderer.php:167
 #, php-format
 msgid "Campaign progress: %s"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:175
+#: src/Modules/DonorAccount/class-account-renderer.php:172
 msgid "Video"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:178
+#: src/Modules/DonorAccount/class-account-renderer.php:175
 msgid "Receipt"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:183
+#: src/Modules/DonorAccount/class-account-renderer.php:180
 #: templates/donation-panel/thanks/summary.php:95
 msgid "Give again"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:211
+#: src/Modules/DonorAccount/class-account-renderer.php:208
 #: src/Modules/SideCart/class-side-cart-renderer.php:88
 #: templates/donation-panel/experiences/form.php:370
 #: templates/donation-panel/experiences/form.php:374
@@ -2383,68 +2407,68 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:212
+#: src/Modules/DonorAccount/class-account-renderer.php:209
 #: src/Privacy/class-privacy-tools.php:182
 msgid "Donations"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:213
+#: src/Modules/DonorAccount/class-account-renderer.php:210
 msgid "This year"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:231
+#: src/Modules/DonorAccount/class-account-renderer.php:228
 #: src/Modules/SocialProof/class-social-proof-renderer.php:135
 msgid "Show more"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:233
+#: src/Modules/DonorAccount/class-account-renderer.php:230
 #: src/Modules/DonorAccount/class-donor-account-module.php:165
 #: src/Modules/DonorAccount/class-donor-account-module.php:171
 #: src/Modules/DonorAccount/class-donor-account-module.php:182
 msgid "My donations"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:246
+#: src/Modules/DonorAccount/class-account-renderer.php:243
 msgid "Link your earlier gifts"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:247
+#: src/Modules/DonorAccount/class-account-renderer.php:244
 msgid ""
 "Confirm to add the gifts you made as a guest with this email address to your "
 "account."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:248
+#: src/Modules/DonorAccount/class-account-renderer.php:245
 msgid "Confirm and link"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:251
+#: src/Modules/DonorAccount/class-account-renderer.php:248
 msgid "Gifts made as a guest?"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:252
+#: src/Modules/DonorAccount/class-account-renderer.php:249
 msgid ""
 "We will email a verification link to your account address. Only after you "
 "confirm are earlier guest gifts added here."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:253
+#: src/Modules/DonorAccount/class-account-renderer.php:250
 msgid "Send verification link"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-account-renderer.php:263
+#: src/Modules/DonorAccount/class-account-renderer.php:260
 msgid ""
 "Create an account with the box below to track your gifts, download receipts "
 "and give again in one tap. Earlier guest gifts are linked only after email "
 "verification."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:244
+#: src/Modules/DonorAccount/class-donor-account-module.php:242
 msgid "Email or password is incorrect. Try again or reset your password."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:246
-#: src/Modules/DonorAccount/class-donor-account-module.php:281
+#: src/Modules/DonorAccount/class-donor-account-module.php:244
+#: src/Modules/DonorAccount/class-donor-account-module.php:279
 #: templates/donation-panel/experiences/bottom-sheet.php:16
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
@@ -2452,39 +2476,39 @@ msgstr ""
 msgid "Too many attempts. Please wait a moment and try again."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:250
+#: src/Modules/DonorAccount/class-donor-account-module.php:248
 msgid "Log in to see your donations, receipts and videos in one place."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:251
+#: src/Modules/DonorAccount/class-donor-account-module.php:249
 msgid "Make your next gift even quicker."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:252
+#: src/Modules/DonorAccount/class-donor-account-module.php:250
 msgid "Enter your email and we will send a link."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:253
+#: src/Modules/DonorAccount/class-donor-account-module.php:251
 msgid "Create an account"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:254
+#: src/Modules/DonorAccount/class-donor-account-module.php:252
 msgid "Reset password"
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:280
+#: src/Modules/DonorAccount/class-donor-account-module.php:278
 msgid "We sent a verification link to your account email."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:282
+#: src/Modules/DonorAccount/class-donor-account-module.php:280
 msgid "This link is invalid or has expired. Request a new one."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:283
+#: src/Modules/DonorAccount/class-donor-account-module.php:281
 msgid "Your earlier gifts were added to your account."
 msgstr ""
 
-#: src/Modules/DonorAccount/class-donor-account-module.php:284
+#: src/Modules/DonorAccount/class-donor-account-module.php:282
 msgid "No earlier guest gifts were found for this email."
 msgstr ""
 
@@ -2799,40 +2823,40 @@ msgid ""
 "Preview: «%s» is shown. That product’s form appears on the product page."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:435
+#: src/Modules/EntryPoints/class-donations-list.php:451
 msgid "There are no donations to show right now."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:694
+#: src/Modules/EntryPoints/class-donations-list.php:710
 msgid "Donation categories"
 msgstr ""
 
 #. translators: 1: button text (e.g. Donate), 2: donation product name
-#: src/Modules/EntryPoints/class-donations-list.php:750
+#: src/Modules/EntryPoints/class-donations-list.php:766
 #, php-format
 msgid "%1$s: %2$s"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:779
+#: src/Modules/EntryPoints/class-donations-list.php:795
 msgid "Per share"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:866
+#: src/Modules/EntryPoints/class-donations-list.php:882
 msgid "Donate now"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:866
+#: src/Modules/EntryPoints/class-donations-list.php:882
 #: src/Modules/EntryPoints/class-shortcodes.php:314
 #: src/Modules/Experiences/class-form-renderer.php:72
 msgid "Donate"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:877
+#: src/Modules/EntryPoints/class-donations-list.php:893
 msgid "Campaign"
 msgstr ""
 
 #. translators: %d: days left in the campaign
-#: src/Modules/EntryPoints/class-donations-list.php:886
+#: src/Modules/EntryPoints/class-donations-list.php:902
 #, php-format
 msgid "Campaign · %d day"
 msgid_plural "Campaign · %d days"
@@ -2840,42 +2864,42 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: 1: collected, 2: goal
-#: src/Modules/EntryPoints/class-donations-list.php:915
+#: src/Modules/EntryPoints/class-donations-list.php:931
 #, php-format
 msgid "%1$s / %2$s raised"
 msgstr ""
 
 #. translators: %s: number of donors (formatted)
-#: src/Modules/EntryPoints/class-donations-list.php:927
+#: src/Modules/EntryPoints/class-donations-list.php:943
 #, php-format
 msgid "%s donor"
 msgid_plural "%s donors"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:945
+#: src/Modules/EntryPoints/class-donations-list.php:961
 msgid "Any amount"
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:960
+#: src/Modules/EntryPoints/class-donations-list.php:976
 msgid ""
 "Query returned no results: the given product IDs are not a published "
 "donation product or are out of scope."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:963
+#: src/Modules/EntryPoints/class-donations-list.php:979
 msgid ""
 "Query returned no results: no published, in-stock, purchasable donation "
 "product in the selected categories."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:966
+#: src/Modules/EntryPoints/class-donations-list.php:982
 msgid ""
 "Query returned no results: scope is “flagged products only”; flag products "
 "on the Donation tab."
 msgstr ""
 
-#: src/Modules/EntryPoints/class-donations-list.php:968
+#: src/Modules/EntryPoints/class-donations-list.php:984
 msgid ""
 "Query returned no results: no published, catalog-visible, in-stock donation "
 "product."
@@ -3041,7 +3065,7 @@ msgstr ""
 msgid "Donation Panel preview: exit"
 msgstr ""
 
-#: src/Modules/SideCart/class-side-cart-module.php:201
+#: src/Modules/SideCart/class-side-cart-module.php:183
 msgid "Removed from your basket."
 msgstr ""
 
@@ -3780,38 +3804,38 @@ msgstr ""
 msgid "Your donation is already being processed. Please wait a moment."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:112
+#: src/WooCommerce/Direct/class-direct-order-factory.php:114
 msgid "This submission key was already used for a different donation."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:156
+#: src/WooCommerce/Direct/class-direct-order-factory.php:158
 msgid "The donation could not be started. Please try again."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:397
-#: src/WooCommerce/Direct/class-direct-order-factory.php:431
+#: src/WooCommerce/Direct/class-direct-order-factory.php:399
+#: src/WooCommerce/Direct/class-direct-order-factory.php:433
 msgid ""
 "You have several unpaid donations waiting. Please complete or wait for them "
 "to expire before starting another."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:444
+#: src/WooCommerce/Direct/class-direct-order-factory.php:446
 msgid "This donation is not available right now."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:447
+#: src/WooCommerce/Direct/class-direct-order-factory.php:449
 msgid "This donation is out of stock."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:450
+#: src/WooCommerce/Direct/class-direct-order-factory.php:452
 msgid "This donation can only be made once per order."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:480
+#: src/WooCommerce/Direct/class-direct-order-factory.php:482
 msgid "This donation cannot be started right now."
 msgstr ""
 
-#: src/WooCommerce/Direct/class-direct-order-factory.php:622
+#: src/WooCommerce/Direct/class-direct-order-factory.php:624
 msgid "Direct donation started. Waiting for payment."
 msgstr ""
 

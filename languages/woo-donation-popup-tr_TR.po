@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 14:10:10+0000\n"
-"PO-Revision-Date: 2026-10-28 14:10:10+0000\n"
+"POT-Creation-Date: 2026-10-29 10:06:18+0000\n"
+"PO-Revision-Date: 2026-10-29 10:06:18+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -1122,6 +1122,14 @@ msgstr "Çin"
 msgid "Choose a view, copy the shortcode, and paste it into a page or post."
 msgstr "Görünümü seçin, kısa kodu kopyalayıp sayfa veya yazıya yapıştırın."
 
+#: src/Admin/class-status.php
+msgid "Choose colors"
+msgstr "Renkleri seç"
+
+#: src/Admin/class-admin-view.php
+msgid "Choose custom colors"
+msgstr "Özel renkleri seç"
+
 #: src/Admin/
 msgid "Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later."
 msgstr "Bağışçı bağış düğmesine dokunduğunda formun nasıl görüneceğini seçin. Telefonlarda form her zaman alttan açılır. Sonradan her ürün için ayrıca değiştirebilirsiniz."
@@ -1233,6 +1241,14 @@ msgstr "Renk ve yazı"
 #: includes/class-admin-layout-tabs-renderer.php:133
 msgid "Colors and layers"
 msgstr "Renkler ve katmanlar"
+
+#: src/Admin/class-admin-view.php
+msgid "Colors are read from your theme:"
+msgstr "Renkler temanızdan okunuyor:"
+
+#: src/Admin/class-status.php
+msgid "Colors could not be read from your theme. Choose your own colors."
+msgstr "Renkler temadan okunamadı, kendi renklerinizi seçin."
 
 #: src/Admin/
 msgid "Colors, form fields, product placement and the product list stay in the classic settings screen. Nothing was removed."
@@ -6752,6 +6768,10 @@ msgstr "Kişisel verileriniz Aydınlatma Metni kapsamında işlenir."
 #: templates/donation-panel/thanks/summary.php
 msgid "Your tax relief declaration has been recorded with this donation."
 msgstr "Vergi indirimi beyanınız bu bağışla birlikte kaydedildi."
+
+#: src/Admin/class-admin-view.php
+msgid "Your theme colors could not be read from the WordPress palette (some themes and page builders keep colors in their own settings). The panel is using its own default colors now. To pick your own colors, choose \"Choose my own colors\" and set the two colors."
+msgstr "Temanızın renkleri WordPress paletinden okunamadı (bazı temalar ve sayfa oluşturucular renkleri kendi ayarlarında tutar). Panel şimdi kendi varsayılan renklerini kullanıyor. Kendi renklerinizi seçmek için \"Kendi renklerimi seçeyim\" seçeneğini seçin ve iki rengi belirleyin."
 
 #: src/Admin/
 msgid "Your whole donation experience in one place."
