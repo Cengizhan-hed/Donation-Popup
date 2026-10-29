@@ -107,6 +107,27 @@ export async function ensureDetailsStepForEmptySubmit(form, timeout = CHECK_MS) 
 }
 
 /**
+ * Geçersiz/belirsiz tutarla pasif ana düğme: pasifliği doğrular (aria-disabled=true), `force` ile dokunur (gerçek
+ * bağışçı dokunabilir; Playwright pasif düğmeye normal tıklamaz) ve görünür, boş olmayan tutar hatasını bekler.
+ * Sepet isteği/yerel gönderim yokluğunu çağıran taraf kendi sondasıyla doğrular.
+ * @param {import('@playwright/test').Locator} form
+ * @param {number} [timeout]
+ * @returns {Promise<string>} Görünen tutar hata metni.
+ */
+export async function touchPendingSubmitExpectAmountError(form, timeout = CHECK_MS) {
+  const submit = form.locator(DP_SEL.submit).first();
+  await submit.waitFor({ state: 'visible', timeout });
+  const pending = await submit.getAttribute('aria-disabled');
+  if (pending !== 'true') throw new Error(`geçersiz tutarda ana düğme pasif olmalıydı (aria-disabled=${pending})`);
+  await submit.click({ timeout, noWaitAfter: true, force: true });
+  const err = form.locator(DP_SEL.error('amount')).filter({ visible: true }).first();
+  await err.waitFor({ state: 'visible', timeout });
+  const text = String((await err.textContent()) || '').trim();
+  if (!text) throw new Error('tutar hata metni boş');
+  return text;
+}
+
+/**
  * Bilgi adımı görünene kadar "Devam"a basar (adımlar tek sayfaysa bir şey yapmaz).
  * @param {import('@playwright/test').Locator} form
  * @param {number} [timeout]

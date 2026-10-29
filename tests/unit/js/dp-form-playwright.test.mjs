@@ -9,6 +9,7 @@ import { chromium } from '@playwright/test';
 import {
   advanceToDetails,
   ensureDetailsStepForEmptySubmit,
+  touchPendingSubmitExpectAmountError,
   returnToDetails,
   collectHiddenTriggerDump,
   fillAmountStep,
@@ -232,6 +233,37 @@ describe('advanceToDetails', () => {
       });
       await assert.rejects(advanceToDetails(formOf(page.locator('body')), 1500), /vergi indirimi adımı bilgi adımından sonra/);
       assert.notEqual(await page.title(), 'submitted');
+    });
+  });
+});
+
+describe('touchPendingSubmitExpectAmountError (belirsiz tutar, pasif düğme)', () => {
+  const AMBIG = (disabled) => `
+<form data-dp-form novalidate>
+  <section data-dp-step="amount"><input name="amount" value="10,50"><p data-dp-error="amount"></p></section>
+  <button type="submit" data-dp-submit aria-disabled="${disabled}">Choose</button>
+</form>
+<script>
+  window.__sent = 0;
+  const f = document.querySelector('[data-dp-form]');
+  f.addEventListener('submit', (e) => { e.preventDefault(); window.__sent++; });
+  f.querySelector('[data-dp-submit]').addEventListener('click', (e) => {
+    e.preventDefault();
+    f.querySelector('[data-dp-error="amount"]').textContent = 'Invalid amount';
+  });
+</script>`;
+
+  it('pasif düğmeye force ile dokunur; hata metni görünür, gönderim yok', async () => {
+    await withPage(AMBIG('true'), async (page) => {
+      const text = await touchPendingSubmitExpectAmountError(formOf(page.locator('body')), 3000);
+      assert.equal(text, 'Invalid amount');
+      assert.equal(await page.evaluate(() => window.__sent), 0);
+    });
+  });
+
+  it('negatif: düğme pasif değilse açık hata verir', async () => {
+    await withPage(AMBIG('false'), async (page) => {
+      await assert.rejects(touchPendingSubmitExpectAmountError(formOf(page.locator('body')), 1500), /pasif olmalıydı/);
     });
   });
 });

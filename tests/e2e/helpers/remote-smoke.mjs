@@ -5,7 +5,7 @@
 import path from 'node:path';
 import { withCacheBust } from './env.mjs';
 import { DP_SEL, SEL } from './selectors.mjs';
-import { advanceToDetails, clickSubmit, ensureDetailsStepForEmptySubmit, formOf } from './dp-form.mjs';
+import { advanceToDetails, clickSubmit, ensureDetailsStepForEmptySubmit, formOf, touchPendingSubmitExpectAmountError } from './dp-form.mjs';
 import {
   applyTimeoutsToPage,
   isRemoteProfile,
@@ -567,12 +567,8 @@ export async function runRemoteSmokeChecks(ctx) {
       reloadGuard.arm();
       const probe = attachAddToCartProbe(page);
       try {
-        await clickAddOrGo(page, shell, timeouts.action);
-        await formOf(shell)
-          .locator('[data-dp-error="amount"]')
-          .filter({ hasText: /\S/ })
-          .first()
-          .waitFor({ state: 'visible', timeout: timeouts.expect });
+        // 12.1: belirsiz tutarda ana düğme pasif; doğrula, force ile dokun, tutar hatası görünür, istek yok.
+        await touchPendingSubmitExpectAmountError(formOf(shell), timeouts.expect);
         if (probe.ajax.length) {
           throw new Error(`10,50 sepete eklendi (${probe.ajax.length} istek)`);
         }
