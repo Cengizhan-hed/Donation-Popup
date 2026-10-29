@@ -307,9 +307,9 @@ async function snapshotChrome(page) {
         margin: body.margin,
         padding: body.padding,
       },
-      heading: pick('.wp-block-site-title, .site-title, header h1, h1, .wp-block-site-title a'),
-      menu: pick('header nav, .wp-block-navigation, .main-navigation, #site-navigation, nav'),
-      footer: pick('footer, .site-footer, .wp-block-template-part'),
+      heading: pick('h1'),
+      menu: pick('nav'),
+      footer: pick('footer'),
       wooButton: pick(
         '.single_add_to_cart_button, .woocommerce a.button, .wp-block-button__link, button.alt'
       ),

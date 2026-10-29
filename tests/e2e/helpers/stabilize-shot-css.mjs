@@ -4,13 +4,8 @@
  */
 export const STABILIZE_SHOT_CSS = `
 *{transition:none!important;animation:none!important;caret-color:transparent!important}
-img.lazyload, img.lazyloading, img.lazyloaded, .fusion-image-wrapper img, .lazyload,
-.fusion-image-wrapper, .fusion-lazy-load, .awb-image-wrapper, .lazyloaded{
+img.lazyload, img.lazyloading, img.lazyloaded, .lazyload, .lazyloaded{
   opacity:1!important;visibility:visible!important
-}
-.fusion-animated, .fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive,
-.fusion-blog-shortcode.fusion-animated, .awb-animate, [class*="fusion-animated"]{
-  visibility:visible!important;opacity:1!important;animation:none!important;transform:none!important
 }
 .related.products, .upsells.products, .related.products li.product, .upsells.products li.product,
 .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products,

@@ -115,7 +115,7 @@ export function decideRelatedHideOutcome(hide) {
 
 /**
  * Tarayıcıda çalışır (page.evaluate). Kapanış yok — tüm girdi `opts`.
- * @param {{ rootSel?: string, similarPat?: string, cardSel?: string, pluginPath?: string }} opts
+ * @param {{ rootSel?: string, similarPat?: string, cardSel?: string, headingSel?: string, sectionSel?: string, pluginPath?: string }} opts
  */
 export function diagnoseRelatedHideBrowser(opts) {
   const pluginPath = (opts && opts.pluginPath) || '/wp-content/plugins/woo-donation-popup/';
@@ -124,6 +124,11 @@ export function diagnoseRelatedHideBrowser(opts) {
     '.related.products, .upsells.products, section.related, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection';
   const similarPat = (opts && opts.similarPat) || 'benzer\\s*bağış';
   const cardSel = (opts && opts.cardSel) || 'li.product, li.wc-block-product';
+  // Siteye özgü başlık/bölüm seçicileri çağıranın (ortam profili) verdiği opts'tan gelir.
+  const headingSel = (opts && opts.headingSel) || 'h1,h2,h3,h4';
+  const sectionSel =
+    (opts && opts.sectionSel) ||
+    '.related, section, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products';
 
   function safeTokens(s) {
     return String(s || '')
@@ -245,14 +250,10 @@ export function diagnoseRelatedHideBrowser(opts) {
 
   function findRoot() {
     const benzerRe = new RegExp(similarPat, 'i');
-    const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,.fusion-title,.fusion-title-heading,.ct-headline'));
+    const headings = Array.from(document.querySelectorAll(headingSel));
     const benzer = headings.find((h) => benzerRe.test(h.textContent || ''));
     return (
-      (benzer &&
-        (benzer.closest(
-          '.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards, .elementor-section, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
-        ) ||
-          benzer.parentElement)) ||
+      (benzer && (benzer.closest(sectionSel) || benzer.parentElement)) ||
       document.querySelector(rootSel)
     );
   }

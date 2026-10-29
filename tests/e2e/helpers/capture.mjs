@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
 import { withCacheBust, productPaths, ROOT, beginNavCache, endNavCache } from './env.mjs';
-import { getActiveProfile, isRemoteProfile, matchesProfilePattern, getActiveTimeouts } from './profile.mjs';
+import { getActiveProfile, peekActiveProfile, isRemoteProfile, matchesProfilePattern, getActiveTimeouts } from './profile.mjs';
 import {
   productNavPath,
   decideScenarioProduct,
@@ -476,7 +476,7 @@ async function readVisibleImageSnapshots(page, opts = {}) {
           if (rect.width < 40 || rect.height < 40) continue;
           const style = window.getComputedStyle(img);
           if (style.display === 'none') continue;
-          // Kasıtlı gizli / lazy'siz tema logoları (Avada fusion-standard-logo vb.)
+          // Kasıtlı gizli görseller (visibility:hidden) yüklenme denetiminde sayılmaz
           if (style.visibility === 'hidden') continue;
           const cls = String(img.className || '');
           const hasLazyMarker = !!(
@@ -649,14 +649,13 @@ async function settleForScreenshot(page, opts = {}) {
   // Aşılırsa ekran yine alınır; assertVisibleImagesLoaded images-loaded hatası yazar
   await waitUntilImagesReallyLoaded(page);
 
-  // Avada Post Cards: .fusion-animated başlangıçta visibility:hidden.
-  // Woo .related.products kartları (tema seçicisi yok) kaydırılıp boyut/opacity beklenir.
+  // Woo .related.products kartları kaydırılıp boyut/opacity beklenir; siteye özgü giriş animasyonu
+  // seçicisi yalnız ortam profilinden gelir (profile.selectors.animated).
+  const profileSel = peekActiveProfile()?.selectors || {};
   if (scrollPage && fullPage) {
     await page
-      .evaluate(async () => {
+      .evaluate(async (animSel) => {
         const deadline = Date.now() + 5000;
-        const animSel =
-          '.fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive, .fusion-blog-shortcode.fusion-animated';
         const related = document.querySelector(
           '.related.products, .upsells.products, section.related, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection'
         );
@@ -673,7 +672,7 @@ async function settleForScreenshot(page, opts = {}) {
           );
         };
         while (Date.now() < deadline) {
-          const animBlocked = Array.from(document.querySelectorAll(animSel)).filter((el) => {
+          const animBlocked = (animSel ? Array.from(document.querySelectorAll(animSel)) : []).filter((el) => {
             const st = window.getComputedStyle(el);
             if (st.display === 'none' || st.visibility !== 'hidden') return false;
             const r = el.getBoundingClientRect();
@@ -696,12 +695,12 @@ async function settleForScreenshot(page, opts = {}) {
           }
           await new Promise((r) => setTimeout(r, 120));
         }
-      })
+      }, String(profileSel.animated || ''))
       .catch((e) => catchSoft('waitRelatedCards', e));
   }
 
   await page
-    .evaluate(async () => {
+    .evaluate(async (headerSel) => {
       window.scrollTo(0, 0);
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       await new Promise((resolve) => {
@@ -727,14 +726,14 @@ async function settleForScreenshot(page, opts = {}) {
         };
         requestAnimationFrame(tick);
       });
-      const header = document.querySelector('header, .fusion-header-wrapper, .fusion-header');
+      const header = document.querySelector(headerSel);
       if (header) {
         const rect = header.getBoundingClientRect();
         if (rect.top < 0) {
           window.scrollTo(0, 0);
         }
       }
-    })
+    }, String(profileSel.header || 'header'))
     .catch(() => {});
 }
 
@@ -1093,6 +1092,9 @@ async function shot(page, dir, name, maskList, opts = {}) {
   };
   // Stabilize / freeze yalnız ekran anında; işlevsel kontroller gerçek CSS görür.
   await addShotStyle(STABILIZE_SHOT_CSS, 'STABILIZE_SHOT_CSS');
+  // Siteye/temaya özgü sabitleme CSS'i yalnız ortam profilinden gelir (profile.selectors.stabilizeCss).
+  const profileStabilizeCss = String(peekActiveProfile()?.selectors?.stabilizeCss || '');
+  if (profileStabilizeCss) await addShotStyle(profileStabilizeCss, 'profileStabilizeCss');
   if (!shellOnly) {
     await hideComingSoonNoticeForShot(page).catch((e) => catchSoft('hideComingSoonNoticeForShot', e));
   }
@@ -1866,19 +1868,23 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
   }
   let similarPat = 'benzer\\s*bağış';
   let donatePat = 'bağış\\s*yap';
-  let cardSel = 'li.post-card, li.fusion-grid-column, .post-card, li.product, li.wc-block-product';
-  let titleSel = '.fusion-title, .woocommerce-loop-product__title, .product-title, .wp-block-post-title, h2, h3';
+  let cardSel = 'li.product, li.wc-block-product';
+  let titleSel = '.woocommerce-loop-product__title, .wp-block-post-title, h2, h3';
+  let headingSel = 'h1,h2,h3,h4';
+  let sectionSel = '.related, section, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products';
   try {
     const p = getActiveProfile();
     similarPat = p.strings?.similarDonationsPattern || similarPat;
     donatePat = p.strings?.donateButtonPattern || donatePat;
     cardSel = p.selectors?.loopCards || cardSel;
     titleSel = p.selectors?.loopTitle || titleSel;
+    headingSel = p.selectors?.headings || headingSel;
+    sectionSel = p.selectors?.sectionRoots ? `${sectionSel}, ${p.selectors.sectionRoots}` : sectionSel;
   } catch {
     /* profil yok */
   }
   const result = await page.evaluate(
-    ({ surfaceKind, similarPat, donatePat, cardSel, titleSel, shopCardSel }) => {
+    ({ surfaceKind, similarPat, donatePat, cardSel, titleSel, shopCardSel, headingSel, sectionSel }) => {
     function visible(el) {
       if (!el) return false;
       const st = getComputedStyle(el);
@@ -1896,7 +1902,7 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     /** @type {Element[]} */
     let cards = [];
     if (surfaceKind === 'product') {
-      const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,.fusion-title,.fusion-title-heading'));
+      const headings = Array.from(document.querySelectorAll(headingSel));
       const benzer = headings.find((h) => benzerRe.test(h.textContent || ''));
       // Önce WooCommerce standart ilgili-ürünler kökleri; yoksa başlıktan yukarı çıkıp kartları içeren en yakın kap
       // (sayfa oluşturucular başlığı ve ürün ızgarasını farklı kaplarda tutabilir).
@@ -1915,12 +1921,10 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
       const root =
         genericRoot ||
         (benzer &&
-          (benzer.closest(
-            '.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
-          ) ||
+          (benzer.closest(sectionSel) ||
             benzer.parentElement)) ||
         document.querySelector(
-          '.fusion-post-cards, .related.products, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
+          '.related.products, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
         );
       if (root) {
         cards = Array.from(root.querySelectorAll(cardSel));
@@ -1946,7 +1950,7 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
     });
     return { cardCount: cards.length, rows };
   },
-    { surfaceKind: surface, similarPat, donatePat, cardSel, titleSel, shopCardSel: SHOP_CARD_SEL }
+    { surfaceKind: surface, similarPat, donatePat, cardSel, titleSel, shopCardSel: SHOP_CARD_SEL, headingSel, sectionSel }
   );
 
   const rec = ctx.env?._resolvedProducts?.[ctx.role] || {};
@@ -2000,6 +2004,8 @@ async function assertLoopCardsTitleAndDonate(page, surface, screenName, failures
       rootSel: RELATED_ROOT_SEL,
       similarPat,
       cardSel,
+      headingSel,
+      sectionSel,
       pluginPath: PLUGIN_STYLE_PATH,
     });
     const outcome = decideRelatedHideOutcome(hide);
@@ -3254,10 +3260,12 @@ export async function captureAll({
       }
       continue;
     }
+    // Kabuk açma adımı ürünün KENDİ sayfasında koşar (ürün kimliğine bağlı tetikleyici orada görünür);
+    // liste/kategori sekmeli sayfa yalnız liste testlerinde kullanılır.
     shellJobs.push({
       key,
       mode: /** @type {'popup'} */ ('popup'),
-      pagePath: popupPath,
+      pagePath: rel || popupPath,
       productId: productIds[key] || 0,
     });
   }

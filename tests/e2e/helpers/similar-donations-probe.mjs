@@ -14,21 +14,18 @@ export async function probeSimilarDonations(page) {
   const headingRe = profile.strings?.similarDonationsPattern || 'benzer\\s*bağış';
   const animatedSel = profile.selectors?.animated || '';
   const cardSel = profile.selectors?.loopCards || 'li.product, .post-card';
+  const headingSel = profile.selectors?.headings || 'h1,h2,h3,h4';
+  const sectionExtra = profile.selectors?.sectionRoots ? `, ${profile.selectors.sectionRoots}` : '';
+  const sectionSel = `.related, section, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products${sectionExtra}`;
   return page.evaluate(
-    ({ headingRe, animatedSel, cardSel }) => {
+    ({ headingRe, animatedSel, cardSel, headingSel, sectionSel }) => {
       const headingPat = new RegExp(headingRe, 'i');
-      const headings = Array.from(
-        document.querySelectorAll('h1,h2,h3,h4,.fusion-title,.fusion-title-heading,.ct-headline')
-      );
+      const headings = Array.from(document.querySelectorAll(headingSel));
       const heading = headings.find((h) => headingPat.test(h.textContent || ''));
       const root =
-        (heading &&
-          (heading.closest(
-            '.fusion-fullwidth, .fusion-builder-row, .related, section, .fusion-post-cards, .elementor-section, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
-          ) ||
-            heading.parentElement)) ||
+        (heading && (heading.closest(sectionSel) || heading.parentElement)) ||
         document.querySelector(
-          '.fusion-post-cards, .related.products, .related, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
+          '.related.products, .related, .wp-block-woocommerce-product-collection, .wp-block-woocommerce-related-products'
         );
       const cards = root
         ? Array.from(root.querySelectorAll(cardSel))
@@ -57,12 +54,12 @@ export async function probeSimilarDonations(page) {
           className: String(el.className || '').slice(0, 120),
           ...vis(el),
         })),
-        lazyImgs: Array.from(document.querySelectorAll('img.lazyload, img[loading="lazy"], .fusion-lazy-load')).length,
+        lazyImgs: Array.from(document.querySelectorAll('img.lazyload, img[loading="lazy"]')).length,
         io: typeof IntersectionObserver !== 'undefined',
         viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
       };
     },
-    { headingRe, animatedSel, cardSel }
+    { headingRe, animatedSel, cardSel, headingSel, sectionSel }
   );
 }
 

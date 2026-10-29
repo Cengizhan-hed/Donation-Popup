@@ -648,8 +648,8 @@ async function snapshotChromeStyles(page) {
         margin: bodyCs.margin,
         padding: bodyCs.padding,
       },
-      heading: pick('.wp-block-site-title, .site-title, header h1, h1, .wp-block-site-title a'),
-      menu: pick('header nav, .wp-block-navigation, .main-navigation, #site-navigation, nav'),
+      heading: pick('h1'),
+      menu: pick('nav'),
     };
   });
 }

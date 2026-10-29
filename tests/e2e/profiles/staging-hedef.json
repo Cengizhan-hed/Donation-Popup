@@ -45,7 +45,10 @@
     "loopCards": "li.post-card, li.fusion-grid-column, .post-card, li.product",
     "loopTitle": ".fusion-title, .woocommerce-loop-product__title, .product-title, h2, h3",
     "animated": ".fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive, .fusion-blog-shortcode.fusion-animated",
-    "header": "header, .fusion-header-wrapper, .fusion-header"
+    "header": "header, .fusion-header-wrapper, .fusion-header",
+    "headings": "h1,h2,h3,h4,.fusion-title,.fusion-title-heading",
+    "sectionRoots": ".fusion-fullwidth, .fusion-builder-row, .fusion-post-cards",
+    "stabilizeCss": ".fusion-image-wrapper img, .fusion-image-wrapper, .fusion-lazy-load, .awb-image-wrapper{opacity:1!important;visibility:visible!important}\n.fusion-animated, .fusion-post-cards.fusion-animated, .fusion-animated.fusion-grid-archive, .fusion-blog-shortcode.fusion-animated, .awb-animate, [class*=\"fusion-animated\"]{visibility:visible!important;opacity:1!important;animation:none!important;transform:none!important}"
   },
   "products": {
     "custom": {

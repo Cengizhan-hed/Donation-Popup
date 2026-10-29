@@ -12,7 +12,7 @@ export const DISPLAY_MODES = Object.freeze(['inline', 'button_popup', 'button_pa
 
 /** Woo çekirdek: ilgili / upsell / mağaza döngüsü — tema seçicisi yok. */
 export const LOOP_EXCLUDE_SEL =
-  '.related, .upsells, ul.products, .wdp-list, .wdp-donations, .fusion-post-cards, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection, .wdp-loop-donate, .wdp-form-host';
+  '.related, .upsells, ul.products, .wdp-list, .wdp-donations, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection, .wdp-loop-donate, .wdp-form-host';
 
 /** Yerel Woo sepete ekle (eklenti formu değil). */
 export const NATIVE_CART_FORM_SEL = 'form.cart:not([data-dp-form])';
