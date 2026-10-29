@@ -144,10 +144,10 @@ final class Campaign_Module implements Module_Interface {
 			return '';
 		}
 
-		$no   = static function ( $value ) {
+		$no     = static function ( $value ) {
 			return in_array( strtolower( (string) $value ), array( 'no', 'false', '0', 'off' ), true );
 		};
-		$html = Progress_Renderer::render(
+		$html   = Progress_Renderer::render(
 			$data,
 			array(
 				'milestones' => ! $no( $atts['milestones'] ),

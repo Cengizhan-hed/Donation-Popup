@@ -238,13 +238,13 @@ class Assets {
 	 */
 	public function style_css( $slug ) {
 		static $cache = array();
-		$slug = sanitize_key( $slug );
+		$slug         = sanitize_key( $slug );
 		if ( isset( $cache[ $this->plugin_dir . $slug ] ) ) {
 			return $cache[ $this->plugin_dir . $slug ];
 		}
-		$file = isset( $this->definitions[ $slug ] ) && '' !== $this->definitions[ $slug ]['style'] ? $this->plugin_dir . $this->definitions[ $slug ]['style'] : '';
-		$css  = '' !== $file && is_file( $file ) ? trim( (string) file_get_contents( $file ) ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Eklenti içi yerel dosya.
-		$css  = str_replace( '</', '<\/', $css );
+		$file                               = isset( $this->definitions[ $slug ] ) && '' !== $this->definitions[ $slug ]['style'] ? $this->plugin_dir . $this->definitions[ $slug ]['style'] : '';
+		$css                                = '' !== $file && is_file( $file ) ? trim( (string) file_get_contents( $file ) ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Eklenti içi yerel dosya.
+		$css                                = str_replace( '</', '<\/', $css );
 		$cache[ $this->plugin_dir . $slug ] = $css;
 		return $css;
 	}
