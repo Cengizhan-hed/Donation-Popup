@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import { expect } from '@playwright/test';
 import path from 'node:path';
 import { SEL, DP_SEL } from './selectors.mjs';
+import { waitLayerSettled } from './settle-layer.mjs';
 import { isStepShown, setChecked } from './dp-form.mjs';
 import { formatMoney, formatMinPlaceholder, formatFillAmount } from './currency.mjs';
 import { withCacheBust } from './env.mjs';
@@ -429,6 +430,9 @@ async function assertAmountFieldAndSymbol(scope, store) {
  * @param {import('@playwright/test').Page} page
  */
 async function assertCloseNotOverlappingForm(page) {
+  if ((await page.locator('[data-dp-overlay].is-open').count()) > 0) {
+    await waitLayerSettled(page, '[data-dp-overlay].is-open');
+  }
   const info = await page.evaluate(() => {
     const overlay = document.querySelector('[data-dp-overlay].is-open');
     if (!overlay) return { skip: true };

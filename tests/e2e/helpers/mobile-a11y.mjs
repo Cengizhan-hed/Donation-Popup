@@ -2,6 +2,7 @@
  * Mobil + masaüstü davranış denetimleri (eklenti kodu değiştirilmez; hata bulgudur).
  */
 import { SEL } from './selectors.mjs';
+import { waitLayerSettled } from './settle-layer.mjs';
 import { clickShellTrigger, makeFailure, openShellLocator, waitForShellClosed } from './checks.mjs';
 
 const MIN_TOUCH = 44;
@@ -25,7 +26,9 @@ export async function probeHorizontalOverflow(page) {
  * @param {string} scopeSel
  */
 export async function probeTouchTargets(page, scopeSel) {
-  return page.evaluate(
+  // Açılış ölçek animasyonu sürerken ölçülen boyut küçüktür; önce bitmesini bekle.
+  const settle = await waitLayerSettled(page, scopeSel);
+  const result = await page.evaluate(
     ({ sel, min }) => {
       const root = document.querySelector(sel) || document.body;
       const nodes = Array.from(
@@ -79,6 +82,11 @@ export async function probeTouchTargets(page, scopeSel) {
     },
     { sel: scopeSel, min: MIN_TOUCH }
   );
+  if (settle.timedOut) {
+    for (const row of result.bad) row.note = 'animasyon bitmedi';
+  }
+  result.settle = settle;
+  return result;
 }
 
 /**
