@@ -295,14 +295,29 @@ test.describe('ilk boyama: eklenti öğeleri stilli (CSS dosyaları 3 sn gecikme
       };
       window.__fpShifts = [];
       window.__fpFonts = [];
-      if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => window.__fpFonts.push(performance.now()));
+      // measure-plugin-perf ile aynı gözlem: her FontFace'in kendi yüklenme anı + kayma kaynağının dy/dh/dx değeri
+      // (clsAttribution font/yeniden akış atfı bu alanlarla çalışır; eşik aynı: eklenti CLS 0).
+      if (document.fonts && document.fonts.addEventListener) {
+        const mark = () => window.__fpFonts.push(performance.now());
+        document.fonts.addEventListener('loadingdone', mark);
+        document.fonts.addEventListener('loading', (e) => {
+          for (const face of e.fontfaces || []) face.loaded.then(mark, mark);
+        });
+      }
       new PerformanceObserver((list) => {
         for (const e of list.getEntries()) {
           window.__fpShifts.push({
             value: e.value,
             startTime: e.startTime,
             hadRecentInput: e.hadRecentInput,
-            sources: (e.sources || []).map((s) => ({ plugin: !!s.node && isPlugin(s.node), detached: !s.node })),
+            sources: (e.sources || []).map((s) => ({
+              plugin: !!s.node && isPlugin(s.node),
+              detached: !s.node,
+              sel: s.node && s.node.nodeType === 1 ? `${s.node.tagName.toLowerCase()}.${String(s.node.className || '').trim().split(/\s+/).slice(0, 2).join('.')}` : s.node ? '#text' : '',
+              dy: Math.round(s.currentRect.y - s.previousRect.y),
+              dh: Math.round(s.currentRect.height - s.previousRect.height),
+              dx: Math.round(s.currentRect.x - s.previousRect.x),
+            })),
           });
         }
       }).observe({ type: 'layout-shift', buffered: true });
@@ -335,7 +350,8 @@ test.describe('ilk boyama: eklenti öğeleri stilli (CSS dosyaları 3 sn gecikme
       };
     });
     const cls = clsAttribution(after.shifts, { fontTimes: after.fontTimes });
-    console.log(`FP_SINGLE ${JSON.stringify({ server, label: after.label, cls })}`);
+    const shiftInfo = after.shifts.filter((s) => !s.hadRecentInput).map((s) => ({ v: s.value, t: Math.round(s.startTime), src: s.sources.map((x) => `${x.plugin ? 'P' : 'T'} ${x.sel} dy${x.dy} dh${x.dh} dx${x.dx}`) }));
+    console.log(`FP_SINGLE ${JSON.stringify({ server, label: after.label, cls, fonts: after.fontTimes.map(Math.round), shifts: shiftInfo })}`);
     expect(after.label, 'betik bağlandıktan sonra etiket sunucudakiyle aynı').toBe(server.trim());
     expect(after.totalHidden).toBe(true);
     expect(after.lockHidden).toBe(false);
