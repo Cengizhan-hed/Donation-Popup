@@ -10,6 +10,7 @@ import { createLayer } from './layer.mjs';
 // Ana stil render engellemeyen yüklenmiş olabilir (media="print" + data-dp-defer): betik açılınca etkinleşir.
 document.querySelectorAll('link[data-dp-defer]').forEach((link) => {
   link.media = 'all';
+  link.dataset.dpCss = '1';
   link.removeAttribute('data-dp-defer');
 });
 
