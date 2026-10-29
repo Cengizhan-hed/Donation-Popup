@@ -179,6 +179,8 @@ final class AdminTest extends TestCase {
 		$store = $this->store();
 		foreach (array(
 			array( 'design.brand' => 'blue' ),
+			array( 'design.brand' => 'var(--a);color:red' ),
+			array( 'design.accent' => 'url(x)' ),
 			array( 'display.mode' => 'fullscreen' ),
 			array( 'form.presets' => '25, abc' ),
 			array( 'form.presets' => '1, 2, 3, 4, 5, 6, 7' ),
@@ -192,6 +194,15 @@ final class AdminTest extends TestCase {
 		$this->assertArrayNotHasKey(Settings::OPTION_NAME, WDP_Test_State::$options, 'Tek gecersiz deger varken hicbir sey yazilmamali');
 		$unknown = $store->save(array(), array( 'bogus' => true ));
 		$this->assertTrue(is_wp_error($unknown));
+	}
+
+	public function test_color_fields_accept_hex_and_css_variable(): void {
+		$store = $this->store();
+		$this->assertSame('#12305a', $store->sanitize_value('design.brand', '#12305a'));
+		$this->assertSame('var(--e-global-color-primary)', $store->sanitize_value('design.brand', ' var(--e-global-color-primary) '));
+		$this->assertSame('var(--wp--preset--color--accent, #aabbcc)', $store->sanitize_value('design.accent', 'var(--wp--preset--color--accent,#abc)'));
+		$this->assertSame('', $store->sanitize_value('design.brand', ''));
+		$this->assertTrue(is_wp_error($store->sanitize_value('design.brand', 'var(--a, var(--b))')));
 	}
 
 	public function test_presets_are_normalized(): void {

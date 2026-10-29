@@ -275,8 +275,8 @@ final class Form_Context {
 	}
 
 	/**
-	 * Yönetici ayarındaki özel renk (yalnız "kendi renklerimi seçeyim" seçiliyse ve geçerli #hex ise); aksi halde ''
-	 * (form tema ön ayarından/belirteçten renk alır).
+	 * Yönetici ayarındaki özel renk (yalnız "kendi renklerimi seçeyim" seçiliyse ve geçerli #hex ya da `var(--ad[, #yedek])`
+	 * ise); aksi halde '' (form tema ön ayarından/belirteçten renk alır).
 	 *
 	 * @param string $path `design.brand` ya da `design.accent`.
 	 * @return string
@@ -286,8 +286,7 @@ final class Form_Context {
 		if ( 'custom' !== (string) $settings->get( 'design.colors', 'theme' ) ) {
 			return '';
 		}
-		$hex = trim( (string) $settings->get( $path, '' ) );
-		return 1 === preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i', $hex ) ? $hex : '';
+		return \DonationPanel\Frontend\Theme_Colors::sanitize_color( $settings->get( $path, '' ) );
 	}
 
 	/**

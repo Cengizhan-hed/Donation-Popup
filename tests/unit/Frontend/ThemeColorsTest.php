@@ -93,6 +93,88 @@ final class ThemeColorsTest extends TestCase {
 		$this->assertSame( 'none', Theme_Colors::source_status( array( 'theme' => $this->palette( array( 'base' => '#ffffff', 'tint' => '#fafafa', 'soft' => '#ffe08a' ) ) ) ) );
 	}
 
+	public function test_sanitize_color_accepts_hex_and_css_variables(): void {
+		$this->assertSame( '#12305A', Theme_Colors::sanitize_color( '#12305A' ) );
+		$this->assertSame( '#abc', Theme_Colors::sanitize_color( ' #abc ' ) );
+		$this->assertSame( 'var(--e-global-color-primary)', Theme_Colors::sanitize_color( 'var(--e-global-color-primary)' ) );
+		$this->assertSame( 'var(--wp--preset--color--primary)', Theme_Colors::sanitize_color( 'var( --wp--preset--color--primary )' ) );
+		$this->assertSame( 'var(--brand_2, #112233)', Theme_Colors::sanitize_color( 'var(--brand_2,#112233)' ) );
+		$this->assertSame( 'var(--brand, #aabbcc)', Theme_Colors::sanitize_color( 'var(--brand, #ABC)' ) );
+		$this->assertSame( '', Theme_Colors::sanitize_color( '' ) );
+		$this->assertSame( '', Theme_Colors::sanitize_color( array( '#fff' ) ) );
+	}
+
+	/**
+	 * @return array<string, array{0: string}>
+	 */
+	public static function injection_values(): array {
+		return array(
+			'url'            => array( 'url(https://x.test/a.png)' ),
+			'expression'     => array( 'expression(alert(1))' ),
+			'semicolon'      => array( 'var(--a);background:red' ),
+			'brace'          => array( 'var(--a)}body{display:none' ),
+			'style close'    => array( 'var(--a)</style><script>alert(1)</script>' ),
+			'nested var'     => array( 'var(--a, var(--b))' ),
+			'fallback word'  => array( 'var(--a, red)' ),
+			'fallback url'   => array( 'var(--a, url(x))' ),
+			'no dashes'      => array( 'var(a)' ),
+			'bad name'       => array( 'var(--a b)' ),
+			'quote'          => array( 'var(--a")' ),
+			'newline'        => array( "var(--a)\n" . 'x' ),
+			'trailing nl'    => array( "#fff\n;" ),
+			'named color'    => array( 'red' ),
+			'rgb'            => array( 'rgb(1,2,3)' ),
+			'escape'         => array( 'var(--a\\3b)' ),
+			'comment'        => array( 'var(--a/**/)' ),
+			'too long'       => array( 'var(--' . str_repeat( 'a', 101 ) . ')' ),
+			'javascript'     => array( 'javascript:alert(1)' ),
+			'four digit hex' => array( '#abcd' ),
+		);
+	}
+
+	/**
+	 * @dataProvider injection_values
+	 */
+	public function test_sanitize_color_rejects_everything_else( string $value ): void {
+		$this->assertSame( '', Theme_Colors::sanitize_color( $value ) );
+		$this->assertNull( Theme_Colors::parse_var( $value ) );
+		$this->assertSame( array(), Theme_Colors::variables( array(), $value, $value ), 'Geçersiz değer CSS çıktısına girmez.' );
+		$this->assertSame( '', Theme_Colors::form_style( $value, $value ) );
+	}
+
+	public function test_variable_with_explicit_fallback(): void {
+		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'primary' => '#1d3557' ) ) ), 'var(--e-global-color-primary, #ffd60a)', '' );
+		$this->assertSame( 'var(--e-global-color-primary, #ffd60a)', $v['--dp-color-primary'] );
+		$this->assertSame( '#000000', $v['--dp-color-on-primary'], 'Yazı rengi yedeğe göre güvenli.' );
+		$this->assertSame( '1', $v['--dp-color-dynamic'] );
+	}
+
+	public function test_variable_without_fallback_uses_theme_then_default(): void {
+		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'primary' => '#1d3557' ) ) ), 'var(--brand)', 'var(--cta)' );
+		$this->assertSame( 'var(--brand, #1d3557)', $v['--dp-color-primary'] );
+		$this->assertSame( '#ffffff', $v['--dp-color-on-primary'] );
+		$this->assertSame( 'var(--cta, #1d3557)', $v['--dp-accent'] );
+		$this->assertSame( '1', $v['--dp-color-dynamic'] );
+		$v = Theme_Colors::variables( array(), 'var(--brand)', '' );
+		$this->assertSame( 'var(--brand, #' . Theme_Colors::DEFAULT_PRIMARY . ')', $v['--dp-color-primary'] );
+		$this->assertGreaterThanOrEqual( 4.5, Theme_Colors::contrast( Theme_Colors::DEFAULT_PRIMARY, ltrim( $v['--dp-color-on-primary'], '#' ) ) );
+	}
+
+	public function test_hex_custom_colors_have_no_dynamic_flag(): void {
+		$v = Theme_Colors::variables( array(), '#1d3557', '#e63946' );
+		$this->assertArrayNotHasKey( '--dp-color-dynamic', $v );
+	}
+
+	public function test_form_style_hex_and_variable(): void {
+		$this->assertSame( '--dp-color-primary:#1d3557;--dp-color-on-primary:#ffffff;', Theme_Colors::form_style( '#1d3557', '' ) );
+		$this->assertSame( '', Theme_Colors::form_style( '', '' ) );
+		$style = Theme_Colors::form_style( 'var(--brand, #ffd60a)', '' );
+		$this->assertStringContainsString( '--dp-color-primary:var(--brand, #ffd60a);', $style );
+		$this->assertStringContainsString( '--dp-color-on-primary:#000000;', $style );
+		$this->assertStringContainsString( '--dp-color-dynamic:1;', $style );
+		$this->assertStringNotContainsString( '--dp-accent', $style, 'Verilmeyen renk forma yazılmaz.' );
+	}
+
 	public function test_source_status_theme_for_good_palette(): void {
 		$this->assertSame( 'theme', Theme_Colors::source_status( array( 'theme' => $this->palette( array( 'base' => '#fff', 'primary' => '#1d3557' ) ) ) ) );
 		$this->assertSame( 'theme', Theme_Colors::source_status( $this->palette( array( 'ink' => '#1a1a2e' ) ) ) );
