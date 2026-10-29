@@ -1002,3 +1002,5 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 ### Compact bağış kartı (12.2)
 - `Modules/Experiences/class-compact-card.php` (görünüm verisi, `layout="compact"`), şablon `experiences/compact.php`, varlık `assets/build/compact` (+ `experiences` stili; ikisi satır içi, `Inline_Styles`). Kısa kod yolu: `Shortcodes::render_form` → `Experience_Renderer` (kind `compact`) → `Experiences_Module::compact()`. 4 adım tek grid hücresi (`grid-area:1/1`), pasif `visibility:hidden`+`inert`+`aria-hidden`, JS ölçümü yok. Ödeme: `WooCommerce/Direct/class-pay-embed.php` (`?donation_panel_embed=1` + order-pay → `payment/embed.php`), katman `layer.mjs`, tamamlanma `woocommerce-order-received` gövde sınıfı. Kaydırıcı yalıtımı `assets/src/compact/card.mjs::isolate`.
 - Sabit yükseklik: masaüstü/tablet 496 px, mobil 492 px (e-posta alanı açık); ayrıntı ve ödeme adımı kararı: build/handoff/COMPACT-KART/RAPOR.md.
+
+
