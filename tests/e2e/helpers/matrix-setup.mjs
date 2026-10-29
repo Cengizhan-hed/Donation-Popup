@@ -479,6 +479,66 @@ export async function startPhpServer(opts) {
   };
 }
 
+/** Woo'nun ilk isteklerde kendiliğinden yazdığı seçenekleri tetikleyen ön yüz yolları (yerel). */
+export const WOO_WARMUP_FRONT = ['/', '/?post_type=product', '/cart/', '/checkout/', '/my-account/', '/wp-json/wc/store/v1/cart'];
+/** İlk yönetici yüklemesi (admin_init: e-posta iyileştirmeleri göçü, ödeme sırası, özellik bayrakları) ve ayar ekranı. */
+export const WOO_WARMUP_ADMIN = ['index.php', 'admin.php?page=wc-settings'];
+
+/**
+ * Yalnız YEREL: taze yerel WP'de WooCommerce kendi seçeneklerini ilk ön yüz/yönetici isteklerinde oluşturur
+ * (ör. `woocommerce_checkout_*_field`, `woocommerce_email_*`, `woocommerce_gateway_order`, `woocommerce_share_key`).
+ * Kanarya "önce" görüntüsü bu isteklerden ÖNCE alınırsa koşu sonunda bu anahtarlar eklentiye ait olmayan fark olarak
+ * KIRMIZI çıkar (v122-fouc e2e:full 6 hata). Çözüm: kanarya tabanı, yerel WP hazırlanıp Woo'nun ilk istekleri yapıldıktan
+ * SONRA alınır. Uzak ortamda çağrılmaz; uzak kanarya koruması değişmez.
+ *
+ * @param {string} base `http://127.0.0.1:PORT` ya da `http://localhost:PORT`.
+ * @return {Promise<{front: number, admin: number, login: number}>} İstek sayıları ve giriş durumu.
+ */
+export async function warmUpWooFirstRequests(base) {
+  if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(String(base))) {
+    throw new Error(`warmUpWooFirstRequests yalnız yerel adreste çalışır: ${base}`);
+  }
+  const jar = new Map([['wordpress_test_cookie', 'WP%20Cookie%20check']]);
+  const keep = (r) => {
+    const list = typeof r.headers.getSetCookie === 'function' ? r.headers.getSetCookie() : [];
+    for (const c of list) {
+      const kv = c.split(';')[0];
+      const i = kv.indexOf('=');
+      if (i > 0) jar.set(kv.slice(0, i), kv.slice(i + 1));
+    }
+  };
+  const cookie = () => [...jar].map(([k, v]) => `${k}=${v}`).join('; ');
+  const get = async (url, withCookie) => {
+    const r = await fetch(url, { redirect: 'manual', headers: withCookie ? { cookie: cookie() } : {}, signal: AbortSignal.timeout(120000) });
+    keep(r);
+    await r.arrayBuffer();
+    return r.status;
+  };
+  let front = 0;
+  for (const p of WOO_WARMUP_FRONT) {
+    await get(base + p, false);
+    front += 1;
+  }
+  // Yerel yönetici (matrix-ops ensure-admin: admin/admin; yalnız yerel tek kullanımlık WP).
+  const login = await fetch(`${base}/wp-login.php`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: cookie() },
+    body: 'log=admin&pwd=admin&wp-submit=Log+In&testcookie=1&redirect_to=%2Fwp-admin%2F',
+    signal: AbortSignal.timeout(120000),
+  });
+  keep(login);
+  await login.arrayBuffer();
+  let admin = 0;
+  if (login.status === 302) {
+    for (const p of WOO_WARMUP_ADMIN) {
+      await get(`${base}/wp-admin/${p}`, true);
+      admin += 1;
+    }
+  }
+  return { front, admin, login: login.status };
+}
+
 /**
  * e2e:full --env local: TT5 matris WP + fixture ürünleri + PHP 8899.
  * @param {number} [port]
@@ -529,6 +589,9 @@ export async function prepareLocalFullStack(port = 8899) {
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(data, null, 2) + '\n');
   const server = await startPhpServer({ wpDir, port, host: '127.0.0.1' });
+  // Kanarya "önce" görüntüsünden önce Woo'nun ilk istek yazımları biter (yerel yanlış KIRMIZI yok).
+  const warm = await warmUpWooFirstRequests(`http://127.0.0.1:${port}`);
+  console.log(`[e2e] Woo ilk istekleri (yerel ısınma): ön yüz ${warm.front}, yönetici ${warm.admin} (giriş ${warm.login})`);
   return { server, wpDir, fixtures: data };
 }
 
