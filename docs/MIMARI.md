@@ -974,3 +974,6 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 - Muaf (kullanıcıya özel doğası gereği): Bağışlarım, teşekkür sayfası, ödeme sayfası (Woo'nun kendi çıktısı).
 - Eklenti dışı: WooCommerce çekirdeği blok şablonlu mağaza/ürün sayfalarında sepeti `wp-script-module-data-@wordpress/interactivity` içine yazar; eklenti değiştiremez. Bu sayfalar önbelleğe alınırken sepet çerezli ziyaretçi atlanmalıdır (CANLIYA-ALMA).
 - Kanıt: `tests/e2e/specs/cache-contract.spec.mjs` (`npm run e2e:side-cart -- --spec cache-contract`).
+
+- **Katman odağı (12.1.1):** `layer.mjs open()` odağı başlığa verirken katman açılış karesinde hâlâ `visibility:hidden` olabilir (sayfa yeni yüklendiyse); `focus()` sessizce düşer ve odak BODY'de kalırdı. Odak panel içine girmediyse görünür olana dek (en çok 30 kare) yeniden denenir (a11y: modal odak tuzağı).
+- **Yerel e2e oturumu:** `tests/e2e/helpers/auth.mjs` yerel profilde diskteki `.auth-ok-*` işaretine güvenmez (yerel WP her koşuda anlık görüntüden kurulur); yalnız süreç içi doğrulama. Uzak davranış aynı.
