@@ -113,7 +113,24 @@ function installProbe() {
     [`${scope} metin alanı`, `${scope} .donation-panel-input`, field],
     [`${scope} simge`, `${scope} svg.donation-panel-ico`, icon],
   ];
+  /** Compact kart: kart yüzeyi (zemin, köşe, kenarlık) ve pasif adımlar ilk karede görünmez (yükseklik sabit yerleşim). */
+  const compactCard = (el) => {
+    const cs = getComputedStyle(el);
+    const off = Array.from(el.querySelectorAll('.donation-panel-compact__step:not(.is-on)'));
+    const hiddenSteps = off.every((s) => getComputedStyle(s).visibility === 'hidden');
+    const stack = el.querySelector('.donation-panel-compact__stack');
+    return {
+      ok: !transparent(cs.backgroundColor) && px(cs.borderTopLeftRadius) > 0 && px(cs.borderTopWidth) > 0 && hiddenSteps && Boolean(stack) && getComputedStyle(stack).display === 'grid',
+      info: `bg=${cs.backgroundColor} r=${cs.borderTopLeftRadius} bw=${cs.borderTopWidth} pasif-gizli=${hiddenSteps} stack=${stack ? getComputedStyle(stack).display : '-'}`,
+    };
+  };
   const CHECKS = [
+    ['compact kart', '#fp-compact .donation-panel-compact', compactCard],
+    ['compact tutar', '#fp-compact .donation-panel-compact__chip', amount],
+    ['compact alan', '#fp-compact .donation-panel-custom', field],
+    ['compact ana düğme', '#fp-compact .donation-panel-btn--accent', primary],
+    ['compact slider kart', '#fp-compact-slider .donation-panel-compact', compactCard],
+    ['compact slider ana düğme', '#fp-compact-slider .donation-panel-btn--accent', primary],
     ['hesap simgesi', '.donation-panel-ac__trigger', roundBtn],
     ['yan sepet düğmesi', '.donation-panel-sc__trigger', roundBtn],
     ['tetikleyici düğme', '#fp-trigger [data-dp-open]', primary],
@@ -205,6 +222,12 @@ test.describe('ilk boyama: eklenti öğeleri stilli (CSS dosyaları 3 sn gecikme
   test('slider benzetimi: yalnız gizli kapta form (500 ms sonra görünür)', async ({ page }) => {
     await page.goto(q('slider'), { waitUntil: 'domcontentloaded', timeout: 90000 });
     const names = fixedNames('#fp-slider');
+    assertStyled(await collect(page, names), names);
+  });
+
+  test('compact kart: görünür kart ve gizli kaptan (slider) gelen kart ilk karede stilli', async ({ page }) => {
+    await page.goto(`/?dp_fp=compact&dp_product=${IDS.product}&dp_campaign=${IDS.campaign}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    const names = ['compact kart', 'compact tutar', 'compact alan', 'compact ana düğme', 'compact slider kart', 'compact slider ana düğme'];
     assertStyled(await collect(page, names), names);
   });
 

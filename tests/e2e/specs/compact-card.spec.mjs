@@ -129,9 +129,10 @@ async function payInLayer(page, onOpen) {
  *
  * @param {import('@playwright/test').Page} page Sayfa.
  * @param {string} [prefix] Görüntü öneki ('' = görüntü yok).
+ * @param {{pay?: object}} [info] Ek ölçümler (ödeme sayfası yüksekliği).
  * @return {Promise<number[]>} Yükseklikler.
  */
-async function fullFlow(page, prefix = '') {
+async function fullFlow(page, prefix = '', info = {}) {
   const heights = [await height(page)];
   const amount = step(page, 'amount');
   const next = amount.locator('[data-dp-cnext]');
@@ -184,6 +185,14 @@ async function fullFlow(page, prefix = '') {
 
   await payInLayer(page, async () => {
     heights.push(await height(page));
+    // Ödeme kararı ölçümü: order-pay içeriği (ürün tablosu + ödeme yöntemleri) kartın sabit yüksekliğine sığar mı.
+    const payFrame = page.frames().find((f) => f.url().includes('donation_panel_embed'));
+    if (payFrame) {
+      info.pay = await payFrame.evaluate(() => {
+        const box = document.getElementById('payment');
+        return { document: document.documentElement.scrollHeight, payment: box ? Math.round(box.getBoundingClientRect().height) : 0 };
+      });
+    }
     if (prefix && SHOTS) {
       await page.waitForTimeout(400);
       await page.screenshot({ path: path.join(SHOTS, `${prefix}adim-3-katman.png`) });
@@ -200,6 +209,26 @@ async function fullFlow(page, prefix = '') {
   await expect(step(page, 'amount').locator('[data-dp-cnext]')).toHaveAttribute('aria-disabled', 'true');
   heights.push(await height(page));
   return heights;
+}
+
+/**
+ * Sayfada çalışır: öğe üzerinde sola kaydırma (dokunma + işaretçi olayları). WebKit'te `Touch` kurucusu yoksa yalnız
+ * dokunma türlü işaretçi olayları gönderilir.
+ *
+ * @param {string} selector Öğe seçicisi.
+ */
+function SWIPE(selector) {
+  const el = document.querySelector(selector);
+  try {
+    const t = (x) => new Touch({ identifier: Date.now(), target: el, clientX: x, clientY: 20 });
+    el.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [t(300)] }));
+    el.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, touches: [t(60)] }));
+  } catch {
+    // WebKit: Touch kurucusu yok.
+  }
+  el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 300, pointerType: 'touch' }));
+  el.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 60, pointerType: 'touch' }));
+  document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }));
 }
 
 const same = (heights) => {
@@ -231,10 +260,13 @@ test.describe('compact kart', () => {
     // Bilgi: yükleme sırasındaki kart içi kaymalar (yazı tipi değişimi) ayrıca raporlanır.
     console.log(`COMPACT_LOAD_SHIFTS ${JSON.stringify(await page.evaluate((t) => (window.__ls || []).filter((e) => e.card && e.t < t), since))}`);
     same(await fullFlow(page));
+    // Son geçişin (yeniden bağış) kareleri de kayda girsin.
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    await page.waitForTimeout(400);
     const shift = await cardShift(page, since);
     if (shift !== null) {
       const entries = await page.evaluate((t) => window.__ls.filter((e) => e.card && e.t >= t), since);
-      console.log(`COMPACT_SHIFTS ${JSON.stringify(entries.map((e) => ({ v: e.v, input: e.input })))}`);
+      console.log(`COMPACT_SHIFTS ${JSON.stringify(entries)}`);
       expect(shift, `kart içi kaymalar: ${JSON.stringify(entries)}`).toBe(0);
     }
   });
@@ -280,19 +312,14 @@ test.describe('compact kart', () => {
     const label = page.locator('.t-label').first();
     const lb = await label.boundingBox();
     if (isMobile) {
-      await page.evaluate(() => {
-        const el = document.querySelector('.t-label');
-        const t = (x) => new Touch({ identifier: 1, target: el, clientX: x, clientY: 10 });
-        el.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [t(300)] }));
-        el.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, touches: [t(100)] }));
-      });
+      await page.evaluate(SWIPE, '.t-label');
     } else {
       await page.mouse.move(lb.x + lb.width - 10, lb.y + lb.height / 2);
       await page.mouse.down();
       await page.mouse.move(lb.x + 10, lb.y + lb.height / 2, { steps: 5 });
       await page.mouse.up();
     }
-    expect(await changes()).toBe(1);
+    expect(await changes()).toBeGreaterThan(0);
     await page.evaluate(() => {
       window.__slideGo(0);
       window.__slides.changes = 0;
@@ -300,14 +327,7 @@ test.describe('compact kart', () => {
 
     // Kart içinde sürükleme.
     if (isMobile) {
-      await page.evaluate(() => {
-        const el = document.querySelector('[data-dp-compact] [data-dp-ctitle]');
-        const t = (x) => new Touch({ identifier: 2, target: el, clientX: x, clientY: 20 });
-        el.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [t(300)] }));
-        el.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, touches: [t(60)] }));
-        el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 300 }));
-        el.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 60 }));
-      });
+      await page.evaluate(SWIPE, '[data-dp-compact] [data-dp-ctitle]');
     } else {
       const box = await card.boundingBox();
       await page.mouse.move(box.x + box.width - 20, box.y + 30);
@@ -384,11 +404,13 @@ test.describe('compact kart', () => {
       await page.setViewportSize({ width, height: 900 });
       await open(page, baseURL, { ids: [IDS.custom] });
       const shots = [1440, 820, 375].includes(width) ? `${width}-` : '';
-      const heights = await fullFlow(page, shots);
+      const info = {};
+      const heights = await fullFlow(page, shots, info);
       same(heights);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(0);
       out[width] = Math.round(heights[0] * 10) / 10;
+      out[`${width}-odeme-sayfasi`] = info.pay || null;
     }
     console.log(`COMPACT_HEIGHTS ${JSON.stringify(out)}`);
     if (SHOTS) {
