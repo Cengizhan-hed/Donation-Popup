@@ -69,46 +69,48 @@ export function initColorFields(root, t) {
       status.classList.toggle('is-warn', !!warn);
     };
 
-    const paint = () => {
-      const info = classify(field.value);
-      field.setAttribute('aria-invalid', info.kind === 'bad' ? 'true' : 'false');
-      if (info.kind === 'empty') {
-        say('', false);
-        return;
-      }
-      if (info.kind === 'bad') {
-        say(t('colorBad', 'Enter a color like #12305A or a CSS variable like var(--brand).'), true);
-        return;
-      }
-      let rgb = null;
-      let text = '';
-      if (info.kind === 'hex') {
-        rgb = resolveColor(field.value.trim(), document, host);
-      } else {
-        const defined = window.getComputedStyle(field).getPropertyValue('--' + info.name).trim();
-        if (!defined) {
-          if (picker && info.fallback) {
-            const fb = resolveColor(info.fallback, document, host);
-            if (fb) {
-              picker.value = toHex(fb);
-            }
-          }
-          say(t('colorVarNone', 'This variable is not defined on this page. It will be resolved on your site, and the contrast will be checked there.'), false);
-          return;
-        }
-        rgb = resolveColor(field.value.trim(), document, host);
-        if (rgb) {
-          text = t('colorVarOk', 'On this page the variable resolves to %s. On your site it follows your theme.').replace('%s', toHex(rgb));
-        }
-      }
+    const setPicker = (rgb) => {
       if (rgb && picker) {
         picker.value = toHex(rgb);
       }
-      const low = rgb && checkText ? lowContrast(rgb) : '';
-      if (low) {
-        text = (text ? text + ' ' : '') + t('colorLow', 'Low contrast on white (%s:1). Headings and amounts may be hard to read; choose a darker color.').replace('%s', low);
+    };
+
+    // Değişken bu sayfada tanımlı değilse yalnız bilgi verir (yedek varsa seçicide gösterilir) ve null döner.
+    const resolveVar = (info) => {
+      const defined = window.getComputedStyle(field).getPropertyValue('--' + info.name).trim();
+      if (!defined) {
+        setPicker(info.fallback ? resolveColor(info.fallback, document, host) : null);
+        say(t('colorVarNone', 'This variable is not defined on this page. It will be resolved on your site, and the contrast will be checked there.'), false);
+        return null;
       }
-      say(text, !!low);
+      const out = resolveColor(field.value.trim(), document, host);
+      if (!out) {
+        say('', false);
+      }
+      return out;
+    };
+
+    const paint = () => {
+      const info = classify(field.value);
+      field.setAttribute('aria-invalid', info.kind === 'bad' ? 'true' : 'false');
+      if (info.kind === 'empty' || info.kind === 'bad') {
+        say(info.kind === 'bad' ? t('colorBad', 'Enter a color like #12305A or a CSS variable like var(--brand).') : '', info.kind === 'bad');
+        return;
+      }
+      const rgb = info.kind === 'hex' ? resolveColor(field.value.trim(), document, host) : resolveVar(info);
+      if (!rgb) {
+        return;
+      }
+      setPicker(rgb);
+      const parts = [];
+      if (info.kind === 'var') {
+        parts.push(t('colorVarOk', 'On this page the variable resolves to %s. On your site it follows your theme.').replace('%s', toHex(rgb)));
+      }
+      const low = checkText ? lowContrast(rgb) : '';
+      if (low) {
+        parts.push(t('colorLow', 'Low contrast on white (%s:1). Headings and amounts may be hard to read; choose a darker color.').replace('%s', low));
+      }
+      say(parts.join(' '), !!low);
     };
 
     if (picker) {

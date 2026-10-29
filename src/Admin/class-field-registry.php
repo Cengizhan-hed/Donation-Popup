@@ -125,14 +125,14 @@ final class Field_Registry {
 			),
 		);
 		$f['design.brand']       = array(
-			'page'      => Admin_Bootstrap::SLUG_FORMS,
-			'section'   => 'colors',
-			'label'     => __( 'Main color', 'woo-donation-popup' ),
+			'page'          => Admin_Bootstrap::SLUG_FORMS,
+			'section'       => 'colors',
+			'label'         => __( 'Main color', 'woo-donation-popup' ),
 			'help'          => __( 'Headings, selected amounts and progress bars. Used only when you choose your own colors.', 'woo-donation-popup' ) . ' ' . self::color_hint(),
 			'type'          => 'color',
 			'text_contrast' => true,
 			'only_when'     => array( 'design.colors', 'custom' ),
-			'legacy'    => array(
+			'legacy'        => array(
 				'option' => 'wdp_button_settings',
 				'key'    => 'brand_color',
 				'kind'   => 'raw',

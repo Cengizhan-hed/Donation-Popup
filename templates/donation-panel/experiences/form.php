@@ -60,7 +60,7 @@ if ( '' === $donation_panel_privacy_label || \DonationPanel\Domain\Privacy_Notic
 	$donation_panel_privacy_label = __( 'privacy notice', 'woo-donation-popup' );
 }
 // Özel renkler (#hex ya da doğrulanmış `var(--ad[, #yedek])`): bildirimler Theme_Colors'ta üretilir.
-$donation_panel_style = \DonationPanel\Frontend\Theme_Colors::form_style(
+$donation_panel_style     = \DonationPanel\Frontend\Theme_Colors::form_style(
 	isset( $donation_panel_model['brand'] ) ? (string) $donation_panel_model['brand'] : '',
 	isset( $donation_panel_model['accent'] ) ? (string) $donation_panel_model['accent'] : ''
 );
