@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 16:04:58+0000\n"
-"PO-Revision-Date: 2026-10-29 16:04:58+0000\n"
+"POT-Creation-Date: 2026-10-29 17:36:57+0000\n"
+"PO-Revision-Date: 2026-10-29 17:36:57+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -171,6 +171,12 @@ msgstr[1] "%s destekçi"
 #, php-format
 msgid "%s today"
 msgstr "bugün %s"
+
+#: src/Admin/class-admin-view.php
+#. translators: %s: color setting name.
+#, php-format
+msgid "%s: color picker"
+msgstr "%s: renk seçici"
 
 #. translators: %s: percentage number, for example 62.
 #: templates/donation-panel/thanks/summary.php
@@ -2102,6 +2108,10 @@ msgstr "Etkin"
 msgid "End date"
 msgstr "Bitiş tarihi"
 
+#: src/Admin/class-settings-store.php src/Admin/class-admin-assets.php
+msgid "Enter a color like #12305A or a CSS variable like var(--brand)."
+msgstr "#12305A gibi bir renk ya da var(--brand) gibi bir CSS değişkeni girin."
+
 #: src/Admin/
 msgid "Enter a color like #12305A."
 msgstr "#12305A gibi bir renk girin."
@@ -2653,6 +2663,10 @@ msgstr "Başlıklar, seçili tutarlar ve ilerleme çubukları. Yalnız kendi ren
 #: includes/class-icon-library.php:56
 msgid "Heart"
 msgstr "Kalp"
+
+#: src/Admin/class-field-registry.php
+msgid "Hex or CSS variable (e.g. var(--e-global-color-primary))."
+msgstr "Hex ya da CSS değişkeni (ör. var(--e-global-color-primary))."
 
 #: includes/class-admin-form-tabs-renderer.php:224
 msgid "Hex or rgba is accepted."
@@ -3263,6 +3277,12 @@ msgstr "Giriş yapın; bağışlarınızı, makbuzlarınızı ve videolarınız�
 msgid "Log in to your account"
 msgstr "Hesabınıza girin"
 
+#: src/Admin/class-admin-assets.php
+#. translators: %s: contrast ratio, e.g. 3.2.
+#, php-format
+msgid "Low contrast on white (%s:1). Headings and amounts may be hard to read; choose a darker color."
+msgstr "Beyaz zeminde düşük kontrast (%s:1). Başlıklar ve tutarlar zor okunabilir; daha koyu bir renk seçin."
+
 #: includes/class-admin-product-data-tab.php:834
 msgid "Lower limit applied when the donor types the amount themselves."
 msgstr "Bağışçı tutarı kendisi yazarken uygulanacak alt sınır."
@@ -3734,6 +3754,12 @@ msgstr "Bağış ürünlerinde WooCommerce sepete ekle alanı yerine bağış fo
 #: includes/class-admin-layout-tabs-renderer.php:143
 msgid "On the front end the percent has no background; this is for legacy compatibility."
 msgstr "Frontend’de yüzde arkaplansızdır; eski uyumluluk."
+
+#: src/Admin/class-admin-assets.php
+#. translators: %s: resolved color, e.g. #12305a.
+#, php-format
+msgid "On this page the variable resolves to %s. On your site it follows your theme."
+msgstr "Bu sayfada değişken %s olarak çözülüyor. Sitenizde temanızı izler."
 
 #: includes/class-admin-form-tabs-renderer.php:442
 msgid "On this page:"
@@ -6008,6 +6034,10 @@ msgstr "Bu adım isteğe bağlıdır. Kutuyu işaretlemeden devam edebilirsiniz.
 
 msgid "This submission key was already used for a different donation."
 msgstr "Bu gönderim anahtarı başka bir bağış için kullanılmış."
+
+#: src/Admin/class-admin-assets.php
+msgid "This variable is not defined on this page. It will be resolved on your site, and the contrast will be checked there."
+msgstr "Bu değişken bu sayfada tanımlı değil. Sitenizde çözülecek ve kontrast orada kontrol edilecek."
 
 #: src/Modules/DonorAccount/class-account-renderer.php
 msgid "This year"

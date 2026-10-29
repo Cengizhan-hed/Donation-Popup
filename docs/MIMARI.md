@@ -994,3 +994,5 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 - Anlık görüntü şema 2. Korunanlar: Woo ve eklenti seçeneklerinin hash'i (oynaklar hariç), sayfa ayarları, eklenti/tema, rol, ortam dosyaları, bağış ürünü meta hash'i, işaretli kayıtlar.
 - Sınıflar: KIRMIZI (kurulum durur) / UYARI (sıradan içerik silme) / dış değişiklik (otomatik kabul; içerik yeni/değişik). TEMİZ sonuçta taban `persistAutoAcceptedBaseline` ile güncellenir; ship "sonra" aşamasında eklenti seçeneği değişimi kurulumun işi sayılır.
 - Eski şema tabanı ilk TEMİZ koşuda yeni kapsamla genişler; kullanıcı onayı akışları (`--accept-user-option`, `--accept-user-content`) aynen çalışır.
+
+- **Renk değişkenleri (12.2):** `Theme_Colors::sanitize_color/parse_var` tek doğrulama noktası (yalnız `#hex` ve `var(--ad[, #hex])`); `variables()` değişkenli renkte `--dp-color-dynamic` işareti yazar; `assets/src/ui2-shared/color-sync.mjs` işaretli köklerde düğme yazı rengini WCAG 4.5:1'e göre eşitler.
