@@ -93,6 +93,11 @@ Not: Eklentinin eski çerezi (`wdp_vid`) kaldırıldı; geri dönüşte eski sü
 - Ödeme, Sepet, Hesabım, Bağışlarım ve teşekkür sayfaları zaten önbelleğe alınmaz olmalıdır.
 - Doğrulama: çıkış yapmış bir tarayıcıda sepete bağış ekleyip başka bir gizli pencerede aynı sayfayı açın; ikincisinde sepet bilgisi görünmemeli.
 
+## G4. 12.2.0
+- **Yeni seçenek anahtarları** (eski sürümde zararsız, kalabilir): `compact.quick_amounts`, `compact.first_text`, `compact.reset_hidden`. Renk alanlarına `var(--…)` yazıldıysa 12.1.1'e dönmeden önce hex değer girin (12.1.1 yalnız hex bekler).
+- **Compact kart ödeme katmanı:** ödeme, aynı sitenin WooCommerce ödeme sayfası çerçeve içinde açılarak yapılır; bunun için sayfa `X-Frame-Options: SAMEORIGIN` (WooCommerce varsayılanı) ile gelmelidir. Bir güvenlik eklentisi ya da sunucu `DENY` (veya `frame-ancestors 'none'`) gönderiyorsa katman açılmaz ve bağışçı "Ödeme sayfasını açın" bağlantısıyla standart ödeme sayfasına geçer. Kontrol: compact kartlı bir sayfada tutar seçip ödemeye geçin; katmanda ödeme formu görünmeli.
+- **Geri dönüş:** 12.1.1 zip'i G2 adımlarıyla kurulur; `layout="compact"` kısa kodları 12.1.1'de standart forma döner.
+
 ## B. Ikram Aid yayına alma listesi
 
 Ikram (ikramaid.uk): Hello Elementor + Elementor Pro, GBP, şu an "coming soon" açık. Test için eklentinin kendi ayarlarından modüller açıktır (yeni motor, kampanya, etki, sosyal kanıt, yan sepet, bağışçı hesabı, teşekkür, vergi indirimi/Gift Aid).

@@ -5,7 +5,7 @@ Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 12.1.1
+Stable tag: 12.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,9 @@ Write it on your site; the form only shows a link to the page you choose.
 
 == Upgrade Notice ==
 
+= 12.2.0 =
+No unstyled flash: donation surfaces are styled from the very first frame on every theme and page builder, with no render-blocking files. New compact donation card (`layout="compact"`) for sliders and hero areas. Color settings accept CSS variables. Three new compact card settings are added; rolling back to 12.1.1 is safe. Back up before updating.
+
 = 12.1.1 =
 Caching fix. The page HTML is now identical for every visitor, so page caches can store it safely; cart, account state and campaign totals load in the browser. Nothing new is written to the database; rolling back to 12.1.0 is safe. Back up before updating.
 
@@ -56,6 +59,14 @@ Performance and security release. Nothing loads on pages without a donation surf
 Major release. One experience, one menu: the previous form engine and settings screens were removed. Settings, orders, shortcodes and blocks are kept. Back up before updating.
 
 == Changelog ==
+
+= 12.2.0 =
+* Fixed: zero tolerance for unstyled content. Each visible donation surface carries its own small inline style (once per page); the plugin loads no CSS file and nothing render-blocking; the panel is styled the moment it opens (the old "wait for styles" fallback was removed).
+* Fixed: layout shift root causes. The step label and the first button state are rendered on the server.
+* Added: compact donation card (`[wdp_donation_form id="123" layout="compact"]`, also in the block and Elementor widget): fixed height on every step, payment opens in a layer.
+* Changed: color settings accept a CSS variable such as `var(--brand)`; contrast is checked in the browser.
+* Changed: admin preview notes are shown only in the editor preview.
+* Rollback: new keys `compact.quick_amounts`, `compact.first_text`, `compact.reset_hidden` are ignored by 12.1.1; returning to 12.1.1 with the zip is safe.
 
 = 12.1.1 =
 * Security/caching: the page HTML is the same for all visitors; side cart content and account icon state are read in the browser through REST; no request when there is no cart cookie; campaign display counts only the confirmed total.

@@ -3,6 +3,35 @@
 All notable changes to Donation Panel for WooCommerce are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [12.2.0]
+
+### Fixed — zero tolerance for unstyled content
+- Every donation surface visible at first paint (inline form, compact card, donation list/cards, campaign bar, buttons) carries the CSS it needs as an inline `<style>` right before its output, once per page, scoped to `.donation-panel`. It is styled in every page builder, slider, editor preview and AJAX response without content scanning.
+- The plugin loads no CSS file on the front end; render-blocking plugin files: 0.
+- The panel (popup, side panel, bottom sheet, side cart, direct payment) is styled the instant it opens; the "wait for styles" fallback was removed.
+- All inline SVG icons carry width/height.
+
+### Fixed — layout shift (CLS) root causes
+- The step label and the first button state ("Choose an amount" / "Donate %s", lock, hidden total) are rendered on the server exactly as the script would render them, so nothing moves when the script attaches.
+
+### Added
+- Compact donation card: `[wdp_donation_form id="…" layout="compact"]`, with the same option in the block and the Elementor compatibility widget. The card height never changes between steps (steps share one grid cell; inactive steps are hidden and inert), events inside the card do not reach sliders, no product image. Payment opens in a layer showing the standard WooCommerce order-pay page.
+- Without `layout`, the form renders exactly as before.
+
+### Changed
+- Color settings accept a CSS variable as well as hex (for example `var(--e-global-color-primary)`); contrast is checked in the browser after the variable resolves.
+- Admin preview notes are shown only in the editor preview, never to visitors.
+
+### Test infrastructure (not shipped)
+- Canary scope: only what tests and installation can change is guarded; a real administrator's content edits are accepted automatically, risky changes warn.
+- Plugin-owned speed measurement (`measure:plugin-perf`): requests, bytes, queries, cookies, render-blocking files, main-thread time, long tasks, CLS attribution, INP (median of 5 samples), tap→panel (median of 5).
+- First-paint test: computed styles of plugin elements checked in the first painted frame with throttled network and CPU.
+
+### Rollback plan
+1. Reinstall the 12.1.1 plugin zip over the folder (docs/CANLIYA-ALMA.md G2 steps). Settings and orders are kept.
+2. New option keys written by 12.2.0 are harmless in 12.1.1 and can stay: `compact.quick_amounts`, `compact.first_text`, `compact.reset_hidden`. Shortcodes with `layout="compact"` fall back to the standard form in 12.1.1.
+3. If a color setting holds a CSS variable (`var(--…)`), set it to a hex value before rolling back; 12.1.1 expects hex.
+
 ## [12.1.1]
 
 ### Security / caching
