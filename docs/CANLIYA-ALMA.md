@@ -95,7 +95,7 @@ Not: Eklentinin eski çerezi (`wdp_vid`) kaldırıldı; geri dönüşte eski sü
 
 ## B. Ikram Aid yayına alma listesi
 
-Ikram (ikramaid.uk): Blocksy + Elementor, GBP, şu an "coming soon" açık. Test için eklentinin kendi ayarlarından modüller açıktır (yeni motor, kampanya, etki, sosyal kanıt, yan sepet, bağışçı hesabı, teşekkür, vergi indirimi/Gift Aid).
+Ikram (ikramaid.uk): Hello Elementor + Elementor Pro, GBP, şu an "coming soon" açık. Test için eklentinin kendi ayarlarından modüller açıktır (yeni motor, kampanya, etki, sosyal kanıt, yan sepet, bağışçı hesabı, teşekkür, vergi indirimi/Gift Aid).
 
 ### B1. Yayından önce (site sahibi)
 - [ ] `?dp_preview=1` ile (yönetici girişliyken) formlar, kampanya kartları, yan sepet, bağışçı hesabı gerçek ürünlerde incelendi; metinler İngilizce, GBP biçimleri doğru.
