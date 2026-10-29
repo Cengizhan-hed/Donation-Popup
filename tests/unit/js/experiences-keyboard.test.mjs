@@ -28,6 +28,17 @@ test('keyboardDismissed yalnız açıktan kapanışta true', () => {
   assert.equal(keyboardDismissed(true, 300), false);
 });
 
+test('klavye algısı histerezisli ve offsetTop\'tan bağımsız', async () => {
+  const { keyboardShrink, nextKeyboardUp, KEYBOARD_GONE_PX } = await import('../../../assets/src/experiences/keyboard.mjs');
+  assert.equal(keyboardShrink(844, 508), 336);
+  assert.equal(keyboardShrink(844, 900), 0);
+  assert.equal(nextKeyboardUp(false, KEYBOARD_MIN_PX - 1), false);
+  assert.equal(nextKeyboardUp(false, KEYBOARD_MIN_PX), true);
+  assert.equal(nextKeyboardUp(true, KEYBOARD_GONE_PX + 1), true);
+  assert.equal(nextKeyboardUp(true, KEYBOARD_GONE_PX - 1), false);
+  assert.ok(KEYBOARD_MIN_PX > KEYBOARD_GONE_PX);
+});
+
 test('itemsInCart Woo sepet çerezini okur', () => {
   assert.equal(itemsInCart(''), 0);
   assert.equal(itemsInCart('a=1; woocommerce_items_in_cart=1; b=2'), 1);

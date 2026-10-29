@@ -7,7 +7,7 @@
   --_bg: var(--dp-color-surface, #fff); --_ring: var(--dp-color-primary-ring, rgb(15 118 110 / .4));
   --_focus: var(--dp-color-primary-strong, #0b5f58); --_bad: var(--dp-color-danger, #b42318);
 }
-.donation-panel .donation-panel-ac__input { --_h: var(--dpx-h-field, 52px); --_fs: .9375rem; --_bd: var(--dpx-line-strong, #8a93a3); --_r: var(--dpx-r-field, 14px); --_bg: var(--dpx-card, #fff); --_bad: var(--dpx-bad, #b42318); }
+.donation-panel .donation-panel-ac__input { --_h: var(--dpx-h-field, 52px); --_fs: 16px; --_bd: var(--dpx-line-strong, #8a93a3); --_r: var(--dpx-r-field, 14px); --_bg: var(--dpx-card, #fff); --_bad: var(--dpx-bad, #b42318); }
 :root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input) {
   all: revert;
   display: block; box-sizing: border-box; inline-size: 100%; max-inline-size: 100%; min-block-size: var(--_h); margin: 0; padding: 0 14px;
@@ -37,6 +37,8 @@
 :root .donation-panel .donation-panel-phone__input { padding: 0 14px; min-block-size: 50px; }
 :root .donation-panel :is(.donation-panel-custom__in, .donation-panel-phone__input):is(:focus, :focus-visible) { box-shadow: none; outline: 0; }
 :root .donation-panel :is(.donation-panel-custom__in, .donation-panel-phone__input)::placeholder { color: var(--dp-color-text-muted, #5b6475); opacity: 1; }
+/* Odaktaki alan klavye/alt bölüm payıyla görünür kaydırılır (`all: revert` bunu sıfırladığı için sonra verilir). */
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input, .donation-panel-custom__in, .donation-panel-phone__input) { scroll-margin-block: 24px; }
 :root .donation-panel .donation-panel-phone__select { all: revert; position: absolute; inset: 0; inline-size: 100%; block-size: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; font-size: 16px; -webkit-appearance: none; appearance: none; }
 
 /* Düğmeler: temanın düğme sızıntılarını (kenar boşluğu, büyük harf, harf aralığı, gölge) keser; değerleri sınıflar verir. */

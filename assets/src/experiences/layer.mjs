@@ -6,7 +6,7 @@
  * yaklaşılınca/dokunulunca ya da ilk açılışta <dialog> olarak oluşturulur ve form bağlanır.
  */
 import { NARROW_QUERY, presentedAs, shouldDismissOnDrag } from './store.mjs';
-import { KEYBOARD_GONE_PX, TEXT_FIELD, keyboardDismissed, keyboardHeight, shouldHideActionBar } from './keyboard.mjs';
+import { KEYBOARD_MIN_PX, TEXT_FIELD, keyboardShrink, nextKeyboardUp, shouldHideActionBar } from './keyboard.mjs';
 import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 
 let layerSeq = 0;
@@ -52,11 +52,23 @@ export function createLayer(root, hooks = {}) {
   let opened = false;
   let pushed = false;
   let closeTimer = 0;
-  let keyboardWasUp = false;
+  let keyboardUp = false;
   let keyboardDismissedFlag = false;
+  let fieldFocused = false;
+  let baseline = 0;
+  let baselineWidth = 0;
+  let geoFrame = 0;
+  let settleTimer = 0;
+  let blurTimer = 0;
+  let revealTimer = 0;
+  let revealTarget = null;
   let barHome = null;
   let barTimer = 0;
   const BAR_RESTORE_MS = 400;
+  const SETTLE_MS = 100; // resize debounce
+  const BLUR_GRACE_MS = 250; // alandan alana geçişte klavye durumu korunur
+  const REVEAL_WARM_MS = 150; // klavye zaten açık
+  const REVEAL_COLD_MS = 450; // klavye açılış animasyonu için yedek zamanlayıcı (resize gelmezse)
 
   const present = () => {
     root.dataset.dpPresented = presentedAs(kind, media.matches);
@@ -137,22 +149,71 @@ export function createLayer(root, hooks = {}) {
     placeActionBar(false);
   };
 
-  const syncKeyboard = () => {
+  /**
+   * Yerleşim değişkenleri (kare başına en çok bir kez): görsel görünüm yüksekliği ve altta kalan boşluk.
+   * Yalnız geometri; klavye "açık/kapalı" kararına GİRMEZ (geri besleme döngüsü olmasın).
+   */
+  const applyGeometry = () => {
+    geoFrame = 0;
+    if (!opened || !surface || !viewport) {
+      return;
+    }
+    const below = Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop));
+    root.style.setProperty('--dp-kb', `${below}px`);
+    root.style.setProperty('--dp-vvh', `${Math.round(viewport.height)}px`);
+  };
+
+  const scheduleGeometry = () => {
+    if (!geoFrame) {
+      geoFrame = window.requestAnimationFrame(applyGeometry);
+    }
+  };
+
+  /** Klavyesiz kararlı yükseklik: iOS'ta innerHeight değişmez, Chrome Android'de küçülür; en büyük değer tutulur. */
+  const updateBaseline = () => {
+    const height = window.innerHeight; // clientHeight okumak açılışta zorunlu düzen hesabı tetikler (açılış ms bütçesi)
+    if (!baseline || window.innerWidth !== baselineWidth || (!keyboardUp && height > baseline)) {
+      baseline = height;
+      baselineWidth = window.innerWidth;
+    }
+  };
+
+  const isTextField = (el) => Boolean(el && el instanceof Element && surface && surface.contains(el) && el.matches(TEXT_FIELD));
+
+  /** Odaktaki alanı en çok bir kez, klavye yerleştikten sonra görünür yapar. */
+  const reveal = () => {
+    window.clearTimeout(revealTimer);
+    revealTimer = 0;
+    const target = revealTarget;
+    revealTarget = null;
+    if (opened && target && document.activeElement === target && typeof target.scrollIntoView === 'function') {
+      target.scrollIntoView({ block: 'nearest' });
+    }
+  };
+
+  /**
+   * Klavye durumu (histerezisli) + alt bölümün akışa girmesi/çıkması: tek yerde, tek karede.
+   *
+   * @param {boolean} measured Gerçek ölçümden mi (resize sonrası) çağrıldı.
+   */
+  const syncKeyboard = (measured = false) => {
     if (!opened || !surface) {
       return;
     }
-    const kb = viewport ? keyboardHeight(window.innerHeight, viewport.height, viewport.offsetTop) : 0;
-    root.style.setProperty('--dp-kb', `${kb}px`);
+    updateBaseline();
     if (viewport) {
-      root.style.setProperty('--dp-vvh', `${viewport.height}px`);
+      const wasUp = keyboardUp;
+      keyboardUp = nextKeyboardUp(wasUp, keyboardShrink(baseline, viewport.height));
+      if (wasUp && !keyboardUp) {
+        keyboardDismissedFlag = true; // klavye kapandı, alan odakta (Android geri hareketi)
+      }
     }
-    if (keyboardDismissed(keyboardWasUp, kb)) {
-      keyboardDismissedFlag = true;
-    }
-    keyboardWasUp = kb > KEYBOARD_GONE_PX;
-    const active = document.activeElement;
-    const field = Boolean(active && surface.contains(active) && active.matches(TEXT_FIELD));
-    const hide = shouldHideActionBar({ fieldFocused: field, keyboard: kb, coarse: coarse.matches, dismissed: keyboardDismissedFlag });
+    const hide = shouldHideActionBar({
+      fieldFocused,
+      keyboard: keyboardUp ? KEYBOARD_MIN_PX : 0,
+      coarse: coarse.matches,
+      dismissed: keyboardDismissedFlag,
+    });
     if (hide) {
       root.setAttribute('data-dp-kb', '1');
     } else {
@@ -166,29 +227,43 @@ export function createLayer(root, hooks = {}) {
       // eski yerine dönüş kısa gecikmeyle ve odak/basış alt bölümdeyken ertelenir.
       barTimer = window.setTimeout(restoreActionBar, BAR_RESTORE_MS);
     }
-    if (field && kb > 0 && typeof active.scrollIntoView === 'function') {
-      active.scrollIntoView({ block: 'center' });
+    if (measured && keyboardUp && revealTarget) {
+      reveal(); // klavye yerleşti: tek kaydırma
     }
+  };
+
+  /** resize olayı: geometri hemen (kare başına), karar ~100 ms sakinleşince (debounce). */
+  const onViewportResize = () => {
+    scheduleGeometry();
+    window.clearTimeout(settleTimer);
+    settleTimer = window.setTimeout(() => syncKeyboard(true), SETTLE_MS);
   };
 
   const onFieldFocus = (event) => {
-    if (!(event.target instanceof Element) || !event.target.matches(TEXT_FIELD)) {
+    if (!isTextField(event.target)) {
       return;
     }
+    window.clearTimeout(blurTimer);
+    fieldFocused = true;
     keyboardDismissedFlag = false;
+    // Ön-klavye durumu: ilk odakta resize olayı geç gelir; alt çubuk hemen akışa girer, alan örtülmez.
     syncKeyboard();
-    // Klavye animasyonu bitince alan görünür alana kaydırılır (iOS/Android sırası farklıdır).
-    window.setTimeout(() => {
-      if (opened && document.activeElement === event.target) {
-        syncKeyboard();
-        event.target.scrollIntoView({ block: 'center' });
-      }
-    }, 280);
+    revealTarget = event.target;
+    window.clearTimeout(revealTimer);
+    revealTimer = window.setTimeout(reveal, keyboardUp ? REVEAL_WARM_MS : REVEAL_COLD_MS);
   };
 
   const onFieldBlur = () => {
-    // Odak bir sonraki alana geçiyorsa (Tab/Next) bölüm titremesin: sonraki turda ölçülür.
-    window.setTimeout(syncKeyboard, 0);
+    // Alandan alana geçişte (Tab/dokunma) durum korunur: blur sonrası kısa süre içinde başka alana odak gelmezse kapanır.
+    window.clearTimeout(blurTimer);
+    blurTimer = window.setTimeout(() => {
+      if (!opened || isTextField(document.activeElement)) {
+        return;
+      }
+      fieldFocused = false;
+      revealTarget = null;
+      syncKeyboard();
+    }, BLUR_GRACE_MS);
   };
 
   const onKeydown = (event) => {
@@ -252,8 +327,11 @@ export function createLayer(root, hooks = {}) {
     window.clearTimeout(closeTimer);
     closeTimer = 0;
     opened = true;
-    keyboardWasUp = false;
+    keyboardUp = false;
     keyboardDismissedFlag = false;
+    fieldFocused = false;
+    baseline = 0;
+    updateBaseline();
     present();
     if (typeof overlay.showModal === 'function') {
       if (!overlay.open) {
@@ -276,9 +354,10 @@ export function createLayer(root, hooks = {}) {
       pushed = false;
     }
     if (viewport) {
-      viewport.addEventListener('resize', syncKeyboard);
-      viewport.addEventListener('scroll', syncKeyboard);
+      viewport.addEventListener('resize', onViewportResize);
+      viewport.addEventListener('scroll', scheduleGeometry);
     }
+    applyGeometry();
     syncKeyboard();
     // Otomatik alan odağı yok (mobilde klavye açılmasın): odak başlığa.
     const focusStart = () => (titleNode || surface).focus({ preventScroll: true });
@@ -315,9 +394,17 @@ export function createLayer(root, hooks = {}) {
     document.removeEventListener('keydown', onKeydown, true);
     window.removeEventListener('popstate', onPopState);
     if (viewport) {
-      viewport.removeEventListener('resize', syncKeyboard);
-      viewport.removeEventListener('scroll', syncKeyboard);
+      viewport.removeEventListener('resize', onViewportResize);
+      viewport.removeEventListener('scroll', scheduleGeometry);
     }
+    [settleTimer, blurTimer, revealTimer].forEach((t) => window.clearTimeout(t));
+    if (geoFrame) {
+      window.cancelAnimationFrame(geoFrame);
+      geoFrame = 0;
+    }
+    revealTarget = null;
+    fieldFocused = false;
+    keyboardUp = false;
     if (pushed) {
       pushed = false;
       if (window.history.state && window.history.state.dpLayer === ownerId) {
