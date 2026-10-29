@@ -158,7 +158,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 				<p class="donation-panel-compact__err" id="<?php echo esc_attr( $donation_panel_key ); ?>-e1" data-dp-cerr></p>
 				<?php // İlk durum sunucuda çizilir (betik yüklenince metin/genişlik değişmesin: CLS 0): tutar seçilmemişken pasif "Tutar seçin". ?>
 				<?php $donation_panel_pending = empty( $donation_panel_view['fixed'] ); ?>
-				<button type="submit" class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta<?php echo $donation_panel_pending ? ' is-pending' : ''; ?>" aria-disabled="<?php echo $donation_panel_pending ? 'true' : 'false'; ?>" data-dp-cnext><span data-dp-cnext-label><?php echo $donation_panel_pending ? esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
+				<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta<?php echo $donation_panel_pending ? ' is-pending' : ''; ?>" type="submit" aria-disabled="<?php echo $donation_panel_pending ? 'true' : 'false'; ?>" data-dp-cnext><span data-dp-cnext-label><?php echo $donation_panel_pending ? esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
 			</section>
 
 			<section class="donation-panel-compact__step" data-dp-cstep="details" data-step-name="<?php esc_attr_e( 'Your details', 'woo-donation-popup' ); ?>" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-t2" inert aria-hidden="true">
@@ -209,7 +209,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 					<?php endif; ?>
 				</div>
 				<p class="donation-panel-compact__err" id="<?php echo esc_attr( $donation_panel_key ); ?>-e2" data-dp-cerr></p>
-				<button type="submit" class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta"><span><?php echo esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
+				<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta" type="submit"><span><?php echo esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
 			</section>
 
 			<section class="donation-panel-compact__step" data-dp-cstep="pay" data-step-name="<?php esc_attr_e( 'Payment', 'woo-donation-popup' ); ?>" data-dp-kind="popup" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-t3" inert aria-hidden="true">
@@ -228,7 +228,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 					?>
 				</p>
 				<p class="donation-panel-compact__err" id="<?php echo esc_attr( $donation_panel_key ); ?>-e3" data-dp-cerr></p>
-				<button type="submit" class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta" data-dp-cpay data-label="<?php /* translators: %s: formatted amount. */ echo esc_attr( $donation_panel_direct ? __( 'Donate %s securely', 'woo-donation-popup' ) : __( 'Continue to checkout · %s', 'woo-donation-popup' ) ); ?>"<?php echo $donation_panel_direct ? ' aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( $donation_panel_key ) . '-pay"' : ''; ?>><?php echo $donation_panel_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?><span data-dp-cpay-label><?php esc_html_e( 'Donate securely', 'woo-donation-popup' ); ?></span></button>
+				<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta" type="submit" data-dp-cpay data-label="<?php /* translators: %s: formatted amount. */ echo esc_attr( $donation_panel_direct ? __( 'Donate %s securely', 'woo-donation-popup' ) : __( 'Continue to checkout · %s', 'woo-donation-popup' ) ); ?>"<?php echo $donation_panel_direct ? ' aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( $donation_panel_key ) . '-pay"' : ''; ?>><?php echo $donation_panel_lock; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?><span data-dp-cpay-label><?php esc_html_e( 'Donate securely', 'woo-donation-popup' ); ?></span></button>
 				<?php if ( $donation_panel_direct ) : ?>
 					<?php // Ödeme katmanı canlı DOM'da değil, inert <template> içinde (CLS 0); ödeme adımında <dialog> olarak oluşturulur. ?>
 					<template data-dp-tpl>
