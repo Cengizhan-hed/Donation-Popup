@@ -19,28 +19,36 @@ export const ISOLATED_EVENTS = ['pointerdown', 'pointermove', 'touchstart', 'tou
  * @return {{value: number|null, error: ''|'amount'|'format'|'min'}} Sonuç.
  */
 export function evaluateAmount(input) {
-  const { fixed, quick, raw, unit, qty, min, currency } = input;
-  let value = null;
-  if (fixed) {
-    value = unit > 0 ? unit * Math.max(1, qty || 1) : null;
-  } else if (typeof quick === 'number' && quick > 0) {
-    value = quick;
-  } else {
-    const text = String(raw || '').trim();
-    if (text === '') {
-      return { value: null, error: 'amount' };
-    }
-    const detail = parseAmountDetailed(text, currency);
-    if (detail.status === 'ambiguous') {
-      return { value: null, error: 'format' };
-    }
-    value = detail.ok && detail.amount > 0 ? detail.amount : null;
+  const { fixed, min } = input;
+  const picked = pickAmount(input);
+  if (picked.error) {
+    return picked;
   }
-  if (value === null) {
-    return { value: null, error: 'amount' };
-  }
+  const { value } = picked;
   const floor = fixed ? 0 : Math.max(Number(min) || 0, 0.01);
   return value < floor ? { value, error: 'min' } : { value, error: '' };
+}
+
+/**
+ * Seçilen/yazılan ham tutar (en düşük tutar denetimi yok).
+ *
+ * @param {{fixed: boolean, quick: number|null, raw: string, unit: number, qty: number, currency: object}} input Girdi.
+ * @return {{value: number|null, error: ''|'amount'|'format'}} Sonuç.
+ */
+function pickAmount(input) {
+  const { fixed, quick, raw, unit, qty, currency } = input;
+  if (fixed) {
+    return unit > 0 ? { value: unit * Math.max(1, qty || 1), error: '' } : { value: null, error: 'amount' };
+  }
+  if (typeof quick === 'number' && quick > 0) {
+    return { value: quick, error: '' };
+  }
+  const text = String(raw || '').trim();
+  const detail = text === '' ? null : parseAmountDetailed(text, currency);
+  if (detail && detail.status === 'ambiguous') {
+    return { value: null, error: 'format' };
+  }
+  return detail && detail.ok && detail.amount > 0 ? { value: detail.amount, error: '' } : { value: null, error: 'amount' };
 }
 
 /**
@@ -149,13 +157,20 @@ export function donorsText(count, one, many, locale) {
   if (n < 1) {
     return '';
   }
-  let shown = String(n);
+  return fill(n === 1 ? one : many, [formatCount(n, locale)]);
+}
+
+/**
+ * @param {number} n      Sayı.
+ * @param {string} locale Dil.
+ * @return {string} Yerel biçimli sayı.
+ */
+function formatCount(n, locale) {
   try {
-    shown = new Intl.NumberFormat(locale || undefined).format(n);
+    return new Intl.NumberFormat(locale || undefined).format(n);
   } catch {
-    shown = String(n);
+    return String(n);
   }
-  return fill(n === 1 ? one : many, [shown]);
 }
 
 /**

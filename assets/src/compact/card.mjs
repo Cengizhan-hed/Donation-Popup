@@ -31,7 +31,27 @@ function isolate(root) {
 }
 
 /**
- * Çerçevedeki belgeyi okur (aynı köken); okunamazsa null.
+ * Formun veri öznitelikleri (Woo ayırıcıları, tür, akış).
+ *
+ * @param {DOMStringMap} ds Form `dataset`.
+ * @return {object} Ayarlar.
+ */
+function readConfig(ds) {
+  const decimals = Number(ds.decimals || 2);
+  return {
+    fixed: ds.kind === 'fixed',
+    direct: ds.direct === '1',
+    decimals,
+    currency: { decimals, thousandSeparator: ds.thousandSep ?? ',', decimalSeparator: ds.decimalSep ?? '.' },
+    locale: document.documentElement.lang || undefined,
+    symbol: ds.symbol || '',
+    unit: Number(ds.unit || 0),
+    qtyMax: Math.max(1, Number(ds.qtyMax || 1)),
+  };
+}
+
+/**
+ * Çerçevedeki belgenin durumu (aynı köken); okunamazsa null.
  *
  * @param {HTMLIFrameElement} frame Çerçeve.
  * @return {{bodyClasses: string[], hasReceived: boolean, blank: boolean}|null} Gözlem.
@@ -62,14 +82,7 @@ export function createCompact(root) {
     return null;
   }
   const ds = form.dataset;
-  const fixed = ds.kind === 'fixed';
-  const direct = ds.direct === '1';
-  const decimals = Number(ds.decimals || 2);
-  const currency = { decimals, thousandSeparator: ds.thousandSep ?? ',', decimalSeparator: ds.decimalSep ?? '.' };
-  const locale = document.documentElement.lang || undefined;
-  const symbol = ds.symbol || '';
-  const unit = Number(ds.unit || 0);
-  const qtyMax = Math.max(1, Number(ds.qtyMax || 1));
+  const { fixed, direct, decimals, currency, locale, symbol, unit, qtyMax } = readConfig(ds);
   const sections = STEPS.map((id) => form.querySelector(`[data-dp-cstep="${id}"]`));
   const live = form.querySelector('[data-dp-live]');
   const quick = Array.from(form.querySelectorAll('[data-dp-cquick]'));
@@ -111,17 +124,19 @@ export function createCompact(root) {
     fields.forEach((el) => el.setAttribute('aria-invalid', 'true'));
   };
 
-  const paint = () => {
-    const { value, error } = amount();
-    state.value = error ? null : value;
-    const pending = error !== '';
+  /** Ana düğme: tutar geçerli olana kadar pasif ("Tutar seçin"). */
+  const paintNext = (pending) => {
     if (nextButton) {
       nextButton.setAttribute('aria-disabled', pending ? 'true' : 'false');
       nextButton.classList.toggle('is-pending', pending);
     }
     if (nextLabel) {
-      nextLabel.textContent = pending && !fixed ? ds.labelChoose || '' : ds.labelNext || '';
+      nextLabel.textContent = (pending && !fixed ? ds.labelChoose : ds.labelNext) || '';
     }
+  };
+
+  /** Seçilen tutar: üst bölgeler, özet, ödeme düğmesi. */
+  const paintAmount = () => {
     const shown = state.value !== null ? money(state.value) : '';
     form.querySelectorAll('[data-dp-camount], [data-dp-crecap-amount]').forEach((node) => {
       node.textContent = shown;
@@ -129,6 +144,17 @@ export function createCompact(root) {
     if (payLabel && payButton) {
       payLabel.textContent = shown !== '' ? fill(payButton.dataset.label || '', [shown]) : payDefault;
     }
+  };
+
+  const paint = () => {
+    const { value, error } = amount();
+    state.value = error ? null : value;
+    paintNext(error !== '');
+    paintAmount();
+    paintQty();
+  };
+
+  const paintQty = () => {
     if (qtyIn) {
       qtyIn.value = String(state.qty);
     }
@@ -394,43 +420,49 @@ export function createCompact(root) {
     }
   }
 
-  const pay = async () => {
-    if (state.busy) {
+  const closeLayer = () => {
+    if (layer) {
+      layer.close();
+    }
+  };
+
+  /**
+   * Sunucu yanıtı: alan hataları adımına döner; doğrudan bağışta ödeme sayfası katmandaki çerçevede, sepet akışında üst
+   * pencerede açılır.
+   *
+   * @param {{ok: boolean, errors?: Record<string, string>, checkoutUrl?: string, rate?: boolean}} outcome Sonuç.
+   */
+  const handleOutcome = (outcome) => {
+    if (outcome.errors) {
+      closeLayer();
+      serverErrors(outcome.errors);
       return;
     }
-    if (direct && state.payUrl) {
-      return; // Katman aynı siparişin ödeme sayfasıyla yeniden açıldı.
+    const target = outcome.ok ? outcome.checkoutUrl || (direct ? '' : root.dataset.dpCheckout) : '';
+    if (!target) {
+      throw new Error(outcome.rate ? 'rate' : 'failed');
+    }
+    if (!direct) {
+      window.location.assign(target);
+      return;
+    }
+    state.payUrl = target;
+    loadFrame(target);
+  };
+
+  const pay = async () => {
+    // Katman aynı siparişin ödeme sayfasıyla yeniden açıldıysa yeni istek yok.
+    if (state.busy || (direct && state.payUrl)) {
+      return;
     }
     state.busy = true;
     payButton.classList.add('is-loading');
     setError(2, '');
     try {
-      const outcome = await addToCart(root, root.dataset.dpProduct, values(), direct, state.round ? `#${state.round}` : '');
-      if (outcome.errors) {
-        if (layer) {
-          layer.close();
-        }
-        serverErrors(outcome.errors);
-        return;
-      }
-      if (!outcome.ok) {
-        throw new Error(outcome.rate ? 'rate' : 'failed');
-      }
-      const target = outcome.checkoutUrl || (direct ? '' : root.dataset.dpCheckout);
-      if (!target) {
-        throw new Error('failed');
-      }
-      if (!direct) {
-        window.location.assign(target);
-        return;
-      }
-      state.payUrl = target;
-      loadFrame(target);
+      handleOutcome(await addToCart(root, root.dataset.dpProduct, values(), direct, state.round ? `#${state.round}` : ''));
     } catch (error) {
-      if (layer) {
-        layer.close();
-      }
-      setError(2, error && error.message === 'rate' ? ds.msgRate || '' : ds.msgFailed || '');
+      closeLayer();
+      setError(2, (error && error.message === 'rate' ? ds.msgRate : ds.msgFailed) || '');
     } finally {
       state.busy = false;
       payButton.classList.remove('is-loading');
