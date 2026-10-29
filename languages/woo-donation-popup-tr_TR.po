@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 10:06:18+0000\n"
-"PO-Revision-Date: 2026-10-29 10:06:18+0000\n"
+"POT-Creation-Date: 2026-10-29 16:04:58+0000\n"
+"PO-Revision-Date: 2026-10-29 16:04:58+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -3094,6 +3094,10 @@ msgstr "Hazır güvenli ödeme cümlesi için boş bırakın."
 #: src/Admin/
 msgid "Leave empty for the built-in wording."
 msgstr "Hazır metin için boş bırakın."
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php
+msgid "Leave empty to show “All” in the site language."
+msgstr "Boş bırakırsanız sitenin dilinde “Tümü” görünür."
 
 #: src/Admin/
 msgid "Leave empty to use the built-in, translated wording."

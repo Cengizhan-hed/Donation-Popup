@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 13:06+0300\n"
+"POT-Creation-Date: 2026-10-29 19:05+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -219,7 +219,7 @@ msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:619
 #: src/Admin/class-pages.php:206 src/Admin/class-pages.php:214
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:287
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:289
 #: blocks/donations/index.js:180
 msgid "Progress"
 msgstr ""
@@ -2768,46 +2768,50 @@ msgstr ""
 msgid "All tab label"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:263
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:264
 #: src/Modules/EntryPoints/class-donations-list.php:200
 msgid "All"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:269
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:265
+msgid "Leave empty to show “All” in the site language."
+msgstr ""
+
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:271
 #: blocks/donations/index.js:178
 msgid "Image"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:278
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:280
 #: blocks/donations/index.js:179
 msgid "Excerpt"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:296
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:298
 #: blocks/donations/index.js:181
 msgid "Price"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:305
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:307
 #: blocks/donations/index.js:182
 msgid "Category"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:314
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:316
 #: blocks/donations/index.js:184
 msgid "Excerpt words"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:324
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:326
 msgid "Image size"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:333
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:335
 #: blocks/donations/index.js:193
 msgid "Heading tag"
 msgstr ""
 
-#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:346
+#: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:348
 #: blocks/donations/index.js:204
 msgid "CSS class"
 msgstr ""
