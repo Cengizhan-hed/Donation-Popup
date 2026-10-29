@@ -65,6 +65,33 @@ final class ProductResolverTest extends TestCase {
 		$this->assertFalse(\DonationPanel\Modules\EntryPoints\Product_Resolver::has_explicit_product(array()));
 	}
 
+	public function test_builder_preview_sample_product_without_context(): void {
+		// Ad alanı hatası (class_exists('Builder_Detect')) örnek ürünü hiç çözmüyordu.
+		WDP_Test_State::$caps[] = 'edit_products';
+		$_GET['acme_builder_edit'] = '1';
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		add_filter(
+			'wdp_builder_preview_context_product',
+			static function () {
+				return WDP_Test_State::$products[5];
+			}
+		);
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array());
+		unset($_GET['acme_builder_edit']);
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$this->assertNotNull($product);
+		$this->assertSame(5, $product->get_id());
+	}
+
+	public function test_visitor_gets_no_sample_product(): void {
+		$_GET['acme_builder_edit'] = '1';
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array());
+		unset($_GET['acme_builder_edit']);
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$this->assertNull($product);
+	}
+
 	public function test_filter_can_override(): void {
 		add_filter(
 			'wdp_resolve_product',

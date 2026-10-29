@@ -111,7 +111,7 @@ class Product_Resolver {
 			}
 		}
 
-		if ( ! $resolved && class_exists( 'Builder_Detect' ) ) {
+		if ( ! $resolved && class_exists( Builder_Detect::class ) ) {
 			$resolved = Builder_Detect::preview_product();
 		}
 
