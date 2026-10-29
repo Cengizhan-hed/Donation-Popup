@@ -17,7 +17,8 @@
  *  3) Eklenti betiklerinin ana iş parçacığı süresi: CDP Tracing (devtools.timeline + v8), 4× CPU + yavaş 4G'de yükleme;
  *     eklenti dizinindeki betiklerin derleme + değerlendirme + çağrı aralıkları birleşimi (ms) ve eklentiye atfedilen
  *     50 ms üzeri uzun görev sayısı; soğuk yüklemede WDP_PERF_TRACE_RUNS (varsayılan 3) koşu medyanı.
- *  4) CLS katkısı: `layout-shift` kayıtlarından kaynağı eklenti öğesi (`.donation-panel*` / `[data-dp-*]`) olanlar.
+ *  4) CLS katkısı: `layout-shift` kayıtlarından kaynağı eklenti öğesi (`.donation-panel*` / `[data-dp-*]`) olanlar;
+ *     eklenti dışı öğe de kayıyorsa ve kayma web fontu yüklenmesiyle aynı penceredeyse "tema/font" sütununa (eşik dışı).
  *  5) INP: dokunma → panel ve tutar kartına dokunma (Event Timing `duration`), yavaş ağ + 4× CPU.
  *  6) Dokunuş → panel: click → `dialog[open]` görünür + iki rAF, 5 koşu medyanı.
  *  7) Lighthouse (bilgi): ≥7 koşu medyanı; yerelde eklenti açık/kapalı, uzakta `--lh-label` ile etiketli tek mod.
@@ -81,12 +82,21 @@ function pageObservers() {
     }
     return false;
   };
-  window.__dpPerf = { shifts: [], events: [], errors: [] };
+  window.__dpPerf = { shifts: [], events: [], errors: [], fontTimes: [] };
+  try {
+    // Web fontu yüklenme anları (CLS atfı: font swap kaymaları ayrı sütun).
+    if (document.fonts && document.fonts.addEventListener) {
+      document.fonts.addEventListener('loadingdone', () => window.__dpPerf.fontTimes.push(performance.now()));
+    }
+  } catch (e) {
+    window.__dpPerf.errors.push(String(e));
+  }
   try {
     new PerformanceObserver((list) => {
       for (const e of list.getEntries()) {
         window.__dpPerf.shifts.push({
           value: e.value,
+          startTime: e.startTime,
           hadRecentInput: e.hadRecentInput,
           sources: (e.sources || []).map((s) => ({ plugin: !!s.node && isPluginNode(s.node), detached: !s.node })),
         });
@@ -151,6 +161,7 @@ async function resourceSnapshot(page) {
         url: r.name,
         type: r.initiatorType,
         start: r.startTime,
+        end: r.responseEnd,
         transfer: r.transferSize,
         encoded: r.encodedBodySize,
         decoded: r.decodedBodySize,
@@ -272,7 +283,10 @@ async function measureUi(browser, url, prepare, dumpName = '') {
     out.inpOpen = marks.open !== undefined ? inter(marks.open, marks.amount !== undefined ? marks.amount : Infinity) : NaN;
     out.inpAmount = marks.amount !== undefined ? inter(marks.amount, Infinity) : NaN;
     // CLS: yalnız yükleme (girdi öncesi kaymalar; hadRecentInput olanlar zaten dışarıda).
-    out.cls = clsAttribution(perf.shifts);
+    const fontEnds = snap.resources.filter((r) => /\.(?:woff2?|ttf|otf)(?:\?|$)/i.test(r.url) || r.type === 'font').map((r) => r.end);
+    out.fontTimes = [...perf.fontTimes, ...fontEnds].filter((n) => Number.isFinite(n) && n > 0).map((n) => Math.round(n));
+    out.cls = clsAttribution(perf.shifts, { fontTimes: out.fontTimes });
+    out.shifts = perf.shifts.filter((s) => !s.hadRecentInput).map((s) => ({ v: +Number(s.value).toFixed(5), t: Math.round(s.startTime), src: s.sources.map((x) => (x.plugin ? 'P' : x.detached ? 'D' : 'T')).join('') }));
     out.observerErrors = perf.errors;
     out.hasTrigger = hasTrigger;
 
@@ -356,6 +370,7 @@ function judgeRows(rows) {
     }
     if (r.m.skipped) continue;
     add('blocking', r.m.blocking);
+    add('inlineCssSurfaceGzip', r.m.inlineCss.maxSurfaceGzip);
     add('inlineCssGzip', r.m.inlineCss.gzip);
     add('cssGzip', r.m.cssGzip);
     add('jsGzip', r.m.jsGzip);
@@ -379,8 +394,8 @@ function printReport(label, rows, checks, lh) {
     console.log(`| ${r.id} | ${r.m.requests} | ${r.m.bytes} | ${r.m.cookies} | ${r.m.dom} | ${fmt(r.m.queries)} |`);
   }
   console.log('\nArayüzlü sayfalar (4× CPU + yavaş 4G, Pixel 7)');
-  console.log('| sayfa | engelleyen | satır içi CSS gz | CSS gz | JS gz | toplam gz | ana iş ms medyan [koşular] | uzun görev | CLS | INP aç/tutar ms | dokunuş→panel medyan (5) |');
-  console.log('|---|---|---|---|---|---|---|---|---|---|---|');
+  console.log('| sayfa | engelleyen | satır içi CSS gz (en büyük yüzey) | CSS dosyası gz | JS gz | toplam gz | ana iş ms medyan [koşular] | uzun görev | CLS eklenti | CLS tema/font | INP aç/tutar ms | dokunuş→panel medyan (5) |');
+  console.log('|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const r of rows.filter((x) => x.ui && !x.error)) {
     const m = r.m;
     if (m.skipped) {
@@ -388,7 +403,7 @@ function printReport(label, rows, checks, lh) {
       continue;
     }
     console.log(
-      `| ${r.id} | ${m.blocking} | ${m.inlineCss.gzip} B (${m.inlineCss.count}) | ${m.cssGzip} B | ${m.jsGzip} B | ${m.totalGzip} B | ${m.mainThreadMs} [${(m.mainThreadRuns || []).join(',')}] | ${m.longTasks} (+${m.contributedLongTasks} katkılı) | ${m.cls.plugin} | ${fmt(m.inpOpen)}/${fmt(m.inpAmount)} | ${fmt(m.tapMedian)} [${m.tapRuns.join(',')}] |`
+      `| ${r.id} | ${m.blocking} | ${m.inlineCss.gzip} B (${m.inlineCss.count}; ${m.inlineCss.maxSurfaceGzip} B) | ${m.cssGzip} B | ${m.jsGzip} B | ${m.totalGzip} B | ${m.mainThreadMs} [${(m.mainThreadRuns || []).join(',')}] | ${m.longTasks} (+${m.contributedLongTasks} katkılı) | ${m.cls.plugin} | ${m.cls.font} | ${fmt(m.inpOpen)}/${fmt(m.inpAmount)} | ${fmt(m.tapMedian)} [${m.tapRuns.join(',')}] |`
     );
   }
   for (const r of rows.filter((x) => x.error)) console.log(`HATA ${r.id}: ${r.error}`);

@@ -22,8 +22,10 @@ export const THRESHOLDS = {
   uiLessCookies: { max: 0, unit: 'çerez', label: 'Arayüzsüz: eklenti çerezi' },
   uiLessDom: { max: 0, unit: 'öğe', label: 'Arayüzsüz: eklenti DOM işareti' },
   blocking: { max: 0, unit: 'dosya', label: 'Render engelleyen eklenti dosyası' },
-  inlineCssGzip: { max: 3 * 1024, unit: 'B', label: 'Satır içi CSS (gzip)' },
-  cssGzip: { max: 12 * 1024, unit: 'B', label: 'Eklenti CSS (ilk yük, gzip)' },
+  // §25 bütçe kararı (2026-10-29): CSS'in tamamı satır içi; yüzey başına ≤9 KB, sayfa toplamı ≤16 KB gzip; CSS dosyası 0.
+  inlineCssSurfaceGzip: { max: 9 * 1024, unit: 'B', label: 'Satır içi CSS, en büyük yüzey (gzip)' },
+  inlineCssGzip: { max: 16 * 1024, unit: 'B', label: 'Satır içi CSS, sayfa toplamı (gzip)' },
+  cssGzip: { max: 0, unit: 'B', label: 'Eklenti CSS dosyası (ilk yük, gzip)' },
   jsGzip: { max: 25 * 1024, unit: 'B', label: 'Eklenti JS (ilk yük, gzip)' },
   mainThreadMs: { max: 50, unit: 'ms', label: 'Eklenti ana iş parçacığı (4× CPU)' },
   longTasks: { max: 0, unit: 'görev', label: 'Eklentiye atfedilen uzun görev (>50 ms)' },
@@ -69,19 +71,30 @@ export function median(a) {
  * Sayfa HTML'indeki eklenti satır içi stilleri (`<style id="donation-panel-inline-…">`).
  *
  * @param {string} html Sayfa.
- * @return {{count:number, raw:number, gzip:number, ids:string[]}} Toplamlar; gzip tüm stiller birlikte sıkıştırılarak.
+ * @return {{count:number, raw:number, gzip:number, ids:string[], surfaces:Record<string, number>, maxSurfaceGzip:number}}
+ *   Toplamlar; `gzip` tüm stiller birlikte sıkıştırılarak, `surfaces` her yüzey (id) ayrı sıkıştırılarak.
  */
 export function inlinePluginStyles(html) {
   const ids = [];
+  const surfaces = {};
   let body = '';
   for (const m of String(html || '').matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi)) {
     const id = (m[1].match(/\bid=["']([^"']+)["']/i) || [])[1] || '';
     if (!/^donation-panel-inline/i.test(id)) continue;
     ids.push(id);
     body += m[2];
+    surfaces[id] = (surfaces[id] || 0) + (m[2] ? zlib.gzipSync(Buffer.from(m[2]), { level: 9 }).length : 0);
   }
   const raw = Buffer.byteLength(body);
-  return { count: ids.length, raw, gzip: raw ? zlib.gzipSync(Buffer.from(body), { level: 9 }).length : 0, ids };
+  const sizes = Object.values(surfaces);
+  return {
+    count: ids.length,
+    raw,
+    gzip: raw ? zlib.gzipSync(Buffer.from(body), { level: 9 }).length : 0,
+    ids,
+    surfaces,
+    maxSurfaceGzip: sizes.length ? Math.max(...sizes) : 0,
+  };
 }
 
 /** İz olayları: URL taşıyan betik olayları (derleme, değerlendirme, çağrı). */
@@ -207,18 +220,45 @@ export function attributeTrace(trace, opts = {}) {
   return { scriptMs: +(total / 1000).toFixed(1), byUrl, longTasks, contributedLongTasks: contributed, longTaskDetails: details, allLongTasks: all };
 }
 
+/** Web fontu yüklenmesiyle "aynı kare" sayılan pencere (ms): yükleme bitişinden önce/sonra. Yavaşlatılmış CPU'da
+ * yazı tipi değişimi → stil yeniden hesabı → yerleşim birkaç kare sürebilir. */
+export const FONT_SHIFT_WINDOW = { beforeMs: 50, afterMs: 300 };
+
 /**
- * Eklenti kaynaklı CLS: yakın girdi olmayan (`hadRecentInput` false) kaymalarda en az bir kaynağı eklenti öğesi olanların
- * değer toplamı (karışık kaynaklı kaymanın tamamı eklentiye yazılır — muhafazakâr). Kaynak düğümü belgeden çıkmışsa
- * (`node` null) eklentiye yazılmaz, `unknown` sayılır.
+ * Kayma bir web fontu yüklenmesiyle aynı zaman penceresinde mi.
  *
- * @param {Array<{value:number, hadRecentInput?:boolean, sources?:Array<{plugin?:boolean, detached?:boolean}>}>} shifts Kaymalar.
- * @return {{plugin:number, total:number, pluginShifts:number, unknown:number}} Toplamlar.
+ * @param {number} t Kayma zamanı (`startTime`, ms).
+ * @param {number[]} fontTimes Yazı tipi yükleme bitiş zamanları (ms; `document.fonts` `loadingdone` ve font kaynaklarının
+ *   `responseEnd` değeri).
+ * @param {{beforeMs:number, afterMs:number}} [win] Pencere.
+ * @return {boolean} Penceredeyse.
  */
-export function clsAttribution(shifts) {
+export function nearFontLoad(t, fontTimes, win = FONT_SHIFT_WINDOW) {
+  if (!Number.isFinite(t)) return false;
+  return (fontTimes || []).some((f) => Number.isFinite(f) && t >= f - win.beforeMs && t <= f + win.afterMs);
+}
+
+/**
+ * Eklenti kaynaklı CLS (yakın girdi olmayan kaymalar, `hadRecentInput` false):
+ *  - kaynaklardan biri eklenti öğesi (`.donation-panel*` / `[data-dp-*]`) VE eklenti dışı (belgede duran) bir öğe de
+ *    kayıyor VE kayma bir web fontu yüklenmesiyle aynı pencerede → `font` (tema/font kaynaklı; eklenti tema yazı tipini
+ *    bilerek devralır, §0). Tema seçicisi bilinmez: "eklenti dışı" = eklenti işareti taşımayan her kaynak.
+ *  - aksi hâlde en az bir kaynağı eklenti öğesi olan kayma → `plugin` (karışık ama font penceresi dışında olan da
+ *    eklentiye yazılır — muhafazakâr).
+ *  - kaynak düğümlerinin hepsi belgeden çıkmışsa (`node` null) eklentiye yazılmaz, `unknown` sayılır.
+ *
+ * @param {Array<{value:number, startTime?:number, hadRecentInput?:boolean, sources?:Array<{plugin?:boolean, detached?:boolean}>}>} shifts Kaymalar.
+ * @param {{fontTimes?: number[], window?: {beforeMs:number, afterMs:number}}} [opts] Yazı tipi yükleme zamanları.
+ * @return {{plugin:number, font:number, total:number, pluginShifts:number, fontShifts:number, unknown:number}} Toplamlar.
+ */
+export function clsAttribution(shifts, opts = {}) {
+  const fontTimes = opts.fontTimes || [];
+  const win = opts.window || FONT_SHIFT_WINDOW;
   let plugin = 0;
+  let font = 0;
   let total = 0;
   let n = 0;
+  let nf = 0;
   let unknown = 0;
   for (const s of shifts || []) {
     if (s.hadRecentInput) continue;
@@ -226,13 +266,19 @@ export function clsAttribution(shifts) {
     total += v;
     const src = s.sources || [];
     if (src.some((x) => x.plugin)) {
-      plugin += v;
-      n += 1;
+      const foreign = src.some((x) => !x.plugin && !x.detached);
+      if (foreign && nearFontLoad(Number(s.startTime), fontTimes, win)) {
+        font += v;
+        nf += 1;
+      } else {
+        plugin += v;
+        n += 1;
+      }
     } else if (src.length && src.every((x) => x.detached)) {
       unknown += 1;
     }
   }
-  return { plugin: +plugin.toFixed(5), total: +total.toFixed(5), pluginShifts: n, unknown };
+  return { plugin: +plugin.toFixed(5), font: +font.toFixed(5), total: +total.toFixed(5), pluginShifts: n, fontShifts: nf, unknown };
 }
 
 /**
