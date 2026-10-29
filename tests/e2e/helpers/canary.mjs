@@ -295,11 +295,12 @@ export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
   const createdDiffs = list.filter((d) => d && d.change === 'created' && allow.has(Number(d.id)));
   const countDiffs = list.filter((d) => d && d.change === 'count');
   const modifiedDiffs = list.filter((d) => d && d.change === 'modified' && allow.has(Number(d.id)));
-  const other = list.filter((d) => !createdDiffs.includes(d) && !countDiffs.includes(d) && !modifiedDiffs.includes(d));
+  const deletedDiffs = list.filter((d) => d && d.change === 'deleted' && allow.has(Number(d.id)));
+  const other = list.filter((d) => !createdDiffs.includes(d) && !countDiffs.includes(d) && !modifiedDiffs.includes(d) && !deletedDiffs.includes(d));
   if (other.length) {
     return { ok: false, baseline, accepted: [], reason: `izinli id dışı fark: ${other.length}` };
   }
-  if (!createdDiffs.length && !modifiedDiffs.length) {
+  if (!createdDiffs.length && !modifiedDiffs.length && !deletedDiffs.length) {
     return { ok: false, baseline, accepted: [], reason: 'verilen id için yeni/değişen kayıt farkı yok' };
   }
   const baseMap = new Map(baseline.posts.map((p) => [Number(p.id), p]));
@@ -311,6 +312,15 @@ export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
   const currentMap = new Map(current.posts.map((p) => [Number(p.id), p]));
   const newPosts = [];
   const perCount = {};
+  const delIds = new Set();
+  for (const d of deletedDiffs) {
+    const base = baseMap.get(Number(d.id));
+    if (!base) return { ok: false, baseline, accepted: [], reason: `id=${d.id} baseline'da yok (deleted)` };
+    if (currentMap.has(Number(d.id))) return { ok: false, baseline, accepted: [], reason: `id=${d.id} hâlâ anlık görüntüde (deleted)` };
+    delIds.add(Number(d.id));
+    const ck = countKeyByType[String(base.type)];
+    if (ck) perCount[ck] = (perCount[ck] || 0) - 1;
+  }
   for (const d of createdDiffs) {
     const post = currentMap.get(Number(d.id));
     if (!post) return { ok: false, baseline, accepted: [], reason: `id=${d.id} anlık görüntüde yok` };
@@ -331,11 +341,13 @@ export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
     counts[key] = current[key];
   }
   const modIds = new Set(modifiedDiffs.map((d) => Number(d.id)));
-  const posts = baseline.posts.map((p) => (modIds.has(Number(p.id)) ? currentMap.get(Number(p.id)) : p));
+  const posts = baseline.posts
+    .filter((p) => !delIds.has(Number(p.id)))
+    .map((p) => (modIds.has(Number(p.id)) ? currentMap.get(Number(p.id)) : p));
   return {
     ok: true,
     baseline: { ...baseline, ...counts, posts: [...posts, ...newPosts] },
-    accepted: [...newPosts.map((p) => Number(p.id)), ...modifiedDiffs.map((d) => Number(d.id))],
+    accepted: [...newPosts.map((p) => Number(p.id)), ...modifiedDiffs.map((d) => Number(d.id)), ...delIds],
   };
 }
 

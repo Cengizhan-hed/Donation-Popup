@@ -711,3 +711,38 @@ it('acceptUserContentChanges: modified kabul, karışık, dış id ve baseline k
   const ghost = { id: 99, change: 'modified', type: 'page', from: 'x', to: 'y' };
   assert.equal(acceptUserContentChanges(baseline, current, [ghost], [99]).ok, false);
 });
+
+it('acceptUserContentChanges: silinen id sayıyı -1 açıklar; listede yoksa, sayı açıklanamazsa, option farkı reddedilir', async () => {
+  const { acceptUserContentChanges } = await import('../../e2e/helpers/canary.mjs');
+  const baseline = {
+    posts: [{ id: 1, type: 'page', status: 'publish' }, { id: 965, type: 'attachment', status: 'inherit' }],
+    attachment_count: 123, page_count: 1, options: {},
+  };
+  const current = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish' },
+      { id: 1042, type: 'attachment', status: 'inherit' },
+      { id: 1044, type: 'attachment', status: 'inherit' },
+    ],
+    attachment_count: 124, page_count: 1, options: {},
+  };
+  const diffs = [
+    { id: 1042, change: 'created', type: 'attachment', status: 'inherit' },
+    { id: 1044, change: 'created', type: 'attachment', status: 'inherit' },
+    { id: 965, change: 'deleted', type: 'attachment', status: 'inherit' },
+    { option: 'attachment_count', change: 'count', from: '123', to: '124' },
+  ];
+  const ok = acceptUserContentChanges(baseline, current, diffs, [1042, 1044, 965]);
+  assert.equal(ok.ok, true);
+  assert.equal(ok.baseline.attachment_count, 124);
+  assert.equal(ok.baseline.posts.some((p) => p.id === 965), false, 'silinen tabandan çıkar');
+  assert.equal(ok.baseline.posts.length, 3);
+  assert.equal(baseline.posts.length, 2, 'girdi değişmez');
+  // (b) silinen id listede yok
+  assert.equal(acceptUserContentChanges(baseline, current, diffs, [1042, 1044]).ok, false);
+  // (c) sayı açıklanamıyor
+  assert.equal(acceptUserContentChanges(baseline, { ...current, attachment_count: 126 }, diffs, [1042, 1044, 965]).ok, false);
+  // (d) option farkı
+  const opt = [...diffs, { option: 'blogname', change: 'changed', from: 'a', to: 'b' }];
+  assert.equal(acceptUserContentChanges(baseline, current, opt, [1042, 1044, 965]).ok, false);
+});
