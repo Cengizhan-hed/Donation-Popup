@@ -142,7 +142,11 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 		<button type="button" class="donation-panel-iconbtn donation-panel-head__back" data-dp-back aria-label="<?php esc_attr_e( 'Back', 'woo-donation-popup' ); ?>" hidden><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
 		<div class="donation-panel-head__t">
 			<?php if ( ! $donation_panel_closed ) : ?>
-				<p class="donation-panel-steplabel" data-dp-steplabel aria-live="polite"></p>
+				<?php
+				// Adım etiketi sunucuda çizilir (betik bağlanınca metin/yükseklik değişmez: CLS katkısı 0, CLAUDE.md §25).
+				$donation_panel_step_count = count( $donation_panel_steps ) + ( $donation_panel_direct ? 1 : 0 );
+				?>
+				<p class="donation-panel-steplabel" data-dp-steplabel aria-live="polite"<?php echo $donation_panel_step_count > 1 ? '' : ' hidden'; ?>><?php echo $donation_panel_step_count > 1 ? esc_html( sprintf( /* translators: 1: current step, 2: number of steps. */ __( 'Step %1$d of %2$d', 'woo-donation-popup' ), 1, $donation_panel_step_count ) ) : ''; ?></p>
 			<?php endif; ?>
 			<h2 class="donation-panel-surface__title" id="<?php echo esc_attr( $donation_panel_key ); ?>-title" tabindex="-1" data-dp-title><?php echo esc_html( (string) $donation_panel_model['title'] ); ?></h2>
 			<?php if ( ! empty( $donation_panel_model['badge'] ) ) : ?>
