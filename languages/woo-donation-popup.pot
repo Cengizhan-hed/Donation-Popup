@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: woo-donation-popup 12.1.1\n"
+"Project-Id-Version: woo-donation-popup 12.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 22:18+0300\n"
+"POT-Creation-Date: 2026-10-30 00:26+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2045,7 +2045,6 @@ msgstr ""
 #: templates/donation-panel/experiences/compact.php:161
 #: templates/donation-panel/experiences/compact.php:212
 #: templates/donation-panel/experiences/form.php:140
-#: templates/donation-panel/experiences/form.php:405
 msgid "Continue"
 msgstr ""
 
@@ -2483,7 +2482,7 @@ msgstr ""
 #: src/Modules/SideCart/class-side-cart-renderer.php:88
 #: templates/donation-panel/experiences/form.php:367
 #: templates/donation-panel/experiences/form.php:371
-#: templates/donation-panel/experiences/form.php:400
+#: templates/donation-panel/experiences/form.php:410
 #: templates/donation-panel/thanks/summary.php:49
 msgid "Total"
 msgstr ""
@@ -4110,7 +4109,6 @@ msgstr ""
 #: templates/donation-panel/experiences/compact.php:104
 #: templates/donation-panel/experiences/compact.php:161
 #: templates/donation-panel/experiences/form.php:140
-#: templates/donation-panel/experiences/form.php:405
 msgid "Choose an amount"
 msgstr ""
 
@@ -4292,20 +4290,30 @@ msgstr ""
 msgid "We use this number to keep you updated about your donation."
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:408
+#: templates/donation-panel/experiences/form.php:401
+msgctxt "Donation form: disabled button while no amount is chosen"
+msgid "Choose an amount"
+msgstr ""
+
+#: templates/donation-panel/experiences/form.php:401
+msgctxt "Donation form: next step button"
+msgid "Continue"
+msgstr ""
+
+#: templates/donation-panel/experiences/form.php:418
 msgid "Add to cart"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:408
+#: templates/donation-panel/experiences/form.php:418
 msgid "Add to cart, choose another"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:409
+#: templates/donation-panel/experiences/form.php:419
 msgid "Secure payment · Your details are encrypted"
 msgstr ""
 
 #. translators: %s: link to the privacy policy.
-#: templates/donation-panel/experiences/form.php:416
+#: templates/donation-panel/experiences/form.php:426
 #, php-format
 msgid "By continuing you confirm you have read the %s."
 msgstr ""

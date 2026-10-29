@@ -1004,3 +1004,5 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 - Sabit yükseklik: masaüstü/tablet 496 px, mobil 492 px (e-posta alanı açık); ayrıntı ve ödeme adımı kararı: build/handoff/COMPACT-KART/RAPOR.md.
 
 
+
+- **Hız ölçümü (12.2):** `npm run measure:plugin-perf` — INP eşiği (<200 ms) 5 yükleme örneğinin medyanına uygulanır; compact first-paint denetimi iki aşamalı (kart yüzeyi ilk göründüğü karede, adım yığını kapanış etiketi ayrıştıktan sonraki ilk karede).
