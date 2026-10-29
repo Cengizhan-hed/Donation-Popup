@@ -114,23 +114,52 @@ function installProbe() {
     [`${scope} metin alanı`, `${scope} .donation-panel-input`, field],
     [`${scope} simge`, `${scope} svg.donation-panel-ico`, icon],
   ];
-  /** Compact kart: kart yüzeyi (zemin, köşe, kenarlık) ve pasif adımlar ilk karede görünmez (yükseklik sabit yerleşim). */
+  /** Compact kart yüzeyi (zemin, köşe, kenarlık): kart ilk görünür olduğu karede (alt ağaç yarım ayrıştırılmış olabilir). */
   const compactCard = (el) => {
     const cs = getComputedStyle(el);
+    return {
+      ok: !transparent(cs.backgroundColor) && px(cs.borderTopLeftRadius) > 0 && px(cs.borderTopWidth) > 0,
+      info: `bg=${cs.backgroundColor} r=${cs.borderTopLeftRadius} bw=${cs.borderTopWidth}`,
+    };
+  };
+  /**
+   * Compact kartın tamamı (yükseklik sabit yerleşim): `__stack` grid ve pasif adımlar gizli. Kartın kökü DOM'a girdikten
+   * ve alt ağacı ayrıştırıldıktan (kapanış etiketi geçti) sonraki İLK boyama karesinde denetlenir; ara karelerde yarım
+   * ayrıştırılmış kartta görünen her şey yine de yüzey denetiminden geçer.
+   */
+  const compactWhole = (el) => {
     const off = Array.from(el.querySelectorAll('.donation-panel-compact__step:not(.is-on)'));
     const hiddenSteps = off.every((s) => getComputedStyle(s).visibility === 'hidden');
     const stack = el.querySelector('.donation-panel-compact__stack');
-    return {
-      ok: !transparent(cs.backgroundColor) && px(cs.borderTopLeftRadius) > 0 && px(cs.borderTopWidth) > 0 && hiddenSteps && Boolean(stack) && getComputedStyle(stack).display === 'grid',
-      info: `bg=${cs.backgroundColor} r=${cs.borderTopLeftRadius} bw=${cs.borderTopWidth} pasif-gizli=${hiddenSteps} stack=${stack ? getComputedStyle(stack).display : '-'}`,
-    };
+    const display = stack ? getComputedStyle(stack).display : '-';
+    return { ok: hiddenSteps && Boolean(stack) && display === 'grid', info: `pasif-gizli=${hiddenSteps} stack=${display}` };
   };
+  /**
+   * Öğenin kapanış etiketi ayrıştırıldı mı: belge ayrıştırması bittiyse ya da öğeden/atalarından sonra bir düğüm DOM'a
+   * girdiyse (ayrıştırıcı düğümleri sırayla ekler; sonraki kardeş ancak öğe kapandıktan sonra oluşur).
+   */
+  const parsed = (el) => {
+    if (document.readyState !== 'loading') return true;
+    for (let n = el; n && n !== document.documentElement; n = n.parentNode) if (n.nextSibling) return true;
+    return false;
+  };
+  // Kök DOM'a girdi / alt ağaç tamamlandı anlarını kare numarasıyla kaydeder (tanı: denetim bir sonraki boyama karesinde).
+  state.whole = {};
+  try {
+    new MutationObserver(() => {
+      for (const w of Object.values(state.whole)) {
+        if (!w.parsedFrame && w.el && parsed(w.el)) w.parsedFrame = state.frames;
+      }
+    }).observe(document, { childList: true, subtree: true });
+  } catch (e) {
+    state.observerError = String(e);
+  }
   const CHECKS = [
-    ['compact kart', '#fp-compact .donation-panel-compact', compactCard],
+    ['compact kart', '#fp-compact .donation-panel-compact', compactCard, compactWhole],
     ['compact tutar', '#fp-compact .donation-panel-compact__chip', amount],
     ['compact alan', '#fp-compact .donation-panel-custom', field],
     ['compact ana düğme', '#fp-compact .donation-panel-btn--accent', primary],
-    ['compact slider kart', '#fp-compact-slider .donation-panel-compact', compactCard],
+    ['compact slider kart', '#fp-compact-slider .donation-panel-compact', compactCard, compactWhole],
     ['compact slider ana düğme', '#fp-compact-slider .donation-panel-btn--accent', primary],
     ['hesap simgesi', '.donation-panel-ac__trigger', roundBtn],
     ['yan sepet düğmesi', '.donation-panel-sc__trigger', roundBtn],
@@ -143,19 +172,35 @@ function installProbe() {
     ...form('#fp-ajax'),
     ...form('#fp-single'),
   ];
+  const run = (fn, el) => {
+    try {
+      return fn(el);
+    } catch (e) {
+      return { ok: false, info: `hata: ${e && e.message}` };
+    }
+  };
   const frame = () => {
     state.frames += 1;
-    for (const [name, selector, fn] of CHECKS) {
+    for (const [name, selector, fn, whole] of CHECKS) {
       if (state.results[name]) continue;
-      const el = Array.from(document.querySelectorAll(selector)).find(shown);
+      const pending = state.whole[name];
+      const el = pending ? pending.el : Array.from(document.querySelectorAll(selector)).find(shown);
       if (!el) continue;
-      let out;
-      try {
-        out = fn(el);
-      } catch (e) {
-        out = { ok: false, info: `hata: ${e && e.message}` };
+      if (!whole) {
+        state.results[name] = { ...run(fn, el), frame: state.frames, t: Math.round(performance.now()) };
+        continue;
       }
-      state.results[name] = { ...out, frame: state.frames, t: Math.round(performance.now()) };
+      // İki aşama: yüzey ilk görünür karede (bir kez), bütün kart alt ağaç ayrıştırıldıktan sonraki ilk karede.
+      const w = pending || (state.whole[name] = { el, surface: run(fn, el), surfaceFrame: state.frames, parsedFrame: 0 });
+      if (!parsed(el)) continue;
+      if (!w.parsedFrame) w.parsedFrame = state.frames;
+      const full = el.isConnected ? run(whole, el) : { ok: false, info: 'kart DOM\'dan çıktı' };
+      state.results[name] = {
+        ok: w.surface.ok && full.ok,
+        info: `${w.surface.info} ${full.info} (yüzey kare ${w.surfaceFrame}, ayrıştı kare ${w.parsedFrame})`,
+        frame: state.frames,
+        t: Math.round(performance.now()),
+      };
     }
     requestAnimationFrame(frame);
   };
