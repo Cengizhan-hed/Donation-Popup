@@ -96,6 +96,7 @@ function installProbe() {
     [`${scope} tutar alanı`, `${scope} .donation-panel-custom`, field],
     [`${scope} ana düğme`, `${scope} .donation-panel-btn--accent`, primary],
     [`${scope} adet düğmesi`, `${scope} .donation-panel-stepper button`, stepper],
+    [`${scope} metin alanı`, `${scope} .donation-panel-input`, field],
     [`${scope} simge`, `${scope} svg.donation-panel-ico`, icon],
   ];
   const CHECKS = [
@@ -135,21 +136,29 @@ function installProbe() {
  * @return {Promise<Record<string, {ok: boolean, info: string, frame: number, t: number}>>} Sonuçlar.
  */
 async function collect(page, names) {
-  await page.waitForFunction((list) => list.every((n) => window.__fp && window.__fp.results[n]), names, { timeout: 60000 });
+  await page
+    .waitForFunction((list) => list.every((n) => window.__fp && window.__fp.results[n]), names, { timeout: 20000 })
+    .catch((e) => console.log(`FP_WAIT ${e.message.split('\n')[0]}`));
   return page.evaluate(() => window.__fp.results);
 }
 
 /**
- * @param {Record<string, {ok: boolean, info: string}>} results Sonuçlar.
- * @param {string[]} names Adlar.
+ * Kaydedilen TÜM denetimler (zorunlu + o karede görünür olan isteğe bağlılar) ilk görünür karede stilli olmalı.
+ *
+ * @param {Record<string, {ok: boolean, info: string, frame: number}>} results Sonuçlar.
+ * @param {string[]} names Zorunlu adlar (kaydedilmiş olmalı).
  */
 function assertStyled(results, names) {
-  const bad = names.filter((n) => !results[n].ok).map((n) => `${n}: ${results[n].info} (kare ${results[n].frame})`);
-  console.log(`FP_FRAMES ${JSON.stringify(Object.fromEntries(names.map((n) => [n, results[n].ok ? 'ok' : results[n].info])))}`);
+  const all = Object.keys(results);
+  const bad = all.filter((n) => !results[n].ok).map((n) => `${n}: ${results[n].info} (kare ${results[n].frame})`);
+  console.log(`FP_FRAMES ${JSON.stringify(Object.fromEntries(all.map((n) => [n, results[n].ok ? 'ok' : results[n].info])))}`);
+  expect(names.filter((n) => !results[n]), 'zorunlu yüzeyler görünmedi').toEqual([]);
   expect(bad, `ilk görünür karede stilsiz eklenti öğeleri:\n${bad.join('\n')}`).toEqual([]);
 }
 
-const formNames = (scope) => [`${scope} tutar kartı`, `${scope} tutar alanı`, `${scope} ana düğme`, `${scope} simge`];
+/** Serbest tutarlı ürün (tutar kartları + alan) ve sabit tutarlı ürün (adet seçici) için ilk adımda görünenler. */
+const customNames = (scope) => [`${scope} tutar kartı`, `${scope} tutar alanı`, `${scope} ana düğme`, `${scope} simge`];
+const fixedNames = (scope) => [`${scope} adet düğmesi`, `${scope} ana düğme`, `${scope} simge`];
 
 test.describe('ilk boyama: eklenti öğeleri stilli (CSS dosyaları 3 sn gecikmeli)', () => {
   test.beforeEach(async ({ page, context, browserName }) => {
@@ -167,22 +176,22 @@ test.describe('ilk boyama: eklenti öğeleri stilli (CSS dosyaları 3 sn gecikme
       'tetikleyici düğme',
       'kampanya çubuğu',
       'liste düzeni',
-      ...formNames('#fp-inline'),
-      ...formNames('#fp-slider'),
-      ...formNames('#fp-ajax'),
+      ...customNames('#fp-inline'),
+      ...fixedNames('#fp-slider'),
+      ...fixedNames('#fp-ajax'),
     ];
     assertStyled(await collect(page, names), names);
   });
 
   test('slider benzetimi: yalnız gizli kapta form (500 ms sonra görünür)', async ({ page }) => {
     await page.goto(q('slider'), { waitUntil: 'domcontentloaded', timeout: 90000 });
-    const names = formNames('#fp-slider');
+    const names = fixedNames('#fp-slider');
     assertStyled(await collect(page, names), names);
   });
 
   test('AJAX benzetimi: yalnız fetch + innerHTML ile gelen form', async ({ page }) => {
     await page.goto(q('ajax'), { waitUntil: 'domcontentloaded', timeout: 90000 });
-    const names = formNames('#fp-ajax');
+    const names = fixedNames('#fp-ajax');
     assertStyled(await collect(page, names), names);
   });
 
