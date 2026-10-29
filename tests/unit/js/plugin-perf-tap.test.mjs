@@ -108,6 +108,7 @@ describe('installTapProbe', () => {
 /** Sahte öğe: sayfa koordinatında kutu; kaydırma (scrollY) görünüm koordinatını değiştirir. */
 function el(w, box, extra = {}) {
   const e = { ...extra, contains: (x) => x === e || (e.child && x === e.child) };
+  e.scrollIntoView = () => (w.scrollY += box.y - w.scrollY + box.h / 2 - w.innerHeight / 2);
   e.getBoundingClientRect = () => ({ left: box.x, top: box.y - w.scrollY, width: box.w, height: box.h });
   return e;
 }

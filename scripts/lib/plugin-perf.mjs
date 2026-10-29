@@ -370,7 +370,8 @@ export function pickVisibleTarget(w, selector) {
     if (cx < 0 || cx > w.innerWidth) continue;
     let cy = r.top + r.height / 2;
     if (cy < 0 || cy > w.innerHeight) {
-      w.scrollBy(0, cy - w.innerHeight / 2);
+      // Kaydırılabilir kap (ör. alttan panel gövdesi) içinde de çalışsın: öğeyi dikeyde ortala.
+      el.scrollIntoView({ block: 'center', inline: 'nearest' });
       r = el.getBoundingClientRect();
       cy = r.top + r.height / 2;
       if (cy < 0 || cy > w.innerHeight) continue;
