@@ -102,10 +102,17 @@ final class Setup_Wizard {
 			case 2:
 				$html   = Admin_View::cards( 'display.mode', $fields['display.mode']['options'], (string) $this->store->get( 'display.mode' ), $fields['display.mode']['label'] );
 				$colors = (string) $this->store->get( 'design.colors' );
-				$html  .= '<fieldset class="dpa-radios"><legend class="dpa-radios__legend">' . esc_html__( 'Colors', 'woo-donation-popup' ) . '</legend>';
-				$html  .= '<label class="dpa-radio" for="dpa-w-colors-theme"><input type="radio" name="design.colors" id="dpa-w-colors-theme" value="theme" data-dpa-field="design.colors"' . checked( $colors, 'theme', false ) . '><span><b>' . esc_html__( 'Use my theme colors', 'woo-donation-popup' ) . '</b><small>' . esc_html__( 'The form follows your site colors and font automatically', 'woo-donation-popup' ) . '</small></span></label>';
-				$html  .= '<label class="dpa-radio" for="dpa-w-colors-custom"><input type="radio" name="design.colors" id="dpa-w-colors-custom" value="custom" data-dpa-field="design.colors"' . checked( $colors, 'custom', false ) . '><span><b>' . esc_html__( 'Choose my own colors', 'woo-donation-popup' ) . '</b><small>' . esc_html__( 'Main color and button color', 'woo-donation-popup' ) . '</small></span></label></fieldset>';
-				$html  .= '<div data-dpa-when="design.colors=custom">' . Admin_View::field( 'design.brand', $fields['design.brand'], $this->store->get( 'design.brand' ) ) . Admin_View::field( 'design.accent', $fields['design.accent'], $this->store->get( 'design.accent' ) ) . '</div>';
+				// Palet okunamıyorsa (ve sihirbaz henüz bitmediyse) "Özel renkler" varsayılan önerilir; kullanıcı değiştirebilir.
+				if ( 'none' === \DonationPanel\Frontend\Theme_Colors::source_status() ) {
+					$html .= Admin_View::colors_note( 'none', array(), false );
+					if ( 'done' !== (string) $this->settings->get( 'admin.wizard', '' ) ) {
+						$colors = 'custom';
+					}
+				}
+				$html .= '<fieldset class="dpa-radios"><legend class="dpa-radios__legend">' . esc_html__( 'Colors', 'woo-donation-popup' ) . '</legend>';
+				$html .= '<label class="dpa-radio" for="dpa-w-colors-theme"><input type="radio" name="design.colors" id="dpa-w-colors-theme" value="theme" data-dpa-field="design.colors"' . checked( $colors, 'theme', false ) . '><span><b>' . esc_html__( 'Use my theme colors', 'woo-donation-popup' ) . '</b><small>' . esc_html__( 'The form follows your site colors and font automatically', 'woo-donation-popup' ) . '</small></span></label>';
+				$html .= '<label class="dpa-radio" for="dpa-w-colors-custom"><input type="radio" name="design.colors" id="dpa-w-colors-custom" value="custom" data-dpa-field="design.colors"' . checked( $colors, 'custom', false ) . '><span><b>' . esc_html__( 'Choose my own colors', 'woo-donation-popup' ) . '</b><small>' . esc_html__( 'Main color and button color', 'woo-donation-popup' ) . '</small></span></label></fieldset>';
+				$html .= '<div data-dpa-when="design.colors=custom">' . Admin_View::field( 'design.brand', $fields['design.brand'], $this->store->get( 'design.brand' ) ) . Admin_View::field( 'design.accent', $fields['design.accent'], $this->store->get( 'design.accent' ) ) . '</div>';
 				return $html;
 			case 3:
 				$html = '';

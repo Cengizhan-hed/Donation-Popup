@@ -34,7 +34,7 @@ async function login(page, role = 'administrator') {
 }
 async function reset(page) {
   expect((await page.request.get('/?dp_ad_reset=1')).status()).toBe(200);
-  for (const name of ['wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall']) {
+  for (const name of ['wdp_button_settings', 'wdp_placement_settings', 'wdp_delete_data_on_uninstall', 'dp_ad_palette_mode']) {
     await page.request.get(`/?dp_ad_opt=${name}&del=1`);
   }
 }
@@ -120,6 +120,38 @@ test('Genel Bakış: durum kutusu; misafir ödeme kapalıysa uyarı', async ({ p
   await expect(warn.locator('a')).toHaveAttribute('href', /wc-settings&tab=account/);
   await shot(page, info, 'AdminGenel', 'uygulama-uyari');
   await setOpt(page, 'woocommerce_enable_guest_checkout', 'yes');
+});
+
+test('renk kaynağı: palet okunamazsa uyarı + Genel Bakış satırı + düğme iki renk seçiciye odaklar; palet varsa uyarı yok', async ({ page }, info) => {
+  await setOpt(page, 'dp_ad_palette_mode', 'none');
+  await page.goto(P('donation-panel-forms'));
+  const note = page.locator('[data-dpa-colors-note="none"]');
+  await expect(note).toBeVisible();
+  await expect(note).toContainText(/could not be read|okunamad/);
+  expect(await axe(page)).toEqual([]);
+  await note.locator('[data-dpa-colors-custom]').click();
+  await expect(page.locator('#dpa-f-design-colors')).toHaveValue('custom');
+  await expect(page.locator('[data-dpa-field="design.brand"]')).toBeFocused();
+  await expect(page.locator('[data-dpa-field="design.accent"]')).toBeVisible();
+  await shot(page, info, 'AdminFormlar', 'renk-uyari');
+  await page.goto(P('donation-panel'));
+  await expect(page.locator('.dpa-status--warn', { hasText: /Colors could not be read|Renkler temadan okunamad/ })).toBeVisible();
+  await setOpt(page, 'dp_ad_palette_mode', 'good');
+  await page.goto(P('donation-panel-forms'));
+  await expect(page.locator('[data-dpa-colors-note="theme"]')).toBeVisible();
+  await expect(page.locator('[data-dpa-colors-note="none"]')).toHaveCount(0);
+  await page.goto(P('donation-panel'));
+  await expect(page.locator('.dpa-status--warn', { hasText: /Colors could not be read|Renkler temadan okunamad/ })).toHaveCount(0);
+  await setOpt(page, 'dp_ad_palette_mode', 'none');
+  await page.goto(P('donation-panel-setup'));
+  await page.click('[data-dpa-next]');
+  await expect(page.locator('[data-dpa-colors-note="none"]')).toBeVisible();
+  await expect(page.locator('#dpa-w-colors-custom')).toBeChecked();
+  await setOpt(page, 'dp_ad_palette_mode', 'good');
+  await page.goto(P('donation-panel-setup')); // ilerleme kalıcı: 2. adımda açılır.
+  await expect(page.locator('[data-dpa-wstep="2"]')).toBeVisible();
+  await expect(page.locator('[data-dpa-colors-note="none"]')).toHaveCount(0);
+  await expect(page.locator('#dpa-w-colors-theme')).toBeChecked();
 });
 
 test('modül anahtarı REST ile kaydedilir ve kalıcıdır', async ({ page }) => {

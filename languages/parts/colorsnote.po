@@ -1,0 +1,31 @@
+# Turkish translations — colorsnote (12.1.0 renk kaynağı uyarısı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/class-admin-view.php
+msgid "Choose custom colors"
+msgstr "Özel renkleri seç"
+
+#: src/Admin/class-admin-view.php
+msgid "Colors are read from your theme:"
+msgstr "Renkler temanızdan okunuyor:"
+
+#: src/Admin/class-admin-view.php
+msgid "Your theme colors could not be read from the WordPress palette (some themes and page builders keep colors in their own settings). The panel is using its own default colors now. To pick your own colors, choose \"Choose my own colors\" and set the two colors."
+msgstr "Temanızın renkleri WordPress paletinden okunamadı (bazı temalar ve sayfa oluşturucular renkleri kendi ayarlarında tutar). Panel şimdi kendi varsayılan renklerini kullanıyor. Kendi renklerinizi seçmek için \"Kendi renklerimi seçeyim\" seçeneğini seçin ve iki rengi belirleyin."
+
+#: src/Admin/class-status.php
+msgid "Colors could not be read from your theme. Choose your own colors."
+msgstr "Renkler temadan okunamadı, kendi renklerinizi seçin."
+
+#: src/Admin/class-status.php
+msgid "Choose colors"
+msgstr "Renkleri seç"

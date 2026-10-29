@@ -191,6 +191,16 @@ final class Status {
 			'url'  => admin_url( 'admin.php?page=wc-settings&tab=account' ),
 			'link' => __( 'Open WooCommerce settings', 'woo-donation-popup' ),
 		);
+		// Renkler: "temamın renkleri" seçiliyken palet okunamıyorsa uyarı (okunuyorsa ya da özel renk seçiliyse satır yok).
+		if ( 'custom' !== (string) $this->settings->get( 'design.colors', 'theme' ) && 'none' === \DonationPanel\Frontend\Theme_Colors::source_status() ) {
+			$items[] = array(
+				'id'   => 'colors',
+				'ok'   => false,
+				'text' => __( 'Colors could not be read from your theme. Choose your own colors.', 'woo-donation-popup' ),
+				'url'  => Admin_View::url( Admin_Bootstrap::SLUG_FORMS ) . '#dpa-f-design-colors',
+				'link' => __( 'Choose colors', 'woo-donation-popup' ),
+			);
+		}
 		return $items;
 	}
 

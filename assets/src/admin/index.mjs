@@ -225,6 +225,29 @@ function initTools(root) {
   }
 }
 
+/**
+ * Renk uyarısındaki "Özel renkleri seç" düğmesi: özel renk seçeneğini açar, iki renk seçiciden ilkine odaklanır.
+ *
+ * @param {HTMLElement} root Sayfa kökü.
+ */
+function initColorsNote(root) {
+  qsa(root, '[data-dpa-colors-custom]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mode = root.querySelector('select[data-dpa-field="design.colors"]');
+      if (mode) {
+        mode.value = 'custom';
+        mode.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      syncWhen(root);
+      const brand = root.querySelector('[data-dpa-field="design.brand"]');
+      if (brand) {
+        brand.scrollIntoView({ block: 'center' });
+        brand.focus();
+      }
+    });
+  });
+}
+
 const root = document.querySelector('.dpa');
 if (root) {
   root.classList.add('dpa-js');
@@ -234,6 +257,7 @@ if (root) {
     initWizard(root, api, notify, t, syncWhen);
   } else {
     initFields(root);
+    initColorsNote(root);
     initTools(root);
     initCampaigns(root, api, notify, t);
   }

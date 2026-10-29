@@ -185,6 +185,37 @@ final class Admin_View {
 	}
 
 	/**
+	 * Renk kaynağı notu. Palet okunduysa örnek renkler; okunamadıysa uyarı (+ isteğe bağlı "Özel renkler" düğmesi).
+	 *
+	 * @param string               $status 'theme' | 'none' (Theme_Colors::source_status).
+	 * @param array<string,string> $vars   Theme_Colors::variables çıktısı.
+	 * @param bool                 $action Uyarıya "Özel renkleri seç" düğmesi eklensin mi.
+	 * @return string
+	 */
+	public static function colors_note( $status, array $vars = array(), $action = true ) {
+		if ( 'none' === $status ) {
+			$btn = $action ? ' <button type="button" class="dpa-btn dpa-btn--ghost" data-dpa-colors-custom>' . esc_html__( 'Choose custom colors', 'woo-donation-popup' ) . '</button>' : '';
+			return '<div class="dpa-colors-note dpa-colors-note--warn" data-dpa-colors-note="none">' . self::icon( 'alert' ) . '<p>' . esc_html( self::colors_warning_text() ) . $btn . '</p></div>';
+		}
+		$sw = '';
+		foreach ( array( '--dp-color-primary', '--dp-accent' ) as $key ) {
+			if ( isset( $vars[ $key ] ) ) {
+				$sw .= '<span class="dpa-swatch" style="background:' . esc_attr( $vars[ $key ] ) . '" role="img" aria-label="' . esc_attr( $vars[ $key ] ) . '"></span>';
+			}
+		}
+		return '<div class="dpa-colors-note dpa-colors-note--ok" data-dpa-colors-note="theme"><p>' . esc_html__( 'Colors are read from your theme:', 'woo-donation-popup' ) . ' ' . $sw . '</p></div>';
+	}
+
+	/**
+	 * Palet okunamadığında gösterilen açıklama (yönetici + sihirbaz).
+	 *
+	 * @return string
+	 */
+	public static function colors_warning_text() {
+		return __( 'Your theme colors could not be read from the WordPress palette (some themes and page builders keep colors in their own settings). The panel is using its own default colors now. To pick your own colors, choose "Choose my own colors" and set the two colors.', 'woo-donation-popup' );
+	}
+
+	/**
 	 * Kaydetme çubuğu (REST ile kaydeder; durum iletisi canlı bölge).
 	 *
 	 * @return string

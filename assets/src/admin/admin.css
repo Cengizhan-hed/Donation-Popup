@@ -291,6 +291,40 @@
 	font-weight: 600;
 }
 
+/* Renk kaynağı notu (Formlar ve Görünüm, sihirbaz) */
+.dpa-colors-note {
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
+	margin: 12px 0;
+	padding: 12px 16px;
+	border-radius: 12px;
+	font-size: 13.5px;
+}
+.dpa-colors-note p {
+	margin: 0;
+}
+.dpa-colors-note--warn {
+	background: #fff4e5;
+	color: var(--dpa-warn);
+}
+.dpa-colors-note--ok {
+	background: var(--dpa-ok-bg);
+	color: var(--dpa-ok);
+}
+.dpa-colors-note .dpa-btn {
+	margin-top: 8px;
+}
+.dpa-swatch {
+	display: inline-block;
+	vertical-align: middle;
+	width: 22px;
+	height: 22px;
+	margin-inline-start: 6px;
+	border-radius: 50%;
+	border: 1px solid rgb(0 0 0 / 20%);
+}
+
 /* Ayar satırı */
 .dpa-row {
 	display: flex;
