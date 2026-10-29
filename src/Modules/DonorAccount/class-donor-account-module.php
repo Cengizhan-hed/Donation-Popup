@@ -193,6 +193,8 @@ final class Donor_Account_Module implements Module_Interface {
 			$assets->enqueue( self::SLUG );
 			return;
 		}
+		// Stil hemen gerekli (satır içi, çıktının önünde; CLAUDE.md §25); betik kuyruğu aşağıdaki kancada.
+		$assets->require_style( self::SLUG );
 		// Blok temalarında içerik, `wp_enqueue_scripts` çalışmadan ÖNCE çizilir: varlıklar kayıttan sonra kuyruğa alınır.
 		add_action(
 			'wp_enqueue_scripts',
@@ -201,6 +203,15 @@ final class Donor_Account_Module implements Module_Interface {
 			},
 			20
 		);
+	}
+
+	/**
+	 * Gerekli eklenti stilleri (satır içi; çıktının hemen önüne, sayfa başına bir kez — CLAUDE.md §25).
+	 *
+	 * @return string
+	 */
+	private function inline_styles() {
+		return $this->container->get( Assets::class )->inline_styles();
 	}
 
 	/**
@@ -222,7 +233,7 @@ final class Donor_Account_Module implements Module_Interface {
 		$this->enqueue();
 		$this->needs_dialog = true;
 		$account            = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'myaccount' ) : '';
-		return Account_Renderer::trigger( $account );
+		return $this->inline_styles() . Account_Renderer::trigger( $account );
 	}
 
 	/**
@@ -284,7 +295,7 @@ final class Donor_Account_Module implements Module_Interface {
 			$link_ui,
 			$this->summary_header()
 		);
-		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Account_Renderer tüm değerleri kaçışlar.
+		echo $this->inline_styles() . $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Account_Renderer tüm değerleri kaçışlar.
 	}
 
 	/**
@@ -327,6 +338,6 @@ final class Donor_Account_Module implements Module_Interface {
 	 */
 	public function checkout_note() {
 		$this->enqueue();
-		echo Account_Renderer::checkout_note(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Account_Renderer kaçışlar.
+		echo $this->inline_styles() . Account_Renderer::checkout_note(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Account_Renderer kaçışlar.
 	}
 }

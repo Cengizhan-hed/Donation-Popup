@@ -8,13 +8,6 @@ import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
 import { syncColors } from '../ui2-shared/color-sync.mjs';
 
-// Ana stil render engellemeyen yüklenmiş olabilir (media="print" + data-dp-defer): betik açılınca etkinleşir.
-document.querySelectorAll('link[data-dp-defer]').forEach((link) => {
-  link.media = 'all';
-  link.dataset.dpCss = '1';
-  link.removeAttribute('data-dp-defer');
-});
-
 /**
  * @param {HTMLElement} root Kök.
  */

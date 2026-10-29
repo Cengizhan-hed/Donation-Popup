@@ -144,17 +144,18 @@ final class Campaign_Module implements Module_Interface {
 			return '';
 		}
 
-		$no   = static function ( $value ) {
+		$no     = static function ( $value ) {
 			return in_array( strtolower( (string) $value ), array( 'no', 'false', '0', 'off' ), true );
 		};
-		$html = Progress_Renderer::render(
+		$html   = Progress_Renderer::render(
 			$data,
 			array(
 				'milestones' => ! $no( $atts['milestones'] ),
 				'donors'     => ! $no( $atts['donors'] ),
 			)
 		);
-		$this->container->get( Assets::class )->enqueue( 'campaign' );
-		return $html;
+		$assets = $this->container->get( Assets::class );
+		$assets->enqueue( 'campaign' );
+		return $assets->inline_styles() . $html;
 	}
 }

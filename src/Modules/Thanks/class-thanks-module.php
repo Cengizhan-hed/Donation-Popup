@@ -71,7 +71,8 @@ final class Thanks_Module implements Module_Interface {
 			$assets->register_all();
 		}
 		$assets->enqueue( 'thanks' );
-		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Şablon kendi çıktısını kaçışlar.
+		// Stilsiz kare yok (CLAUDE.md §25): teşekkür CSS'i çıktının hemen önünde.
+		echo $assets->inline_styles() . $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Şablon kendi çıktısını kaçışlar; stil eklentinin derlenmiş CSS'i.
 	}
 
 	/**

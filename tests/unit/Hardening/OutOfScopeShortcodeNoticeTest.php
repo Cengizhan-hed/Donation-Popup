@@ -31,9 +31,15 @@ final class OutOfScopeShortcodeNoticeTest extends TestCase {
 		$this->assertSame( '', Shortcodes::resolve_for_output( array( 'id' => 41 ) ) );
 	}
 
+	public function test_shop_manager_sees_no_hint_on_the_live_page(): void {
+		WDP_Test_State::$caps = array( 'manage_woocommerce', 'edit_products' );
+		$this->assertSame( '', Shortcodes::resolve_for_output( array( 'id' => 41 ) ), 'Canlı sayfada yönetici notu yok (§25).' );
+	}
+
 	public function test_shop_manager_sees_a_hint_with_the_product_id(): void {
-		WDP_Test_State::$caps = array( 'manage_woocommerce' );
-		$out                  = Shortcodes::resolve_for_output( array( 'id' => 41 ) );
+		WDP_Test_State::$caps     = array( 'manage_woocommerce' );
+		WDP_Test_State::$is_admin = true; // Yönetim ekranı (editör önizlemesi de aynı yolu açar).
+		$out                      = Shortcodes::resolve_for_output( array( 'id' => 41 ) );
 		$this->assertIsString( $out );
 		$this->assertStringContainsString( '41', $out );
 		$this->assertStringContainsString( 'donation', strtolower( $out ) );

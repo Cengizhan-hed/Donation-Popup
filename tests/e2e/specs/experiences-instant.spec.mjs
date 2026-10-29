@@ -81,8 +81,7 @@ for (const kind of KINDS) {
       const throttled = await throttle(page, context, browserName);
       await page.goto(url(kind), { waitUntil: 'load', timeout: 90000 });
       await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 60000 });
-      // Ertelenmiş ana stil gelmeden tık bilerek <=1200 ms bekler (aşağıdaki "ertelenmiş ana stil" testleri); bu ölçüm stil yüklüyken.
-      await page.waitForFunction(() => Array.from(document.querySelectorAll('link[data-dp-css]')).every((l) => l.sheet), null, { timeout: 15000 });
+      // Stil satır içi (12.2, §25): bekleme yok; ölçüm sayfa betiği bağlanır bağlanmaz.
       // 1) Soğuk, anlık tık (basılı kalma 0: hazırlık tık anında yapılır — en kötü durum).
       const cold = await measureOpen(page, 0);
       await page.keyboard.press('Escape');
@@ -233,18 +232,18 @@ test.describe('mobil form davranışı', () => {
   });
 });
 
-test.describe('ertelenmiş ana stil: yavaş ağda panel stilsiz açılmaz', () => {
+test.describe('satır içi stil (12.2, §25): CSS dosyası gecikse de panel beklemeden ve stilli açılır', () => {
   for (const kind of KINDS) {
-    test(`${kind}: stil 2500 ms gecikirse tık bekler (<=1300 ms) ve açıldığında stepper >=44px`, async ({ page }) => {
+    test(`${kind}: eklenti CSS isteği 2500 ms gecikirken tık beklemez (<300 ms), açılınca stepper >=44px, <link> yok`, async ({ page }) => {
       test.setTimeout(60000);
-      await page.route('**/experiences/index.css*', async (route) => {
+      await page.route(/\/woo-donation-popup\/.*\.css(\?|$)/, async (route) => {
         await new Promise((resolve) => setTimeout(resolve, 2500));
         await route.continue();
       });
       await page.goto(url(kind), { waitUntil: 'domcontentloaded' });
       await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 30000 });
-      const pending = await page.evaluate(() => Array.from(document.querySelectorAll('link[data-dp-css]')).some((l) => !l.sheet));
-      test.skip(!pending, 'ana stil bu sayfada ertelenmiş değil ya da çoktan yüklendi');
+      expect(await page.locator('link[rel="stylesheet"][href*="/woo-donation-popup/"]').count(), 'eklenti CSS <link> yok (satır içi)').toBe(0);
+      expect(await page.locator('style#donation-panel-inline-experiences').count(), 'deneyim stili sayfada bir kez').toBe(1);
       await page.evaluate(() => {
         window.__dpWait = { t0: 0, open: 0 };
         document.querySelector('[data-dp-open]').addEventListener('click', (e) => (window.__dpWait.t0 = e.timeStamp), { capture: true, once: true });
@@ -261,11 +260,9 @@ test.describe('ertelenmiş ana stil: yavaş ağda panel stilsiz açılmaz', () =
       await page.locator('[data-dp-open]').click();
       await expect(page.locator('[data-dp-overlay]')).toHaveClass(/is-open/, { timeout: 4000 });
       const waited = await page.evaluate(() => Math.round(window.__dpWait.open - window.__dpWait.t0));
-      // Stilsiz açılış yasak: ya ana stil yüklenmiş olmalı ya da zaman aşımı (~1200 ms) dolmuş olmalı.
-      const sheetReady = await page.evaluate(() => Array.from(document.querySelectorAll('link[data-dp-css]')).every((l) => l.sheet));
-      expect(sheetReady || waited >= 1100).toBe(true);
       console.log(`CSS_WAIT_MS ${kind} ${waited}`);
-      expect(waited).toBeLessThan(1500);
+      expect(waited).toBeLessThan(300);
+      expect(await page.locator('[data-dp-open]').getAttribute('aria-busy')).toBeNull();
       const stepper = page.locator('.donation-panel-stepper button').first();
       if ((await stepper.count()) > 0) {
         const box = await stepper.boundingBox();
@@ -278,7 +275,6 @@ test.describe('ertelenmiş ana stil: yavaş ağda panel stilsiz açılmaz', () =
   test('stil yüklüyken (gecikme yok) açılış beklemez: aria-busy yok, <100 ms', async ({ page }) => {
     await page.goto(url('popup'), { waitUntil: 'load', timeout: 60000 });
     await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 30000 });
-    await expect.poll(() => page.evaluate(() => Array.from(document.querySelectorAll('link[data-dp-css]')).every((l) => l.sheet))).toBe(true);
     const m = await measureOpen(page, 60);
     expect(m.visibleMs).toBeLessThan(100);
     expect(await page.locator('[data-dp-open]').getAttribute('aria-busy')).toBeNull();

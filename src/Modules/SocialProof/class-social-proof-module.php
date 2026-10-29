@@ -107,7 +107,9 @@ final class Social_Proof_Module implements Module_Interface {
 		$feed    = 'feed' === $variant ? Donation_Feed::page( $product_id, 1, Donation_Feed::clamp_per_page( $atts['per_page'] ) ) : array();
 		$html    = Social_Proof_Renderer::render( $variant, $product_id, $stats, $feed );
 		if ( '' !== $html ) {
-			$this->container->get( Assets::class )->enqueue( 'campaign' );
+			$assets = $this->container->get( Assets::class );
+			$assets->enqueue( 'campaign' );
+			$html = $assets->inline_styles() . $html;
 		}
 		return $html;
 	}

@@ -88,8 +88,11 @@ final class Side_Cart_Module implements Module_Interface {
 	 */
 	public function shortcode() {
 		$this->wanted = true;
+		// Stilsiz kare yok (CLAUDE.md §25): simge düğmesinin CSS'i çıktının hemen önünde (betik çekmeceyle altbilgide).
+		$assets = $this->container->get( Assets::class );
+		$assets->require_style( self::SLUG );
 		// Önbellek sözleşmesi: sayfa HTML'i kullanıcıya özel değildir; sayaç istemcide (sepet çerezi + REST) yazılır.
-		return Side_Cart_Renderer::trigger( 0, '' );
+		return $assets->inline_styles() . Side_Cart_Renderer::trigger( 0, '' );
 	}
 
 	/**
@@ -163,8 +166,11 @@ final class Side_Cart_Module implements Module_Interface {
 			return;
 		}
 		$printed = true;
-		// Geç kuyruk: WordPress, `wp_footer` içinde kuyruğa alınan betiği/stili sayfa sonunda basar (betik defer).
-		$this->container->get( Assets::class )->enqueue( self::SLUG );
+		// Geç kuyruk: WordPress, `wp_footer` içinde kuyruğa alınan betiği sayfa sonunda basar (defer). Stil satır içi,
+		// çekmece/yüzen düğme HTML'inin hemen önünde (CLAUDE.md §25).
+		$assets = $this->container->get( Assets::class );
+		$assets->enqueue( self::SLUG );
+		echo $assets->inline_styles(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Eklentinin kendi derlenmiş CSS'i.
 
 		// Önbellek sözleşmesi: kabuk tüm ziyaretçiler için aynıdır (boş durum iskeleti). Satırlar, toplam, sayaç ve
 		// ek bağış önerisi yalnız istemcide, Woo sepet çerezi varsa `GET donation-panel/v1/side-cart` ile gelir.

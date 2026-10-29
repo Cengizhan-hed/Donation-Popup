@@ -144,8 +144,10 @@ final class Experiences_Module implements Module_Interface {
 		$html = $this->renderer()->render( $model, (string) $atts['kind'], $args );
 		if ( '' !== $html ) {
 			$this->rendered = true;
-			// Açma düğmesi dışında görünür yüzey yoksa (popup/panel/alttan panel) ana stil render engellemez.
-			$this->container->get( Assets::class )->enqueue( self::SLUG, 'inline' !== (string) $atts['kind'] );
+			$assets         = $this->container->get( Assets::class );
+			$assets->enqueue( self::SLUG );
+			// Stilsiz kare yok (CLAUDE.md §25): form/düğme ve katman CSS'i çıktının hemen önünde, sayfa başına bir kez.
+			$html = $assets->inline_styles() . $html;
 		}
 		return $html;
 	}

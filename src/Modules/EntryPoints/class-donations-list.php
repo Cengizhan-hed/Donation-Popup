@@ -256,7 +256,18 @@ class Donations_List {
 			$html   = preg_replace( '/(<div\b[^>]*\bclass="[^"]*wdp-list-wrap[^"]*"[^>]*>)/', '$1' . $notice, $html, 1 );
 		}
 
-		return $html;
+		// Stilsiz kare yok (CLAUDE.md §25): liste (+ kart formu) CSS'i önbellek DIŞINDA, çıktının hemen önünde.
+		return self::inline_styles() . $html;
+	}
+
+	/**
+	 * Bu istekte gerekli olup henüz basılmamış eklenti stilleri (satır içi `<style>`).
+	 *
+	 * @return string
+	 */
+	private static function inline_styles() {
+		$plugin = Plugin::instance();
+		return null === $plugin ? '' : $plugin->container()->get( Assets::class )->inline_styles();
 	}
 
 	/**

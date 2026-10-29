@@ -379,46 +379,8 @@ export function createLayer(root, hooks = {}) {
     root.dispatchEvent(new CustomEvent('dp:open', { bubbles: true }));
   };
 
-  // Ertelenmiş ana stil henüz gelmediyse (yavaş ağ) panel stilsiz açılmasın: en çok 1200 ms load/error beklenir;
-  // yüklüyse bekleme yok (anında açılır). Zaman aşımında yine açılır (işlev kaybı yok).
-  let waiting = false;
-  const open = () => {
-    if (opened || waiting) {
-      return;
-    }
-    const pending = Array.from(document.querySelectorAll('link[data-dp-css]')).filter((link) => !link.sheet);
-    if (pending.length === 0) {
-      openNow();
-      return;
-    }
-    waiting = true;
-    trigger.setAttribute('aria-busy', 'true');
-    let timer = 0;
-    let go = () => {};
-    const check = () => {
-      if (pending.every((link) => link.sheet)) {
-        go();
-      }
-    };
-    go = () => {
-      if (!waiting) {
-        return;
-      }
-      waiting = false;
-      window.clearTimeout(timer);
-      pending.forEach((link) => {
-        link.removeEventListener('load', check);
-        link.removeEventListener('error', go);
-      });
-      trigger.removeAttribute('aria-busy');
-      openNow();
-    };
-    pending.forEach((link) => {
-      link.addEventListener('load', check);
-      link.addEventListener('error', go);
-    });
-    timer = window.setTimeout(go, 1200);
-  };
+  // Stil beklemesi yok (CLAUDE.md §25): katman CSS'i çıktının önünde satır içi gelir; panel her koşulda anında açılır.
+  const open = openNow;
 
   const close = () => {
     if (!opened) {

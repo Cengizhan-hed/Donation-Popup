@@ -82,7 +82,7 @@ $donation_panel_percent  = static function ( $value, $decimals ) {
 
 	<?php if ( $donation_panel_account ) : ?>
 		<a class="donation-panel-thanks__promo" href="<?php echo esc_url( (string) $donation_panel_account['url'] ); ?>">
-			<span class="donation-panel-thanks__promo-ico" aria-hidden="true"><svg class="dpx-ico" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+			<span class="donation-panel-thanks__promo-ico" aria-hidden="true"><svg class="dpx-ico" width="20" height="20" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
 			<span class="donation-panel-thanks__promo-text">
 				<b><?php esc_html_e( 'Follow your donations', 'woo-donation-popup' ); ?></b>
 				<span><?php echo ! empty( $donation_panel_account['logged_in'] ) ? esc_html__( 'See every donation and receipt in one place.', 'woo-donation-popup' ) : esc_html__( 'Open an account in one tap; all your donations in one place.', 'woo-donation-popup' ); ?></span>
@@ -100,7 +100,7 @@ $donation_panel_percent  = static function ( $value, $decimals ) {
 				data-text="<?php echo esc_attr( (string) $args['share_text'] ); ?>"
 				data-url="<?php echo esc_url( (string) $args['share_url'] ); ?>"
 				data-copied="<?php esc_attr_e( 'Link copied', 'woo-donation-popup' ); ?>"
-				data-failed="<?php esc_attr_e( 'Could not copy the link', 'woo-donation-popup' ); ?>"><svg class="dpx-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg><?php esc_html_e( 'Share the campaign', 'woo-donation-popup' ); ?></button>
+				data-failed="<?php esc_attr_e( 'Could not copy the link', 'woo-donation-popup' ); ?>"><svg class="dpx-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg><?php esc_html_e( 'Share the campaign', 'woo-donation-popup' ); ?></button>
 		<?php endif; ?>
 	</div>
 	<p class="donation-panel-thanks__toast donation-panel-sr" role="status" aria-live="polite" data-dp-thanks-toast></p>

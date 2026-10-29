@@ -48,11 +48,25 @@ class Assets {
 	private $registered = array();
 
 	/**
-	 * Engellemeyen yükleme istenen stil slug'ları: slug => (bütün çağıranlar ertelemek istedi mi).
+	 * Bu istekte stili gereken slug'lar (çizim sırasıyla): slug => satır içi basıldı mı.
 	 *
 	 * @var array<string, bool>
 	 */
-	private $deferred = array();
+	private $styles = array();
+
+	/**
+	 * Marka renk belirteçleri bu istekte basıldı mı.
+	 *
+	 * @var bool
+	 */
+	private $brand_printed = false;
+
+	/**
+	 * `wp_footer` yedeği bağlandı mı.
+	 *
+	 * @var bool
+	 */
+	private $footer_hooked = false;
 
 	/**
 	 * Kurucu.
@@ -121,10 +135,6 @@ class Assets {
 				)
 			);
 		}
-		if ( '' !== $definition['style'] && is_file( $this->plugin_dir . $definition['style'] ) ) {
-			$meta = $this->read_asset_meta( $definition['script'] ? $definition['script'] : $definition['style'] );
-			wp_register_style( $handle, $this->plugin_url . $definition['style'], array(), $meta['version'] );
-		}
 	}
 
 	/**
@@ -140,20 +150,22 @@ class Assets {
 	}
 
 	/**
-	 * Modülün varlıklarını çizim anında kaydedip kuyruğa alır. Blok temalarında içerik `wp_enqueue_scripts`
-	 * öncesi çizilse de çalışır (kayıt ve kuyruk aynı çağrıdadır; çıktıyı WordPress `wp_head`/`wp_footer`'da yapar).
+	 * Modülün betiğini çizim anında kaydedip kuyruğa alır ve stilini bu istek için "gerekli" işaretler.
 	 * `DONATION_PANEL_DISABLE` açıkken hiçbir şey yapmaz.
 	 *
-	 * `$defer_style`: ana stil render engellemez (yalnız ilk görünür öğe, ör. açma düğmesi, `assets/critical/<slug>.css`
-	 * kritik CSS'iyle satır içi çizilir; ana stil betik açılınca `media` değiştirilerek etkinleşir). Sayfada aynı slug
-	 * için ertelemeyen bir çağrı da varsa (ör. sayfa içi form) stil normal, engelleyen yüklenir.
+	 * Stil `<link>` olarak YÜKLENMEZ (CLAUDE.md §25, stilsiz görünmeye sıfır tolerans): derlenmiş CSS, yüzey çizilirken
+	 * çıktının hemen önüne satır içi `<style>` olarak basılır (`inline_styles()`), sayfa başına bir kez. Böylece her
+	 * sayfa oluşturucuda, slider'da, editör önizlemesinde ve AJAX/REST çıktısında ilk karede stillidir; render engelleyen
+	 * dosya yoktur. Çağıran yüzey kendi çıktısının önüne `inline_styles()` eklemediyse (ör. döngü kartı düğmesi) stil
+	 * `wp_footer` içinde basılır; betikler `defer` olduğundan katman açılmadan önce her zaman yerindedir.
 	 *
 	 * @param string $slug        Modül slug'ı.
-	 * @param bool   $defer_style Ana stil engellemesin mi.
-	 * @param bool   $with_style  Stil de kuyruğa alınsın mı (false: yalnız betik; ör. liste dışı kart düğmesi tetikleyicisi).
+	 * @param bool   $defer_style Geriye dönük imza (artık etkisiz; stil her zaman satır içi).
+	 * @param bool   $with_style  Stil de gerekli mi (false: yalnız betik).
 	 * @return void
 	 */
 	public function enqueue( $slug, $defer_style = false, $with_style = true ) {
+		unset( $defer_style );
 		if ( Front_Gate::disabled() ) {
 			return;
 		}
@@ -163,81 +175,99 @@ class Assets {
 		if ( wp_script_is( $handle, 'registered' ) ) {
 			wp_enqueue_script( $handle );
 		}
-		if ( $with_style && wp_style_is( $handle, 'registered' ) ) {
-			wp_enqueue_style( $handle );
-			$this->add_brand_variables( $handle );
-			$this->track_deferred( $slug, $handle, (bool) $defer_style );
+		if ( $with_style ) {
+			$this->require_style( $slug );
 		}
 	}
 
 	/**
-	 * Erteleme kaydı: ilk ertelenen çağrıda kritik CSS eklenir ve etiket süzgeci bağlanır.
+	 * Yalnız stili bu istek için gerekli işaretler (betik kuyruğa alınmaz). Bir sonraki `inline_styles()` çağrısı ya da
+	 * `wp_footer` yedeği basar. `DONATION_PANEL_DISABLE` açıkken hiçbir şey yapmaz.
 	 *
-	 * @param string $slug        Modül slug'ı.
-	 * @param string $handle      Stil tutamacı.
-	 * @param bool   $defer_style Bu çağrı ertelemek istiyor mu.
+	 * @param string $slug Modül slug'ı.
 	 * @return void
 	 */
-	private function track_deferred( $slug, $handle, $defer_style ) {
-		if ( isset( $this->deferred[ $slug ] ) ) {
-			$this->deferred[ $slug ] = $this->deferred[ $slug ] && $defer_style;
+	public function require_style( $slug ) {
+		$slug = sanitize_key( $slug );
+		if ( Front_Gate::disabled() || ! isset( $this->definitions[ $slug ] ) || '' === $this->definitions[ $slug ]['style'] || isset( $this->styles[ $slug ] ) ) {
 			return;
 		}
-		$this->deferred[ $slug ] = false;
-		if ( ! $defer_style ) {
-			return;
-		}
-		$critical_file = $this->plugin_dir . 'assets/critical/' . $slug . '.css';
-		$critical      = is_file( $critical_file ) ? trim( (string) file_get_contents( $critical_file ) ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Eklenti içi yerel dosya.
-		if ( '' === $critical ) {
-			return;
-		}
-		$this->deferred[ $slug ] = true;
-		wp_add_inline_style( $handle, $critical );
-		if ( ! has_filter( 'style_loader_tag', array( $this, 'defer_style_tag' ) ) ) {
-			add_filter( 'style_loader_tag', array( $this, 'defer_style_tag' ), 10, 2 );
+		$this->styles[ $slug ] = false;
+		if ( ! $this->footer_hooked ) {
+			$this->footer_hooked = true;
+			add_action( 'wp_footer', array( $this, 'print_pending_styles' ), 1 );
 		}
 	}
 
 	/**
-	 * Ertelenen stil etiketini engellemeyen yapar (`media="print"` + işaret; betik açılınca `all` olur).
+	 * Gerekli ama henüz basılmamış modül stillerini satır içi `<style>` etiketleri olarak döndürür ve basıldı işaretler.
+	 * Yüzeyler bunu kendi çıktılarının ÖNÜNE ekler; aynı istekte ikinci çağrı boş döner.
 	 *
-	 * @param string $tag    Etiket HTML'i.
-	 * @param string $handle Tutamaç.
 	 * @return string
 	 */
-	public function defer_style_tag( $tag, $handle ) {
-		foreach ( $this->deferred as $slug => $deferred ) {
-			if ( $deferred && self::handle( (string) $slug ) === $handle ) {
-				return (string) preg_replace( '/media=([\'"])all\1/', 'media=$1print$1 data-dp-defer=$1$1', (string) $tag, 1 );
+	public function inline_styles() {
+		$out = '';
+		foreach ( $this->styles as $slug => $printed ) {
+			if ( $printed ) {
+				continue;
 			}
+			$this->styles[ $slug ] = true;
+			$css                   = $this->style_css( (string) $slug );
+			if ( '' === $css ) {
+				continue;
+			}
+			$out .= '<style id="' . esc_attr( 'donation-panel-inline-' . str_replace( '_', '-', (string) $slug ) ) . '">' . $css . $this->brand_variables() . '</style>';
 		}
-		return $tag;
+		return $out;
+	}
+
+	/**
+	 * `wp_footer` yedeği: çıktısının önüne stil eklemeyen yüzeylerin stilini basar.
+	 *
+	 * @return void
+	 */
+	public function print_pending_styles() {
+		echo $this->inline_styles(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Eklentinin kendi derlenmiş CSS'i; `</` dizisi süzülür.
+	}
+
+	/**
+	 * Modülün derlenmiş CSS'i (istek başına önbellekli). `</` dizisi çıkarılır (stil etiketinden kaçış yok).
+	 *
+	 * @param string $slug Modül slug'ı.
+	 * @return string
+	 */
+	public function style_css( $slug ) {
+		static $cache = array();
+		$slug         = sanitize_key( $slug );
+		if ( isset( $cache[ $this->plugin_dir . $slug ] ) ) {
+			return $cache[ $this->plugin_dir . $slug ];
+		}
+		$file                               = isset( $this->definitions[ $slug ] ) && '' !== $this->definitions[ $slug ]['style'] ? $this->plugin_dir . $this->definitions[ $slug ]['style'] : '';
+		$css                                = '' !== $file && is_file( $file ) ? trim( (string) file_get_contents( $file ) ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Eklenti içi yerel dosya.
+		$css                                = str_replace( '</', '<\/', $css );
+		$cache[ $this->plugin_dir . $slug ] = $css;
+		return $css;
 	}
 
 	/**
 	 * Yönetici "kendi renklerimi seçeyim" dediyse marka/eylem rengini tüm bağışçı yüzeylerine (form, teşekkür,
-	 * yan sepet, hesap) tek satır içi belirteçle yazar. Boşsa hiçbir şey yazılmaz: renkler tema ön ayarından gelir.
-	 * `:root .donation-panel` seçicisi `.donation-panel` kapsamındaki varsayılan tanımın önüne geçer. İstek başına bir kez eklenir.
+	 * yan sepet, hesap) tek belirteçle yazar (ilk satır içi stilin sonuna, istek başına bir kez). Boşsa hiçbir şey
+	 * yazılmaz: renkler tema ön ayarından gelir. `:root .donation-panel` seçicisi varsayılan tanımın önüne geçer.
 	 *
-	 * @param string $handle Stil tutamacı.
-	 * @return void
+	 * @return string
 	 */
-	private function add_brand_variables( $handle ) {
-		static $added = false;
-		if ( $added ) {
-			return;
+	private function brand_variables() {
+		if ( $this->brand_printed ) {
+			return '';
 		}
-		$added        = true;
-		$settings     = new Settings();
-		$custom       = 'custom' === (string) $settings->get( 'design.colors', 'theme' );
-		$declarations = Theme_Colors::declarations(
+		$this->brand_printed = true;
+		$settings            = new Settings();
+		$custom              = 'custom' === (string) $settings->get( 'design.colors', 'theme' );
+		$declarations        = Theme_Colors::declarations(
 			$custom ? (string) $settings->get( 'design.brand', '' ) : '',
 			$custom ? (string) $settings->get( 'design.accent', '' ) : ''
 		);
-		if ( '' !== $declarations ) {
-			wp_add_inline_style( $handle, ':root .donation-panel{' . $declarations . '}' );
-		}
+		return '' !== $declarations ? ':root .donation-panel{' . $declarations . '}' : '';
 	}
 
 	/**

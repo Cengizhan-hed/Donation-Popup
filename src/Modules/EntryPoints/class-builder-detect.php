@@ -24,6 +24,26 @@ class Builder_Detect {
 	private static $preview_product = false;
 
 	/**
+	 * Eklentinin kendi ön yüz sorgu anahtarları: canlı sayfadır, editör önizlemesi DEĞİLDİR (ör. yönetici ayar
+	 * önizlemesi `?dp_preview=1` gerçek ön yüzü gösterir; yönetici notu orada görünmez).
+	 */
+	const OWN_FRONT_KEYS = array( 'dp_preview' );
+
+	/**
+	 * Katı editör önizlemesi (yönetici notları için, CLAUDE.md §25): ürün düzenleme yetkisi VE (blok editörü sunucu
+	 * çizimi, WordPress önizlemesi/Özelleştirici ya da düzenleyici çerçevesinin genel sorgu anahtarı). Eklentinin kendi
+	 * ön yüz anahtarları sayılmaz. Hiçbir oluşturucu adı bilinmez (§0).
+	 *
+	 * @return bool
+	 */
+	public static function is_editor_preview() {
+		if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'edit_products' ) ) {
+			return false;
+		}
+		return self::gutenberg() || self::wp_preview() || self::editor_query_var( self::OWN_FRONT_KEYS );
+	}
+
+	/**
 	 * Current request is a builder editor or preview AND the user may edit products.
 	 *
 	 * Visitors never see a sample product.
@@ -88,7 +108,12 @@ class Builder_Detect {
 	 * @return string
 	 */
 	public static function preview_notice( $product ) {
-		if ( ! self::is_builder_preview() || ! is_object( $product ) || ! method_exists( $product, 'get_name' ) ) {
+		if ( ! self::is_editor_preview() || ! is_object( $product ) || ! method_exists( $product, 'get_name' ) ) {
+			return '';
+		}
+		// Yalnız örnek ürün gösterildiğinde (bulunduğu/verilen ürün çiziliyorsa "örnek gösteriliyor" notu yanlış olur).
+		$sample = self::preview_product();
+		if ( ! is_object( $sample ) || ! method_exists( $sample, 'get_id' ) || ! method_exists( $product, 'get_id' ) || (int) $sample->get_id() !== (int) $product->get_id() ) {
 			return '';
 		}
 		$name = $product->get_name();
@@ -139,11 +164,12 @@ class Builder_Detect {
 	 * anahtar "edit", "preview", "builder" veya "fb" parçası içerir ve değeri doludur
 	 * (örn. `x-edit`, `x_fb`, `x-preview`, `builder=true`).
 	 *
+	 * @param string[] $ignore Sayılmayacak anahtarlar.
 	 * @return bool
 	 */
-	private static function editor_query_var() {
+	private static function editor_query_var( array $ignore = array() ) {
 		foreach ( self::query_vars() as $key => $value ) {
-			if ( '' === $value || '0' === $value || 'false' === $value ) {
+			if ( '' === $value || '0' === $value || 'false' === $value || in_array( (string) $key, $ignore, true ) ) {
 				continue;
 			}
 			foreach ( preg_split( '/[-_]+/', (string) $key ) as $part ) {

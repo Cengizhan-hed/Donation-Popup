@@ -72,7 +72,13 @@ export function parsePage(html, base) {
   const inlineScripts = (clean.match(/<script\b(?![^>]*\bsrc=)/gi) || []).length;
   // Eklenti DOM'u: `.donation-panel` kök sınıfı, `data-dp-*` öznitelikleri, `donation-panel/` yolları (ürün adı/slug'ı sayılmaz).
   const markers = (clean.match(/\bdata-dp-[a-z-]+|class="(?:[^"]*\s)?donation-panel(?:\s|-[a-z]|")|donation-panel\//g) || []).length;
-  return { probe, resources, blocking, inlineStyles, inlineScripts, markers, htmlBytes: Buffer.byteLength(clean) };
+  // 12.2 (§25): eklenti yüzey CSS'i çıktının önünde satır içi `<style id="donation-panel-inline-<yüzey>">` olarak gelir.
+  const pluginInline = [];
+  for (const m of clean.matchAll(/<style id="donation-panel-inline-([a-z0-9-]+)">([\s\S]*?)<\/style>/g)) {
+    const buf = Buffer.from(m[2]);
+    pluginInline.push({ id: m[1], raw: buf.length, gzip: zlib.gzipSync(buf, { level: 9 }).length });
+  }
+  return { probe, resources, blocking, inlineStyles, inlineScripts, markers, pluginInline, htmlBytes: Buffer.byteLength(clean) };
 }
 
 const isPlugin = (url) => /\/woo-donation-popup\//.test(url);
@@ -185,6 +191,9 @@ async function main() {
         queriesOff: qCount(off),
         cssKB: +(css.reduce((n, f) => n + f.gzip, 0) / 1024).toFixed(1),
         jsKB: +(js.reduce((n, f) => n + f.gzip, 0) / 1024).toFixed(1),
+        inlineCssKB: +(on.pluginInline.reduce((n, s) => n + s.gzip, 0) / 1024).toFixed(1),
+        inlineCss: on.pluginInline.map((s) => `${s.id} ${(s.gzip / 1024).toFixed(1)}KB`),
+        allInlineCssKB: +(all.pluginInline.reduce((n, s) => n + s.gzip, 0) / 1024).toFixed(1),
         cssFiles: css.length,
         jsFiles: js.length,
         pluginFiles: pluginFiles.map((f) => `${f.url.split('/woo-donation-popup/')[1]} ${(f.gzip / 1024).toFixed(1)}KB`),
@@ -220,11 +229,14 @@ async function main() {
         if (row.dReq - css.length - js.length > 0) violations.push(`${pg.id}: eklenti dışı ek istek (${row.dReq - css.length - js.length})`);
         if (css.some((f) => f.gzip > BUDGET.css)) violations.push(`${pg.id}: CSS bütçesi aşıldı (${row.cssKB} KB > 12 KB)`);
         if (js.some((f) => f.gzip > BUDGET.js)) violations.push(`${pg.id}: JS bütçesi aşıldı (${row.jsKB} KB > 25 KB)`);
+        // Satır içi yüzey CSS'i: yüzey başına ≤12 KB gzip (eski "1 CSS" bütçesi; dosya değil HTML içinde, engellemez).
+        if (on.pluginInline.some((s) => s.gzip > BUDGET.css)) violations.push(`${pg.id}: satır içi CSS bütçesi aşıldı (${row.inlineCssKB} KB)`);
+        if (on.pluginInline.length !== new Set(on.pluginInline.map((s) => s.id)).size) violations.push(`${pg.id}: aynı yüzey stili iki kez basıldı`);
       }
       if (row.disabledReq !== 0 || row.disabledMarkers !== 0 || row.disabledQueries > 0) {
         violations.push(`${pg.id}: DONATION_PANEL_DISABLE açıkken çıktı var (istek ${row.disabledReq}, eklenti DOM ${row.disabledMarkers}, sorgu ${row.disabledQueries})`);
       }
-      if (pg.ui && pluginFiles.length < 2) violations.push(`${pg.id}: arayüzlü sayfada eklenti varlığı yok (ölçüm geçersiz)`);
+      if (pg.ui && pluginFiles.length + on.pluginInline.length < 2) violations.push(`${pg.id}: arayüzlü sayfada eklenti varlığı yok (ölçüm geçersiz)`);
       if (!pg.ui && row.dMarkers !== 0) violations.push(`${pg.id}: arayüzsüz sayfada eklenti DOM'u var (${row.dMarkers})`);
     }
   } finally {
@@ -243,11 +255,11 @@ async function main() {
       console.log(`| ${r.id} | ${r.dReq} | ${r.dGzip} | ${r.dBlock} | ${r.dInline} | ${r.dCookie} | ${r.dHtml} | ${r.queriesOff}→${r.queriesOn} (${r.dQueries >= 0 ? '+' : ''}${r.dQueries}) | ${r.disabledReq}/${r.disabledMarkers}/${r.disabledQueries} |`);
     }
     console.log('\nArayüzlü sayfalar (bütçe: CSS ≤12 KB, JS ≤25 KB gzip; ≤1 CSS + 1 JS; sorgu ≤+2)');
-    console.log('| sayfa | CSS dosya/KB (varsayılan) | JS dosya/KB | engelleyen Δ | sorgu kapalı→açık | HTML bayt Δ | tüm modüller CSS/JS KB | DISABLE Δ(istek/DOM/sorgu) |');
-    console.log('|---|---|---|---|---|---|---|---|');
+    console.log('| sayfa | CSS dosya/KB (varsayılan) | satır içi CSS KB | JS dosya/KB | engelleyen Δ | sorgu kapalı→açık | HTML bayt Δ | tüm modüller CSS/satır içi/JS KB | DISABLE Δ(istek/DOM/sorgu) |');
+    console.log('|---|---|---|---|---|---|---|---|---|');
     for (const r of rows.filter((x) => x.ui)) {
-      console.log(`| ${r.id} | ${r.cssFiles}/${r.cssKB} | ${r.jsFiles}/${r.jsKB} | ${r.dBlock} | ${r.queriesOff}→${r.queriesOn} (+${r.dQueries}) | ${r.dHtml} | ${r.allCssFiles}/${r.allCssKB} · ${r.allJsFiles}/${r.allJsKB} | ${r.disabledReq}/${r.disabledMarkers}/${r.disabledQueries} |`);
-      console.log(`|   ↳ dosyalar | ${r.pluginFiles.join(', ')} | | | | | ${r.allFiles.join(', ')} | |`);
+      console.log(`| ${r.id} | ${r.cssFiles}/${r.cssKB} | ${r.inlineCssKB} | ${r.jsFiles}/${r.jsKB} | ${r.dBlock} | ${r.queriesOff}→${r.queriesOn} (+${r.dQueries}) | ${r.dHtml} | ${r.allCssFiles}/${r.allCssKB} · ${r.allInlineCssKB} · ${r.allJsFiles}/${r.allJsKB} | ${r.disabledReq}/${r.disabledMarkers}/${r.disabledQueries} |`);
+      console.log(`|   ↳ dosyalar | ${r.pluginFiles.join(', ')} | ${r.inlineCss.join(', ')} | | | | | ${r.allFiles.join(', ')} | |`);
     }
     console.log(`\nAutoload (eklenti seçenekleri, bayt): ${Math.max(...rows.map((r) => r.autoloadBytes))} (sınır 5120)`);
     const extra = rows.filter((r) => r.extraSql.length);
