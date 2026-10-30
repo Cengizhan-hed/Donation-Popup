@@ -251,6 +251,10 @@ class Donations_List {
 		}
 
 		$html = self::apply_request_ids( $html );
+		if ( 'link' !== $atts['button'] ) {
+			// Kart formları tarayıcı düzeyinde önceden alınır (sayfa sonunda <link rel="prefetch">; önbellekli HTML'de de).
+			Prefetch_Links::add_from_html( $html, 'popup' === $atts['button'] ? 'popup' : 'side_panel' );
+		}
 		if ( ! empty( $built['empty'] ) && function_exists( 'current_user_can' ) && current_user_can( 'edit_products' ) ) {
 			$notice = Admin_Notice::admin_notice_html( self::empty_reason( $atts ) );
 			$html   = preg_replace( '/(<div\b[^>]*\bclass="[^"]*wdp-list-wrap[^"]*"[^>]*>)/', '$1' . $notice, $html, 1 );

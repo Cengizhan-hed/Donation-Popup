@@ -432,19 +432,21 @@ async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
               new Promise((resolve) => {
                 const t0 = performance.now();
                 const el = document.querySelectorAll(sel)[index];
-                const done = () => el && el.dataset.wdpReady === '1';
-                if (done()) return resolve(0);
-                const mo = new MutationObserver(() => {
-                  if (done()) {
-                    mo.disconnect();
-                    resolve(Math.round(performance.now() - t0));
-                  }
-                });
-                mo.observe(el, { attributes: true, attributeFilter: ['data-wdp-ready'] });
-                setTimeout(() => {
-                  mo.disconnect();
-                  resolve(-1);
-                }, 8000);
+                const id = el ? el.getAttribute('data-wdp-form') : '';
+                // Hazır: istemci ön alması (`data-wdp-ready`) ya da tarayıcının `<link rel="prefetch">` ile bu kartı
+                // kapsayan toplu ucu indirmesi bitti (Resource Timing; yoklama yalnız dokunuştan ÖNCE, 50 ms aralık).
+                const linked = () =>
+                  Array.from(document.querySelectorAll('link[rel="prefetch"][data-dp-prefetch]')).some((l) => {
+                    const ids = (new URL(l.href).searchParams.get('ids') || '').split(',');
+                    return ids.includes(id) && performance.getEntriesByName(l.href).some((r) => r.responseEnd > 0);
+                  });
+                const done = () => el && (el.dataset.wdpReady === '1' || linked());
+                const poll = () => {
+                  if (done()) return resolve(Math.round(performance.now() - t0));
+                  if (performance.now() - t0 > 8000) return resolve(-1);
+                  setTimeout(poll, 50);
+                };
+                poll();
               }),
             { sel: trig, index: target.index }
           );
@@ -454,6 +456,7 @@ async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
         // Algılama MutationObserver ile (rAF yoklaması değil): açılış anına kare gecikmesi eklenmez.
         await page.evaluate(`(${installTapProbe})(window, ${JSON.stringify(trig)}, ${target.index})`);
         const signal = tapSignal(page);
+        const tPre = await page.evaluate(() => performance.now());
         if (!(await tapAt(page, target, 'click'))) continue;
         // Bitiş bağlamayla gelir (yoklama betiği ölçüm penceresine girmez); zaman aşımında ÖLÇÜLMEDİ.
         if (!(await signal.promise)) {
@@ -461,13 +464,15 @@ async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
           continue;
         }
         out.tapRuns.push(Math.round(await page.evaluate(() => window.__dpTap.t1 - window.__dpTap.t0)));
-        // Dokunuştan panele kadar başlayan eklenti REST istekleri (12.3 hedef: 0).
+        // Dokunuş (basma dahil) → panel arasında AĞA giden eklenti REST istekleri (12.3 hedef: 0). Tarayıcı önbelleğinden
+        // gelen yanıt (transferSize 0) ağ isteği sayılmaz.
         (out.tapRequests = out.tapRequests || []).push(
           await page.evaluate(
-            () =>
+            (from) =>
               performance
                 .getEntriesByType('resource')
-                .filter((r) => r.startTime >= window.__dpTap.t0 && r.startTime <= window.__dpTap.t1 && /donation-panel(\/|%2F)v1/.test(r.name)).length
+                .filter((r) => r.startTime >= from && r.startTime <= window.__dpTap.t1 && /donation-panel(\/|%2F)v1/.test(r.name) && r.transferSize > 0).length,
+            tPre
           )
         );
       }
