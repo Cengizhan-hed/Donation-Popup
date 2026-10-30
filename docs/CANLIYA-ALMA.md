@@ -98,6 +98,17 @@ Not: Eklentinin eski çerezi (`wdp_vid`) kaldırıldı; geri dönüşte eski sü
 - **Compact kart ödeme katmanı:** ödeme, aynı sitenin WooCommerce ödeme sayfası çerçeve içinde açılarak yapılır; bunun için sayfa `X-Frame-Options: SAMEORIGIN` (WooCommerce varsayılanı) ile gelmelidir. Bir güvenlik eklentisi ya da sunucu `DENY` (veya `frame-ancestors 'none'`) gönderiyorsa katman açılmaz ve bağışçı "Ödeme sayfasını açın" bağlantısıyla standart ödeme sayfasına geçer. Kontrol: compact kartlı bir sayfada tutar seçip ödemeye geçin; katmanda ödeme formu görünmeli.
 - **Geri dönüş:** 12.1.1 zip'i G2 adımlarıyla kurulur; `layout="compact"` kısa kodları 12.1.1'de standart forma döner.
 
+## G5. 12.3.0
+- **Yeni ayarların yolları** (hepsi Bağış Paneli altında; ekran adları staging30'da doğrulanmalı):
+  - Sepet ve Ödeme › **Bağışçılar nasıl öder** (genel anahtar + tür bazında Sepetli / Doğrudan / Genel ayarı kullan). Tek ürün: Ürünler › ürünü düzenle › Ürün verileri › Bağış › Sepeti atla.
+  - Formlar ve Görünüm › **Compact kart (slider/hero)** (hızlı tutarlar, "ilk bağış" cümlesi, güven satırı, kısa kod oluşturucu).
+  - Kampanyalar › **Kampanya ilerleme çubuğu** (kişisel önizleme, sayım, hedefte kutlama; varsayılan açık).
+  - Sepet ve Ödeme › **Yan sepet** (yüzen düğme, köşe, ek bağış önerisi).
+- **Renk uyarısı:** düğme/ana renk artık yalnız adlandırılmış palet rollerinden (`primary`, `brand`, `accent`, `secondary`…) gelir. Palette bu rol adları olmayan temalarda (ör. yalnız numaralı/özel adlı renkler) düğme rengi **nötr laciverttir (#1e2a3b)** ve yönetici ekranında "Renkler temadan okunamadı" uyarısı çıkar; Formlar ve Görünüm › Renkler'den renk seçin. Güncellemeden sonra canlıda düğme renklerini mutlaka gözle kontrol edin.
+- **Önbellek:** liste/mağaza kartları formu sayfa yüklendikten sonra tek toplu istekle (`/experiences?ids=`) ön alır; önbellek eklentisinde `/wp-json/donation-panel/` isteklerini önbellekten hariç tutun (yanıt `private, max-age=300`, `Vary: Cookie`).
+- **Doğrulama:** `docs/CANLIYA-ALMA.md` G2 yedek adımları; sonra KONTROL-LISTESI K–O bölümleri.
+- **Geri dönüş planı:** önceki zip (12.2.0) G2 adımlarıyla kurulur; yeni seçenek anahtarları (`direct.type_*`, `progress.*`, `compact.trust`, yan sepet ayarları) 12.2.0'da yok sayılır, kalabilir.
+
 ## B. Ikram Aid yayına alma listesi
 
 Ikram (ikramaid.uk): Hello Elementor + Elementor Pro, GBP, şu an "coming soon" açık. Test için eklentinin kendi ayarlarından modüller açıktır (yeni motor, kampanya, etki, sosyal kanıt, yan sepet, bağışçı hesabı, teşekkür, vergi indirimi/Gift Aid).

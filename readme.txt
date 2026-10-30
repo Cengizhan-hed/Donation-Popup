@@ -5,7 +5,7 @@ Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 12.2.0
+Stable tag: 12.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,9 @@ Write it on your site; the form only shows a link to the page you choose.
 
 == Upgrade Notice ==
 
+= 12.3.0 =
+Direct donation settings, compact card v2, live campaign progress bar, instant panels from lists. Theme colors use named palette roles only; themes without them get a neutral button color. Rolling back to 12.2.0 is safe. Back up first.
+
 = 12.2.0 =
 No unstyled flash: forms are styled from the first frame, nothing render-blocking. New compact donation card for sliders. Colors accept CSS variables. Rolling back to 12.1.1 is safe. Back up before updating.
 
@@ -59,6 +62,13 @@ Performance and security release. Nothing loads on pages without a donation surf
 Major release. One experience, one menu: the previous form engine and settings screens were removed. Settings, orders, shortcodes and blocks are kept. Back up before updating.
 
 == Changelog ==
+
+= 12.3.0 =
+* Added: direct donation settings (global, per donation type, per product); compact card v2 (384 px, 2 or 3 steps, Gift Aid details, trust line); live campaign progress bar with a personal preview, cart sync and a goal celebration; form prefetch on list and shop cards; color source display in the admin; side cart settings.
+* Changed: the layer opens and closes without shaking (overflow clip, separate backdrop, 260 ms ease without spring); focus shows a thin border for mouse and a ring for keyboard; theme colors use named palette roles only, with a neutral default and a notice when none is found.
+* Fixed: the extra donation option was silently dropped on direct donations; the shop card did not open the form on block themes; side cart style leaks in Storefront; untranslated type name.
+* Security: REST root and prefetch URL validation; batch endpoint rate limit per product; script and style URLs are never taken from the DOM.
+* Rollback: returning to 12.2.0 with the zip is safe; new settings keys are ignored.
 
 = 12.2.0 =
 * Fixed: zero tolerance for unstyled content. Each visible donation surface carries its own small inline style (once per page); the plugin loads no CSS file and nothing render-blocking; the panel is styled the moment it opens (the old "wait for styles" fallback was removed).
