@@ -20,13 +20,6 @@ defined( 'ABSPATH' ) || exit;
 class Loop_Price_Filters {
 
 	/**
-	 * Bu istekte döngü kartı düğmesi olarak form açan ürünler.
-	 *
-	 * @var array<int, bool>
-	 */
-	private static $loop_triggers = array();
-
-	/**
 	 * Hide price for open-amount and campaign donation products when hide_price=yes.
 	 * Fixed and share products keep their price. Never blank in admin/cart/checkout/email/REST.
 	 *
@@ -79,6 +72,15 @@ class Loop_Price_Filters {
 		if ( 'off' === $mode ) {
 			return $html;
 		}
+		// Aynı kartın İKİNCİ süzgeç geçişi (12.3): blok temalarda ürün düğmesi bloğu kartı önce
+		// `woocommerce_loop_add_to_cart_link`, sonra `render_block` süzgecinden geçirir. Girdi bu ürün için zaten bizim çizdiğimiz
+		// düğmeyse o düğme (yalnız kendi `<a>` öğemiz; işaretleme eskisiyle aynı) döner. Eskiden ikinci geçiş "başka giriş var"
+		// sayıp form özniteliklerini siliyordu: mağaza kartı formu açmıyor, ürün sayfasına gidiyordu. Ayrı bir ikinci kart yine
+		// yalnız bağlantı olur (tek giriş kuralı).
+		$own = 'data-wdp-form="' . (int) $product->get_id() . '"';
+		if ( false !== strpos( (string) $html, $own ) && preg_match( '#<a [^>]*class="button wdp-loop-donate[^"]*"[^>]*' . preg_quote( $own, '#' ) . '[^>]*>.*?</a>#s', (string) $html, $m ) ) {
+			return $m[0];
+		}
 		// Liste/arşiv kartlarında düğme ürün sayfasına götürür; form ürün sayfasında açılır (kartlarda ağır form basılmaz).
 		$url         = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
 		$text        = Shortcodes::resolve_button_text( '' );
@@ -94,11 +96,7 @@ class Loop_Price_Filters {
 			$product_id = (int) $product->get_id();
 			// Gerçek bağlantı kalır (JS yokken ürün sayfasına gider); JS varken form katmanı açılır.
 			// Aynı istekte bu ürün için başka bir giriş (form/düğme) çizildiyse yalnız bağlantı olarak kalır.
-			// Döngü kartının KENDİ önceki çizimi "başka giriş" sayılmaz: blok temalarda ürün düğmesi bloğu aynı kartı hem
-			// `woocommerce_loop_add_to_cart_link` hem `render_block` süzgecinden geçirir (ikinci geçiş öznitelikleri siliyordu);
-			// aynı ürün ilgili ürünler gibi ikinci bir döngüde de çıkabilir. Form sayfada bir kez alınır (istemci önbelleği).
-			if ( isset( self::$loop_triggers[ $product_id ] ) || ! Render_Registry::has_product_ui( $product_id ) ) {
-				self::$loop_triggers[ $product_id ] = true;
+			if ( ! Render_Registry::has_product_ui( $product_id ) ) {
 				Render_Registry::mark_trigger( $product_id );
 				Donations_List::enqueue_trigger_assets();
 				$attrs .= ' data-wdp-form="' . esc_attr( (string) $product_id ) . '"'
