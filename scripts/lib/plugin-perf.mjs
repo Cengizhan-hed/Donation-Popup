@@ -500,7 +500,8 @@ export function forcedLayoutsInClick(trace, opts = {}) {
  * ve visibility visible) MutationObserver ile (attributes ['open'], subtree, childList) yakalanır — rAF yoklaması
  * yok, bu yüzden açılış anına kare gecikmesi eklenmez; tıklama anında zaten açıksa hemen. Açık ama henüz görünmez
  * (ör. stil gelmedi) diyalog için yedek: her kare yeniden bakılır. Açılış anından sonra iki rAF → t1.
- * Sonuç `w.__dpTap = {t0, tOpen, t1}` (ms, performance zaman ekseni).
+ * Sonuç `w.__dpTap = {t0, tOpen, t1}` (ms, performance zaman ekseni). t1'de `w.__dpPerfSignal('tap')` (varsa) çağrılır:
+ * ölçüm betiği bitişi yoklamadan öğrenir (yoklama betiği 4× CPU'da kareyi geciktirip ölçümü bozuyordu).
  *
  * @param {Window} w Pencere.
  * @param {string} selector Tetikleyici seçicisi.
@@ -523,7 +524,13 @@ export function installTapProbe(w, selector, index) {
     done = true;
     state.tOpen = w.performance.now();
     if (mo) mo.disconnect();
-    w.requestAnimationFrame(() => w.requestAnimationFrame(() => (state.t1 = w.performance.now())));
+    w.requestAnimationFrame(() =>
+      w.requestAnimationFrame(() => {
+        state.t1 = w.performance.now();
+        // Ölçüm betiğine bitiş bildirimi (Playwright bağlaması; varsa). Yoklama betiği ölçüm penceresine girmesin.
+        if (typeof w.__dpPerfSignal === 'function') w.__dpPerfSignal('tap');
+      })
+    );
     return true;
   };
   const fallback = () => {

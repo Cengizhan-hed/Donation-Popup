@@ -54,6 +54,8 @@ describe('installTapProbe', () => {
     const trig = trigger();
     const d = dialog();
     const w = fakeWindow({ triggers: [trig], dialogs: [d] });
+    const signals = [];
+    w.__dpPerfSignal = (name) => signals.push([name, w.now]);
     assert.equal(installTapProbe(w, '[data-dp-open]', 0), true);
     const l = trig.listeners[0];
     assert.deepEqual(l.opts, { capture: true, once: true });
@@ -71,6 +73,7 @@ describe('installTapProbe', () => {
     w.frame(72);
     assert.equal(w.__dpTap.t1, 72);
     assert.equal(w.__dpTap.t1 - w.__dpTap.t0, 67); // eski rAF yoklaması: algılama 56 → t1 88 (83 ms)
+    assert.deepEqual(signals, [['tap', 72]], 'bitiş bağlamayla bir kez bildirilir (t1 anında)');
   });
 
   it('tıklama anında zaten açık görünür diyalog hemen sayılır', () => {

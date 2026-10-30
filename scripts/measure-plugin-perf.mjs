@@ -173,6 +173,12 @@ async function openPage(browser, opts = {}) {
   const context = await browser.newContext({ ...DEVICE });
   if (opts.prepare) await opts.prepare(context);
   await context.addInitScript(pageObservers);
+  // Dokunuş ölçümünün bitişi sayfadan bağlama (binding) ile bildirilir: ölçüm penceresinde Playwright'ın yoklama
+  // betiği (4× CPU'da ~15 ms'lik EvaluateScript görevi) ana iş parçacığına girip kareyi geciktirmesin.
+  await context.exposeBinding('__dpPerfSignal', (source, name) => {
+    const fn = TAP_SIGNALS.get(source.page);
+    if (fn && name === 'tap') fn();
+  });
   const page = await context.newPage();
   if (opts.throttle) {
     const cdp = await context.newCDPSession(page);
@@ -181,6 +187,28 @@ async function openPage(browser, opts = {}) {
     await cdp.send('Network.emulateNetworkConditions', SLOW_NET);
   }
   return { context, page };
+}
+
+/** Sayfa → dokunuş ölçümü bitti sinyali (bağlama ile; yoklama yok). */
+const TAP_SIGNALS = new WeakMap();
+
+/**
+ * Dokunuş ölçümünün bitişini bekler (sayfa `__dpPerfSignal('tap')` çağırır); zaman aşımında false.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {number} ms Zaman aşımı.
+ * @return {{promise: Promise<boolean>}} Bekleyici (dokunmadan ÖNCE kurulur).
+ */
+function tapSignal(page, ms = 20000) {
+  let timer;
+  const promise = new Promise((resolve) => {
+    TAP_SIGNALS.set(page, () => {
+      clearTimeout(timer);
+      resolve(true);
+    });
+    timer = setTimeout(() => resolve(false), ms);
+  });
+  return { promise };
 }
 
 /** Eklenti kaynakları (Resource Timing) ve gezinme zamanları. */
@@ -326,8 +354,13 @@ async function measureUi(browser, url, prepare, dumpName = '', trig = '[data-dp-
         }
         // Algılama MutationObserver ile (rAF yoklaması değil): açılış anına kare gecikmesi eklenmez.
         await page.evaluate(`(${installTapProbe})(window, ${JSON.stringify(trig)}, ${target.index})`);
+        const signal = tapSignal(page);
         if (!(await tapAt(page, target, 'click'))) continue;
-        await page.waitForFunction(() => window.__dpTap && window.__dpTap.t1 > 0, null, { timeout: 20000 });
+        // Bitiş bağlamayla gelir (yoklama betiği ölçüm penceresine girmez); zaman aşımında ÖLÇÜLMEDİ.
+        if (!(await signal.promise)) {
+          out.tapSkips.push('panel 20 sn içinde açılmadı');
+          continue;
+        }
         out.tapRuns.push(Math.round(await page.evaluate(() => window.__dpTap.t1 - window.__dpTap.t0)));
       }
     }
@@ -343,8 +376,8 @@ async function measureUi(browser, url, prepare, dumpName = '', trig = '[data-dp-
         // Yığınlı iz: zorlayan JS çağrı noktası (ör. showModal) satıra yazılır.
         await browser.startTracing(page, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack'] });
         await page.evaluate(`(${installTapProbe})(window, ${JSON.stringify(trig)}, ${target.index})`);
-        const tapped = await tapAt(page, target, 'click');
-        if (tapped) await page.waitForFunction(() => window.__dpTap && window.__dpTap.t1 > 0, null, { timeout: 20000 });
+        const signal = tapSignal(page);
+        const tapped = (await tapAt(page, target, 'click')) && (await signal.promise);
         await settle(page);
         const trace = JSON.parse((await browser.stopTracing()).toString('utf8'));
         if (process.env.WDP_PERF_SAVE_TRACE && dumpName) {
