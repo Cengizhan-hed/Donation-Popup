@@ -35,7 +35,9 @@ const num = (text) => Number(String(text).replace(/[^0-9]/g, ''));
 function collectErrors(page) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  page.on('console', (m) => m.type() === 'error' && !/Failed to load resource/.test(m.text()) && errors.push(m.text()));
+  // WebKit yerel http sunucuda `<link rel="prefetch">` isteğini reddeder ("URL must be secure"); sitede https'te yoktur ve
+  // istemci aynı formu ihtiyaçta kendisi alır (ön alma bağlantısı yalnız hızlandırıcı) — ortam notu, hata sayılmaz.
+  page.on('console', (m) => m.type() === 'error' && !/Failed to load resource|Prefetch request denied: URL must be secure/.test(m.text()) && errors.push(m.text()));
   page.on('response', (r) => r.status() >= 400 && errors.push(`${r.status()} ${r.url()}`));
   return errors;
 }
@@ -471,8 +473,12 @@ test.describe('canlı kampanya çubuğu', () => {
     }, PRODUCT);
     await expect(bar).toHaveClass(/is-in-cart/);
 
-    // Kapat → yeniden aç: aynı kap, ikinci paket isteği yok.
-    await page.keyboard.press('Escape');
+    // Kapat → yeniden aç: aynı kap, ikinci paket isteği yok. (Sepete ekleme olayı yan sepeti de açar: o da kapatılır.)
+    for (let i = 0; i < 3 && (await page.locator('dialog[open]').count()) > 0; i += 1) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+    }
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
     await expect(layer).toHaveCount(0);
     await campBtn.click();
     await expect(layer).toBeVisible();
