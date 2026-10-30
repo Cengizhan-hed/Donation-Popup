@@ -124,6 +124,32 @@ final class Guide {
 				),
 				'code'  => '',
 			),
+			'colors'     => array(
+				'title'  => __( 'Setting the colors', 'woo-donation-popup' ),
+				'body'   => array(
+					__( '1. Open Donation Panel → Forms and appearance → Colors. Under "Use my theme colors" you see the two colors in use and where each one comes from: "Theme palette: primary", "Default" or "Follows the main color".', 'woo-donation-popup' ),
+					__( '2. Which theme colors are used: only colors the theme names primary, brand, accent, secondary, contrast or foreground (also numbered ones such as accent-3). The main color must be readable on white; the button color must keep its text readable. Nothing is guessed from other colors.', 'woo-donation-popup' ),
+					__( '3. If the theme has no such names you see "Colors could not be read from your theme" here and on the Overview. The form then uses a calm neutral ink color until you choose your own.', 'woo-donation-popup' ),
+					__( '4. To choose your own: select "Choose my own colors" and fill in Main color and Button color. Each field takes a hex value (#12305A) or a CSS variable from your theme or page editor, for example var(--brand). The line under each field says what is used: "Source: your choice." or, when empty, the color that applies instead.', 'woo-donation-popup' ),
+					__( '5. Button text turns black or white by itself so it stays readable (contrast at least 4.5:1). Colors you choose are never changed by theme or plugin updates.', 'woo-donation-popup' ),
+				),
+				'code'   => 'var(--wp--preset--color--primary, #12305a)',
+				'figure' => 'colors',
+				'link'   => array( Admin_Bootstrap::SLUG_FORMS, 'dpa-s-colors', __( 'Open the Colors settings', 'woo-donation-popup' ) ),
+			),
+			'side_cart'  => array(
+				'title'  => __( 'Side cart', 'woo-donation-popup' ),
+				'body'   => array(
+					__( '1. Turn it on: Donation Panel → Cart and checkout → Modules → Side cart. After a gift is added, a basket slides in (a bottom sheet on phones) with the gifts, the total and "Complete donation".', 'woo-donation-popup' ),
+					__( '2. Floating basket button: on the same screen under Side cart. It appears only when the basket has a gift. Choose Bottom right or Bottom left so it does not cover your chat or back-to-top button, or switch it off if your theme shows its own cart icon.', 'woo-donation-popup' ),
+					__( '3. A basket icon in your header: place the shortcode below in a header widget or menu block. It shows the number of gifts and opens the same basket.', 'woo-donation-popup' ),
+					__( '4. Extra gift suggestion: switch on "Suggest an extra gift in the basket", enter the product ID (0 uses the add-on product) and up to three amounts such as 50, 100. Donors add it with one tap; their details are taken from the gift already in the basket.', 'woo-donation-popup' ),
+					__( '5. The side cart never opens on the cart and checkout pages, and pages without a donation form load none of its files.', 'woo-donation-popup' ),
+				),
+				'code'   => '[donation_panel_side_cart]',
+				'figure' => 'side-cart',
+				'link'   => array( Admin_Bootstrap::SLUG_CHECKOUT, 'dpa-s-basket', __( 'Open the Side cart settings', 'woo-donation-popup' ) ),
+			),
 		);
 	}
 
@@ -166,7 +192,7 @@ final class Guide {
 	/**
 	 * Rehber görseli: satır içi SVG şema (metinler çevrilir; dosya/istek yok).
 	 *
-	 * @param string $name compact|direct.
+	 * @param string $name compact|direct|colors|side-cart.
 	 * @return string
 	 */
 	public static function figure( $name ) {
@@ -193,6 +219,32 @@ final class Guide {
 				. $box( 168, 110, 280, 40, __( 'Payment page', 'woo-donation-popup' ), true ) . $arrow( 448, 130, 488 )
 				. $box( 488, 110, 120, 40, __( 'Thank you', 'woo-donation-popup' ) );
 			$h    = 160;
+		} elseif ( 'colors' === $name ) {
+			$aria = __( 'Theme palette names lead to the colors used: primary or brand becomes the main color, accent or secondary becomes the button color; without these names a neutral default is used and you are asked to choose.', 'woo-donation-popup' );
+			$svg  = $label( 8, 18, __( 'Theme palette', 'woo-donation-popup' ) )
+				. $box( 8, 28, 150, 40, 'primary / brand' ) . $arrow( 158, 48, 208 )
+				. $box( 208, 28, 180, 40, __( 'Main color', 'woo-donation-popup' ), true )
+				. $box( 8, 80, 150, 40, 'accent / secondary' ) . $arrow( 158, 100, 208 )
+				. $box( 208, 80, 180, 40, __( 'Button color', 'woo-donation-popup' ), true )
+				. $label( 8, 148, __( 'No such names', 'woo-donation-popup' ) )
+				. $box( 8, 158, 150, 40, __( 'Neutral default', 'woo-donation-popup' ) ) . $arrow( 158, 178, 208 )
+				. $box( 208, 158, 180, 40, __( 'Choose your colors', 'woo-donation-popup' ) )
+				. $arrow( 388, 178, 428 ) . $box( 428, 158, 180, 40, __( 'Your choice wins', 'woo-donation-popup' ), true );
+			$h    = 206;
+		} elseif ( 'side-cart' === $name ) {
+			$aria = __( 'A page with the side cart open on the right: gifts, an extra gift suggestion, the total and the Complete donation button. The floating basket button sits in a bottom corner.', 'woo-donation-popup' );
+			$svg  = '<rect x="4" y="4" width="608" height="232" rx="14" fill="#f6f7f7" stroke="#c3c4c7" stroke-width="1.5"/>'
+				. $label( 20, 30, __( 'Your page', 'woo-donation-popup' ) )
+				. '<rect x="20" y="44" width="240" height="10" rx="5" fill="#dcdcde"/><rect x="20" y="62" width="200" height="10" rx="5" fill="#dcdcde"/>'
+				. '<circle cx="44" cy="200" r="20" fill="#12305a"/><text x="76" y="205" font-size="12" fill="#50575e">' . esc_html__( 'Bottom left', 'woo-donation-popup' ) . '</text>'
+				. '<rect x="376" y="12" width="228" height="216" rx="12" fill="#ffffff" stroke="#12305a" stroke-width="2"/>'
+				. $label( 392, 38, __( 'Your donation basket', 'woo-donation-popup' ) )
+				. '<rect x="392" y="50" width="196" height="26" rx="8" fill="#f6f7f7"/><rect x="392" y="82" width="196" height="26" rx="8" fill="#f6f7f7"/>'
+				. '<rect x="392" y="116" width="196" height="40" rx="10" fill="#f6f2ec"/><text x="402" y="140" font-size="11" fill="#50575e">' . esc_html__( 'Extra gift suggestion', 'woo-donation-popup' ) . '</text>'
+				. '<text x="392" y="178" font-size="12" font-weight="700" fill="#1d2327">' . esc_html__( 'Total', 'woo-donation-popup' ) . '</text>'
+				. '<rect x="392" y="188" width="196" height="30" rx="10" fill="#12305a"/><text x="490" y="208" text-anchor="middle" font-size="12" fill="#ffffff">' . esc_html__( 'Complete donation', 'woo-donation-popup' ) . '</text>'
+				. '<circle cx="336" cy="200" r="20" fill="#ffffff" stroke="#12305a" stroke-width="1.5" stroke-dasharray="4 3"/><text x="336" y="166" text-anchor="middle" font-size="12" fill="#50575e">' . esc_html__( 'Bottom right', 'woo-donation-popup' ) . '</text>';
+			$h    = 240;
 		} elseif ( 'progress' === $name ) {
 			$aria  = __( 'Campaign bar: the solid part is the real total from paid orders; the lighter striped part after it is the donor\'s own gift, seen only by that donor.', 'woo-donation-popup' );
 			$money = static function ( $amount ) {

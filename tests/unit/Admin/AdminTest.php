@@ -305,6 +305,73 @@ final class AdminTest extends TestCase {
 		$this->assertCount(5, Setup_Wizard::step_labels());
 	}
 
+	public function test_side_cart_settings_have_controls_and_validate(): void {
+		$fields = Field_Registry::fields();
+		foreach (array( 'side_cart.floating', 'side_cart.position', 'side_cart.suggest', 'side_cart.suggest_product', 'side_cart.suggest_amounts', 'side_cart.suggest_hint' ) as $id) {
+			$this->assertArrayHasKey($id, $fields, $id);
+			$this->assertSame('basket', $fields[ $id ]['section'], $id . ' Yan sepet bolumunde');
+		}
+		$store = $this->store();
+		$this->assertSame('start', $store->sanitize_value('side_cart.position', 'start'));
+		$this->assertTrue(is_wp_error($store->sanitize_value('side_cart.position', 'top')));
+		$this->assertSame('25, 75', $store->sanitize_value('side_cart.suggest_amounts', ' 25,75 ,25'));
+		$this->assertTrue(is_wp_error($store->sanitize_value('side_cart.suggest_amounts', '1, 2, 3, 4')));
+		$this->assertTrue(is_wp_error($store->sanitize_value('side_cart.suggest_amounts', 'ten')));
+		$this->assertSame('', $store->sanitize_value('side_cart.suggest_amounts', ''));
+		$this->assertSame(5, $store->sanitize_value('side_cart.suggest_product', '-5'));
+	}
+
+	public function test_side_cart_suggestion_comes_from_settings_and_falls_back_to_addon_product(): void {
+		$this->assertSame(array(), \DonationPanel\Modules\SideCart\Side_Cart_Suggestion::from_settings(new Settings()), 'Varsayilan: oneri yok');
+		$settings = new Settings();
+		$settings->update(array(
+			'side_cart' => array( 'suggest' => true, 'suggest_product' => 0, 'suggest_amounts' => '25, 75', 'suggest_hint' => 'Küçük bir katkı' ),
+			'checkout'  => array( 'addon_product_id' => 321 ),
+		));
+		$raw = \DonationPanel\Modules\SideCart\Side_Cart_Suggestion::from_settings(new Settings());
+		$this->assertSame(321, $raw['product_id']);
+		$this->assertSame('Küçük bir katkı', $raw['hint']);
+		$clean = \DonationPanel\Modules\SideCart\Side_Cart_Suggestion::sanitize($raw);
+		$this->assertSame(array( 25.0, 75.0 ), $clean['amounts']);
+		$settings->update(array( 'side_cart' => array( 'suggest_product' => 55 ) ));
+		$this->assertSame(55, \DonationPanel\Modules\SideCart\Side_Cart_Suggestion::from_settings(new Settings())['product_id']);
+	}
+
+	public function test_side_cart_type_tag_is_translated_label_or_nothing(): void {
+		$this->assertSame(\DonationPanel\Domain\Donation_Type::get_label('shares'), \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('shares'));
+		$this->assertNotSame('', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('shares'));
+		$this->assertSame('', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('general'), 'Ham slug bagisciya gosterilmez');
+	}
+
+	public function test_floating_button_corner_follows_setting(): void {
+		$this->assertStringContainsString('donation-panel-sc__fab--start', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::floating_button(0, 'start'));
+		$this->assertStringNotContainsString('--start', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::floating_button(0, 'end'));
+		$this->assertStringNotContainsString('--start', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::floating_button(0));
+	}
+
+	public function test_colors_note_writes_each_color_source(): void {
+		$palette = array( 'theme' => array( array( 'slug' => 'primary', 'name' => 'Primary', 'color' => '#1d3557' ) ) );
+		$res     = \DonationPanel\Frontend\Theme_Colors::resolve($palette);
+		$html    = \DonationPanel\Admin\Admin_View::colors_note('theme', $res);
+		$this->assertStringContainsString('data-dpa-color-source="primary:theme"', $html);
+		// Dil bağımsız: beklenen metinler aynı çeviri işlevinden.
+		$theme_src = sprintf(__('Theme palette: %s', 'woo-donation-popup'), 'primary');
+		$this->assertStringContainsString($theme_src, $html);
+		$this->assertStringContainsString('data-dpa-color-source="action:primary"', $html);
+		$this->assertStringContainsString(__('Follows the main color', 'woo-donation-popup'), $html);
+		$none = \DonationPanel\Frontend\Theme_Colors::resolve(array());
+		$html = \DonationPanel\Admin\Admin_View::colors_note('none', $none);
+		$this->assertStringContainsString('data-dpa-colors-note="none"', $html);
+		$this->assertStringContainsString('#' . \DonationPanel\Frontend\Theme_Colors::DEFAULT_PRIMARY, $html);
+		$this->assertStringContainsString('data-dpa-color-source="primary:default"', $html);
+		$empty = sprintf(__('Empty: %1$s (%2$s).', 'woo-donation-popup'), $theme_src, '#1d3557');
+		$this->assertSame($empty, \DonationPanel\Admin\Admin_View::color_fallback_text($res['primary']));
+		$this->assertSame(__('Empty: the button follows the main color.', 'woo-donation-popup'), \DonationPanel\Admin\Admin_View::color_fallback_text($res['action']));
+		$field = \DonationPanel\Admin\Admin_View::field('design.brand', \DonationPanel\Admin\Admin_View::with_color_source(Field_Registry::fields()['design.brand'], $res['primary']), '#7a1f5c');
+		$this->assertStringContainsString(__('Source: your choice.', 'woo-donation-popup'), $field);
+		$this->assertStringContainsString('data-dpa-color-fallback="' . esc_attr($empty) . '"', $field);
+	}
+
 	public function test_module_definitions_cover_all_seven_and_all_exist_in_registry(): void {
 		$registry = new Module_Registry(new Settings());
 		Plugin::register_modules($registry);

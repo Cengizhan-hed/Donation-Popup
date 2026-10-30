@@ -124,9 +124,10 @@ final class Side_Cart_Renderer {
 		$name = isset( $line['name'] ) ? (string) $line['name'] : '';
 		$qty  = isset( $line['quantity'] ) ? max( 1, (int) $line['quantity'] ) : 1;
 
-		$meta = array();
-		if ( ! empty( $line['type'] ) ) {
-			$meta[] = '<span class="donation-panel-sc__tag">' . esc_html( self::type_label( (string) $line['type'] ) ) . '</span>';
+		$meta       = array();
+		$type_label = ! empty( $line['type'] ) ? self::type_label( (string) $line['type'] ) : '';
+		if ( '' !== $type_label ) {
+			$meta[] = '<span class="donation-panel-sc__tag">' . esc_html( $type_label ) . '</span>';
 		}
 		if ( ! empty( $line['unit_html'] ) ) {
 			$meta[] = '<span class="donation-panel-sc__num">' . wp_kses_post( (string) $line['unit_html'] ) . '</span>';
@@ -162,23 +163,27 @@ final class Side_Cart_Renderer {
 	}
 
 	/**
-	 * Bağış türü için okunur ad (bilinmeyen tür: ilk harfi büyük slug).
+	 * Bağış türü için çevrilmiş ad (Donation_Type tanımlarından). Bilinmeyen tür: '' (12.3 denetimi: ham, çevrilmemiş
+	 * slug — ör. "General" — bağışçıya gösterilmez).
 	 *
 	 * @param string $type Tür.
 	 * @return string
 	 */
-	private static function type_label( $type ) {
-		return ucfirst( str_replace( array( '-', '_' ), ' ', $type ) );
+	public static function type_label( $type ) {
+		$defs = \DonationPanel\Domain\Donation_Type::get_definitions();
+		return isset( $defs[ $type ]['label'] ) ? (string) $defs[ $type ]['label'] : '';
 	}
 
 	/**
-	 * Yüzen sepet düğmesi (sağ altta; sepet boşken `hidden`, görünürlüğü istemci Woo sepet çerezinden belirler).
+	 * Yüzen sepet düğmesi (alt köşede; sepet boşken `hidden`, görünürlüğü istemci Woo sepet çerezinden belirler).
 	 *
-	 * @param int $count Kalem sayısı.
+	 * @param int    $count    Kalem sayısı.
+	 * @param string $position 'end' (sağ alt; RTL'de sol) ya da 'start' (sol alt; RTL'de sağ).
 	 * @return string
 	 */
-	public static function floating_button( $count ) {
-		return '<button type="button" class="donation-panel-sc__fab" data-dp-sc-fab hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
+	public static function floating_button( $count, $position = 'end' ) {
+		$class = 'start' === $position ? 'donation-panel-sc__fab donation-panel-sc__fab--start' : 'donation-panel-sc__fab';
+		return '<button type="button" class="' . esc_attr( $class ) . '" data-dp-sc-fab hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
 			. self::cart_icon() . '<span class="donation-panel-sc__sr">' . esc_html__( 'Donation basket', 'woo-donation-popup' ) . '</span>' . self::count_badge( $count ) . '</button>';
 	}
 

@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 16:06:19+0000\n"
-"PO-Revision-Date: 2026-10-30 16:06:19+0000\n"
+"POT-Creation-Date: 2026-10-30 18:24:23+0000\n"
+"PO-Revision-Date: 2026-10-30 18:24:23+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -226,8 +226,16 @@ msgstr "1 hissedar formu eksik."
 msgid "1. Give the product a goal: Products → edit the product → Product data → Donation → goal amount. From then on the bar appears by itself in the centered window, side panel, bottom sheet, in-page form and on the compact card."
 msgstr "1. Ürüne hedef verin: Ürünler → ürünü düzenle → Ürün verileri → Bağış → hedef tutarı. Bundan sonra çubuk ortalanmış pencerede, sağ panelde, alttan panelde, sayfa içi formda ve compact kartta kendiliğinden görünür."
 
+#: src/Admin/class-guide.php
+msgid "1. Open Donation Panel → Forms and appearance → Colors. Under \"Use my theme colors\" you see the two colors in use and where each one comes from: \"Theme palette: primary\", \"Default\" or \"Follows the main color\"."
+msgstr "1. Bağış Paneli → Formlar ve Görünüm → Renkler'i açın. \"Temamın renklerini kullan\" altında kullanılan iki rengi ve her birinin kaynağını görürsünüz: \"Tema paleti: primary\", \"Varsayılan\" ya da \"Ana rengi izler\"."
+
 msgid "1. Open Donation Panel → Forms and appearance → Compact card (slider/hero). Choose the donation product and press Copy."
 msgstr "1. Bağış Paneli → Formlar ve Görünüm → Kompakt kart (slider/hero) ekranını açın. Bağış ürününü seçin ve Kopyala'ya basın."
+
+#: src/Admin/class-guide.php
+msgid "1. Turn it on: Donation Panel → Cart and checkout → Modules → Side cart. After a gift is added, a basket slides in (a bottom sheet on phones) with the gifts, the total and \"Complete donation\"."
+msgstr "1. Açın: Bağış Paneli → Sepet ve Ödeme → Modüller → Yan sepet. Bağış eklenince bağışlar, toplam ve \"Bağışı tamamla\" düğmesiyle bir sepet açılır (telefonda alttan panel)."
 
 #: includes/class-admin-form-tabs-renderer.php:511
 msgid "1) Shortcode / trigger buttons"
@@ -245,12 +253,20 @@ msgstr "12–28 px. Daha okunaklı bir çubuk için 16–20 önerilir."
 msgid "2 Amount"
 msgstr "2 Tutar"
 
+#: src/Admin/class-guide.php
+msgid "2. Floating basket button: on the same screen under Side cart. It appears only when the basket has a gift. Choose Bottom right or Bottom left so it does not cover your chat or back-to-top button, or switch it off if your theme shows its own cart icon."
+msgstr "2. Yüzen sepet düğmesi: aynı ekranda Yan sepet bölümünde. Yalnız sepette bağış varken görünür. Sohbet ya da yukarı çık düğmenizi örtmesin diye Sağ alt ya da Sol alt seçin; temanız kendi sepet simgesini gösteriyorsa kapatın."
+
 msgid "2. In your slider or page editor, add a Shortcode widget (or any text block) to the slide and paste the shortcode. No special widget is needed. In the block editor you can also add the \"Donation form\" block and choose Layout: Compact."
 msgstr "2. Slider ya da sayfa düzenleyicinizde slayta bir Kısa kod (Shortcode) bileşeni (ya da herhangi bir metin bloğu) ekleyin ve kısa kodu yapıştırın. Özel bir bileşen gerekmez. Blok düzenleyicide \"Bağış formu\" bloğunu ekleyip Düzen: Kompakt da seçebilirsiniz."
 
 #: src/Admin/class-guide.php
 msgid "2. To show the bar on its own anywhere (a page, a sidebar, a slider), use the shortcode below. Without an ID it finds the product it is placed in. Add milestones=\"no\" or donors=\"no\" to hide those parts."
 msgstr "2. Çubuğu tek başına herhangi bir yerde (sayfa, kenar çubuğu, kaydırıcı) göstermek için aşağıdaki kısa kodu kullanın. ID verilmezse bulunduğu ürünü kendisi bulur. Bu bölümleri gizlemek için milestones=\"no\" ya da donors=\"no\" ekleyin."
+
+#: src/Admin/class-guide.php
+msgid "2. Which theme colors are used: only colors the theme names primary, brand, accent, secondary, contrast or foreground (also numbered ones such as accent-3). The main color must be readable on white; the button color must keep its text readable. Nothing is guessed from other colors."
+msgstr "2. Hangi tema renkleri kullanılır: yalnız temanın primary, brand, accent, secondary, contrast ya da foreground adını verdiği renkler (accent-3 gibi numaralılar da). Ana renk beyaz zeminde okunur olmalı; düğme rengi yazısını okunur tutmalı. Başka renklerden tahmin yapılmaz."
 
 #: includes/class-admin-form-tabs-renderer.php:512
 msgid "2) Buttons inside the popup and inline form"
@@ -260,8 +276,16 @@ msgstr "2) Popup ve gömülü form içindeki butonlar"
 msgid "3 Confirm"
 msgstr "3 Onay"
 
+#: src/Admin/class-guide.php
+msgid "3. A basket icon in your header: place the shortcode below in a header widget or menu block. It shows the number of gifts and opens the same basket."
+msgstr "3. Üst bilgide sepet simgesi: aşağıdaki kısa kodu bir üst bilgi bileşenine ya da menü bloğuna koyun. Bağış sayısını gösterir ve aynı sepeti açar."
+
 msgid "3. Finding a product ID: go to Products → All products and point at the product name; the ID is shown under it. The shortcode builder also lists every donation product with its ID."
 msgstr "3. Ürün ID'sini bulma: Ürünler → Tüm ürünler'e gidin ve fareyi ürün adının üzerine getirin; ID adın altında görünür. Kısa kod oluşturucu da her bağış ürününü ID'siyle listeler."
+
+#: src/Admin/class-guide.php
+msgid "3. If the theme has no such names you see \"Colors could not be read from your theme\" here and on the Overview. The form then uses a calm neutral ink color until you choose your own."
+msgstr "3. Temada bu adlar yoksa burada ve Genel Bakış'ta \"Renkler temadan okunamadı\" uyarısını görürsünüz. Siz seçene kadar form sakin, nötr bir mürekkep rengi kullanır."
 
 #: src/Admin/class-guide.php
 msgid "3. The real total only grows with paid orders and goes down after refunds or cancellations. Items in a cart never change it."
@@ -271,15 +295,31 @@ msgstr "3. Gerçek toplam yalnız ödenmiş siparişlerle artar, iade ya da ipta
 msgid "4. Donor's own gift: when a donor picks or types an amount, a lighter striped part shows how far their gift would take the campaign, together with the new total. After \"Add to cart\" it stays as \"in your cart\"; removing it from the cart makes it disappear. Only that visitor sees it."
 msgstr "4. Bağışçının kendi katkısı: bağışçı tutar seçince ya da yazınca açık tonlu, çizgili bir bölüm bağışının kampanyayı nereye taşıyacağını yeni toplamla birlikte gösterir. \"Sepete ekle\"den sonra \"sepetinizde\" olarak kalır; sepetten çıkarılınca kaybolur. Bunu yalnız o ziyaretçi görür."
 
+#: src/Admin/class-guide.php
+msgid "4. Extra gift suggestion: switch on \"Suggest an extra gift in the basket\", enter the product ID (0 uses the add-on product) and up to three amounts such as 50, 100. Donors add it with one tap; their details are taken from the gift already in the basket."
+msgstr "4. Ek bağış önerisi: \"Sepette ek bağış öner\"i açın, ürün ID'sini (0 ek bağış ürününü kullanır) ve 50, 100 gibi en çok üç tutarı girin. Bağışçı tek dokunuşla ekler; bilgileri sepetteki bağıştan alınır."
+
 msgid "4. Slide height: make the slide at least as tall as the card. The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
 msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın. Kompakt kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Tüm kartlara tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) yazın."
+
+#: src/Admin/class-guide.php
+msgid "4. To choose your own: select \"Choose my own colors\" and fill in Main color and Button color. Each field takes a hex value (#12305A) or a CSS variable from your theme or page editor, for example var(--brand). The line under each field says what is used: \"Source: your choice.\" or, when empty, the color that applies instead."
+msgstr "4. Kendiniz seçmek için: \"Kendi renklerimi seçeyim\"i seçip Ana renk ve Buton rengi alanlarını doldurun. Her alan hex değer (#12305A) ya da temanızın veya sayfa düzenleyicinizin CSS değişkenini (ör. var(--brand)) alır. Her alanın altındaki satır neyin kullanıldığını yazar: \"Kaynak: sizin seçiminiz.\" ya da alan boşsa yerine uygulanan renk."
 
 #: src/Admin/class-guide.php
 msgid "5. After payment on the compact card the bar fetches the new total once, and the donor's part becomes part of the real bar."
 msgstr "5. Compact kartta ödeme tamamlanınca çubuk yeni toplamı bir kez alır ve bağışçının bölümü gerçek dolumla birleşir."
 
+#: src/Admin/class-guide.php
+msgid "5. Button text turns black or white by itself so it stays readable (contrast at least 4.5:1). Colors you choose are never changed by theme or plugin updates."
+msgstr "5. Düğme yazısı okunur kalsın diye kendiliğinden siyah ya da beyaz olur (kontrast en az 4,5:1). Seçtiğiniz renkler tema ya da eklenti güncellemeleriyle asla değişmez."
+
 msgid "5. Colors: Forms and appearance → Colors → Choose my own colors. Each color field accepts a hex value or a CSS variable from your theme or page editor, for example var(--brand), so the card follows your site palette."
 msgstr "5. Renkler: Formlar ve Görünüm → Renkler → Kendi renklerimi seçeyim. Her renk alanı bir hex değeri ya da temanızın veya sayfa düzenleyicinizin bir CSS değişkenini (örneğin var(--brand)) kabul eder; böylece kart sitenizin paletini izler."
+
+#: src/Admin/class-guide.php
+msgid "5. The side cart never opens on the cart and checkout pages, and pages without a donation form load none of its files."
+msgstr "5. Yan sepet sepet ve ödeme sayfalarında açılmaz; bağış formu olmayan sayfalar onun hiçbir dosyasını yüklemez."
 
 msgid "6. If the slider moves on while a donor is halfway through, switch on \"Start over when the card is hidden\". The compact card is only a look: how the donor pays is set under Cart and checkout."
 msgstr "6. Bağışçı yarıdayken slider ilerliyorsa \"Kart gizlenince başa dön\" ayarını açın. Kompakt kart yalnız bir görünümdür: bağışçının nasıl ödeyeceği Sepet ve Ödeme ekranında ayarlanır."
@@ -291,6 +331,10 @@ msgstr "6. Ayarlar: Bağış Paneli → Kampanyalar → Kampanya ilerleme çubu�
 #: src/Admin/class-guide.php
 msgid "7. Milestones on the shortcode bar (optional): a product custom field named _donation_panel_milestones, one per line as percent = label, for example 50 = Halfway. Developers can also use the donation_panel_milestones filter."
 msgstr "7. Kısa kod çubuğunda ara hedefler (isteğe bağlı): _donation_panel_milestones adlı ürün özel alanına her satıra bir tane, yüzde = etiket biçiminde yazın; örneğin 50 = Yarı yol. Geliştiriciler donation_panel_milestones filtresini de kullanabilir."
+
+#: src/Admin/class-field-registry.php
+msgid "A basket that slides in after a gift is added, so donors can give several gifts and pay once. Only used when the Side cart module above is on. Not shown on the cart and checkout pages, which have their own basket."
+msgstr "Bağış eklenince açılan sepet; bağışçı birkaç bağışı tek seferde öder. Yalnız yukarıdaki Yan sepet modülü açıkken kullanılır. Kendi sepeti olan sepet ve ödeme sayfalarında görünmez."
 
 #: src/Admin/
 msgid "A clean donate button and a thank-you screen. Nothing else."
@@ -315,6 +359,10 @@ msgstr "Gönlü güzel bir bağışçı"
 #: src/Admin/
 msgid "A module that is switched off loads no code and no styles."
 msgstr "Kapalı bir modül hiçbir kod ve stil yüklemez."
+
+#: src/Admin/class-guide.php
+msgid "A page with the side cart open on the right: gifts, an extra gift suggestion, the total and the Complete donation button. The floating basket button sits in a bottom corner."
+msgstr "Sağda yan sepeti açık bir sayfa: bağışlar, ek bağış önerisi, toplam ve Bağışı tamamla düğmesi. Yüzen sepet düğmesi bir alt köşede durur."
 
 #: src/Privacy/class-privacy-tools.php
 msgid "A pending request to link earlier guest donations to your account."
@@ -865,6 +913,14 @@ msgstr "Kalın (700)"
 msgid "Bosnia and Herzegovina"
 msgstr "Bosna-Hersek"
 
+#: src/Admin/class-field-registry.php src/Admin/class-guide.php
+msgid "Bottom left"
+msgstr "Sol alt"
+
+#: src/Admin/class-field-registry.php src/Admin/class-guide.php
+msgid "Bottom right"
+msgstr "Sağ alt"
+
 #: includes/class-admin-layout-tabs-renderer.php:235
 #: includes/class-admin-layout-tabs-renderer.php:263
 msgid "Bottom spacing (px)"
@@ -926,6 +982,10 @@ msgstr "Buton Rengi"
 #: includes/class-admin-form-tabs-renderer.php:506
 msgid "Button colors"
 msgstr "Buton Renkleri"
+
+#: src/Admin/class-field-registry.php
+msgid "Button corner"
+msgstr "Düğme köşesi"
 
 #: includes/class-admin-form-tabs-renderer.php:236
 msgid "Button hover"
@@ -1243,6 +1303,10 @@ msgstr "Kendi renklerimi seçeyim"
 msgid "Choose one of the listed options."
 msgstr "Listedeki seçeneklerden birini seçin."
 
+#: src/Admin/class-guide.php
+msgid "Choose your colors"
+msgstr "Renklerinizi seçin"
+
 #: includes/class-admin-product-data-tab.php:853
 msgid "Classic"
 msgstr "Klasik"
@@ -1342,9 +1406,17 @@ msgstr "Renkler ve katmanlar"
 msgid "Colors are read from your theme:"
 msgstr "Renkler temanızdan okunuyor:"
 
+#: src/Admin/class-admin-view.php
+msgid "Colors could not be read from your theme, so please choose them. The theme palette has no color named primary, brand, accent or secondary (some themes and page builders keep colors in their own settings). The panel uses a neutral default until then. Choose \"Choose my own colors\" and set the two colors; a CSS variable from your theme also works."
+msgstr "Renkler temadan okunamadı, lütfen seçin. Tema paletinde primary, brand, accent ya da secondary adlı bir renk yok (bazı temalar ve sayfa oluşturucular renkleri kendi ayarlarında tutar). O zamana kadar panel nötr bir varsayılan renk kullanır. \"Kendi renklerimi seçeyim\" seçeneğini seçip iki rengi belirleyin; temanızdan bir CSS değişkeni de olur."
+
 #: src/Admin/class-status.php
 msgid "Colors could not be read from your theme. Choose your own colors."
 msgstr "Renkler temadan okunamadı, kendi renklerinizi seçin."
+
+#: src/Admin/class-admin-view.php
+msgid "Colors in use on your site:"
+msgstr "Sitenizde kullanılan renkler:"
 
 #: src/Admin/
 msgid "Colors, form fields, product placement and the product list stay in the classic settings screen. Nothing was removed."
@@ -1687,6 +1759,10 @@ msgstr "İthaf alanı ipucu"
 #: includes/class-admin-product-data-tab.php:705
 msgid "Dedication placeholder"
 msgstr "İthaf örnek metni"
+
+#: src/Frontend/class-theme-colors.php
+msgid "Default"
+msgstr "Varsayılan"
 
 #: includes/class-admin-form-tabs-renderer.php:253
 msgid "Default add-on donation product"
@@ -2254,6 +2330,16 @@ msgstr "E-posta, ithaf, anonim bağış ve not"
 msgid "Empty bar"
 msgstr "Boş Bar"
 
+#: src/Admin/class-admin-view.php
+#. translators: 1: color source, e.g. "Theme palette: primary" or "Default", 2: hex color.
+#, php-format
+msgid "Empty: %1$s (%2$s)."
+msgstr "Boş: %1$s (%2$s)."
+
+#: src/Admin/class-admin-view.php
+msgid "Empty: the button follows the main color."
+msgstr "Boş: düğme ana rengi izler."
+
 #: includes/class-admin-form-tabs-renderer.php:548
 msgid "Enable button shadow"
 msgstr "Buton gölgesini etkinleştir"
@@ -2395,6 +2481,10 @@ msgstr "Alt bağış ürünü"
 msgid "Extra donation product ID"
 msgstr "Alt bağış ürün ID"
 
+#: src/Admin/class-guide.php
+msgid "Extra gift suggestion"
+msgstr "Ek bağış önerisi"
+
 #: includes/class-admin-form-tabs-renderer.php:580
 msgid "Extra large"
 msgstr "Çok büyük"
@@ -2483,6 +2573,10 @@ msgstr "Bağışlarınızı takip edin"
 #: src/Admin/
 msgid "Follow your WooCommerce settings"
 msgstr "WooCommerce ayarlarınıza göre"
+
+#: src/Frontend/class-theme-colors.php
+msgid "Follows the main color"
+msgstr "Ana rengi izler"
 
 #: includes/class-admin-placement-tab-renderer.php:147
 msgid "For a list:"
@@ -3737,6 +3831,10 @@ msgstr "Nepal"
 msgid "Netherlands"
 msgstr "Hollanda"
 
+#: src/Admin/class-guide.php
+msgid "Neutral default"
+msgstr "Nötr varsayılan"
+
 #: includes/class-admin-form-tabs-renderer.php:240
 msgid "New donation"
 msgstr "Yeni Bağış"
@@ -3816,6 +3914,10 @@ msgstr "Bu filtrelere uyan ürün bulunamadı."
 #: includes/class-form-matrix.php:67
 msgid "No published product was found for testing."
 msgstr "Test için yayımlanmış bir ürün bulunamadı."
+
+#: src/Admin/class-guide.php
+msgid "No such names"
+msgstr "Bu adlar yoksa"
 
 #: includes/traits/trait-wdp-ajax-cart-session.php:29
 msgid "No valid cart session was found"
@@ -4054,6 +4156,10 @@ msgstr "Önizlemeyi aç"
 msgid "Open quick setup"
 msgstr "Hızlı kurulumu aç"
 
+#: src/Admin/class-guide.php
+msgid "Open the Colors settings"
+msgstr "Renk ayarlarını aç"
+
 msgid "Open the Compact card settings"
 msgstr "Kompakt kart ayarlarını aç"
 
@@ -4072,6 +4178,10 @@ msgstr "Yeni yönetici ekranını aç"
 #: src/Admin/class-guide.php
 msgid "Open the progress bar settings"
 msgstr "İlerleme çubuğu ayarlarını aç"
+
+#: src/Admin/class-guide.php
+msgid "Open the Side cart settings"
+msgstr "Yan sepet ayarlarını aç"
 
 #: src/Modules/DonorAccount/
 #, php-format
@@ -4104,6 +4214,10 @@ msgstr "Bağışçının doldurabileceği isteğe bağlı alanlar. Bağışçın
 #: src/Admin/
 msgid "Optional sign-in, a \"My donations\" panel and a quick way to give again."
 msgstr "İsteğe bağlı giriş, \"Bağışlarım\" paneli ve tekrar bağış için hızlı yol."
+
+#: src/Admin/class-field-registry.php
+msgid "Optional, one short sentence. Leave empty to show only the product name."
+msgstr "İsteğe bağlı, tek kısa cümle. Yalnız ürün adını göstermek için boş bırakın."
 
 #: src/Admin/
 msgid "Optional. Off by default; donors can always give as guests."
@@ -5167,6 +5281,10 @@ msgstr "Ata"
 msgid "Set the donation amount on this tab. The WooCommerce General price field is not required for these types and may be left empty; the plugin does not change the General price by itself."
 msgstr "Bağış tutarını bu sekmeden belirleyin. WooCommerce Genel fiyat alanı bu türlerde zorunlu değildir ve boş bırakılabilir; eklenti Genel fiyatı kendiliğinden değiştirmez."
 
+#: src/Admin/class-guide.php
+msgid "Setting the colors"
+msgstr "Renkleri ayarlama"
+
 #: src/Admin/class-ui-switch.php
 msgid "Settings"
 msgstr "Ayarlar"
@@ -5357,6 +5475,10 @@ msgstr "Adım için kısa etiket."
 msgid "Short label shown on the link. If left empty, the default label is used."
 msgstr "Bağlantıda görünen kısa etiket. Boş bırakılırsa varsayılan etiket kullanılır."
 
+#: src/Admin/class-field-registry.php
+msgid "Short line under the name"
+msgstr "Adın altındaki kısa satır"
+
 #: includes/class-admin-product-data-tab.php:1029
 #: includes/class-admin-product-data-tab.php:1038
 msgid "Shortcode"
@@ -5459,6 +5581,10 @@ msgstr "Bağıştan sonra teşekkür ekranında gösterilir. Hazır metin için 
 #: src/Admin/
 msgid "Shown only when the form asks for email, dedication or shareholder details."
 msgstr "Yalnız form e-posta, ithaf ya da hissedar bilgisi istediğinde gösterilir."
+
+#: src/Admin/class-field-registry.php
+msgid "Shows \"Would you like to add to your donation?\" with up to three small amounts under the gifts. One tap adds it with the donor details already in the basket. Hidden when that gift is already in the basket."
+msgstr "Bağışların altında en çok üç küçük tutarla \"Bağışınıza eklemek ister misiniz?\" kartını gösterir. Tek dokunuşla, sepetteki bağışçı bilgileriyle eklenir. O bağış zaten sepetteyse görünmez."
 
 #: src/Admin/Product/
 msgid "Shows a \"Most chosen\" label on that amount of the list. It is not pre-selected. A value that is not on the list blocks saving."
@@ -5648,6 +5774,10 @@ msgstr "kaynak: genel ayar"
 msgid "source: this product"
 msgstr "kaynak: bu ürün"
 
+#: src/Admin/class-admin-view.php
+msgid "Source: your choice."
+msgstr "Kaynak: sizin seçiminiz."
+
 #: includes/class-phone-field.php:143
 msgid "South Africa"
 msgstr "Güney Afrika"
@@ -5785,6 +5915,10 @@ msgstr "Başarı ekranı ayarları başarıyla kaydedildi."
 msgid "Sudan"
 msgstr "Sudan"
 
+#: src/Admin/class-field-registry.php
+msgid "Suggest an extra gift in the basket"
+msgstr "Sepette ek bağış öner"
+
 #: includes/templates/class-form-fields-renderer.php:155
 msgid "Suggested"
 msgstr "Önerilen"
@@ -5792,6 +5926,14 @@ msgstr "Önerilen"
 #: includes/class-admin-product-data-tab.php:676
 msgid "Suggested amount"
 msgstr "Önerilen tutar"
+
+#: src/Admin/class-field-registry.php
+msgid "Suggested amounts"
+msgstr "Önerilen tutarlar"
+
+#: src/Admin/class-field-registry.php
+msgid "Suggested donation product ID"
+msgstr "Önerilecek bağış ürününün ID'si"
 
 #: includes/class-admin-form-tabs-renderer.php:556
 msgid "Suggested light value: Y 8px / blur 20px."
@@ -6244,6 +6386,10 @@ msgstr "WooCommerce Donation Popup eklentisi aktif değil."
 msgid "The WooCommerce product ID of the extra donation. Leave 0 to offer none. A product can set its own add-on."
 msgstr "Ek bağışın WooCommerce ürün numarası. Hiç önermemek için 0 bırakın. Bir ürün kendi ek bağışını belirleyebilir."
 
+#: src/Admin/class-field-registry.php
+msgid "The WooCommerce product ID of the gift to suggest (Products → All products, the ID shows when you point at a name). Leave 0 to use the add-on product above. It must be a published donation product."
+msgstr "Önerilecek bağışın WooCommerce ürün ID'si (Ürünler → Tüm ürünler; adın üzerine gelince ID görünür). Yukarıdaki ek bağış ürününü kullanmak için 0 bırakın. Yayımlanmış bir bağış ürünü olmalıdır."
+
 #: includes/class-admin-form-tabs-renderer.php:250
 msgid "The WooCommerce product used when the product card has no custom ID."
 msgstr "Ürün kartında özel ID yoksa kullanılan WC ürünü."
@@ -6251,6 +6397,20 @@ msgstr "Ürün kartında özel ID yoksa kullanılan WC ürünü."
 #: src/Admin/
 msgid "The wording of the switch donors see. Leave empty for the built-in wording."
 msgstr "Bağışçının gördüğü anahtarın metni. Hazır metin için boş bırakın."
+
+#: src/Admin/class-guide.php
+msgid "Theme palette"
+msgstr "Tema paleti"
+
+#: src/Admin/class-guide.php
+msgid "Theme palette names lead to the colors used: primary or brand becomes the main color, accent or secondary becomes the button color; without these names a neutral default is used and you are asked to choose."
+msgstr "Tema paleti adları kullanılan renkleri belirler: primary ya da brand ana renk, accent ya da secondary düğme rengi olur; bu adlar yoksa nötr varsayılan kullanılır ve sizden seçmeniz istenir."
+
+#: src/Frontend/class-theme-colors.php
+#. translators: %s: color name (slug) in the theme palette, e.g. primary.
+#, php-format
+msgid "Theme palette: %s"
+msgstr "Tema paleti: %s"
 
 #: includes/class-donations-list.php:495
 msgid "There are no donations to show right now."
@@ -6555,6 +6715,10 @@ msgstr "Bilinmeyen ayar."
 msgid "Until (optional)"
 msgstr "Bitiş (isteğe bağlı)"
 
+#: src/Admin/class-field-registry.php
+msgid "Up to three amounts separated by commas, for example 50, 100. Shown in your store currency."
+msgstr "Virgülle ayrılmış en çok üç tutar, ör. 50, 100. Mağazanızın para biriminde gösterilir."
+
 #: src/Admin/Product/
 msgid "Updated the donation flag for %d product."
 msgid_plural "Updated the donation flag for %d products."
@@ -6592,6 +6756,10 @@ msgstr "Popup ve gömülü formlarda adım adım akış kullan"
 #: src/Admin/
 msgid "Use at most six amounts."
 msgstr "En çok altı tutar kullanın."
+
+#: src/Admin/class-settings-store.php
+msgid "Use at most three amounts."
+msgstr "En çok üç tutar kullanın."
 
 #: includes/class-admin-product-data-tab.php:474
 msgid "Use general setting"
@@ -6860,6 +7028,10 @@ msgstr "Bağış düğmesi nerede görünür"
 msgid "Where the donate button appears. Shortcodes and blocks always work anywhere."
 msgstr "Bağış düğmesinin göründüğü yerler. Kısa kodlar ve bloklar her yerde çalışır."
 
+#: src/Admin/class-field-registry.php
+msgid "Which bottom corner the floating basket button sits in. Choose the corner that does not cover your chat or back-to-top button. On right-to-left sites the sides swap."
+msgstr "Yüzen sepet düğmesinin duracağı alt köşe. Sohbet ya da yukarı çık düğmenizi örtmeyen köşeyi seçin. Sağdan sola yazılan sitelerde yönler yer değiştirir."
+
 #: src/Admin/
 msgid "Which extras do you want?"
 msgstr "Hangi ekstralar olsun?"
@@ -7095,6 +7267,14 @@ msgstr "Sepetiniz boş"
 msgid "Your cart is empty"
 msgstr "Sepetiniz boş"
 
+#: src/Frontend/class-theme-colors.php
+msgid "Your choice"
+msgstr "Sizin seçiminiz"
+
+#: src/Admin/class-guide.php
+msgid "Your choice wins"
+msgstr "Seçiminiz geçerli"
+
 #: src/Admin/
 msgid "Your choices are saved. Place the donate button with the shortcode below, with the block, or let automatic placement do it."
 msgstr "Seçimleriniz kaydedildi. Bağış düğmesini aşağıdaki kısa kodla, blokla yerleştirin ya da otomatik yerleşime bırakın."
@@ -7168,6 +7348,10 @@ msgstr "İlk bağışınızdan sonra bağışlarınız burada görünür."
 
 msgid "Your headline"
 msgstr "Başlığınız"
+
+#: src/Admin/class-guide.php
+msgid "Your page"
+msgstr "Sayfanız"
 
 #: includes/class-migrations.php:303 includes/class-migrations.php:382
 msgid "Your personal data is processed to complete your donation and is shared with our field teams abroad. See the privacy notice for details."

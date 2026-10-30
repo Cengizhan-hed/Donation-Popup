@@ -325,6 +325,38 @@
 	border: 1px solid rgb(0 0 0 / 20%);
 }
 
+/* Her rengin kaynağı (12.3): örnek + ad + değer + kaynak */
+.dpa-colors-note__list {
+	display: grid;
+	gap: 6px;
+	margin: 8px 0 0;
+	padding: 0;
+	list-style: none;
+}
+.dpa-colors-note__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 8px;
+	margin: 0;
+	color: var(--dpa-text, #1d2327);
+}
+.dpa-colors-note__row .dpa-swatch {
+	margin-inline-start: 0;
+}
+.dpa-colors-note__name {
+	font-weight: 600;
+}
+.dpa-colors-note__row code {
+	padding: 1px 6px;
+	border-radius: 6px;
+	background: rgb(255 255 255 / 70%);
+	font-size: 12.5px;
+}
+.dpa-colors-note__src {
+	color: var(--dpa-muted, #50575e);
+}
+
 /* Ayar satırı */
 .dpa-row {
 	display: flex;

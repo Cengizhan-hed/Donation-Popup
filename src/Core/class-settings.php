@@ -115,9 +115,31 @@ class Settings {
 			),
 			// Yan sepet: sağ altta yüzen düğme (tema kendi sepet simgesini gösteriyorsa kapatılabilir).
 			'side_cart'  => array(
-				'floating' => array(
+				'floating'        => array(
 					'type'    => 'bool',
 					'default' => true,
+				),
+				// Yüzen düğme köşesi: 'end' sağ alt (sağdan sola sitelerde sol alt), 'start' tersi.
+				'position'        => array(
+					'type'    => 'string',
+					'default' => 'end',
+				),
+				// Ek bağış önerisi (12.3): kapalıysa öneri yok (`donation_panel_side_cart_suggestion` filtresi yine çalışır).
+				'suggest'         => array(
+					'type'    => 'bool',
+					'default' => false,
+				),
+				'suggest_product' => array(
+					'type'    => 'int',
+					'default' => 0,
+				),
+				'suggest_amounts' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'suggest_hint'    => array(
+					'type'    => 'string',
+					'default' => '',
 				),
 			),
 			'impact'     => array(
