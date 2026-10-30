@@ -337,9 +337,10 @@ export function createLayer(root, hooks = {}) {
     if (!opened) {
       return;
     }
+    // Önce okumalar (açılışta klavye kapalı: syncKeyboard yazmaz), sonra geometri yazımı — karede zorunlu hesap yok.
     updateBaseline();
-    applyGeometry();
     syncKeyboard();
+    applyGeometry();
   };
 
   const openNow = () => {
