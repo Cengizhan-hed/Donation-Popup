@@ -52,6 +52,30 @@ function backgroundOf(container) {
 }
 
 /**
+ * Kökte satır içi bir özelliği kilit süresince sabitler; önceki satır içi değer saklanır ve kilit kalkınca geri yüklenir.
+ *
+ * @param {HTMLElement} html Kök öğe.
+ * @param {object} s Ortak durum.
+ * @param {string} key Durumdaki saklama anahtarı.
+ * @param {string} prop CSS özelliği.
+ * @param {string} value Kilitliyken değer.
+ * @param {boolean} locked Kilit açık mı.
+ */
+function pinStyle(html, s, key, prop, value, locked) {
+  if (locked && s[key] === null) {
+    s[key] = html.style.getPropertyValue(prop) || '';
+    html.style.setProperty(prop, value);
+  } else if (!locked && s[key] !== null) {
+    if (s[key]) {
+      html.style.setProperty(prop, s[key]);
+    } else {
+      html.style.removeProperty(prop);
+    }
+    s[key] = null;
+  }
+}
+
+/**
  * Tüm sahiplerin durumundan kaydırma kilidini ve inert'i yeniden hesaplar (en üstteki sahibin arka planı inert).
  * Yalnız yazma yapar (düzen okuması yok).
  */
@@ -61,26 +85,8 @@ function apply() {
   const locked = s.owners.size > 0;
 
   // Kaydırma kilidi (satır içi; kök sınıfı yok) ve kaydırma çubuğu sıçramasını önleme.
-  if (locked && s.overflow === null) {
-    s.overflow = html.style.overflow || '';
-    html.style.overflow = 'hidden';
-  } else if (!locked && s.overflow !== null) {
-    html.style.overflow = s.overflow;
-    if (!html.style.overflow) {
-      html.style.removeProperty('overflow');
-    }
-    s.overflow = null;
-  }
-  if (locked && s.gutter === null) {
-    s.gutter = html.style.scrollbarGutter || '';
-    html.style.scrollbarGutter = 'stable';
-  } else if (!locked && s.gutter !== null) {
-    html.style.scrollbarGutter = s.gutter;
-    if (!html.style.scrollbarGutter) {
-      html.style.removeProperty('scrollbar-gutter');
-    }
-    s.gutter = null;
-  }
+  pinStyle(html, s, 'overflow', 'overflow', 'hidden', locked);
+  pinStyle(html, s, 'gutter', 'scrollbar-gutter', 'stable', locked);
   if (!html.getAttribute('style')) {
     html.removeAttribute('style');
   }
