@@ -47,7 +47,8 @@ final class Field_Registry {
 	public static function sections( $page ) {
 		$all = array(
 			Admin_Bootstrap::SLUG_CAMPAIGNS => array(
-				'impact' => array( __( 'Impact phrases', 'woo-donation-popup' ), __( 'Short equivalents shown next to amounts. Only used when the Impact phrases module is on.', 'woo-donation-popup' ) ),
+				'impact'   => array( __( 'Impact phrases', 'woo-donation-popup' ), __( 'Short equivalents shown next to amounts. Only used when the Impact phrases module is on.', 'woo-donation-popup' ) ),
+				'progress' => array( __( 'Campaign progress bar', 'woo-donation-popup' ), __( 'The bar on campaign products, in every form style and on the compact card. The total only grows with paid orders and goes down after refunds or cancellations. Only used when the Campaign module is on.', 'woo-donation-popup' ) ),
 			),
 			Admin_Bootstrap::SLUG_FORMS     => array(
 				'open'      => array( __( 'How should the form open?', 'woo-donation-popup' ), __( 'Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later.', 'woo-donation-popup' ) ),
@@ -93,6 +94,28 @@ final class Field_Registry {
 			'label'   => __( 'Impact phrases', 'woo-donation-popup' ),
 			'help'    => __( 'One per line: amount = phrase. Add "singular|plural" for two forms. Example: 25 = 1 food parcel|food parcels', 'woo-donation-popup' ),
 			'type'    => 'textarea',
+		);
+
+		$f['progress.preview']   = array(
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'section' => 'progress',
+			'label'   => __( 'Show the donor\'s own gift on the bar', 'woo-donation-popup' ),
+			'help'    => __( 'While a donor picks an amount, a lighter striped part shows how far their gift would take the campaign, with a short line that gives the new total. A gift in their cart stays shown as "in your cart". Only that visitor sees it; the real total changes only after payment.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['progress.count']     = array(
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'section' => 'progress',
+			'label'   => __( 'Fill the bar and count up', 'woo-donation-popup' ),
+			'help'    => __( 'When the bar comes into view it fills from zero and the numbers count up. Visitors who ask their device for less motion always see the final values straight away.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['progress.celebrate'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'section' => 'progress',
+			'label'   => __( 'Small celebration at the goal', 'woo-donation-popup' ),
+			'help'    => __( 'When a campaign has reached its goal, the bar shines once when it comes into view.', 'woo-donation-popup' ),
+			'type'    => 'switch',
 		);
 
 		$f['display.mode'] = array(

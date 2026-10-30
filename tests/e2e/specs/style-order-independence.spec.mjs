@@ -21,7 +21,7 @@ const SELECTORS = [
   '.donation-panel-input',
   '.donation-panel-stepper button',
   '.donation-panel-bar',
-  '.donation-panel-bar__fill',
+  '.donation-panel-live__fill',
   '.donation-panel-impact',
   '.donation-panel-badge',
   '.dpx-btn',

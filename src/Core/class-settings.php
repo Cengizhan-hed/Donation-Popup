@@ -148,6 +148,21 @@ class Settings {
 					'default' => '',
 				),
 			),
+			// Kampanya ilerleme çubuğu (tüm yüzeyler): kişisel önizleme, dolum + sayma animasyonu, hedefte kutlama.
+			'progress'   => array(
+				'preview'   => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+				'count'     => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+				'celebrate' => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
+			),
 			'thanks'     => array(
 				'celebrate' => array(
 					'type'    => 'bool',

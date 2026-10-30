@@ -1,5 +1,6 @@
 /**
  * Donation Panel — compact bağış kartı giriş noktası (yalnız kart çizilen sayfada yüklenir; stil satır içi gelir).
+ * Canlı kampanya çubuğu ayrı `progress` paketindedir (kampanyalı kart çizilirken kuyruğa alınır).
  */
 import './compact.css';
 import { createCompact } from './card.mjs';
