@@ -317,6 +317,60 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
     expect(errors).toEqual([]);
   });
 
+  test('12.3 ayarda görünen = uygulanan: yüzen düğme açık/kapalı + köşe, ek bağış önerisi ayardan (ürün, tutarlar, kısa satır)', async ({ page }) => {
+    const set = async (value) => {
+      const r = await page.request.get(`/?dp_sc_set=${encodeURIComponent(JSON.stringify(value))}`);
+      expect((await r.json()).ok).toBe(true);
+    };
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(String(e)));
+    try {
+      await set({ floating: true, position: 'start', suggest: false });
+      await page.goto(q());
+      await addDonation(page, '&amount=60&name=Ayse');
+      await page.goto(q('&p=2'));
+      const fab = page.locator('[data-dp-sc-fab]');
+      await expect(fab).toBeVisible({ timeout: 15000 });
+      const vp = page.viewportSize();
+      let box = await fab.boundingBox();
+      expect(box.x + box.width / 2, 'sol alt köşe').toBeLessThan(vp.width / 2);
+      expect(box.x).toBeGreaterThanOrEqual(0);
+
+      await set({ floating: true, position: 'end', suggest: false });
+      await page.goto(q('&p=3'));
+      await expect(fab).toBeVisible({ timeout: 15000 });
+      box = await fab.boundingBox();
+      expect(box.x + box.width / 2, 'sağ alt köşe').toBeGreaterThan(vp.width / 2);
+      expect(box.x + box.width).toBeLessThanOrEqual(vp.width);
+
+      // Öneri kapalı: kart yok.
+      await fab.click();
+      await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
+      await expect(page.locator('[data-dp-sc-line]')).toHaveCount(1, { timeout: 15000 });
+      await expect(page.locator('[data-dp-sc-suggest]')).toHaveCount(0);
+
+      // Öneri açık: ayardaki ürün, tutarlar ve kısa satır; yüzen düğme kapalı.
+      const other = (await (await page.request.get('/?dp_sc_other=1')).json()).id;
+      expect(other).toBeGreaterThan(0);
+      await set({ floating: false, position: 'end', suggest: true, suggest_product: other, suggest_amounts: '25, 75', suggest_hint: 'Küçük bir katkı, büyük bir dua' });
+      await page.goto(q('&p=4'));
+      await expect(page.locator('[data-dp-sc-fab]'), 'yüzen düğme kapalı').toHaveCount(0);
+      await page.evaluate(() => document.dispatchEvent(new CustomEvent('wc-blocks_added_to_cart', { bubbles: true })));
+      await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
+      const suggest = page.locator('[data-dp-sc-suggest]');
+      await expect(suggest).toHaveCount(2, { timeout: 15000 });
+      expect(await suggest.evaluateAll((els) => els.map((el) => Number(el.getAttribute('data-amount'))))).toEqual([25, 75]);
+      expect(await suggest.first().getAttribute('data-product')).toBe(String(other));
+      await expect(page.locator('.donation-panel-sc__suggest-hint')).toHaveText('Küçük bir katkı, büyük bir dua');
+      await suggest.last().click();
+      await expect(page.locator('[data-dp-sc-line]')).toHaveCount(2, { timeout: 15000 });
+      await expect(page.locator('[data-dp-sc-suggest]')).toHaveCount(0);
+      expect(errors).toEqual([]);
+    } finally {
+      await set({});
+    }
+  });
+
   test('tasarım görüntüsü (yalnız WDP_UI2_SHOTS ile)', async ({ page }, testInfo) => {
     test.skip(!process.env.WDP_UI2_SHOTS, 'yalnız ekran görüntüsü toplama koşusunda');
     await page.goto('/?dp_sc_test=1');

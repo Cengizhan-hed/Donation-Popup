@@ -140,14 +140,22 @@ final class Admin_View {
 			case 'color':
 				// Metin alanı kaydedilen değerdir (#hex ya da `var(--ad[, #yedek])`); renk seçici yalnız hex yazar. Durum satırı
 				// (değişken bu sayfada çözülebildi mi, kontrast) tarayıcıda doldurulur.
-				$str     = (string) $value;
-				$parsed  = \DonationPanel\Frontend\Theme_Colors::parse_var( $str );
-				$picker  = \DonationPanel\Frontend\Theme_Colors::normalize_hex( null !== $parsed ? '#' . $parsed['fallback'] : $str );
+				$str    = (string) $value;
+				$parsed = \DonationPanel\Frontend\Theme_Colors::parse_var( $str );
+				$picker = \DonationPanel\Frontend\Theme_Colors::normalize_hex( null !== $parsed ? '#' . $parsed['fallback'] : $str );
+				// Kaynak satırı (12.3): alan boşsa uygulanan rengin kaynağı (tema paleti rolü / ana renk / varsayılan),
+				// doluysa "Sizin seçiminiz". Metinler sunucuda çevrilir; betik yalnız boş/dolu durumuna göre seçer.
+				$source = '';
+				if ( isset( $spec['fallback_text'] ) ) {
+					$source = ' data-dpa-color-fallback="' . esc_attr( (string) $spec['fallback_text'] ) . '" data-dpa-color-mine="' . esc_attr__( 'Source: your choice.', 'woo-donation-popup' ) . '"';
+				}
+				$empty   = isset( $spec['fallback_hex'] ) ? (string) $spec['fallback_hex'] : '12305a';
 				$control = '<span class="dpa-colorfield">'
-					. '<input type="color" class="dpa-color" data-dpa-color-picker aria-label="' . esc_attr( sprintf( /* translators: %s: color setting name. */ __( '%s: color picker', 'woo-donation-popup' ), $spec['label'] ) ) . '" value="' . esc_attr( '#' . ( '' !== $picker ? $picker : '12305a' ) ) . '">'
-					. '<input type="text" class="dpa-input dpa-input--color" id="' . esc_attr( $dom ) . '" aria-describedby="' . esc_attr( $dom . '-desc ' . $dom . '-status' ) . '" value="' . esc_attr( $str ) . '" placeholder="#12305A" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="120" data-dpa-color' . ( ! empty( $spec['text_contrast'] ) ? ' data-dpa-color-text="1"' : '' ) . $av . '>'
+					. '<input type="color" class="dpa-color" data-dpa-color-picker aria-label="' . esc_attr( sprintf( /* translators: %s: color setting name. */ __( '%s: color picker', 'woo-donation-popup' ), $spec['label'] ) ) . '" value="' . esc_attr( '#' . ( '' !== $picker ? $picker : $empty ) ) . '">'
+					. '<input type="text" class="dpa-input dpa-input--color" id="' . esc_attr( $dom ) . '" aria-describedby="' . esc_attr( $dom . '-desc ' . $dom . '-status' ) . '" value="' . esc_attr( $str ) . '" placeholder="#12305A" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="120" data-dpa-color' . ( ! empty( $spec['text_contrast'] ) ? ' data-dpa-color-text="1"' : '' ) . $source . $av . '>'
 					. '</span>'
-					. '<p class="dpa-colorfield__status" id="' . esc_attr( $dom . '-status' ) . '" data-dpa-color-status aria-live="polite"></p>';
+					. '<p class="dpa-colorfield__status" id="' . esc_attr( $dom . '-status' ) . '" data-dpa-color-status aria-live="polite">'
+					. ( isset( $spec['fallback_text'] ) ? esc_html( '' !== trim( $str ) ? __( 'Source: your choice.', 'woo-donation-popup' ) : (string) $spec['fallback_text'] ) : '' ) . '</p>';
 				break;
 			case 'int':
 				$control = '<input type="number" min="0" step="1" class="dpa-input dpa-input--short" id="' . esc_attr( $dom ) . '"' . $desc . ' value="' . esc_attr( (string) (int) $value ) . '"' . $av . '>';
@@ -196,25 +204,61 @@ final class Admin_View {
 	}
 
 	/**
-	 * Renk kaynağı notu. Palet okunduysa örnek renkler; okunamadıysa uyarı (+ isteğe bağlı "Özel renkler" düğmesi).
+	 * Renk kaynağı notu: her rengin örneği, değeri ve KAYNAĞI ("Tema paleti: primary" / "Varsayılan" / "Ana rengi izler").
+	 * Palet rolü bulunamadıysa ayrıca uyarı (+ isteğe bağlı "Özel renkler" düğmesi).
 	 *
-	 * @param string               $status 'theme' | 'none' (Theme_Colors::source_status).
-	 * @param array<string,string> $vars   Theme_Colors::variables çıktısı.
-	 * @param bool                 $action Uyarıya "Özel renkleri seç" düğmesi eklensin mi.
+	 * @param string                              $status   'theme' | 'partial' | 'none' (Theme_Colors::source_status).
+	 * @param array<string, array<string,string>> $resolved Theme_Colors::resolve çıktısı (boşsa yalnız uyarı).
+	 * @param bool                                $action   Uyarıya "Özel renkleri seç" düğmesi eklensin mi.
 	 * @return string
 	 */
-	public static function colors_note( $status, array $vars = array(), $action = true ) {
+	public static function colors_note( $status, array $resolved = array(), $action = true ) {
+		$rows = '';
+		if ( isset( $resolved['primary'], $resolved['action'] ) ) {
+			$labels = array(
+				'primary' => __( 'Main color', 'woo-donation-popup' ),
+				'action'  => __( 'Button color', 'woo-donation-popup' ),
+			);
+			foreach ( $labels as $slot => $label ) {
+				$entry = $resolved[ $slot ];
+				$hex   = '#' . \DonationPanel\Frontend\Theme_Colors::normalize_hex( '#' . $entry['hex'] );
+				$rows .= '<li class="dpa-colors-note__row" data-dpa-color-source="' . esc_attr( $slot . ':' . $entry['source'] ) . '"><span class="dpa-swatch" style="background:' . esc_attr( $hex ) . '" aria-hidden="true"></span>'
+					. '<span class="dpa-colors-note__name">' . esc_html( $label ) . '</span> <code>' . esc_html( $hex ) . '</code> <span class="dpa-colors-note__src">' . esc_html( \DonationPanel\Frontend\Theme_Colors::source_label( $entry ) ) . '</span></li>';
+			}
+			$rows = '<ul class="dpa-colors-note__list">' . $rows . '</ul>';
+		}
 		if ( 'none' === $status ) {
 			$btn = $action ? ' <button type="button" class="dpa-btn dpa-btn--ghost" data-dpa-colors-custom>' . esc_html__( 'Choose custom colors', 'woo-donation-popup' ) . '</button>' : '';
-			return '<div class="dpa-colors-note dpa-colors-note--warn" data-dpa-colors-note="none">' . self::icon( 'alert' ) . '<p>' . esc_html( self::colors_warning_text() ) . $btn . '</p></div>';
+			return '<div class="dpa-colors-note dpa-colors-note--warn" data-dpa-colors-note="none">' . self::icon( 'alert' ) . '<div><p>' . esc_html( self::colors_warning_text() ) . $btn . '</p>' . $rows . '</div></div>';
 		}
-		$sw = '';
-		foreach ( array( '--dp-color-primary', '--dp-accent' ) as $key ) {
-			if ( isset( $vars[ $key ] ) ) {
-				$sw .= '<span class="dpa-swatch" style="background:' . esc_attr( $vars[ $key ] ) . '" role="img" aria-label="' . esc_attr( $vars[ $key ] ) . '"></span>';
-			}
+		return '<div class="dpa-colors-note dpa-colors-note--ok" data-dpa-colors-note="' . esc_attr( 'partial' === $status ? 'partial' : 'theme' ) . '"><div><p>' . esc_html__( 'Colors in use on your site:', 'woo-donation-popup' ) . '</p>' . $rows . '</div></div>';
+	}
+
+	/**
+	 * Özel renk alanı BOŞ bırakılırsa uygulanacak rengin kaynağı (alanın altındaki satır).
+	 *
+	 * @param array<string, string> $entry Theme_Colors::resolve girdisi (yalnız tema paleti ile çözülmüş).
+	 * @return string
+	 */
+	public static function color_fallback_text( array $entry ) {
+		if ( 'primary' === $entry['source'] ) {
+			return __( 'Empty: the button follows the main color.', 'woo-donation-popup' );
 		}
-		return '<div class="dpa-colors-note dpa-colors-note--ok" data-dpa-colors-note="theme"><p>' . esc_html__( 'Colors are read from your theme:', 'woo-donation-popup' ) . ' ' . $sw . '</p></div>';
+		/* translators: 1: color source, e.g. "Theme palette: primary" or "Default", 2: hex color. */
+		return sprintf( __( 'Empty: %1$s (%2$s).', 'woo-donation-popup' ), \DonationPanel\Frontend\Theme_Colors::source_label( $entry ), '#' . $entry['hex'] );
+	}
+
+	/**
+	 * Renk alanı tanımına kaynak bilgisini ekler (boşken uygulanacak renk ve seçicinin başlangıç rengi).
+	 *
+	 * @param array<string, mixed>  $spec  Alan tanımı.
+	 * @param array<string, string> $entry Theme_Colors::resolve girdisi.
+	 * @return array<string, mixed>
+	 */
+	public static function with_color_source( array $spec, array $entry ) {
+		$spec['fallback_text'] = self::color_fallback_text( $entry );
+		$spec['fallback_hex']  = $entry['hex'];
+		return $spec;
 	}
 
 	/**
@@ -223,7 +267,7 @@ final class Admin_View {
 	 * @return string
 	 */
 	public static function colors_warning_text() {
-		return __( 'Your theme colors could not be read from the WordPress palette (some themes and page builders keep colors in their own settings). The panel is using its own default colors now. To pick your own colors, choose "Choose my own colors" and set the two colors.', 'woo-donation-popup' );
+		return __( 'Colors could not be read from your theme, so please choose them. The theme palette has no color named primary, brand, accent or secondary (some themes and page builders keep colors in their own settings). The panel uses a neutral default until then. Choose "Choose my own colors" and set the two colors; a CSS variable from your theme also works.', 'woo-donation-popup' );
 	}
 
 	/**

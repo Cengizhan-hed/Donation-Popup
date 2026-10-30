@@ -61,6 +61,7 @@ final class Field_Registry {
 			Admin_Bootstrap::SLUG_CHECKOUT  => array(
 				'payment' => array( __( 'How donors pay', 'woo-donation-popup' ), __( 'Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with every form style (centered window, side panel, bottom sheet, in-page form and compact card). A product setting wins over its donation type, and a donation type wins over the general setting.', 'woo-donation-popup' ) ),
 				'cart'    => array( __( 'Add-on donation', 'woo-donation-popup' ), __( 'Offer one extra donation product next to the main gift.', 'woo-donation-popup' ) ),
+				'basket'  => array( __( 'Side cart', 'woo-donation-popup' ), __( 'A basket that slides in after a gift is added, so donors can give several gifts and pay once. Only used when the Side cart module above is on. Not shown on the cart and checkout pages, which have their own basket.', 'woo-donation-popup' ) ),
 				'thanks'  => array( __( 'Thank-you screen', 'woo-donation-popup' ), __( 'Shown after the order. Only used when the Thank-you screen module is on.', 'woo-donation-popup' ) ),
 				'tax'     => array( __( 'Tax relief declaration', 'woo-donation-popup' ), __( 'One question at checkout. Only used when the Tax relief module is on.', 'woo-donation-popup' ) ),
 			),
@@ -534,12 +535,55 @@ final class Field_Registry {
 			'options' => $direct_choices,
 		);
 
-		$f['side_cart.floating'] = array(
+		$f['side_cart.floating']        = array(
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
-			'section' => 'cart',
+			'section' => 'basket',
 			'label'   => __( 'Floating basket button', 'woo-donation-popup' ),
 			'help'    => __( 'A round basket button in the bottom corner. It appears only after a gift is added and disappears when the basket is empty. Switch it off if your theme already shows its own cart icon.', 'woo-donation-popup' ),
 			'type'    => 'switch',
+		);
+		$f['side_cart.position']        = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Button corner', 'woo-donation-popup' ),
+			'help'      => __( 'Which bottom corner the floating basket button sits in. Choose the corner that does not cover your chat or back-to-top button. On right-to-left sites the sides swap.', 'woo-donation-popup' ),
+			'type'      => 'select',
+			'options'   => array(
+				'end'   => __( 'Bottom right', 'woo-donation-popup' ),
+				'start' => __( 'Bottom left', 'woo-donation-popup' ),
+			),
+			'only_when' => array( 'side_cart.floating', 'true' ),
+		);
+		$f['side_cart.suggest']         = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'basket',
+			'label'   => __( 'Suggest an extra gift in the basket', 'woo-donation-popup' ),
+			'help'    => __( 'Shows "Would you like to add to your donation?" with up to three small amounts under the gifts. One tap adds it with the donor details already in the basket. Hidden when that gift is already in the basket.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['side_cart.suggest_product'] = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Suggested donation product ID', 'woo-donation-popup' ),
+			'help'      => __( 'The WooCommerce product ID of the gift to suggest (Products → All products, the ID shows when you point at a name). Leave 0 to use the add-on product above. It must be a published donation product.', 'woo-donation-popup' ),
+			'type'      => 'int',
+			'only_when' => array( 'side_cart.suggest', 'true' ),
+		);
+		$f['side_cart.suggest_amounts'] = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Suggested amounts', 'woo-donation-popup' ),
+			'help'      => __( 'Up to three amounts separated by commas, for example 50, 100. Shown in your store currency.', 'woo-donation-popup' ),
+			'type'      => 'text',
+			'only_when' => array( 'side_cart.suggest', 'true' ),
+		);
+		$f['side_cart.suggest_hint']    = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Short line under the name', 'woo-donation-popup' ),
+			'help'      => __( 'Optional, one short sentence. Leave empty to show only the product name.', 'woo-donation-popup' ),
+			'type'      => 'text',
+			'only_when' => array( 'side_cart.suggest', 'true' ),
 		);
 
 		$f['form.privacy_notice'] = array(

@@ -200,11 +200,18 @@ final class Settings_Store {
 			$ids = array_values( array_unique( array_filter( array_map( 'absint', explode( ',', $text ) ) ) ) );
 			return implode( ',', $ids );
 		}
+		if ( 'side_cart.suggest_amounts' === $id && '' !== $text ) {
+			$clean = $this->sanitize_presets( $text );
+			if ( ! is_wp_error( $clean ) && count( explode( ',', $clean ) ) > 3 ) {
+				return new \WP_Error( 'too_many_suggestions', __( 'Use at most three amounts.', 'woo-donation-popup' ) );
+			}
+			return $clean;
+		}
 		return $text;
 	}
 
 	/**
-	 * Hızlı tutar listesi: sayılar, en çok 6, tekrar yok.
+	 * Tutar listesi (hızlı tutarlar, yan sepet önerisi): sayılar, en çok 6, tekrar yok.
 	 *
 	 * @param string $text Virgülle ayrılmış sayılar.
 	 * @return string|\WP_Error

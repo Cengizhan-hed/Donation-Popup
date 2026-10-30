@@ -103,6 +103,7 @@
 /* Yüzen sepet düğmesi: sağ altta, güvenli alan içinde; sepet boşken `hidden` (istemci Woo sepet çerezine bakar).
  * Başka bir yüzen öğeyle çakışırsa --dp-sc-fab-offset ile yukarı kaydırılabilir. */
 .donation-panel-sc__fab { position: fixed; inset-block-end: calc(max(16px, env(safe-area-inset-bottom)) + var(--dp-sc-fab-offset, 0px)); inset-inline-end: max(16px, env(safe-area-inset-right)); z-index: var(--dp-z-sticky, 10); display: inline-grid; place-items: center; inline-size: 56px; block-size: 56px; padding: 0; border: 0; border-radius: 50%; background: var(--dp-color-primary); color: var(--dp-color-on-primary, #fff); box-shadow: 0 6px 20px rgb(16 24 40 / .28); font: inherit; cursor: pointer; transition: transform 160ms var(--dp-ease-spring); }
+.donation-panel-sc__fab--start { inset-inline-end: auto; inset-inline-start: max(16px, env(safe-area-inset-left)); }
 .donation-panel-sc__fab[hidden] { display: none; }
 .donation-panel-sc__fab:active { transform: scale(.92); }
 .donation-panel-sc__fab .donation-panel-sc__ico { inline-size: 26px; block-size: 26px; }

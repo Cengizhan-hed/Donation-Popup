@@ -172,13 +172,15 @@ final class Side_Cart_Renderer {
 	}
 
 	/**
-	 * Yüzen sepet düğmesi (sağ altta; sepet boşken `hidden`, görünürlüğü istemci Woo sepet çerezinden belirler).
+	 * Yüzen sepet düğmesi (alt köşede; sepet boşken `hidden`, görünürlüğü istemci Woo sepet çerezinden belirler).
 	 *
-	 * @param int $count Kalem sayısı.
+	 * @param int    $count    Kalem sayısı.
+	 * @param string $position 'end' (sağ alt; RTL'de sol) ya da 'start' (sol alt; RTL'de sağ).
 	 * @return string
 	 */
-	public static function floating_button( $count ) {
-		return '<button type="button" class="donation-panel-sc__fab" data-dp-sc-fab hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
+	public static function floating_button( $count, $position = 'end' ) {
+		$class = 'start' === $position ? 'donation-panel-sc__fab donation-panel-sc__fab--start' : 'donation-panel-sc__fab';
+		return '<button type="button" class="' . esc_attr( $class ) . '" data-dp-sc-fab hidden aria-haspopup="dialog" aria-expanded="false" aria-controls="' . esc_attr( self::DRAWER_ID ) . '">'
 			. self::cart_icon() . '<span class="donation-panel-sc__sr">' . esc_html__( 'Donation basket', 'woo-donation-popup' ) . '</span>' . self::count_badge( $count ) . '</button>';
 	}
 

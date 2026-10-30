@@ -12,6 +12,11 @@ add_filter(
 		$value                         = is_array( $value ) ? $value : array( 'version' => 1 );
 		$value['modules']              = isset( $value['modules'] ) && is_array( $value['modules'] ) ? $value['modules'] : array();
 		$value['modules']['side_cart'] = true;
+		// 12.3: yan sepet ayarları testten verilir (`/?dp_sc_set=JSON`); ayarda görünen = uygulanan denetimi.
+		$sim = get_option( 'dp_sc_sim_side_cart', array() );
+		if ( is_array( $sim ) && $sim ) {
+			$value['side_cart'] = array_merge( isset( $value['side_cart'] ) && is_array( $value['side_cart'] ) ? $value['side_cart'] : array(), $sim );
+		}
 		return $value;
 	},
 	20
@@ -20,6 +25,30 @@ add_filter(
 add_action(
 	'template_redirect',
 	static function () {
+		if ( isset( $_GET['dp_sc_set'] ) ) { // phpcs:ignore
+			nocache_headers();
+			$set = json_decode( wp_unslash( (string) $_GET['dp_sc_set'] ), true ); // phpcs:ignore
+			if ( is_array( $set ) && $set ) {
+				update_option( 'dp_sc_sim_side_cart', $set, false );
+			} else {
+				delete_option( 'dp_sc_sim_side_cart' );
+			}
+			wp_send_json( array( 'ok' => true ) );
+		}
+		if ( isset( $_GET['dp_sc_other'] ) ) { // phpcs:ignore
+			nocache_headers();
+			$primary = (int) get_option( 'dp_sc_sim_primary', 0 );
+			$ids     = get_posts(
+				array(
+					'post_type'      => 'product',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					'fields'         => 'ids',
+					'post__not_in'   => $primary > 0 ? array( $primary ) : array( 0 ),
+				)
+			);
+			wp_send_json( array( 'id' => $ids ? (int) $ids[0] : 0 ) );
+		}
 		if ( isset( $_GET['dp_sc_add'] ) ) { // phpcs:ignore
 			nocache_headers();
 			$id     = (int) $_GET['dp_sc_add']; // phpcs:ignore
@@ -85,7 +114,11 @@ add_action(
  */
 add_filter(
 	'donation_panel_side_cart_suggestion',
-	static function () {
+	static function ( $value ) {
+		$sim = get_option( 'dp_sc_sim_side_cart', array() );
+		if ( is_array( $sim ) && array_key_exists( 'suggest', $sim ) ) {
+			return $value; // Ayar yolu denetleniyor: eklentinin ayardan ürettiği öneri aynen geçer.
+		}
 		$primary = (int) get_option( 'dp_sc_sim_primary', 0 );
 		$in_cart = $primary > 0 ? array( $primary ) : array();
 		$ids     = get_posts(

@@ -154,6 +154,81 @@ test('renk kaynağı: palet okunamazsa uyarı + Genel Bakış satırı + düğme
   await expect(page.locator('#dpa-w-colors-theme')).toBeChecked();
 });
 
+/** Ön yüzde uygulanan renk değişkenleri (bağış düğmesinde hesaplanan). */
+async function appliedVars(page) {
+  await page.goto(`/?p=${process.env.WDP_EXP_PRODUCT_ID}`);
+  const btn = page.locator('.donation-panel-trigger').first();
+  await expect(btn).toBeVisible();
+  return btn.evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return { primary: cs.getPropertyValue('--dp-color-primary').trim().toLowerCase(), accent: cs.getPropertyValue('--dp-accent').trim().toLowerCase() };
+  });
+}
+
+/** Renkler bölümündeki kaynak satırları: slot -> { hex, src, source }. */
+async function noteRows(page) {
+  return page.locator('[data-dpa-when="design.colors=theme"] [data-dpa-color-source]').evaluateAll((rows) => Object.fromEntries(rows.map((r) => {
+    const [slot, source] = r.getAttribute('data-dpa-color-source').split(':');
+    return [slot, { hex: r.querySelector('code').textContent.trim().toLowerCase(), src: r.querySelector('.dpa-colors-note__src').textContent.trim(), source }];
+  })));
+}
+
+test('12.3 renk kuralı: yalnız adlı rol renkleri; rol yoksa nötr varsayılan + uyarı; her rengin kaynağı yazılır ve ön yüzde aynısı uygulanır', async ({ page }, info) => {
+  test.skip(!process.env.WDP_EXP_PRODUCT_ID, 'ürün yok');
+  const cases = [
+    // [palet senaryosu, durum, ana renk, ana kaynak, düğme rengi, düğme kaynağı]
+    ['good', 'theme', '#1d3557', /Theme palette: primary|Tema paleti: primary/, '#e63946', /Theme palette: accent|Tema paleti: accent/],
+    ['roleless', 'none', '#1e2a3b', /^(Default|Varsayılan)$/, '#1e2a3b', /Follows the main color|Ana rengi izler/],
+    ['numbered', 'none', '#1e2a3b', /^(Default|Varsayılan)$/, '#1e2a3b', /Follows the main color|Ana rengi izler/],
+    ['none', 'none', '#1e2a3b', /^(Default|Varsayılan)$/, '#1e2a3b', /Follows the main color|Ana rengi izler/],
+  ];
+  for (const [mode, status, primary, primarySrc, accent, accentSrc] of cases) {
+    await setOpt(page, 'dp_ad_palette_mode', mode);
+    await page.goto(P('donation-panel-forms'));
+    await expect(page.locator(`[data-dpa-colors-note="${status}"]`), mode).toBeVisible();
+    const rows = await noteRows(page);
+    expect(rows.primary.hex, mode).toBe(primary);
+    expect(rows.primary.src, mode).toMatch(primarySrc);
+    expect(rows.action.hex, mode).toBe(accent);
+    expect(rows.action.src, mode).toMatch(accentSrc);
+    if (status === 'none') {
+      await shot(page, info, 'AdminFormlar', `renk-kaynak-${mode}`);
+    }
+    await page.goto(P('donation-panel'));
+    await expect(page.locator('.dpa-status--warn', { hasText: /Colors could not be read|Renkler temadan okunamad/ }), mode).toHaveCount(status === 'none' ? 1 : 0);
+    // Ayarda görünen = uygulanan: ön yüzdeki değişkenler yönetici satırındaki değerlerle aynı (kırmızı "ilk canlı renk" yok).
+    const applied = await appliedVars(page);
+    expect(applied.primary, mode).toBe(primary);
+    expect(applied.accent, mode).toBe(accent);
+  }
+
+  // Özel renkler: boş alan uygulanacak kaynağı, dolu alan "Sizin seçiminiz" der; kayıtlı seçim palet değişse de korunur.
+  await setOpt(page, 'dp_ad_palette_mode', 'good');
+  await page.goto(P('donation-panel-forms'));
+  await shot(page, info, 'AdminFormlar', 'renk-kaynak-good');
+  await page.selectOption('#dpa-f-design-colors', 'custom');
+  const brand = page.locator('#dpa-f-design-brand');
+  const brandStatus = page.locator('#dpa-f-design-brand-status');
+  const accentStatus = page.locator('#dpa-f-design-accent-status');
+  await brand.fill('');
+  await page.locator('#dpa-f-design-accent').fill('');
+  await expect(brandStatus).toContainText(/Theme palette: primary|Tema paleti: primary/);
+  await expect(brandStatus).toContainText('#1d3557');
+  await expect(accentStatus).toContainText(/Theme palette: accent|Tema paleti: accent/);
+  await brand.fill('#7a1f5c');
+  await expect(brandStatus).toContainText(/Source: your choice|Kaynak: sizin seçiminiz/);
+  expect(await axe(page)).toEqual([]);
+  await shot(page, info, 'AdminFormlar', 'renk-ozel-kaynak');
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
+  for (const mode of ['good', 'none', 'roleless']) {
+    await setOpt(page, 'dp_ad_palette_mode', mode);
+    const applied = await appliedVars(page);
+    expect(applied.primary, `özel renk ${mode}`).toBe('#7a1f5c');
+  }
+  expect((await state(page)).settings.design.brand).toBe('#7a1f5c');
+});
+
 /** WCAG kontrastı (rgb() dizgeleri). */
 function wcag(a, b) {
   const lum = (s) => {

@@ -87,6 +87,8 @@ final class Pages {
 	private function field_cards( $page ) {
 		$fields = Field_Registry::fields_for( $page );
 		$html   = '';
+		// Renk kaynağı (12.3): yalnız tema paletiyle çözülmüş karar; özel alan boşsa uygulanacak olan budur.
+		$theme_colors = isset( $fields['design.colors'] ) ? \DonationPanel\Frontend\Theme_Colors::resolve( \DonationPanel\Frontend\Theme_Colors::site_palette() ) : array();
 		foreach ( Field_Registry::sections( $page ) as $section => $head ) {
 			$body = '';
 			foreach ( $fields as $id => $spec ) {
@@ -98,6 +100,11 @@ final class Pages {
 					$body .= Admin_View::cards( $id, $spec['options'], (string) $value, $spec['label'] );
 					continue;
 				}
+				if ( 'design.brand' === $id && $theme_colors ) {
+					$spec = Admin_View::with_color_source( $spec, $theme_colors['primary'] );
+				} elseif ( 'design.accent' === $id && $theme_colors ) {
+					$spec = Admin_View::with_color_source( $spec, $theme_colors['action'] );
+				}
 				$row = Admin_View::field( $id, $spec, $value );
 				if ( isset( $spec['only_when'] ) ) {
 					$row = '<div data-dpa-when="' . esc_attr( $spec['only_when'][0] . '=' . $spec['only_when'][1] ) . '">' . $row . '</div>';
@@ -108,8 +115,7 @@ final class Pages {
 				$body .= $row;
 				if ( 'design.colors' === $id ) {
 					$status = \DonationPanel\Frontend\Theme_Colors::source_status();
-					$vars   = \DonationPanel\Frontend\Theme_Colors::variables( \DonationPanel\Frontend\Theme_Colors::site_palette() );
-					$body  .= '<div data-dpa-when="design.colors=theme">' . Admin_View::colors_note( $status, $vars ) . '</div>';
+					$body  .= '<div data-dpa-when="design.colors=theme">' . Admin_View::colors_note( $status, $theme_colors ) . '</div>';
 				}
 			}
 			if ( Admin_Bootstrap::SLUG_FORMS === $page && 'compact' === $section ) {
