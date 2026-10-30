@@ -1021,3 +1021,9 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 - Ön yüz CSS'i: ortak kurallar `ui-core` / `ui-controls` / `ui-dpx` parçalarında; `Assets::inline_styles()` her yüzeyden önce çekirdeği ve yüzeyin `define(…, $shared)` ile bildirdiği parçaları sayfada bir kez satır içi basar.
 - Kural: bir seçici+özellik yalnız tek parçada tanımlanır (tests/unit/js/css-cascade-isolation.test.mjs); paketler ortak kuralı tekrar etmez → basım sırası sonucu değiştirmez.
 - Sıra kanıtı: `run-first-paint.mjs --spec style-order-independence` (sim `?dp_fp=order&dp_order=…`, 4 sıra, hesaplanmış stiller birebir + jeton).
+
+## 12.3 — Kurgu ayrımı, kart ön alma, akıcı katman, odak
+
+- **Kart ön alma (`src/Modules/EntryPoints/class-prefetch-links.php`):** liste/döngü kartları kimliklerini kaydeder; `wp_footer`'da kap türü başına ilk 12 kart için toplu uç bağlantısı etkisiz `<template>` içinde. Liste betiği yüklemede yalnız pasif dinleyici kaydeder; ilk kaydırma/fare/dokunma/tuşta bağlantılar `<head>`'e taşınır (`rel=prefetch`, en düşük öncelik). Toplu uç `/experiences?ids=` (≤12; ürün başına `entry_experience_prefetch` 240/dk) yanıtı `private, max-age=300` + `Vary: Cookie`; dokunuşta aynı adres tarayıcı önbelleğinden (ağ 0). Safari: ilk etkileşimden sonra istemcide boşta toplu alma. REST kökü ve ön alma adresi aynı köken + eklenti ad alanı doğrulanır (`parsePrefetchHref`, `fetchTrusted`). Filtre `donation_panel_prefetch_forms`.
+- **Katman hareketi:** `overflow: clip` (showModal odak kaydırması paneli yana itmez; desteklemeyen tarayıcıda JS sıfırlama), karartma ayrı katman (`::before`), yaysız 260 ms, blur yok; kaydırma kilidi klasik çubukta `padding-inline-end` (yalnız çubuk yer kaplıyorsa). Test `layer-motion.spec.mjs`.
+- **Odak:** fare/dokunma odağında yalnız kenarlık rengi (1.5 px marka); klavye (`data-dp-kbd`) halkası outline 2 px / offset 2 px, marka renginin yarı saydam tonu.
