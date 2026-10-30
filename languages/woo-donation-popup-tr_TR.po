@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 13:07:20+0000\n"
-"PO-Revision-Date: 2026-10-30 13:07:20+0000\n"
+"POT-Creation-Date: 2026-10-30 16:06:19+0000\n"
+"PO-Revision-Date: 2026-10-30 16:06:19+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -63,6 +63,12 @@ msgstr "%1$s / %2$s"
 #: includes/class-donations-list.php:838
 msgid "%1$s / %2$s raised"
 msgstr "%1$s / %2$s toplandı"
+
+#. translators: 1: amount for this campaign in the donor's cart, 2: campaign total including it.
+#: src/Modules/Campaign/class-progress-live.php
+#, php-format
+msgid "%1$s in your cart · reaches %2$s"
+msgstr "Sepetinizde %1$s · toplam %2$s olur"
 
 #: src/Modules/EntryPoints/class-donations-list.php
 #. translators: 1: button text (e.g. Donate), 2: donation product name
@@ -216,6 +222,10 @@ msgstr "1 Bilgi"
 msgid "1 shareholder form is incomplete."
 msgstr "1 hissedar formu eksik."
 
+#: src/Admin/class-guide.php
+msgid "1. Give the product a goal: Products → edit the product → Product data → Donation → goal amount. From then on the bar appears by itself in the centered window, side panel, bottom sheet, in-page form and on the compact card."
+msgstr "1. Ürüne hedef verin: Ürünler → ürünü düzenle → Ürün verileri → Bağış → hedef tutarı. Bundan sonra çubuk ortalanmış pencerede, sağ panelde, alttan panelde, sayfa içi formda ve compact kartta kendiliğinden görünür."
+
 msgid "1. Open Donation Panel → Forms and appearance → Compact card (slider/hero). Choose the donation product and press Copy."
 msgstr "1. Bağış Paneli → Formlar ve Görünüm → Kompakt kart (slider/hero) ekranını açın. Bağış ürününü seçin ve Kopyala'ya basın."
 
@@ -238,6 +248,10 @@ msgstr "2 Tutar"
 msgid "2. In your slider or page editor, add a Shortcode widget (or any text block) to the slide and paste the shortcode. No special widget is needed. In the block editor you can also add the \"Donation form\" block and choose Layout: Compact."
 msgstr "2. Slider ya da sayfa düzenleyicinizde slayta bir Kısa kod (Shortcode) bileşeni (ya da herhangi bir metin bloğu) ekleyin ve kısa kodu yapıştırın. Özel bir bileşen gerekmez. Blok düzenleyicide \"Bağış formu\" bloğunu ekleyip Düzen: Kompakt da seçebilirsiniz."
 
+#: src/Admin/class-guide.php
+msgid "2. To show the bar on its own anywhere (a page, a sidebar, a slider), use the shortcode below. Without an ID it finds the product it is placed in. Add milestones=\"no\" or donors=\"no\" to hide those parts."
+msgstr "2. Çubuğu tek başına herhangi bir yerde (sayfa, kenar çubuğu, kaydırıcı) göstermek için aşağıdaki kısa kodu kullanın. ID verilmezse bulunduğu ürünü kendisi bulur. Bu bölümleri gizlemek için milestones=\"no\" ya da donors=\"no\" ekleyin."
+
 #: includes/class-admin-form-tabs-renderer.php:512
 msgid "2) Buttons inside the popup and inline form"
 msgstr "2) Popup ve gömülü form içindeki butonlar"
@@ -249,14 +263,34 @@ msgstr "3 Onay"
 msgid "3. Finding a product ID: go to Products → All products and point at the product name; the ID is shown under it. The shortcode builder also lists every donation product with its ID."
 msgstr "3. Ürün ID'sini bulma: Ürünler → Tüm ürünler'e gidin ve fareyi ürün adının üzerine getirin; ID adın altında görünür. Kısa kod oluşturucu da her bağış ürününü ID'siyle listeler."
 
+#: src/Admin/class-guide.php
+msgid "3. The real total only grows with paid orders and goes down after refunds or cancellations. Items in a cart never change it."
+msgstr "3. Gerçek toplam yalnız ödenmiş siparişlerle artar, iade ya da iptalde azalır. Sepetteki ürünler onu hiçbir zaman değiştirmez."
+
+#: src/Admin/class-guide.php
+msgid "4. Donor's own gift: when a donor picks or types an amount, a lighter striped part shows how far their gift would take the campaign, together with the new total. After \"Add to cart\" it stays as \"in your cart\"; removing it from the cart makes it disappear. Only that visitor sees it."
+msgstr "4. Bağışçının kendi katkısı: bağışçı tutar seçince ya da yazınca açık tonlu, çizgili bir bölüm bağışının kampanyayı nereye taşıyacağını yeni toplamla birlikte gösterir. \"Sepete ekle\"den sonra \"sepetinizde\" olarak kalır; sepetten çıkarılınca kaybolur. Bunu yalnız o ziyaretçi görür."
+
 msgid "4. Slide height: make the slide at least as tall as the card. The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
 msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın. Kompakt kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Tüm kartlara tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) yazın."
+
+#: src/Admin/class-guide.php
+msgid "5. After payment on the compact card the bar fetches the new total once, and the donor's part becomes part of the real bar."
+msgstr "5. Compact kartta ödeme tamamlanınca çubuk yeni toplamı bir kez alır ve bağışçının bölümü gerçek dolumla birleşir."
 
 msgid "5. Colors: Forms and appearance → Colors → Choose my own colors. Each color field accepts a hex value or a CSS variable from your theme or page editor, for example var(--brand), so the card follows your site palette."
 msgstr "5. Renkler: Formlar ve Görünüm → Renkler → Kendi renklerimi seçeyim. Her renk alanı bir hex değeri ya da temanızın veya sayfa düzenleyicinizin bir CSS değişkenini (örneğin var(--brand)) kabul eder; böylece kart sitenizin paletini izler."
 
 msgid "6. If the slider moves on while a donor is halfway through, switch on \"Start over when the card is hidden\". The compact card is only a look: how the donor pays is set under Cart and checkout."
 msgstr "6. Bağışçı yarıdayken slider ilerliyorsa \"Kart gizlenince başa dön\" ayarını açın. Kompakt kart yalnız bir görünümdür: bağışçının nasıl ödeyeceği Sepet ve Ödeme ekranında ayarlanır."
+
+#: src/Admin/class-guide.php
+msgid "6. Settings: Donation Panel → Campaigns → Campaign progress bar. Switch off the donor's own gift, the fill and count-up animation, or the small celebration at the goal. Visitors who ask their device for less motion always see the final values without animation."
+msgstr "6. Ayarlar: Bağış Paneli → Kampanyalar → Kampanya ilerleme çubuğu. Bağışçının kendi katkısını, dolma ve sayma animasyonunu ya da hedefteki küçük kutlamayı kapatabilirsiniz. Cihazında azaltılmış hareketi seçen ziyaretçiler son değerleri her zaman animasyonsuz görür."
+
+#: src/Admin/class-guide.php
+msgid "7. Milestones on the shortcode bar (optional): a product custom field named _donation_panel_milestones, one per line as percent = label, for example 50 = Halfway. Developers can also use the donation_panel_milestones filter."
+msgstr "7. Kısa kod çubuğunda ara hedefler (isteğe bağlı): _donation_panel_milestones adlı ürün özel alanına her satıra bir tane, yüzde = etiket biçiminde yazın; örneğin 50 = Yarı yol. Geliştiriciler donation_panel_milestones filtresini de kullanabilir."
 
 #: src/Admin/
 msgid "A clean donate button and a thank-you screen. Nothing else."
@@ -976,6 +1010,10 @@ msgstr[1] "Kampanya · %d gün"
 msgid "Campaign and progress bars"
 msgstr "Kampanya ve ilerleme çubukları"
 
+#: src/Admin/class-guide.php
+msgid "Campaign bar: the solid part is the real total from paid orders; the lighter striped part after it is the donor's own gift, seen only by that donor."
+msgstr "Kampanya çubuğu: dolu bölüm ödenmiş siparişlerden gelen gerçek toplamdır; ardından gelen açık tonlu çizgili bölüm bağışçının kendi katkısıdır ve yalnız o bağışçı görür."
+
 #: includes/class-admin-product-data-tab.php:722
 msgid "Campaign blocks"
 msgstr "Kampanya blokları"
@@ -1000,6 +1038,10 @@ msgstr "Kampanya ürünleri"
 #: src/Modules/DonorAccount/class-account-renderer.php
 msgid "Campaign progress"
 msgstr "Kampanya ilerlemesi"
+
+#: src/Admin/class-field-registry.php src/Admin/class-guide.php
+msgid "Campaign progress bar"
+msgstr "Kampanya ilerleme çubuğu"
 
 #. translators: 1: percentage before this gift, 2: percentage after this gift.
 #: templates/donation-panel/thanks/summary.php
@@ -2081,6 +2123,10 @@ msgstr "Bağışçı adı, ithaf, telefon ve e-posta siparişe yazıldığı gib
 msgid "Donor phone"
 msgstr "Bağışçı Telefonu"
 
+#: src/Admin/class-guide.php
+msgid "Donor's own gift"
+msgstr "Bağışçının katkısı"
+
 #: src/Modules/SocialProof/class-social-proof-renderer.php
 msgid "donors"
 msgstr "bağışçı"
@@ -2382,6 +2428,10 @@ msgstr "Alan Düzeni"
 #: includes/class-admin-form-tabs-renderer.php:442
 msgid "Fields and labels"
 msgstr "Alanlar ve etiketler"
+
+#: src/Admin/class-field-registry.php
+msgid "Fill the bar and count up"
+msgstr "Çubuğu doldur ve rakamları say"
 
 #: includes/class-admin-products-list-table.php:183
 msgid "Filter"
@@ -4019,6 +4069,10 @@ msgstr "Rehberin tamamını aç"
 msgid "Open the new admin screen"
 msgstr "Yeni yönetici ekranını aç"
 
+#: src/Admin/class-guide.php
+msgid "Open the progress bar settings"
+msgstr "İlerleme çubuğu ayarlarını aç"
+
 #: src/Modules/DonorAccount/
 #, php-format
 msgid "Open this link while logged in to add the gifts you made as a guest with this email address to your account:\n\n%1$s\n\nThe link works once and expires in %2$d minutes. If you did not ask for this, ignore this email."
@@ -4768,6 +4822,10 @@ msgstr "Rehberi oku"
 msgid "Real donor counts, no personal details"
 msgstr "Gerçek bağışçı sayısı, kişi bilgisi olmadan"
 
+#: src/Admin/class-guide.php
+msgid "Real total (paid orders)"
+msgstr "Gerçek toplam (ödenmiş siparişler)"
+
 msgid "Recalculate"
 msgstr "Yeniden hesapla"
 
@@ -5371,6 +5429,10 @@ msgstr "Ürün görselini göster"
 msgid "Show quick amount buttons"
 msgstr "Hızlı tutar düğmelerini göster"
 
+#: src/Admin/class-field-registry.php
+msgid "Show the donor's own gift on the bar"
+msgstr "Bağışçının kendi katkısını çubukta göster"
+
 #: includes/class-admin-placement-tab-renderer.php:109
 msgid "Show the form heading"
 msgstr "Form başlığını göster"
@@ -5535,6 +5597,10 @@ msgstr "Slovenya"
 #: includes/class-admin-form-tabs-renderer.php:580
 msgid "Small"
 msgstr "Küçük"
+
+#: src/Admin/class-field-registry.php
+msgid "Small celebration at the goal"
+msgstr "Hedefte küçük kutlama"
 
 #: src/Admin/
 msgid "Smart defaults"
@@ -5894,6 +5960,10 @@ msgstr "Alt bağış ürünü ana ürünün kendisi olamaz."
 #: src/Admin/class-admin-assets.php
 msgid "The amount added by hand was saved."
 msgstr "Elle eklenen tutar kaydedildi."
+
+#: src/Admin/class-field-registry.php
+msgid "The bar on campaign products, in every form style and on the compact card. The total only grows with paid orders and goes down after refunds or cancellations. Only used when the Campaign module is on."
+msgstr "Hedefli ürünlerdeki çubuk; her form düzeninde ve compact kartta. Toplam yalnız ödenmiş siparişlerle artar, iade ya da iptalde azalır. Yalnız Kampanya modülü açıkken kullanılır."
 
 msgid "The beginning"
 msgstr "Baştan"
@@ -6723,6 +6793,10 @@ msgstr "Form ne sormalı?"
 msgid "What the button does in shop and category lists."
 msgstr "Mağaza ve kategori listelerinde düğmenin ne yaptığı."
 
+#: src/Admin/class-field-registry.php
+msgid "When a campaign has reached its goal, the bar shines once when it comes into view."
+msgstr "Kampanya hedefine ulaştığında çubuk ekrana girince bir kez parlar."
+
 #: includes/class-admin-form-tabs-renderer.php:549
 msgid "When off, no box-shadow output is generated for this group."
 msgstr "Kapalıyken bu grup için box-shadow çıktısı üretilmez."
@@ -6750,6 +6824,10 @@ msgstr "Açıkken mağaza ve ürün sayfalarındaki sepete ekle alanı bağış 
 #: includes/class-admin-form-tabs-renderer.php:481
 msgid "When on, the form moves step by step. Share-based: Shares → Confirm. Standard/Progress: Details → Amount → (Add-on donation) → Confirm. The progress bar always stays at the top."
 msgstr "Açıldığında form adım adım ilerler. Hisseli: Hisseler → Onay. Standart/Progress: Bilgiler → Tutar → (Alt bağış) → Onay. Progress bar her zaman üstte kalır."
+
+#: src/Admin/class-field-registry.php
+msgid "When the bar comes into view it fills from zero and the numbers count up. Visitors who ask their device for less motion always see the final values straight away."
+msgstr "Çubuk ekrana girince sıfırdan dolar ve rakamlar sayarak artar. Cihazında azaltılmış hareketi seçen ziyaretçiler son değerleri her zaman hemen görür."
 
 #: includes/class-admin-product-data-tab.php:642
 msgid "When the campaign reaches its goal, should donations keep being accepted, or should they be closed?"
@@ -6794,6 +6872,10 @@ msgstr "Hangi ürünler bağış ürünü"
 msgid "Which simple products use the donation form."
 msgstr "Hangi basit ürünlerin bağış formu kullandığı."
 
+#: src/Admin/class-field-registry.php
+msgid "While a donor picks an amount, a lighter striped part shows how far their gift would take the campaign, with a short line that gives the new total. A gift in their cart stays shown as \"in your cart\". Only that visitor sees it; the real total changes only after payment."
+msgstr "Bağışçı tutar seçerken çubukta açık tonlu, çizgili bir bölüm bağışının kampanyayı nereye taşıyacağını gösterir; altında yeni toplamı veren kısa bir satır çıkar. Sepetteki bağış \"sepetinizde\" olarak görünmeye devam eder. Bunu yalnız o ziyaretçi görür; gerçek toplam yalnız ödemeden sonra değişir."
+
 #: includes/class-admin-product-data-tab.php:675
 msgid "Whole numbers only; separate with commas, spaces, or semicolons (maximum 6). If left empty, the amounts from the general setting are used. Buttons below the minimum amount are not shown."
 msgstr "Yalnız tam sayılar; virgül, boşluk veya noktalı virgülle ayırın (en fazla 6). Boş bırakırsanız genel ayardaki tutarlar kullanılır. En düşük tutarın altındaki düğmeler gösterilmez."
@@ -6829,6 +6911,12 @@ msgstr "Ürünün kendi bağış türünün önüne geçer. Doğrudan bağış t
 
 msgid "With goal"
 msgstr "Hedefli"
+
+#. translators: 1: the donor's own gift, 2: campaign total including that gift.
+#: src/Modules/Campaign/class-progress-live.php src/Admin/class-guide.php
+#, php-format
+msgid "With your %1$s it reaches %2$s"
+msgstr "%1$s ile toplam %2$s olur"
 
 msgid "Without goal"
 msgstr "Hedefsiz"
@@ -6992,6 +7080,12 @@ msgstr "Bağışınızı güvenli ödeme sayfasında tamamlayacaksınız."
 
 msgid "You will pay in a secure payment window. Your card details never pass through this form."
 msgstr "Ödemeyi güvenli ödeme penceresinde yapacaksınız. Kart bilgileriniz bu formdan geçmez."
+
+#. translators: 1: the donor's own gift.
+#: src/Modules/Campaign/class-progress-live.php
+#, php-format
+msgid "Your %1$s completes the goal!"
+msgstr "%1$s ile hedef tamamlanır!"
 
 #: src/Modules/SideCart/class-side-cart-renderer.php
 msgid "Your basket is empty"
