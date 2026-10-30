@@ -56,7 +56,7 @@ final class Donor_Account_Module implements Module_Interface {
 			return;
 		}
 		$this->container = $container;
-		$container->get( Assets::class )->define( self::SLUG, 'assets/build/donor-account/index.js', 'assets/build/donor-account/index.css' );
+		$container->get( Assets::class )->define( self::SLUG, 'assets/build/donor-account/index.js', 'assets/build/donor-account/index.css', array( 'ui-dpx', 'ui-controls' ) );
 
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'wp_loaded', array( $this, 'maybe_flush_rewrite' ) );

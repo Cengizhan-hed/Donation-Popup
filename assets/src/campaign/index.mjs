@@ -1,7 +1,7 @@
 /**
  * Donation Panel — kampanya paketi (ilerleme, etki ifadesi, sosyal kanıt). Yalnız ilgili öğe olan sayfada yüklenir.
  */
-import './base.css';
+// Ortak çekirdek (belirteç/düğme) ui-core parçasında; Assets bu paketten önce bir kez basar.
 import './components.css';
 import './campaign.css';
 import { initProgress } from './progress.mjs';

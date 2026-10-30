@@ -10,6 +10,7 @@
  *   /?dp_fp=trigger&dp_product=ID                           -> yalnız açma düğmesi (popup)
  *   /?dp_fp=single&dp_fixed=ID                              -> tek adımlı sayfa içi form (ek adımlar süzülür)
  *   /?dp_fp=compact&dp_product=ID&dp_campaign=ID            -> compact kart (görünür) + gizli kapta compact kart (slider)
+ *   /?dp_fp=order&dp_order=cfhlsakp&…                       -> yüzeyler verilen harf sırasıyla (stil sıra bağımsızlığı)
  */
 add_action(
 	'template_redirect',
@@ -62,6 +63,25 @@ add_action(
 			echo '<section id="fp-social">' . do_shortcode( '[donation_panel_social_proof id="' . $cmp . '" variant="counters"]' ) . '</section>'; // phpcs:ignore
 			echo '<section id="fp-inline">' . do_shortcode( '[donation_panel_experience id="' . $id . '" kind="inline"]' ) . '</section>'; // phpcs:ignore
 			echo '<section id="fp-list">' . do_shortcode( '[wdp_donations limit="3" button="link"]' ) . '</section>'; // phpcs:ignore
+		}
+		if ( 'order' === $view ) {
+			// 122-cascade sıra bağımsızlığı: yüzeyler `dp_order` harf sırasıyla çizilir (satır içi stil basım sırası değişir).
+			// c=kampanya çubuğu, f=sayfa içi form (sabit fiyatlı), h=sayfa içi form (serbest tutarlı), l=liste, s=yan sepet,
+			// a=hesap simgesi, k=compact kart, p=sosyal kanıt.
+			$order    = isset( $_GET['dp_order'] ) ? preg_replace( '/[^cfhlsakp]/', '', (string) $_GET['dp_order'] ) : 'cfl'; // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput
+			$surfaces = array(
+				'c' => '[donation_panel_progress id="' . $cmp . '"]',
+				'f' => '[donation_panel_experience id="' . $fixed . '" kind="inline"]',
+				'h' => '[donation_panel_experience id="' . $id . '" kind="inline"]',
+				'l' => '[wdp_donations limit="3" button="link"]',
+				's' => '[donation_panel_side_cart]',
+				'a' => '[donation_panel_account]',
+				'k' => '[wdp_donation_form id="' . $cmp . '" layout="compact"]',
+				'p' => '[donation_panel_social_proof id="' . $cmp . '" variant="counters"]',
+			);
+			foreach ( str_split( (string) $order ) as $key ) {
+				echo '<section id="ord-' . esc_attr( $key ) . '">' . do_shortcode( $surfaces[ $key ] ) . '</section>'; // phpcs:ignore
+			}
 		}
 		if ( 'form' === $view ) {
 			echo do_shortcode( '[wdp_donation_form id="' . $id . '"]' ); // phpcs:ignore

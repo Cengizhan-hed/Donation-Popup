@@ -3,9 +3,7 @@
  * Bağışlarım sayfası (daha fazla yükle) ve misafir bağış bağlama. Kimlik doğrulama sunucuda
  * WordPress/WooCommerce ile; burada yalnız REST çağrıları. jQuery yok; tema/oluşturucuya özel kod yok.
  */
-import '../campaign/base.css';
-import '../ui2-shared/tokens.css';
-import '../ui2-shared/controls.css';
+// Ortak çekirdek (ui-core), yüzey belirteçleri (ui-dpx) ve form denetimleri (ui-controls) ayrı parça; Assets önce basar.
 import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 import { syncColors } from '../ui2-shared/color-sync.mjs';
 import './donor-account.css';

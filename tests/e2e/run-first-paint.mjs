@@ -3,6 +3,7 @@
  * 12.2 fouc: ilk boyama stil testi (first-paint-styles.spec) — 4 tema × iPhone/Android/masaüstü. YALNIZ yerel WP (--env local).
  *
  *   npm run e2e:queue -- node tests/e2e/run-first-paint.mjs [--theme storefront] [--project iphone] [--serve]
+ *     [--spec style-order-independence]
  *
  * Port: WDP_FP_PORT (varsayılan 8961). `--serve`: yalnız sunucuyu açar, URL'leri yazar, Ctrl+C ile kapanır (ölçüm betiği için).
  */
@@ -43,7 +44,8 @@ async function main() {
         continue;
       }
       for (const d of ['test-results', 'playwright-report']) fs.rmSync(path.join(ROOT, d), { recursive: true, force: true });
-      const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', 'first-paint-styles'];
+      // `--spec style-order-independence`: aynı sim sayfasında stil sıra bağımsızlığı (122-cascade).
+      const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', flag('--spec') || 'first-paint-styles'];
       if (project) args.push('--project', project);
       const r = spawnSync('npx', args, {
         cwd: ROOT,

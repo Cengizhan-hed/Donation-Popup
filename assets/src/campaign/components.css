@@ -36,6 +36,4 @@
 .donation-panel-list__t small { color: var(--dp-color-text-muted); font-size: var(--dp-fs-sm); }
 .donation-panel-list__amt { font-variant-numeric: tabular-nums; font-weight: var(--dp-fw-bold); text-align: end; line-height: 1.3; }
 .donation-panel-list__row.is-new { animation: dp-newrow 1.2s var(--dp-ease-out); }
-@keyframes dp-fadeup { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-@keyframes dp-shimmer { to { transform: translateX(100%); } }
-@keyframes dp-newrow { 0% { background: var(--dp-color-primary-soft); } 100% { background: transparent; } }
+/* dp-fadeup / dp-shimmer / dp-newrow animasyonları ortak çekirdekte (ui2-shared/core.css). */
