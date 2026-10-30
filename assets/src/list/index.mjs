@@ -12,6 +12,7 @@ import {
   buildExperienceUrl,
   chunk,
   hostKey,
+  lazyAsset,
   matchesCategory,
   parseHashSlug,
   shouldHandleClick,
@@ -121,16 +122,34 @@ function whenMounted(host) {
 /**
  * Sayfa genelinde iki önbellek; anahtar = REST kökü + ürün + kap türü (liste ve mağaza kartı paylaşır; aynı ürün bir
  * kez alınır, bir kez kurulur):
- *  - `sources`: sunucudan gelen form HTML'i (metin). Ön alma YALNIZ bunu doldurur: boşta ağ + JSON, DOM işi yok.
+ *  - `sources`: sunucudan gelen form HTML'i (metin) + isteğe bağlı paket bilgisi (kampanya çubuğu). Ön alma YALNIZ bunu
+ *    doldurur: boşta ağ + JSON, DOM işi yok.
  *  - `hosts`: DOM'a eklenmiş kap; dokunma niyetinde (üstüne gelme/basma/odak) ya da dokunuşta kurulur.
  *
- * @type {Map<string, Promise<{html: function(): (string|Promise<string>)}>>}
+ * @type {Map<string, Promise<{entry: function(): (FormEntry|Promise<FormEntry>)}>>}
  */
 const sources = new Map();
 /** @type {Map<string, Promise<HTMLElement>>} */
 const hosts = new Map();
 /** Sunucu toplu ön almayı kapattıysa (`prefetch:false`, filtre) sayfa boyunca yalnız niyetle alınır. */
 let aheadDisabled = false;
+
+/**
+ * @typedef {{html: string, progress: ({ids: string[], script: string, style: string}|null)}} FormEntry
+ */
+
+/**
+ * Yanıttan bir ürünün form girdisi: HTML + (yalnız bu ürün kampanyalıysa) çubuk paketi bilgisi.
+ *
+ * @param {any}    data Ayrıştırılmış yanıt.
+ * @param {string} html Formun HTML'i.
+ * @param {string} id   Ürün.
+ * @return {FormEntry} Girdi.
+ */
+function entryOf(data, html, id) {
+  const progress = lazyAsset(data, 'progress', window.location.href);
+  return { html, progress: progress && progress.ids.includes(String(id)) ? progress : null };
+}
 
 /**
  * Form hazır (dokunuşta ağ isteği olmayacak): kartın düğmelerine `data-wdp-ready="1"` (testler/ölçüm bunu bekler).
@@ -191,7 +210,7 @@ function remember(map, key, pending) {
  * @param {string} rest Kök REST adresi.
  * @param {string} id   Ürün kimliği.
  * @param {string} kind Kap türü.
- * @return {Promise<{html: function(): (string|Promise<string>)}>} HTML'i (gerekirse ertelenmiş çözümle) veren nesne.
+ * @return {Promise<{entry: function(): (FormEntry|Promise<FormEntry>)}>} Girdiyi (gerekirse ertelenmiş çözümle) veren nesne.
  */
 function ensureSource(rest, id, kind) {
   const key = hostKey(rest, id, kind);
@@ -205,11 +224,12 @@ function ensureSource(rest, id, kind) {
     return remember(
       sources,
       key,
-      linkItems(link).then((items) => {
+      linkData(link).then((data) => {
+        const items = (data && data.items) || {};
         if (typeof items[id] !== 'string' || items[id] === '') {
-          throw new Error('missing'); // sourceHtml bir kez tek istekle yeniden dener
+          throw new Error('missing'); // sourceEntry bir kez tek istekle yeniden dener
         }
-        return { html: () => items[id] };
+        return { entry: () => entryOf(data, items[id], id) };
       })
     );
   }
@@ -221,24 +241,24 @@ function ensureSource(rest, id, kind) {
         throw new Error('empty');
       }
       markReady(id);
-      return { html: () => data.html };
+      return { entry: () => entryOf(data, data.html, id) };
     })
   );
 }
 
-/** Ön alma bağlantısı adresi => çözülmüş `items` sözü (bağlantı başına bir kez). */
+/** Ön alma bağlantısı adresi => çözülmüş yanıt sözü (bağlantı başına bir kez). */
 const linkBatches = new Map();
 
 /**
  * @param {string} href Doğrulanmış toplu uç adresi.
- * @return {Promise<Record<string, string>>} Ürün => HTML.
+ * @return {Promise<any>} Yanıt (`items`: ürün => HTML; `assets`: isteğe bağlı paketler).
  */
-function linkItems(href) {
+function linkData(href) {
   if (!linkBatches.has(href)) {
     remember(
       linkBatches,
       href,
-      getJson(href).then((data) => (data && data.items) || {})
+      getJson(href).then((data) => data || {})
     );
   }
   return linkBatches.get(href);
@@ -282,20 +302,51 @@ function nativePrefetch() {
 let nativeSupport = null;
 
 /**
- * HTML: önbellekteki kaynak çözülemezse (toplu yanıtta yoksa) bir kez tek istekle yeniden alınır.
+ * Form girdisi: önbellekteki kaynak çözülemezse (toplu yanıtta yoksa) bir kez tek istekle yeniden alınır.
  *
  * @param {string} rest Kök REST adresi.
  * @param {string} id   Ürün kimliği.
  * @param {string} kind Kap türü.
- * @return {Promise<string>} HTML.
+ * @return {Promise<FormEntry>} Girdi.
  */
-async function sourceHtml(rest, id, kind) {
+async function sourceEntry(rest, id, kind) {
   try {
-    return await (await ensureSource(rest, id, kind)).html();
+    return await (await ensureSource(rest, id, kind)).entry();
   } catch {
     sources.delete(hostKey(rest, id, kind));
-    return (await ensureSource(rest, id, kind)).html();
+    return (await ensureSource(rest, id, kind)).entry();
   }
+}
+
+/** Kampanya çubuğu paketi bu sayfada istendi mi (bir kez). */
+let progressRequested = false;
+
+/**
+ * Kampanyalı ürünün katmanı kurulurken canlı çubuk paketi (bir kez): stil kap DOM'a girmeden ÖNCE satır içi eklenir
+ * (katman hiçbir karede stilsiz değil), betik eşzamansız yüklenir ve kendi `scan`'iyle katmandaki çubuğu bağlar.
+ * Adres yalnız sunucu yanıtından gelir ve `lazyAsset` ile doğrulanmıştır; sayfada paket zaten varsa hiçbir şey yapmaz.
+ *
+ * @param {{script: string, style: string}|null} info Paket bilgisi.
+ */
+function loadProgress(info) {
+  if (!info || progressRequested) {
+    return;
+  }
+  progressRequested = true;
+  if (info.style && !document.getElementById('donation-panel-inline-progress')) {
+    const style = document.createElement('style');
+    style.id = 'donation-panel-inline-progress';
+    style.textContent = info.style;
+    document.body.appendChild(style);
+  }
+  if (window.__donationPanelLiveProgress || document.getElementById('donation-panel-progress-js')) {
+    return;
+  }
+  const script = document.createElement('script');
+  script.id = 'donation-panel-progress-js';
+  script.src = info.script;
+  script.async = true;
+  document.head.appendChild(script);
 }
 
 /**
@@ -313,7 +364,8 @@ function ensureHost(rest, id, kind) {
     remember(
       hosts,
       key,
-      sourceHtml(rest, id, kind).then((html) => {
+      sourceEntry(rest, id, kind).then(({ html, progress }) => {
+        loadProgress(progress);
         const host = document.createElement('div');
         host.className = 'wdp-form-host';
         const template = document.createElement('template');
@@ -346,18 +398,19 @@ function prefetchBatch(rest, kind, ids) {
     // (boşta ana iş parçacığı yükü yok denecek kadar az).
     const request = fetchTrusted(buildBatchUrl(rest, part, kind)).then((response) => response.blob());
     let parsed = null;
-    const items = (blob) => {
+    const read = (blob) => {
       if (!parsed) {
         parsed = blob.text().then((text) => {
-          const data = JSON.parse(text);
-          if (data && data.prefetch === false) {
+          const data = JSON.parse(text) || {};
+          if (data.prefetch === false) {
             aheadDisabled = true;
           }
-          return (data && data.items) || {};
+          return data;
         });
       }
       return parsed;
     };
+    const items = async (blob) => (await read(blob)).items || {};
     part.forEach((id) => {
       const key = hostKey(rest, id, kind);
       const lazy = request.then(async (blob) => {
@@ -368,12 +421,13 @@ function prefetchBatch(rest, kind, ids) {
         markReady(id);
         // Çözümü erteleyen nesne: kap ilk kez kurulurken çözülür.
         return {
-          html: async () => {
-            const html = (await items(blob))[id];
+          entry: async () => {
+            const data = await read(blob);
+            const html = (data.items || {})[id];
             if (typeof html !== 'string' || html === '') {
               throw new Error('missing');
             }
-            return html;
+            return entryOf(data, html, id);
           },
         };
       });

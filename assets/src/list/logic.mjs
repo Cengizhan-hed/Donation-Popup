@@ -199,3 +199,40 @@ export function shouldPrefetchAhead(connection) {
 export function hostKey(rest, id, kind) {
   return `${String(rest || '')}|${String(id)}|${String(kind || 'popup')}`;
 }
+
+/** REST'le gelen katmanın isteğe bağlı paketleri: yalnız bilinen slug ve eklentinin kendi derleme yolu. */
+const LAZY_PATHS = { progress: /\/assets\/build\/progress\/index\.js$/ };
+
+/**
+ * REST yanıtındaki (`assets`) isteğe bağlı paket bilgisi. Adres yalnız SUNUCU YANITINDAN gelir (DOM özniteliğinden asla)
+ * ve yine de doğrulanır: aynı köken, kimlik bilgisi/parça yok, yol eklentinin `assets/build/<slug>/index.js` dosyası,
+ * sorgu yalnız `ver`. Kimlikler yalnız rakam. Geçersizse null (paket yüklenmez; katman durağan çubukla çalışır).
+ *
+ * @param {any}    data     Ayrıştırılmış yanıt.
+ * @param {string} slug     Paket (yalnız `progress`).
+ * @param {string} pageHref Sayfa adresi.
+ * @return {{ids: string[], script: string, style: string}|null} Bilgi.
+ */
+export function lazyAsset(data, slug, pageHref) {
+  const has = (obj, key) => Boolean(obj) && typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, key);
+  const entry = has(data, 'assets') && has(data.assets, slug) ? data.assets[slug] : null;
+  const pattern = has(LAZY_PATHS, slug) ? LAZY_PATHS[slug] : null;
+  if (!entry || !pattern || !Array.isArray(entry.ids)) {
+    return null;
+  }
+  let url;
+  let page;
+  try {
+    page = new URL(String(pageHref));
+    url = new URL(String(entry.script || ''), page.href);
+  } catch {
+    return null;
+  }
+  const keys = Array.from(url.searchParams.keys());
+  const query = keys.length === 0 || (keys.length === 1 && /^[A-Za-z0-9._-]{1,64}$/.test(url.searchParams.get('ver') || ''));
+  if (url.origin !== page.origin || url.username || url.password || url.hash || !pattern.test(url.pathname) || !query) {
+    return null;
+  }
+  const ids = uniqueIds(entry.ids.map(String));
+  return ids.length ? { ids, script: url.href, style: typeof entry.style === 'string' ? entry.style : '' } : null;
+}
