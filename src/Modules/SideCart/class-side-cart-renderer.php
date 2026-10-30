@@ -125,8 +125,9 @@ final class Side_Cart_Renderer {
 		$qty  = isset( $line['quantity'] ) ? max( 1, (int) $line['quantity'] ) : 1;
 
 		$meta = array();
-		if ( ! empty( $line['type'] ) ) {
-			$meta[] = '<span class="donation-panel-sc__tag">' . esc_html( self::type_label( (string) $line['type'] ) ) . '</span>';
+		$type_label = ! empty( $line['type'] ) ? self::type_label( (string) $line['type'] ) : '';
+		if ( '' !== $type_label ) {
+			$meta[] = '<span class="donation-panel-sc__tag">' . esc_html( $type_label ) . '</span>';
 		}
 		if ( ! empty( $line['unit_html'] ) ) {
 			$meta[] = '<span class="donation-panel-sc__num">' . wp_kses_post( (string) $line['unit_html'] ) . '</span>';
@@ -162,13 +163,15 @@ final class Side_Cart_Renderer {
 	}
 
 	/**
-	 * Bağış türü için okunur ad (bilinmeyen tür: ilk harfi büyük slug).
+	 * Bağış türü için çevrilmiş ad (Donation_Type tanımlarından). Bilinmeyen tür: '' (12.3 denetimi: ham, çevrilmemiş
+	 * slug — ör. "General" — bağışçıya gösterilmez).
 	 *
 	 * @param string $type Tür.
 	 * @return string
 	 */
-	private static function type_label( $type ) {
-		return ucfirst( str_replace( array( '-', '_' ), ' ', $type ) );
+	public static function type_label( $type ) {
+		$defs = \DonationPanel\Domain\Donation_Type::get_definitions();
+		return isset( $defs[ $type ]['label'] ) ? (string) $defs[ $type ]['label'] : '';
 	}
 
 	/**

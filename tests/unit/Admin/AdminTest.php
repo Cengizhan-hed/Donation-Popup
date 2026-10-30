@@ -337,6 +337,11 @@ final class AdminTest extends TestCase {
 		$this->assertSame(55, \DonationPanel\Modules\SideCart\Side_Cart_Suggestion::from_settings(new Settings())['product_id']);
 	}
 
+	public function test_side_cart_type_tag_is_translated_label_or_nothing(): void {
+		$this->assertSame('Share-based', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('shares'));
+		$this->assertSame('', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('general'), 'Ham slug bagisciya gosterilmez');
+	}
+
 	public function test_floating_button_corner_follows_setting(): void {
 		$this->assertStringContainsString('donation-panel-sc__fab--start', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::floating_button(0, 'start'));
 		$this->assertStringNotContainsString('--start', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::floating_button(0, 'end'));
