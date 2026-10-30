@@ -34,9 +34,25 @@ class Assets {
 	private $plugin_url;
 
 	/**
-	 * Tanımlar: slug => [ script, style ] (eklenti köküne göreli yollar).
+	 * Ortak çekirdek stil parçası: belirteçler, sıfırlama, düğme. Her yüzey stilinden önce, sayfada bir kez basılır.
+	 */
+	const CORE = 'ui-core';
+
+	/**
+	 * Ortak stil parçaları (yalnız CSS): slug => göreli stil yolu. Bir parçanın kuralları başka hiçbir pakette tekrar
+	 * edilmez ve parça, ona bağlı ilk yüzeyden ÖNCE bir kez basılır; böylece satır içi basım sırası (hangi yüzey önce
+	 * çizildi) hiçbir kuralın sonucunu değiştirmez (aynı özgüllükte sonraki tekrar önceki varyantı ezemez).
+	 */
+	const SHARED = array(
+		self::CORE    => 'assets/build/ui-core/index.css',
+		'ui-controls' => 'assets/build/ui-controls/index.css',
+		'ui-dpx'      => 'assets/build/ui-dpx/index.css',
+	);
+
+	/**
+	 * Tanımlar: slug => [ script, style, shared ] (eklenti köküne göreli yollar; shared = gereken ortak parçalar).
 	 *
-	 * @var array<string, array{script: string, style: string}>
+	 * @var array<string, array{script: string, style: string, shared: string[]}>
 	 */
 	private $definitions = array();
 
@@ -77,22 +93,31 @@ class Assets {
 	public function __construct( $plugin_dir, $plugin_url ) {
 		$this->plugin_dir = rtrim( (string) $plugin_dir, '/\\' ) . '/';
 		$this->plugin_url = rtrim( (string) $plugin_url, '/' ) . '/';
+		foreach ( self::SHARED as $slug => $style ) {
+			$this->definitions[ $slug ] = array(
+				'script' => '',
+				'style'  => $style,
+				'shared' => array(),
+			);
+		}
 	}
 
 	/**
 	 * Modül varlıklarını tanımlar (yalnız tanım; kayıt `register` içinde, çizim anında).
 	 *
-	 * @param string $slug   Modül slug'ı.
-	 * @param string $script Göreli betik yolu ('' = yok).
-	 * @param string $style  Göreli stil yolu ('' = yok).
+	 * @param string   $slug   Modül slug'ı.
+	 * @param string   $script Göreli betik yolu ('' = yok).
+	 * @param string   $style  Göreli stil yolu ('' = yok).
+	 * @param string[] $shared Stilin dayandığı ortak parçalar (`SHARED` anahtarları; çekirdek her zaman dahildir).
 	 * @return void
 	 */
-	public function define( $slug, $script = '', $style = '' ) {
+	public function define( $slug, $script = '', $style = '', $shared = array() ) {
 		$slug = sanitize_key( $slug );
-		if ( '' !== $slug ) {
+		if ( '' !== $slug && ! isset( self::SHARED[ $slug ] ) ) {
 			$this->definitions[ $slug ] = array(
 				'script' => ltrim( (string) $script, '/' ),
 				'style'  => ltrim( (string) $style, '/' ),
+				'shared' => array_values( array_intersect( array_map( 'strval', (array) $shared ), array_keys( self::SHARED ) ) ),
 			);
 		}
 	}
@@ -203,22 +228,43 @@ class Assets {
 	 * Gerekli ama henüz basılmamış modül stillerini satır içi `<style>` etiketleri olarak döndürür ve basıldı işaretler.
 	 * Yüzeyler bunu kendi çıktılarının ÖNÜNE ekler; aynı istekte ikinci çağrı boş döner.
 	 *
+	 * Sıra bağımsızlığı: her yüzey stilinden önce, henüz basılmamışsa, ortak çekirdek (`ui-core`) ve yüzeyin dayandığı
+	 * ortak parçalar bir kez basılır. Ortak kurallar yalnız bu parçalarda olduğundan sonra basılan bir yüzey, önce basılan
+	 * yüzeyin varyant kurallarını (ör. `.donation-panel-btn--outline`) aynı özgüllükteki temel kuralla ezemez.
+	 *
 	 * @return string
 	 */
 	public function inline_styles() {
 		$out = '';
-		foreach ( $this->styles as $slug => $printed ) {
-			if ( $printed ) {
+		foreach ( array_keys( $this->styles ) as $slug ) {
+			if ( $this->styles[ $slug ] ) {
 				continue;
 			}
-			$this->styles[ $slug ] = true;
-			$css                   = $this->style_css( (string) $slug );
-			if ( '' === $css ) {
-				continue;
+			$slug = (string) $slug;
+			foreach ( array_merge( array( self::CORE ), $this->definitions[ $slug ]['shared'] ) as $part ) {
+				$out .= $this->style_tag( $part );
 			}
-			$out .= '<style id="' . esc_attr( 'donation-panel-inline-' . str_replace( '_', '-', (string) $slug ) ) . '">' . $css . $this->brand_variables() . '</style>';
+			$out .= $this->style_tag( $slug );
 		}
 		return $out;
+	}
+
+	/**
+	 * Tek slug'ın satır içi `<style>` etiketi (bu istekte daha önce basıldıysa ya da CSS'i yoksa boş) ve basıldı işareti.
+	 *
+	 * @param string $slug Modül ya da ortak parça slug'ı.
+	 * @return string
+	 */
+	private function style_tag( $slug ) {
+		if ( ! empty( $this->styles[ $slug ] ) ) {
+			return '';
+		}
+		$this->styles[ $slug ] = true;
+		$css                   = $this->style_css( $slug );
+		if ( '' === $css ) {
+			return '';
+		}
+		return '<style id="' . esc_attr( 'donation-panel-inline-' . str_replace( '_', '-', $slug ) ) . '">' . $css . $this->brand_variables() . '</style>';
 	}
 
 	/**

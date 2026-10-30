@@ -1,8 +1,7 @@
 /**
  * Donation Panel — teşekkür ekranı: kutlama (sade konfeti) ve paylaşım. Yalnız ilgili öğe olan sayfada yüklenir.
  */
-import '../campaign/base.css';
-import '../ui2-shared/tokens.css';
+// Ortak çekirdek (ui-core) ve yüzey belirteçleri (ui-dpx) ayrı parça; Assets bu paketten önce bir kez basar.
 import './thanks.css';
 import { prefersReducedMotion, confettiSpec, shareOrCopy } from './logic.mjs';
 import { syncColors } from '../ui2-shared/color-sync.mjs';

@@ -63,7 +63,7 @@ final class Side_Cart_Module implements Module_Interface {
 			return;
 		}
 		$this->container = $container;
-		$container->get( Assets::class )->define( self::SLUG, 'assets/build/side-cart/index.js', 'assets/build/side-cart/index.css' );
+		$container->get( Assets::class )->define( self::SLUG, 'assets/build/side-cart/index.js', 'assets/build/side-cart/index.css', array( 'ui-dpx' ) );
 
 		add_action( 'init', array( $this, 'register_shortcode' ) );
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );

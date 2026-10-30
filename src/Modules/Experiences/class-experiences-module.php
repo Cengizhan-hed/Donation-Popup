@@ -67,7 +67,7 @@ final class Experiences_Module implements Module_Interface {
 	public function register( Container $container ) {
 		$this->container = $container;
 
-		$container->get( Assets::class )->define( self::SLUG, 'assets/build/experiences/index.js', 'assets/build/experiences/index.css' );
+		$container->get( Assets::class )->define( self::SLUG, 'assets/build/experiences/index.js', 'assets/build/experiences/index.css', array( 'ui-controls' ) );
 		$container->get( Assets::class )->define( Compact_Card::ASSET, 'assets/build/compact/index.js', 'assets/build/compact/index.css' );
 
 		$this->cart = new Cart();

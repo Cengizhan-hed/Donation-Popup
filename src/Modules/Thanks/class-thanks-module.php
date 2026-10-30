@@ -48,7 +48,7 @@ final class Thanks_Module implements Module_Interface {
 	 */
 	public function register( Container $container ) {
 		$this->container = $container;
-		$container->get( Assets::class )->define( 'thanks', 'assets/build/thanks/index.js', 'assets/build/thanks/index.css' );
+		$container->get( Assets::class )->define( 'thanks', 'assets/build/thanks/index.js', 'assets/build/thanks/index.css', array( 'ui-dpx' ) );
 
 		add_action( 'woocommerce_before_thankyou', array( $this, 'render' ), 5 );
 	}

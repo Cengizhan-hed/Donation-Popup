@@ -4,8 +4,7 @@
  * Tetikleyiciler: [data-dp-sc-open] düğmeleri; olaylar: wc-blocks_added_to_cart, added_to_cart (jQuery varsa),
  * donation-panel:cart-added. Tema/oluşturucuya özel kod yok.
  */
-import '../campaign/base.css';
-import '../ui2-shared/tokens.css';
+// Ortak çekirdek (ui-core) ve yüzey belirteçleri (ui-dpx) ayrı parça; Assets bu paketten önce bir kez basar.
 import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 import { syncColors } from '../ui2-shared/color-sync.mjs';
 import './side-cart.css';

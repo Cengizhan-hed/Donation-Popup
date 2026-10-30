@@ -1,170 +1,5 @@
-/* Donation Panel — Experiences (E2A). Kaynak: design/tokens.css + design/components.css (seçili bölümler). Tema özel seçici yok. */
-.donation-panel, .donation-panel *, .donation-panel *::before, .donation-panel *::after { box-sizing: border-box; }
-.donation-panel { font-family: var(--dp-font-body); font-size: var(--dp-fs-base); line-height: var(--dp-lh-body); color: var(--dp-color-text); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; --dp-track: color-mix(in oklab, var(--dp-bridge-text) 8%, var(--dp-color-surface)); --dp-hair: color-mix(in oklab, var(--dp-bridge-text) 7%, var(--dp-color-surface)); }
-.donation-panel h1,.donation-panel h2,.donation-panel h3,.donation-panel h4 { font-family: var(--dp-font-heading); line-height: var(--dp-lh-snug); margin: 0; color: var(--dp-color-text); letter-spacing: -.01em; }
-.donation-panel p { margin: 0; }
-.donation-panel [hidden][hidden] { display: none; }
-/* Donation Panel — tasarım belirteçleri (design tokens)
- * Tek görsel dil. Hiçbir temaya/oluşturucuya özel seçici YOK.
- * "Tema köprüsü": değerler önce WordPress global stil / theme.json önayarlarından
- * (--wp--preset--*, --wp--custom--*) türetilir; yoksa nötr varsayılan kullanılır.
- * Mantıksal özellikler (inline/block) kullanılır -> RTL kendiliğinden çalışır. */
-
-:root, .donation-panel {
-  /* ---------- 1. Tema köprüsü (ham girdiler) ---------- */
-  --dp-bridge-primary:  var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e));
-  --dp-bridge-text:     var(--wp--preset--color--contrast, var(--wp--preset--color--foreground, #1c2330));
-  --dp-bridge-surface:  var(--wp--preset--color--base, var(--wp--preset--color--background, #ffffff));
-  --dp-bridge-radius:   var(--wp--custom--radius, 14px);
-
-  /* ---------- 2. Renk: marka ---------- */
-  --dp-color-primary: var(--dp-bridge-primary);
-  /* Düğme üstü yazı rengi: birincil rengin açıklığına göre otomatik (WCAG kontrastı). */
-  --dp-color-on-primary: #ffffff;
-  --dp-color-primary-strong: color-mix(in oklab, var(--dp-color-primary) 78%, #000);   /* metin/bağlantı */
-  --dp-color-primary-soft:   color-mix(in oklab, var(--dp-color-primary) 11%, var(--dp-color-surface));
-  --dp-color-primary-softer: color-mix(in oklab, var(--dp-color-primary) 5%, var(--dp-color-surface));
-  /* Eylem (ana düğme) rengi: tema ön ayarından ya da ürün/ayar değerinden; yoksa marka rengi. Beyaz yazı kontrastı için gerekirse koyulaştırılır. */
-  --dp-bridge-accent: var(--wp--preset--color--accent, var(--wp--preset--color--accent-1, var(--dp-bridge-primary)));
-  --dp-color-accent: var(--dp-accent, var(--dp-bridge-accent));
-  --dp-color-accent-solid: color-mix(in oklab, var(--dp-color-accent) 78%, #000);
-  --dp-color-primary-ring:   color-mix(in oklab, var(--dp-color-primary) 45%, transparent);
-
-  /* ---------- 3. Renk: yüzey ve metin ---------- */
-  --dp-color-surface:   var(--dp-bridge-surface);
-  --dp-color-surface-2: color-mix(in oklab, var(--dp-bridge-text) 4%, var(--dp-color-surface));
-  --dp-color-surface-3: color-mix(in oklab, var(--dp-bridge-text) 8%, var(--dp-color-surface));
-  --dp-color-scrim:     color-mix(in oklab, #0b1220 52%, transparent);
-  --dp-color-text:      var(--dp-bridge-text);
-  --dp-color-text-muted: color-mix(in oklab, var(--dp-bridge-text) 68%, var(--dp-color-surface)); /* >= 4.5:1 */
-  --dp-color-text-faint: color-mix(in oklab, var(--dp-bridge-text) 52%, var(--dp-color-surface)); /* yalnız büyük/dekoratif */
-  --dp-color-border:     color-mix(in oklab, var(--dp-bridge-text) 14%, var(--dp-color-surface));
-  --dp-color-border-strong: color-mix(in oklab, var(--dp-bridge-text) 32%, var(--dp-color-surface));
-
-  /* ---------- 4. Renk: durum ---------- */
-  --dp-color-success: #137a4b;  --dp-color-success-soft: #e6f5ed;
-  --dp-color-warning: #8a5a00;  --dp-color-warning-soft: #fff3d6;
-  --dp-color-danger:  #b42318;  --dp-color-danger-soft:  #fdeceb;
-  --dp-color-info:    #1d5fb8;  --dp-color-info-soft:    #e7f0fc;
-  --dp-color-gold:    #b7791f;  /* kutlama/ara hedef vurgusu */
-
-  /* ---------- 5. Yazı ---------- */
-  /* Tema yazısı devralınır; yoksa sistem yazısı. Web yazısı yüklenmez (hız). */
-  --dp-font-body: var(--wp--preset--font-family--body, var(--wp--preset--font-family--system-font, inherit));
-  --dp-font-heading: var(--wp--preset--font-family--heading, var(--dp-font-body));
-  --dp-font-system: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  --dp-font-numeric: var(--dp-font-body);
-  --dp-fs-xs: 0.75rem;   --dp-fs-sm: 0.875rem;  --dp-fs-base: 1rem;
-  --dp-fs-md: 1.125rem;  --dp-fs-lg: 1.375rem;  --dp-fs-xl: 1.75rem;  --dp-fs-2xl: clamp(2rem, 7vw, 2.75rem);
-  --dp-lh-tight: 1.15;   --dp-lh-snug: 1.3;     --dp-lh-body: 1.5;
-  --dp-fw-regular: 400;  --dp-fw-medium: 500;   --dp-fw-semibold: 650; --dp-fw-bold: 750;
-
-  /* ---------- 6. Boşluk (4 px ritmi) ---------- */
-  --dp-space-1: 4px;  --dp-space-2: 8px;  --dp-space-3: 12px; --dp-space-4: 16px;
-  --dp-space-5: 20px; --dp-space-6: 24px; --dp-space-8: 32px; --dp-space-10: 40px; --dp-space-12: 56px;
-  --dp-gutter: 20px;           /* mobil iç boşluk */
-  --dp-touch: 48px;            /* asgari dokunma (WCAG 2.2: 44+) */
-
-  /* ---------- 7. Köşe ---------- */
-  --dp-radius: var(--dp-bridge-radius);
-  --dp-radius-xs: calc(var(--dp-radius) * 0.4);
-  --dp-radius-sm: calc(var(--dp-radius) * 0.65);
-  --dp-radius-md: var(--dp-radius);
-  --dp-radius-lg: calc(var(--dp-radius) * 1.6);
-  --dp-radius-sheet: 28px;
-  --dp-radius-card: 16px;
-  --dp-radius-field: 14px;
-  --dp-radius-btn: 16px;
-  --dp-radius-pill: 999px;
-
-  /* ---------- 8. Gölge / katman ---------- */
-  --dp-shadow-1: 0 1px 2px rgb(16 24 40 / .06), 0 1px 1px rgb(16 24 40 / .04);
-  --dp-shadow-2: 0 2px 6px rgb(16 24 40 / .07), 0 8px 20px -6px rgb(16 24 40 / .10);
-  --dp-shadow-3: 0 4px 10px rgb(16 24 40 / .06), 0 24px 56px -12px rgb(16 24 40 / .28);
-  --dp-shadow-sheet: 0 -6px 30px rgb(16 24 40 / .18), 0 -1px 0 rgb(16 24 40 / .06);
-  --dp-shadow-focus: 0 0 0 3px var(--dp-color-surface), 0 0 0 5px var(--dp-color-primary-strong);
-  --dp-z-base: 1; --dp-z-sticky: 10; --dp-z-overlay: 99990; --dp-z-toast: 99999;
-
-  /* ---------- 9. Hareket ---------- */
-  --dp-dur-instant: 90ms; --dp-dur-fast: 160ms; --dp-dur-base: 260ms; --dp-dur-slow: 480ms; --dp-dur-fill: 1400ms;
-  --dp-ease-out: cubic-bezier(.22, 1, .36, 1);
-  --dp-ease-in-out: cubic-bezier(.65, 0, .35, 1);
-  --dp-ease-spring: cubic-bezier(.34, 1.45, .5, 1);       /* hafif yay (taşma) */
-  --dp-ease-spring-soft: cubic-bezier(.3, 1.2, .5, 1);
-  --dp-press-scale: .97;
-}
-
-/* Otomatik okunabilir düğme yazısı: göreli renk sözdizimi destekleniyorsa. */
-@supports (color: oklch(from red l c h)) {
-  :root, .donation-panel { --dp-color-on-primary: oklch(from var(--dp-color-primary) clamp(0, (0.66 - l) * 1000, 1) 0 0); --dp-color-accent-solid: oklch(from var(--dp-color-accent) min(l, 0.52) c h); --dp-color-primary-strong: oklch(from var(--dp-color-primary) min(l, 0.48) c h); }
-}
-
-/* ---------- Koyu mod ---------- */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-dp-scheme="light"]), :root:not([data-dp-scheme="light"]) .donation-panel {
-    --dp-color-surface: #14181f;  --dp-bridge-text: #eef1f5;
-    --dp-color-primary: color-mix(in oklab, var(--dp-bridge-primary) 78%, #fff);
-    --dp-color-primary-strong: color-mix(in oklab, var(--dp-bridge-primary) 55%, #fff);
-    --dp-color-primary-soft: color-mix(in oklab, var(--dp-color-primary) 18%, var(--dp-color-surface));
-    --dp-color-primary-softer: color-mix(in oklab, var(--dp-color-primary) 9%, var(--dp-color-surface));
-    --dp-color-scrim: rgb(0 0 0 / .66);
-    --dp-color-success: #5fd39b; --dp-color-success-soft: #12301f;
-    --dp-color-warning: #f3c260; --dp-color-warning-soft: #33280d;
-    --dp-color-danger:  #ff8f86; --dp-color-danger-soft:  #3b1613;
-    --dp-color-info:    #8bb8f5; --dp-color-info-soft:    #14233a;
-    --dp-color-gold: #e7b552;
-    --dp-shadow-3: 0 4px 10px rgb(0 0 0 / .3), 0 24px 56px -12px rgb(0 0 0 / .7);
-    --dp-shadow-sheet: 0 -6px 30px rgb(0 0 0 / .5), 0 -1px 0 rgb(255 255 255 / .06);
-  }
-}
-:root[data-dp-scheme="dark"], :root[data-dp-scheme="dark"] .donation-panel {
-  --dp-color-surface: #14181f;  --dp-bridge-text: #eef1f5;
-  --dp-color-primary: color-mix(in oklab, var(--dp-bridge-primary) 78%, #fff);
-  --dp-color-primary-strong: color-mix(in oklab, var(--dp-bridge-primary) 55%, #fff);
-  --dp-color-primary-soft: color-mix(in oklab, var(--dp-color-primary) 18%, var(--dp-color-surface));
-  --dp-color-primary-softer: color-mix(in oklab, var(--dp-color-primary) 9%, var(--dp-color-surface));
-  --dp-color-scrim: rgb(0 0 0 / .66);
-  --dp-color-success: #5fd39b; --dp-color-success-soft: #12301f;
-  --dp-color-warning: #f3c260; --dp-color-warning-soft: #33280d;
-  --dp-color-danger:  #ff8f86; --dp-color-danger-soft:  #3b1613;
-  --dp-color-info:    #8bb8f5; --dp-color-info-soft:    #14233a;
-  --dp-color-gold: #e7b552;
-  --dp-shadow-3: 0 4px 10px rgb(0 0 0 / .3), 0 24px 56px -12px rgb(0 0 0 / .7);
-  --dp-shadow-sheet: 0 -6px 30px rgb(0 0 0 / .5), 0 -1px 0 rgb(255 255 255 / .06);
-}
-
-/* ---------- Azaltılmış hareket: süreler ~0, yay yok ---------- */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --dp-dur-fast: 1ms; --dp-dur-base: 1ms; --dp-dur-slow: 1ms; --dp-dur-fill: 1ms;
-    --dp-ease-spring: linear; --dp-ease-spring-soft: linear; --dp-press-scale: 1;
-  }
-}
-
-.donation-panel :focus-visible { box-shadow: var(--dp-shadow-focus); border-radius: var(--dp-radius-sm); }
-.donation-panel [tabindex="-1"]:focus, .donation-panel [tabindex="-1"]:focus-visible { outline: none; box-shadow: none; }
-.donation-panel .donation-panel-sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.donation-panel-num { font-variant-numeric: tabular-nums; font-family: var(--dp-font-numeric); }
-.donation-panel-muted { color: var(--dp-color-text-muted); }
-.donation-panel-eyebrow { font-size: var(--dp-fs-xs); font-weight: var(--dp-fw-semibold); letter-spacing: .08em; text-transform: uppercase; color: var(--dp-color-primary-strong); }
-
-/* ---------- Düğmeler ---------- */
-.donation-panel-btn { --_bg: var(--dp-color-primary); --_fg: var(--dp-color-on-primary); display: inline-flex; align-items: center; justify-content: center; gap: var(--dp-space-2); min-block-size: var(--dp-touch); padding: 0 var(--dp-space-6); border: 0; border-radius: var(--dp-radius-md); background: var(--_bg); color: var(--_fg); font: inherit; font-weight: var(--dp-fw-semibold); font-size: var(--dp-fs-base); cursor: pointer; text-decoration: none; position: relative; transition: transform var(--dp-dur-fast) var(--dp-ease-spring), box-shadow var(--dp-dur-base) var(--dp-ease-out), filter var(--dp-dur-fast), background var(--dp-dur-fast); box-shadow: 0 1px 0 rgb(255 255 255 / .18) inset, var(--dp-shadow-1); user-select: none; }
-.donation-panel-btn:hover { filter: brightness(1.06); box-shadow: 0 1px 0 rgb(255 255 255 / .18) inset, var(--dp-shadow-2); }
-.donation-panel-btn:active { transform: scale(var(--dp-press-scale)); filter: brightness(.97); }
-.donation-panel-btn--block { inline-size: 100%; }
-.donation-panel-btn--lg { min-block-size: 56px; font-size: var(--dp-fs-md); border-radius: var(--dp-radius-lg); }
-.donation-panel-btn--secondary { --_bg: var(--dp-color-primary-soft); --_fg: var(--dp-color-primary-strong); box-shadow: none; }
-.donation-panel-btn--ghost { --_bg: transparent; --_fg: var(--dp-color-text); box-shadow: inset 0 0 0 1.5px var(--dp-color-border-strong); }
-.donation-panel-btn--ghost:hover { --_bg: var(--dp-color-surface-2); filter: none; }
-.donation-panel-btn--text { --_bg: transparent; --_fg: var(--dp-color-primary-strong); box-shadow: none; padding-inline: var(--dp-space-3); min-block-size: 44px; }
-.donation-panel-btn[disabled], .donation-panel-btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; filter: none; }
-.donation-panel-btn.is-loading { pointer-events: none; --_fg: transparent; color: transparent; }
-.donation-panel-btn.is-loading::after { content: ""; position: absolute; inline-size: 22px; block-size: 22px; border-radius: 50%; border: 3px solid color-mix(in oklab, var(--dp-color-on-primary) 35%, transparent); border-block-start-color: var(--dp-color-on-primary); animation: dp-spin .7s linear infinite; }
-.donation-panel-iconbtn { inline-size: 44px; block-size: 44px; display: inline-grid; place-items: center; border: 0; --dp-s-bg: transparent; background: var(--dp-s-bg); color: inherit; border-radius: 50%; cursor: pointer; transition: background var(--dp-dur-fast), transform var(--dp-dur-fast) var(--dp-ease-spring); }
-.donation-panel-iconbtn:hover { --dp-s-bg: var(--dp-color-surface-3); }
-.donation-panel-iconbtn:active { transform: scale(.9); }
-.donation-panel-ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Donation Panel — Experiences (E2A): form, katman ve yüzey kuralları. Belirteç/sıfırlama/düğme çekirdeği ui2-shared/core.css
+ * içindedir (sayfada bir kez, her yüzeyden önce basılır); burada tekrar tanımlanmaz. Tema özel seçici yok. */
 /* ---------- Katman (overlay) ve yüzeyler: popup / yan panel / alt panel ---------- */
 .donation-panel-overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay); display: grid; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 0; border: 0; color: inherit; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; overflow: hidden; transition: opacity var(--dp-dur-base) var(--dp-ease-out), visibility 0s linear var(--dp-dur-base); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
 /* <dialog> üst katmanda (başka eklentinin yüzen öğeleri üste çıkamaz); kapalıyken hiç yerleşmez. */
@@ -272,22 +107,6 @@
 /* ---------- Sayfa içi form ---------- */
 .donation-panel-inline { max-inline-size: 520px; margin-inline: auto; background: var(--dp-color-surface); border: 1px solid var(--dp-color-border); border-radius: var(--dp-radius-lg); box-shadow: var(--dp-shadow-2); overflow: hidden; display: flex; flex-direction: column; }
 .donation-panel-inline .donation-panel-surface__head { padding-block-start: var(--dp-space-6); }
-/* ---------- Animasyonlar ---------- */
-@keyframes dp-spin { to { transform: rotate(360deg); } }
-@keyframes dp-fadeup { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-@keyframes dp-shake { 20% { transform: translateX(-5px); } 45% { transform: translateX(5px); } 70% { transform: translateX(-3px); } 100% { transform: none; } }
-@keyframes dp-shimmer { to { transform: translateX(100%); } }
-@keyframes dp-skel { to { background-position: -150% 0; } }
-@keyframes dp-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes dp-toast { from { opacity: 0; transform: translateY(24px) scale(.96); } to { opacity: 1; transform: none; } }
-@keyframes dp-newrow { 0% { background: var(--dp-color-primary-soft); } 100% { background: transparent; } }
-@keyframes dp-pop { 0% { transform: scale(0); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
-@keyframes dp-draw { to { stroke-dashoffset: 0; } }
-@keyframes dp-confetti { 0% { transform: translate3d(0,-10vh,0) rotate(0); opacity: 1; } 100% { transform: translate3d(var(--x), 70vh, 0) rotate(var(--r)); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) {
-  :root .donation-panel.donation-panel *, :root .donation-panel.donation-panel *::before, :root .donation-panel.donation-panel *::after { animation-duration: 1ms; animation-iteration-count: 1; transition-duration: 1ms; }
-  :root .donation-panel.donation-panel .donation-panel-bar__fill::after, :root .donation-panel.donation-panel .donation-panel-confetti { display: none; }
-}
 
 
 /* ---------- Segment (bağış türü) ---------- */
@@ -359,7 +178,7 @@
 .donation-panel-custom__sym { font-weight: 700; color: var(--dp-color-text); }
 .donation-panel-custom__in::placeholder { color: var(--dp-color-text-muted); }
 .donation-panel-field--custom.has-error .donation-panel-custom { border-style: solid; border-color: var(--dp-color-danger); background: var(--dp-color-danger-soft); }
-.donation-panel-impact { font-size: 12.5px; color: var(--dp-color-text-muted); margin-block-start: 8px; }
+/* Etki satırı (.donation-panel-impact) kampanya paketinin öğesidir; stili yalnız campaign.css'te (sıra bağımsızlığı). */
 
 /* Anahtar: "Birinin adına bağışla" */
 .donation-panel-dedi { display: flex; flex-direction: column; gap: 12px; }

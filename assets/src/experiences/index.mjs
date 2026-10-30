@@ -1,7 +1,7 @@
 /**
  * Donation Panel — Experiences giriş noktası (yalnız form görünen sayfada yüklenir).
  */
-import '../ui2-shared/controls.css';
+// Ortak çekirdek (ui-core) ve form denetimleri (ui-controls) ayrı parça: Assets bu paketten önce bir kez basar.
 import './base.css';
 import '../ui2-shared/states.css';
 import { createForm } from './form.mjs';
