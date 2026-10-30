@@ -16,7 +16,7 @@ const require = createRequire(path.join(ROOT, 'package.json'));
 const postcss = require('postcss');
 
 /** Satır içi basılan ön yüz parçaları (Assets::SHARED + modül tanımları). */
-const CHUNKS = ['ui-core', 'ui-controls', 'ui-dpx', 'experiences', 'compact', 'list', 'campaign', 'donor-account', 'side-cart', 'thanks'];
+const CHUNKS = ['ui-core', 'ui-controls', 'ui-dpx', 'ui-fields', 'experiences', 'compact', 'compact-tax', 'compact-pay', 'progress', 'list', 'campaign', 'donor-account', 'side-cart', 'thanks'];
 
 /**
  * Parçanın anahtarları: "@bağlam|seçici" ve "@bağlam|seçici|özellik" (aynı seçiciye farklı özellik yazan parçalar

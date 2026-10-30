@@ -67,8 +67,12 @@ final class Experiences_Module implements Module_Interface {
 	public function register( Container $container ) {
 		$this->container = $container;
 
-		$container->get( Assets::class )->define( self::SLUG, 'assets/build/experiences/index.js', 'assets/build/experiences/index.css', array( 'ui-controls' ) );
-		$container->get( Assets::class )->define( Compact_Card::ASSET, 'assets/build/compact/index.js', 'assets/build/compact/index.css' );
+		$container->get( Assets::class )->define( self::SLUG, 'assets/build/experiences/index.js', 'assets/build/experiences/index.css', array( 'ui-controls', 'ui-fields' ) );
+		// Compact kart form paketinin stilini taşımaz (katmanlar, tutar kartları, adımlar): yalnız ortak alan parçaları;
+		// vergi beyanı ve doğrudan bağış stilleri yalnız gereken kartta (yalnız CSS parçaları).
+		$container->get( Assets::class )->define( Compact_Card::ASSET, 'assets/build/compact/index.js', 'assets/build/compact/index.css', array( 'ui-controls', 'ui-fields' ) );
+		$container->get( Assets::class )->define( Compact_Card::ASSET_TAX, '', 'assets/build/compact-tax/index.css', array( 'ui-controls', 'ui-fields' ) );
+		$container->get( Assets::class )->define( Compact_Card::ASSET_PAY, '', 'assets/build/compact-pay/index.css', array( 'ui-controls', 'ui-fields' ) );
 
 		$this->cart = new Cart();
 		$this->cart->register();
@@ -181,8 +185,14 @@ final class Experiences_Module implements Module_Interface {
 		}
 		$this->rendered = true;
 		$assets         = $this->container->get( Assets::class );
-		$assets->require_style( self::SLUG );
+		// Form paketinin stili yalnız doğrudan bağışta (ödeme katmanı: popup / mobilde alttan panel yüzeyi) gerekir.
+		if ( ! empty( $model['direct'] ) ) {
+			$assets->require_style( self::SLUG );
+		}
 		$assets->enqueue( Compact_Card::ASSET );
+		foreach ( Compact_Card::extra_styles( $model ) as $donation_panel_part ) {
+			$assets->require_style( $donation_panel_part );
+		}
 		return $assets->inline_styles() . $html;
 	}
 

@@ -1,9 +1,9 @@
 /**
  * Donation Panel — Experiences giriş noktası (yalnız form görünen sayfada yüklenir).
  */
-// Ortak çekirdek (ui-core) ve form denetimleri (ui-controls) ayrı parça: Assets bu paketten önce bir kez basar.
+// Ortak çekirdek (ui-core), form denetimleri (ui-controls) ve alan parçaları + durum yalıtımı (ui-fields; compact kartla
+// ortak) ayrı parça: Assets bu paketten önce bir kez basar.
 import './base.css';
-import '../ui2-shared/states.css';
 // Canlı kampanya çubuğu: stil + betik ayrı `progress` paketinde; yalnız kampanyalı form/kart sayfada çizilirken kuyruğa
 // girer (kampanyasız sayfada bayt yok). Katmanda sonradan kurulan çubuğu paket `dp:open` olayıyla bağlar.
 import { createForm } from './form.mjs';

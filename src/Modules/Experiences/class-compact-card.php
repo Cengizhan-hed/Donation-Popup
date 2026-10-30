@@ -35,6 +35,13 @@ final class Compact_Card {
 	const ASSET = 'compact';
 
 	/**
+	 * Koşullu stil parçaları (yalnız CSS): vergi beyanı ve doğrudan bağış (ödeme adımı + teşekkür). Gerekmeyen kartta
+	 * basılmaz (sepetli, beyansız kart yalnız temel paketi taşır).
+	 */
+	const ASSET_TAX = 'compact-tax';
+	const ASSET_PAY = 'compact-pay';
+
+	/**
 	 * Kart alanları (bilgiler adımı; sıra: ad, e-posta, telefon).
 	 */
 	const FIELDS = array( 'donation_full_name', 'donation_email', 'donation_phone' );
@@ -63,6 +70,24 @@ final class Compact_Card {
 	 */
 	public static function supports( array $model ) {
 		return ! empty( $model['product_id'] ) && 'shares' !== ( isset( $model['kind'] ) ? (string) $model['kind'] : '' );
+	}
+
+	/**
+	 * Bu kartın temel paket dışında gerektirdiği stil parçaları (saf; test edilebilir).
+	 *
+	 * @param array<string, mixed> $model Form modeli.
+	 * @return string[]
+	 */
+	public static function extra_styles( array $model ) {
+		$out   = array();
+		$steps = array_column( (array) ( isset( $model['steps'] ) ? $model['steps'] : array() ), 'id' );
+		if ( in_array( 'tax_relief', $steps, true ) ) {
+			$out[] = self::ASSET_TAX;
+		}
+		if ( ! empty( $model['direct'] ) ) {
+			$out[] = self::ASSET_PAY;
+		}
+		return $out;
 	}
 
 	/**
