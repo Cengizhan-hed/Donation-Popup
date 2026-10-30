@@ -8,7 +8,9 @@
  * - Katman açıkken sayfanın geri kalanı `inert` olur (odak/ekran okuyucu dışarı kaçmaz); sayaçlı geri alınır.
  *   Yerel kipli `<dialog>` (showModal) kullanan katman `native: true` verir: tarayıcı arka planı zaten etkisiz kılar,
  *   öznitelik yazılmaz (her `inert` özniteliği o alt ağacın stilini yeniden hesaplatır).
- * - Kaydırma çubuğu kaybolunca masaüstünde sıçrama olmasın diye `scrollbar-gutter: stable` verilir.
+ * - Kaydırma çubuğu kaybolunca masaüstünde sıçrama olmasın diye, YALNIZ çubuk gerçekten yer kaplıyorsa
+ *   `scrollbar-gutter: stable` (desteklenmiyorsa çubuk genişliği kadar `padding-inline-end`) verilir; kaplama çubukta
+ *   ya da taşmasız sayfada hiçbir şey yazılmaz (aksi halde boşluk eklenip sayfa yana kayardı).
  *
  * Her paket ayrı derlendiği için durum `window.__dpScrollLock` üzerinde ortaktır (kopyalar aynı kaydı görür).
  */
@@ -20,12 +22,51 @@ const FLAG = '__dpScrollLock';
  */
 function state() {
   if (!window[FLAG]) {
-    window[FLAG] = { owners: new Map(), inert: new Map(), gutter: null, overflow: null };
+    window[FLAG] = { owners: new Map(), inert: new Map(), gutter: null, overflow: null, pad: null, gap: null };
   }
-  if (!('overflow' in window[FLAG])) {
-    window[FLAG].overflow = null; // eski sürüm paketinin kurduğu durum
-  }
+  ['overflow', 'pad', 'gap'].forEach((key) => {
+    if (!(key in window[FLAG])) {
+      window[FLAG][key] = null; // eski sürüm paketinin kurduğu durum
+    }
+  });
   return window[FLAG];
+}
+
+/**
+ * Klasik kaydırma çubuğunun kapladığı genişlik (px; kaplama çubukta/taşmasız sayfada 0). Önbellekli; pencere boyutu
+ * değişince yeniden ölçülür. Okuma düzen ister: katman bunu dokunma NİYETİNDE (`measureScrollbar`) çağırır, açılış
+ * tıklamasında okuma olmaz (önbellek boşsa — ör. yalnız klavyeyle açılış — bir kez ölçülür).
+ *
+ * @return {number} Genişlik.
+ */
+function scrollbarGap() {
+  const s = state();
+  if (s.gap === null) {
+    s.gap = Math.max(0, Math.round(window.innerWidth - document.documentElement.clientWidth));
+    if (!s.gapReset) {
+      s.gapReset = true;
+      window.addEventListener(
+        'resize',
+        () => {
+          if (!s.owners.size) {
+            s.gap = null;
+          }
+        },
+        { passive: true }
+      );
+    }
+  }
+  return s.gap;
+}
+
+/**
+ * Niyet anında (üstüne gelme/basma/odak; düzen zaten hesaplı) kaydırma çubuğunu ölçer; kilitliyken ölçmez.
+ *
+ * @return {number} Genişlik.
+ */
+export function measureScrollbar() {
+  const s = state();
+  return s.owners.size ? s.gap || 0 : scrollbarGap();
 }
 
 /**
@@ -84,9 +125,16 @@ function apply() {
   const html = document.documentElement;
   const locked = s.owners.size > 0;
 
-  // Kaydırma kilidi (satır içi; kök sınıfı yok) ve kaydırma çubuğu sıçramasını önleme.
+  // Kaydırma çubuğu sıçraması (titreme): çubuk YALNIZ gerçekten yer kaplıyorsa (klasik çubuk) yeri korunur; kaplamıyorsa
+  // (kaplama çubuk / taşma yok) `stable` boşluk EKLEYİP sayfayı sola kaydırırdı. Ölçüm kilitten önce (niyet anında) yapılır.
+  const gap = locked ? (s.gutter !== null || s.pad !== null ? -1 : scrollbarGap()) : 0;
+  const keep = locked && (gap !== 0 || s.gutter !== null || s.pad !== null);
+  const gutterOk = typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('scrollbar-gutter', 'stable');
+  // Kaydırma kilidi (satır içi; kök sınıfı yok).
   pinStyle(html, s, 'overflow', 'overflow', 'hidden', locked);
-  pinStyle(html, s, 'gutter', 'scrollbar-gutter', 'stable', locked);
+  pinStyle(html, s, 'gutter', 'scrollbar-gutter', 'stable', keep && gutterOk);
+  // scrollbar-gutter desteklemeyen tarayıcı: çubuk genişliği kadar iç boşluk.
+  pinStyle(html, s, 'pad', 'padding-inline-end', `${Math.max(0, gap)}px`, keep && !gutterOk && (gap > 0 || s.pad !== null));
   if (!html.getAttribute('style')) {
     html.removeAttribute('style');
   }

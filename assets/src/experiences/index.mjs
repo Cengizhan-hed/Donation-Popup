@@ -130,7 +130,7 @@ function mount(root) {
     // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
     root.addEventListener('dp:added', () => layer && layer.close());
     // Dışarıdan dokunma niyeti (ör. liste/mağaza kartı): katman DOM'u + form şimdi kurulur, tıklamada yalnız gösterilir.
-    root.addEventListener('dp:warm', () => layer && layer.build());
+    root.addEventListener('dp:warm', () => layer && layer.warm());
   } else {
     root.dataset.dpPresented = 'inline';
     startWhenNear(root);

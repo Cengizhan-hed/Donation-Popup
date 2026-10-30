@@ -277,12 +277,18 @@ export function createForm(root, hooks = {}) {
     return needsAmount && Boolean(section && section.querySelector('[data-dp-amounts]')) && !(state.amount > 0);
   };
 
+  let paintedStep = null;
   const paintProgress = () => {
     // Doğrudan bağışta ödeme sayfası son (form dışı) adımdır: göstergede ek çubuk olarak sayılır.
     const extraSteps = direct ? stepsBar.length - sections.length : 0;
     const multi = sections.length + extraSteps > 1;
+    // Adım geçişinde yalnız yeni adım içeri süzülür; ilk çizimde/katman açılırken içerik sabit (panel kayarken içerik
+    // ayrıca hareket etmesin: titreme yok).
+    const changed = paintedStep !== null && paintedStep !== state.step;
+    paintedStep = state.step;
     sections.forEach((section, index) => {
       section.hidden = index !== state.step;
+      section.classList.toggle('is-entering', changed && index === state.step);
     });
     stepsBar.forEach((bar, index) => {
       bar.classList.toggle('is-done', index < state.step);

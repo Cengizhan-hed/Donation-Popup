@@ -11,12 +11,15 @@
 .donation-panel-ac__trigger:active { transform: scale(.92); }
 
 /* Katman: geniş ekranda ortada pencere, dar ekranda alttan panel (köşe 28, tutma çubuğu) */
-.donation-panel-ac__overlay { position: fixed; inset: 0; z-index: calc(var(--dp-z-overlay, 99990) + 1); display: grid; place-items: center; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 16px; border: 0; color: inherit; overflow: hidden; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; transition: opacity 260ms var(--dp-ease-out), visibility 0s linear 260ms; }
+.donation-panel-ac__overlay { position: fixed; inset: 0; z-index: calc(var(--dp-z-overlay, 99990) + 1); display: grid; place-items: center; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 16px; border: 0; color: inherit; overflow: hidden; overflow: clip; background: transparent; visibility: hidden; transition: visibility 0s linear 260ms; }
+/* 12.3: karartma ayrı katman (yalnız opaklık), pencere tam opak; 260 ms yaysız (taşma/titreme yok). */
+.donation-panel-ac__overlay::before { content: ""; position: absolute; inset: 0; background: var(--dp-color-scrim); opacity: 0; transition: opacity 260ms var(--dp-ease-out); }
+.donation-panel-ac__overlay.is-open::before { opacity: 1; }
 /* <dialog> üst katmanda; kapalıyken hiç yerleşmez. */
 .donation-panel-ac__overlay:not([open]) { display: none; }
 .donation-panel-ac__overlay::backdrop { background: transparent; }
-.donation-panel-ac__overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
-.donation-panel-ac__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 440px); max-block-size: min(100%, 760px); overflow: hidden; background: var(--dpx-card); color: var(--dp-color-text); border-radius: var(--dpx-r-sheet); box-shadow: var(--dp-shadow-3); transform: translateY(16px) scale(.98); transition: transform 420ms var(--dp-ease-spring); outline: none; }
+.donation-panel-ac__overlay.is-open { visibility: visible; transition-delay: 0s; }
+.donation-panel-ac__surface { position: relative; display: flex; flex-direction: column; inline-size: min(100%, 440px); max-block-size: min(100%, 760px); overflow: hidden; background: var(--dpx-card); color: var(--dp-color-text); border-radius: var(--dpx-r-sheet); box-shadow: var(--dp-shadow-3); transform: translateY(16px) scale(.98); transition: transform 260ms var(--dp-ease-out); outline: none; }
 .donation-panel-ac__overlay.is-open .donation-panel-ac__surface { transform: none; }
 .donation-panel-ac__surface.is-dragging { transition: none; }
 .donation-panel-ac__handle { display: none; padding-block: 10px 0; cursor: grab; touch-action: none; flex: none; }
@@ -121,4 +124,4 @@
   .donation-panel-ac__head { padding-block-start: 8px; }
 }
 @media (min-width: 640px) { .donation-panel-ac--page { max-inline-size: 720px; } }
-@media (prefers-reduced-motion: reduce) { .donation-panel-ac__overlay, .donation-panel-ac__surface { transition-duration: 1ms; } }
+@media (prefers-reduced-motion: reduce) { .donation-panel-ac__overlay, .donation-panel-ac__overlay::before, .donation-panel-ac__surface { transition-duration: 1ms; } }

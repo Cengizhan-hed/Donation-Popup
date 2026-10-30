@@ -282,6 +282,9 @@ function mount(root) {
     opened = true;
     // WebKit düğmeye tıklayınca odak vermez: odak dönüşü için tıklanan öğe açıkça saklanır.
     lastFocus = opener || document.activeElement;
+    // Kilit (ve kaydırma çubuğu ölçümü) gösterimden ÖNCE: açılış karesinde ikinci düzen hesabı ve yana kayma olmasın.
+    // Yerel kipli diyalogda arka plan inert'i tarayıcıdadır (native).
+    lockPage('side-cart', root, 'donation-panel-sc-lock', { native: typeof overlay.showModal === 'function' });
     // <dialog> üst katmanı: başka eklentilerin yüzen öğeleri çekmecenin üstüne çıkamaz.
     if (typeof overlay.showModal === 'function') {
       if (!overlay.open) {
@@ -292,7 +295,6 @@ function mount(root) {
     }
     void overlay.offsetWidth;
     overlay.classList.add('is-open');
-    lockPage('side-cart', root, 'donation-panel-sc-lock');
     triggers().forEach((t) => t.setAttribute('aria-expanded', 'true'));
     const first = visibleFocusables()[0];
     (first || surface).focus();
