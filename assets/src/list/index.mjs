@@ -595,28 +595,25 @@ function init() {
     bindTabs(wrap);
     wrap.querySelectorAll('.wdp-card__cta[data-wdp-form]:not([aria-haspopup])').forEach((cta) => cta.setAttribute('aria-haspopup', 'dialog'));
   });
-  // Yükleme: tarayıcı `<link rel="prefetch">` destekliyorsa ilk kartların formlarını TARAYICI alır (eklenti betiği iş
-  // yapmaz). Bağlantı dışında kalan (aşağıdaki) kartlar ilk kaydırmada izlenir. Desteklemeyen tarayıcı (Safari): istemci
-  // görünür kartları yükleme sonrası boşta kendisi toplu alır.
-  if (nativePrefetch()) {
-    if (!watchScheduled) {
-      watchScheduled = true;
-      window.addEventListener('scroll', watchCards, { once: true, passive: true });
-      // Bağlantılar ziyaretçinin İLK etkileşiminde (kaydırma, fare hareketi, dokunma, tuş) etkinleşir: yüklemede eklenti
-      // betiği hiç iş yapmaz (ana iş süresi tabanla aynı) ve hiç etkileşmeyen ziyaretçi (bot, hemen çıkan) sunucuya ek istek
-      // göndermez. Karta ilk etkileşim doğrudan dokunuşsa form o an tek istekle alınır.
-      FIRST_INTERACTION.forEach((type) => window.addEventListener(type, onFirstInteraction, { capture: true, passive: true }));
-    }
-  } else {
-    watchCards();
+  // Ön alma ziyaretçinin İLK etkileşiminde (kaydırma, fare hareketi, dokunma, tuş) başlar: yüklemede eklenti betiği
+  // yalnız dinleyici kaydeder (ana iş süresi tabanla aynı) ve hiç etkileşmeyen ziyaretçi (bot, hemen çıkan) sunucuya ek
+  // istek göndermez. Tarayıcı `<link rel="prefetch">` destekliyorsa ilk kartları TARAYICI alır; kalan/desteklemeyen
+  // (Safari) kartlar görünür alana yaklaşınca istemcide boşta toplu alınır. Karta ilk etkileşim doğrudan dokunuşsa form o
+  // an tek istekle alınır.
+  if (!firstScheduled) {
+    firstScheduled = true;
+    FIRST_INTERACTION.forEach((type) => window.addEventListener(type, onFirstInteraction, { capture: true, passive: true }));
   }
 }
-let watchScheduled = false;
+let firstScheduled = false;
 const FIRST_INTERACTION = ['scroll', 'pointermove', 'pointerdown', 'touchstart', 'keydown', 'wheel'];
 
 function onFirstInteraction() {
   FIRST_INTERACTION.forEach((type) => window.removeEventListener(type, onFirstInteraction, { capture: true }));
-  activatePrefetchLinks();
+  if (nativePrefetch()) {
+    activatePrefetchLinks();
+  }
+  watchCards();
 }
 
 /**
