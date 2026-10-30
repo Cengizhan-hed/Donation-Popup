@@ -75,6 +75,8 @@ test('Rehber: "Kampanya ilerleme çubuğu" (ekran yolu + kısa kod + şema + aya
   await expect(guide).toBeVisible();
   await expect(guide).toContainText('[donation_panel_progress id="123"]');
   await expect(guide).toContainText(/Campaigns|Kampanyalar/);
+  // Döngü/liste kartından açılan katman satırı (12.3 progress2).
+  await expect(guide).toContainText(/Shop, category and donation list cards|Mağaza, kategori ve bağış listesi kartları/);
   await expect(guide.locator('svg[role="img"][width][height]')).toBeVisible();
   await expect(guide.locator('a[href*="#dpa-s-progress"]')).toBeVisible();
   expect(await axe(page, '#dpa-g-progress')).toEqual([]);

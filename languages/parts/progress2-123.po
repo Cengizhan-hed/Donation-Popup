@@ -1,0 +1,15 @@
+# Turkish translations — 123-progress2 (döngü/liste katmanında canlı çubuk; Rehber satırı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 12.3.0\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/class-guide.php
+msgid "8. Shop, category and donation list cards: when the \"Donate\" button on a card opens the form, the bar inside it works the same way (the donor's own gift, cart, new total after payment). Nothing extra to set up; the bar files load only when the donor reaches for the card of a product with a goal."
+msgstr "8. Mağaza, kategori ve bağış listesi kartları: karttaki \"Bağış yap\" düğmesi formu açtığında içindeki çubuk aynı şekilde çalışır (bağışçının kendi katkısı, sepet, ödeme sonrası yeni toplam). Ek ayar gerekmez; çubuk dosyaları yalnız bağışçı hedefi olan bir ürünün kartına yöneldiğinde yüklenir."

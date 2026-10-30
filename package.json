@@ -52,6 +52,7 @@
 
     "e2e:campaign-totals": "node tests/e2e/run-campaign-totals.mjs",
     "e2e:campaign": "node tests/e2e/run-campaign.mjs",
+    "e2e:live-progress": "node tests/e2e/run-live-progress.mjs",
     "e2e:e6": "node tests/e2e/run-e6.mjs",
 
     "e2e:donor-account": "node tests/e2e/run-donor-account.mjs",

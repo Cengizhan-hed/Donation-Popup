@@ -16,11 +16,43 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 const AXE = fs.readFileSync(path.join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8');
 const SHOTS = path.join(ROOT, 'build/handoff/RAPOR-123-progress');
 const PRODUCT = Number(process.env.WDP_EXP_PRODUCT_ID || '0');
+const FIXED = Number(process.env.WDP_EXP_FIXED_ID || '0');
+const SHOTS2 = path.join(ROOT, 'build/handoff/RAPOR-123-progress2');
+/** Eklentinin çubuk paketi (betik dosyası; stil satır içi). */
+const PROGRESS_JS = /\/assets\/build\/progress\/index\.js\?ver=[A-Za-z0-9._-]+$/;
 
 const url = (raised, parts = 'card,inline', extra = '') => `/?dp_lp=1&dp_product=${PRODUCT}&dp_raised=${raised}&dp_parts=${parts}${extra}`;
 const card = (page) => page.locator('#lp-card [data-dp-live-cfg]');
 const form = (page) => page.locator('#lp-inline [data-dp-live-cfg]');
 const num = (text) => Number(String(text).replace(/[^0-9]/g, ''));
+
+/**
+ * Sayfa hatalarını toplar (çubuk paketini beklemeden: döngü/liste sayfasında paket yüklemede yoktur).
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @return {string[]} Hatalar (canlı dizi).
+ */
+function collectErrors(page) {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  page.on('console', (m) => m.type() === 'error' && !/Failed to load resource/.test(m.text()) && errors.push(m.text()));
+  page.on('response', (r) => r.status() >= 400 && errors.push(`${r.status()} ${r.url()}`));
+  return errors;
+}
+
+/**
+ * Sayfadaki çubuk paketi durumu.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @return {Promise<{js: boolean, css: boolean, live: boolean, cfg: number}>} Durum.
+ */
+const packageState = (page) =>
+  page.evaluate(() => ({
+    js: Boolean(document.getElementById('donation-panel-progress-js')) || Array.from(document.scripts).some((s) => /\/assets\/build\/progress\//.test(s.src)),
+    css: Boolean(document.getElementById('donation-panel-inline-progress')),
+    live: Boolean(window.__donationPanelLiveProgress),
+    cfg: document.querySelectorAll('[data-dp-live-cfg]').length,
+  }));
 
 /**
  * Sayfayı açar; çubuk betiği bağlanana dek bekler; sayfa hatalarını ve düzen kaymalarını toplar.
@@ -354,6 +386,116 @@ test.describe('canlı kampanya çubuğu', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-dp-overlay]')).not.toHaveClass(/is-open/);
     await expect(card(page)).not.toHaveClass(/is-preview/);
+    expect(errors).toEqual([]);
+  });
+
+  test('döngü katmanı (mağaza/kategori kartı): paket yalnız kampanyalı kartta ve sunucu yanıtından; önizleme, ödeme sonrası birleşme, sepet', async ({ page }, info) => {
+    test.skip(!FIXED, 'sabit fiyatlı ürün yok');
+    const errors = collectErrors(page);
+    const scripts = [];
+    page.on('request', (r) => /\/assets\/build\/progress\//.test(r.url()) && scripts.push(r.url()));
+    await page.goto(url(400, 'loop', `&dp_loop=${FIXED},${PRODUCT}`));
+    const fixedBtn = page.locator(`a.wdp-loop-donate[data-wdp-form="${FIXED}"]`);
+    const campBtn = page.locator(`a.wdp-loop-donate[data-wdp-form="${PRODUCT}"]`);
+    await expect(campBtn).toBeVisible();
+    // Yüklemede çubuk paketi yok (betik, stil, yapılandırma).
+    expect(await packageState(page)).toEqual({ js: false, css: false, live: false, cfg: 0 });
+
+    // Kampanyasız ürünün katmanı: açılır, paket yüklenmez.
+    const layer = page.locator('[data-dp-overlay].is-open');
+    await fixedBtn.click();
+    await expect(layer).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(layer).toHaveCount(0);
+    expect(scripts).toEqual([]);
+    expect(await packageState(page)).toMatchObject({ js: false, css: false, live: false });
+
+    // Kampanyalı ürünün katmanı: paket bir kez, eklentinin kendi derleme yolundan (aynı köken); stil kapla birlikte.
+    await campBtn.click();
+    await expect(layer).toBeVisible();
+    const bar = layer.locator('[data-dp-live-cfg]');
+    await expect(bar).toBeVisible();
+    await page.waitForFunction(() => Boolean(window.__donationPanelLiveProgress));
+    expect(scripts.length).toBe(1);
+    expect(scripts[0]).toMatch(PROGRESS_JS);
+    expect(new URL(scripts[0]).origin).toBe(new URL(page.url()).origin);
+    expect(await page.locator('#donation-panel-inline-progress').count()).toBe(1);
+    await expect(bar.locator('[data-dp-live-pct]')).toHaveText(/40/);
+    await expect.poll(() => visible(bar.locator('.donation-panel-live__fill'))).toBe(40);
+    const height = await bar.evaluate((el) => el.getBoundingClientRect().height);
+
+    // Kişisel önizleme (yalnız bu tarayıcı).
+    const amount = layer.locator('input[name="amount"]:not([type="hidden"])');
+    await typeInto(page, amount, '50');
+    await expect(bar).toHaveClass(/is-preview/);
+    await expect(bar.locator('[data-dp-live-pct]')).toHaveText(/45/);
+    await expect(bar.locator('.donation-panel-live__note')).toHaveText(/50.*450|450.*50/);
+    await expect.poll(() => visible(bar.locator('.donation-panel-live__pv'))).toBe(45);
+    await expect.poll(() => visible(bar.locator('.donation-panel-live__fill'))).toBe(40);
+    expect(await bar.evaluate((el) => el.getBoundingClientRect().height)).toBe(height);
+    if (info.project.name === 'desktop' || info.project.name === 'iphone') {
+      fs.mkdirSync(SHOTS2, { recursive: true });
+      await page.waitForTimeout(500);
+      await layer.locator('[data-dp-surface]').screenshot({ path: path.join(SHOTS2, `${info.project.name}-dongu-katmani-onizleme.png`) });
+    }
+    await page.addScriptTag({ content: AXE });
+    const violations = await bar.evaluate(async (el) => {
+      const r = await window.axe.run(el, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] } });
+      return r.violations.map((v) => `${v.id}:${v.nodes[0].target.join(' ')}`);
+    });
+    expect(violations).toEqual([]);
+
+    // Ödeme sonrası (`donation-panel:progress-refresh`): tek istekle gerçek toplam, önizleme dolumla birleşir.
+    const calls = [];
+    page.on('request', (r) => r.url().includes('donation-panel/v1/progress/') && calls.push(r.url()));
+    const order = await page.request.get(`/?dp_lp_order=${PRODUCT}&amount=50`);
+    expect((await order.json()).ok).toBe(true);
+    await page.evaluate((id) => {
+      document.querySelector('[data-dp-overlay].is-open [data-dp-form]').dispatchEvent(new CustomEvent('donation-panel:amount', { bubbles: true, detail: { productId: id, amount: 0 } }));
+      document.dispatchEvent(new CustomEvent('donation-panel:progress-refresh', { detail: { productId: id, amount: 50 } }));
+    }, PRODUCT);
+    await expect(bar.locator('[data-dp-live-pct]')).toHaveText(/45/, { timeout: 15000 });
+    await expect(bar).not.toHaveClass(/is-preview/);
+    await expect.poll(() => visible(bar.locator('.donation-panel-live__fill'))).toBe(45);
+    await expect.poll(async () => num(await bar.locator('[data-dp-live-raised]').textContent())).toBe(450);
+    expect(calls.filter((u) => u.includes('_=')).length).toBe(1);
+
+    // Sepete ekle → "sepetinizde" (iyimser + Store API).
+    await typeInto(page, amount, '100');
+    await expect(bar.locator('[data-dp-live-pct]')).toHaveText(/55/);
+    const added = await page.request.get(`/?dp_lp_add=${PRODUCT}&amount=100`);
+    expect((await added.json()).ok).toBe(true);
+    await page.evaluate((id) => {
+      document.dispatchEvent(new CustomEvent('donation-panel:cart-added', { detail: { productId: id, amount: 100 } }));
+      document.querySelector('[data-dp-overlay].is-open [data-dp-form]').dispatchEvent(new CustomEvent('donation-panel:amount', { bubbles: true, detail: { productId: id, amount: 0 } }));
+    }, PRODUCT);
+    await expect(bar).toHaveClass(/is-in-cart/);
+
+    // Kapat → yeniden aç: aynı kap, ikinci paket isteği yok.
+    await page.keyboard.press('Escape');
+    await expect(layer).toHaveCount(0);
+    await campBtn.click();
+    await expect(layer).toBeVisible();
+    await expect(bar).toHaveClass(/is-in-cart/);
+    expect(scripts.length).toBe(1);
+    expect(await page.locator('#donation-panel-inline-progress').count()).toBe(1);
+    expect(errors).toEqual([]);
+  });
+
+  test('bağış listesi (kartta çubuk yok): katmandaki çubuk paketi REST yanıtıyla gelir, önizleme çalışır', async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto(url(400, 'list'));
+    const cta = page.locator(`.wdp-card__cta[data-wdp-form="${PRODUCT}"]`);
+    await expect(cta).toBeVisible();
+    expect(await packageState(page)).toEqual({ js: false, css: false, live: false, cfg: 0 });
+    await cta.click();
+    const layer = page.locator('[data-dp-overlay].is-open');
+    const bar = layer.locator('[data-dp-live-cfg]');
+    await expect(bar).toBeVisible();
+    await page.waitForFunction(() => Boolean(window.__donationPanelLiveProgress));
+    await typeInto(page, layer.locator('input[name="amount"]:not([type="hidden"])'), '100');
+    await expect(bar).toHaveClass(/is-preview/);
+    await expect(bar.locator('[data-dp-live-pct]')).toHaveText(/50/);
     expect(errors).toEqual([]);
   });
 

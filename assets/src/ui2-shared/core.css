@@ -184,5 +184,5 @@
 @keyframes dp-confetti { 0% { transform: translate3d(0,-10vh,0) rotate(0); opacity: 1; } 100% { transform: translate3d(var(--x), 70vh, 0) rotate(var(--r)); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   :root .donation-panel.donation-panel *, :root .donation-panel.donation-panel *::before, :root .donation-panel.donation-panel *::after { animation-duration: 1ms; animation-iteration-count: 1; transition-duration: 1ms; }
-  :root .donation-panel.donation-panel .donation-panel-bar__fill::after, :root .donation-panel.donation-panel .donation-panel-confetti { display: none; }
+  :root .donation-panel.donation-panel .donation-panel-confetti { display: none; }
 }

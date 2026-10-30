@@ -78,6 +78,12 @@ final class ProgressRestAssetsTest extends TestCase {
 		$this->assertSame(array(), $module->rest_assets(array(), array( 78 => array( 'product_id' => 78 ) )));
 	}
 
+	public function test_guide_progress_section_mentions_shop_and_list_cards(): void {
+		$sections = \DonationPanel\Admin\Guide::sections();
+		$body     = implode( "\n", $sections['progress']['body'] );
+		$this->assertStringContainsString('Shop, category and donation list cards', $body);
+	}
+
 	public function test_controller_adds_assets_only_when_filter_returns_some(): void {
 		list( $module ) = $this->module();
 		$body           = array(

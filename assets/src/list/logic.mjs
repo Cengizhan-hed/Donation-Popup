@@ -216,23 +216,33 @@ const LAZY_PATHS = { progress: /\/assets\/build\/progress\/index\.js$/ };
 export function lazyAsset(data, slug, pageHref) {
   const has = (obj, key) => Boolean(obj) && typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, key);
   const entry = has(data, 'assets') && has(data.assets, slug) ? data.assets[slug] : null;
-  const pattern = has(LAZY_PATHS, slug) ? LAZY_PATHS[slug] : null;
-  if (!entry || !pattern || !Array.isArray(entry.ids)) {
+  if (!entry || !has(LAZY_PATHS, slug) || !Array.isArray(entry.ids)) {
     return null;
   }
+  const script = trustedAssetUrl(entry.script, LAZY_PATHS[slug], pageHref);
+  const ids = uniqueIds(entry.ids.map(String));
+  return script && ids.length ? { ids, script, style: typeof entry.style === 'string' ? entry.style : '' } : null;
+}
+
+/**
+ * Paket adresi: aynı köken, kimlik bilgisi/parça yok, yol kalıba uyar, sorgu yok ya da yalnız `ver`.
+ *
+ * @param {string} raw      Adres.
+ * @param {RegExp} pattern  Yol kalıbı.
+ * @param {string} pageHref Sayfa adresi.
+ * @return {string} Doğrulanmış adres ya da ''.
+ */
+function trustedAssetUrl(raw, pattern, pageHref) {
   let url;
   let page;
   try {
     page = new URL(String(pageHref));
-    url = new URL(String(entry.script || ''), page.href);
+    url = new URL(String(raw || ''), page.href);
   } catch {
-    return null;
+    return '';
   }
   const keys = Array.from(url.searchParams.keys());
   const query = keys.length === 0 || (keys.length === 1 && /^[A-Za-z0-9._-]{1,64}$/.test(url.searchParams.get('ver') || ''));
-  if (url.origin !== page.origin || url.username || url.password || url.hash || !pattern.test(url.pathname) || !query) {
-    return null;
-  }
-  const ids = uniqueIds(entry.ids.map(String));
-  return ids.length ? { ids, script: url.href, style: typeof entry.style === 'string' ? entry.style : '' } : null;
+  const clean = url.origin === page.origin && !url.username && !url.password && !url.hash;
+  return clean && query && pattern.test(url.pathname) ? url.href : '';
 }

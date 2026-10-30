@@ -77,6 +77,7 @@ final class Guide {
 					__( '5. After payment on the compact card the bar fetches the new total once, and the donor\'s part becomes part of the real bar.', 'woo-donation-popup' ),
 					__( '6. Settings: Donation Panel → Campaigns → Campaign progress bar. Switch off the donor\'s own gift, the fill and count-up animation, or the small celebration at the goal. Visitors who ask their device for less motion always see the final values without animation.', 'woo-donation-popup' ),
 					__( '7. Milestones on the shortcode bar (optional): a product custom field named _donation_panel_milestones, one per line as percent = label, for example 50 = Halfway. Developers can also use the donation_panel_milestones filter.', 'woo-donation-popup' ),
+					__( '8. Shop, category and donation list cards: when the "Donate" button on a card opens the form, the bar inside it works the same way (the donor\'s own gift, cart, new total after payment). Nothing extra to set up; the bar files load only when the donor reaches for the card of a product with a goal.', 'woo-donation-popup' ),
 				),
 				'code'   => '[donation_panel_progress id="123"]',
 				'figure' => 'progress',
