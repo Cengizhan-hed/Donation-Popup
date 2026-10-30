@@ -124,24 +124,58 @@ for (const kind of ['popup', 'inline']) {
     const found = await exp.evaluate(measure);
     expect(found, JSON.stringify(found)).toEqual({ nested: [], overflow: [], clipped: [], heights: [], hidden: [], fonts: [] });
 
-    // Her metin alanı odaklanınca görünür halka (kutu gölgesi ya da dış çizgi) ya da kap halkası gösterir.
+    // 12.3 odak sözleşmesi, tüm alanlar: (a) fare/programatik odakta yalnız ince kenarlık rengi, belirgin outline yok;
+    // (b) klavye odağında (Tab) görünür halka (outline ~2 px) ya da kap halkası.
     const fields = exp.locator('[data-dp-step="details"] input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([disabled])');
     const count = await fields.count();
+    const probe = (el) => {
+      const own = getComputedStyle(el);
+      const wrap = el.closest('.donation-panel-phone, .donation-panel-custom');
+      const target = wrap ? getComputedStyle(wrap) : own;
+      const outlineOf = (cs) => (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0 && !/rgba\(\s*0,\s*0,\s*0,\s*0\)|transparent/.test(cs.outlineColor) ? parseFloat(cs.outlineWidth) : 0);
+      return {
+        border: target.borderTopColor + '|' + target.borderTopWidth,
+        ownOutline: outlineOf(own),
+        wrapOutline: wrap ? outlineOf(target) : 0,
+        shadow: target.boxShadow !== 'none' && /\d/.test(target.boxShadow),
+        kbd: document.querySelector('[data-dp-kbd]') !== null || document.documentElement.hasAttribute('data-dp-kbd'),
+      };
+    };
+    // Not: klavye kipi (data-dp-kbd) bir kez açılınca programatik odak da klavye odağı sayılır; bu yüzden önce
+    // tüm alanlarda fare/programatik geçiş, sonra klavye geçişi koşulur.
+    const visibleIdx = [];
     for (let i = 0; i < count; i += 1) {
-      const field = fields.nth(i);
-      if (!(await field.isVisible())) {
-        continue;
+      if (await fields.nth(i).isVisible()) {
+        visibleIdx.push(i);
       }
+    }
+    for (const i of visibleIdx) {
+      const field = fields.nth(i);
+      const name = await field.evaluate((el) => el.name || el.id);
+      await field.evaluate((el) => el.blur());
+      await page.waitForTimeout(350); // kenarlık geçişi (transition) bitsin
+      const idle = await field.evaluate(probe);
+      // (a) programatik odak: ince kenarlık rengi, belirgin outline yok
       await field.focus();
-      const ring = await field.evaluate((el) => {
-        const own = getComputedStyle(el);
-        const wrap = el.closest('.donation-panel-phone, .donation-panel-custom');
-        const target = wrap ? getComputedStyle(wrap) : own;
-        const shadow = target.boxShadow !== 'none' && /\d/.test(target.boxShadow);
-        const outline = parseFloat(own.outlineWidth) > 0 && own.outlineStyle !== 'none' && !/rgba\(\s*0,\s*0,\s*0,\s*0\)|transparent/.test(own.outlineColor);
-        return shadow || outline;
-      });
-      expect(ring, `odak halkası yok: ${await field.evaluate((el) => el.name || el.id)}`).toBe(true);
+      await page.waitForTimeout(350);
+      const prog = await field.evaluate(probe);
+      expect(prog.border, `programatik odakta kenarlık rengi değişmedi: ${name}`).not.toBe(idle.border);
+      expect(prog.ownOutline, `programatik odakta kalın outline (bug): ${name}`).toBe(0);
+      expect(prog.wrapOutline, `programatik odakta kap outline (bug): ${name}`).toBe(0);
+    }
+    for (const i of visibleIdx) {
+      const field = fields.nth(i);
+      const name = await field.evaluate((el) => el.name || el.id);
+      // (b) klavye odağı: önceki öğeye git, Tab ile alana gel
+      await field.focus();
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      const onField = await field.evaluate((el) => document.activeElement === el);
+      expect(onField, `Tab alana gelmedi: ${name}`).toBe(true);
+      await page.waitForTimeout(350);
+      const kbd = await field.evaluate(probe);
+      const visible = (kbd.ownOutline >= 1.5 && kbd.ownOutline <= 3) || (kbd.wrapOutline >= 1.5 && kbd.wrapOutline <= 3) || kbd.shadow;
+      expect(visible, `klavye odağında halka yok: ${name} ${JSON.stringify(kbd)}`).toBe(true);
     }
   });
 }

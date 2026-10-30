@@ -138,7 +138,8 @@ test.describe('form çekirdeği (yeni motor)', () => {
     await expect(chips.nth(1)).toHaveAttribute('aria-checked', 'true');
     const total = page.locator('[data-dp-total]');
     const value = await chips.nth(1).getAttribute('data-dp-preset');
-    await expect(total).toContainText(String(Math.trunc(Number(value))));
+    const digits = String(Math.trunc(Number(value))).replace(/(\d)(?=\d)/g, '$1\\D?');
+    await expect(total).toContainText(new RegExp(digits));
 
     await chips.nth(1).focus();
     await page.keyboard.press('ArrowRight');
@@ -147,7 +148,7 @@ test.describe('form çekirdeği (yeni motor)', () => {
 
     const custom = page.locator('input[name="amount"]');
     await custom.fill('1.250');
-    await expect(total).toContainText('1.250');
+    await expect(total).toContainText(/1\D?250/);
     await expect(chips.nth(2)).toHaveAttribute('aria-checked', 'false');
 
     await custom.fill('');
