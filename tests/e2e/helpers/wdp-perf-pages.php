@@ -38,6 +38,11 @@ add_action(
 			// Sabit fiyatlı ürün → sağ panel (mobilde alttan panel).
 			$pages['panelfixed'] = '[donation_panel_experience id="' . (int) $in['fixed_id'] . '" kind="side_panel"]';
 		}
+		if ( ! empty( $in['campaign_id'] ) ) {
+			// Kampanyalı kart içeren ürün döngüsü (WooCommerce standart kısa kodu; mağaza/kategori kartıyla aynı süzgeçler).
+			$ids               = (int) $in['campaign_id'] . ( ! empty( $in['fixed_id'] ) ? ',' . (int) $in['fixed_id'] : '' );
+			$pages['camploop'] = '[products ids="' . $ids . '" columns="2" orderby="post__in"]';
+		}
 		$pages['slider6']  = $slider( '[wdp_donation_form id="' . $id . '"]' );
 		$pages['slider6c'] = $slider( '[wdp_donation_form id="' . $id . '" layout="compact"]' );
 		$urls  = array();
