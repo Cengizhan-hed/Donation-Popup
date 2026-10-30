@@ -93,7 +93,12 @@ final class ProgressLiveTest extends TestCase {
 		}
 		$this->assertStringContainsString( '%2$s', $config['t']['with'] );
 		$this->assertArrayNotHasKey( 'fresh', $config );
-		$this->assertSame( array( 'id', 'pd', 'raised', 'goal', 'donors', 'reached', 'cur', 'o', 't' ), array_values( array_diff( array_keys( $config ), array( 'src', 'css' ) ) ) );
+		$this->assertSame( array( 'id', 'pd', 'raised', 'goal', 'donors', 'reached', 'cur', 'o', 't' ), array_values( array_diff( array_keys( $config ), array( 'v' ) ) ) );
+		// Güvenlik: öznitelikte adres yok; yalnız doğrulanmış sürüm belirteci.
+		$this->assertArrayNotHasKey( 'src', $config );
+		$this->assertArrayNotHasKey( 'css', $config );
+		$this->assertMatchesRegularExpression( '/^[A-Za-z0-9._-]{1,64}$/', (string) $config['v'] );
+		$this->assertStringNotContainsString( 'http', (string) wp_json_encode( $config ) );
 		$this->assertSame( array( 's', 'd', 'ds', 'ts', 'pos' ), array_keys( $config['cur'] ) );
 	}
 

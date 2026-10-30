@@ -116,40 +116,32 @@ final class Progress_Live {
 		if ( $fresh ) {
 			$config['fresh'] = 1;
 		}
-		$urls = self::urls();
-		if ( $urls ) {
-			$config['src'] = $urls['js'];
-			$config['css'] = $urls['css'];
+		$version = self::version();
+		if ( '' !== $version ) {
+			$config['v'] = $version;
 		}
 		return $config;
 	}
 
 	/**
-	 * Çubuk betiği ve stilinin sürümlü adresleri: REST ile sonradan gelen formda (sayfada çubuk varlıkları yokken)
-	 * yükleyici bu adresleri kullanır.
+	 * Çubuk paketinin sürüm belirteci (yalnız veri: [A-Za-z0-9._-]). Öznitelikte ADRES taşınmaz; REST ile sonradan
+	 * gelen formda yükleyici adresi kendi paketinin adresinden türetir (ui2-shared/live-loader-url.mjs).
 	 *
-	 * @return array{js: string, css: string}|array{}
+	 * @return string
 	 */
-	public static function urls() {
-		static $urls = null;
-		if ( null !== $urls ) {
-			return $urls;
+	public static function version() {
+		static $version = null;
+		if ( null !== $version ) {
+			return $version;
 		}
-		$urls = array();
-		if ( ! defined( 'WDP_PLUGIN_URL' ) || ! defined( 'WDP_PLUGIN_DIR' ) ) {
-			return $urls;
-		}
-		$version = defined( 'WDP_VERSION' ) ? (string) WDP_VERSION : '1';
-		$meta    = WDP_PLUGIN_DIR . 'assets/build/progress/index.asset.php';
-		if ( is_file( $meta ) ) {
+		$version = defined( 'WDP_VERSION' ) ? (string) WDP_VERSION : '';
+		$meta    = defined( 'WDP_PLUGIN_DIR' ) ? WDP_PLUGIN_DIR . 'assets/build/progress/index.asset.php' : '';
+		if ( '' !== $meta && is_file( $meta ) ) {
 			$data    = include $meta;
 			$version = is_array( $data ) && isset( $data['version'] ) ? (string) $data['version'] : $version;
 		}
-		$urls = array(
-			'js'  => add_query_arg( 'ver', rawurlencode( $version ), WDP_PLUGIN_URL . self::SCRIPT ),
-			'css' => add_query_arg( 'ver', rawurlencode( $version ), WDP_PLUGIN_URL . self::STYLE ),
-		);
-		return $urls;
+		$version = 1 === preg_match( '/^[A-Za-z0-9._-]{1,64}$/', $version ) ? $version : '';
+		return $version;
 	}
 
 	/**

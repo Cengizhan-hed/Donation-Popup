@@ -2,12 +2,18 @@
  * Canlı kampanya çubuğu yükleyicisi (form ve compact kart paketlerinde; birkaç yüz bayt).
  *
  * Çubuk betiği (`progress` paketi) kampanyalı form sayfada çizilirken zaten kuyruğa alınır. Form sonradan REST ile
- * gelirse (ör. bağış listesinden açılan katman) ve sayfada çubuk betiği yoksa, çubuğun kendi yapılandırmasındaki
- * adresten bir kez yüklenir. Kampanyasız sayfada hiçbir şey yüklenmez. Betik gelene dek seçilen tutar kaybolmaz.
+ * gelirse (ör. bağış listesinden açılan katman) ve sayfada çubuk betiği yoksa bir kez yüklenir. Adres sayfadaki
+ * öznitelikten ALINMAZ: bu paketin kendi adresinden türetilir (aynı köken, eklentinin assets/build/progress/ yolu);
+ * öznitelikten yalnız doğrulanmış sürüm belirteci okunur. Kampanyasız sayfada hiçbir şey yüklenmez.
  */
+import { progressAssetUrls } from './live-loader-url.mjs';
+
 const KEY = '__donationPanelLiveProgress';
 const QUEUE = '__donationPanelLiveQueue';
 const SCRIPT_ID = 'donation-panel-progress-js';
+const STYLE_ID = 'donation-panel-progress-css';
+// Paket betiği çalışırken (defer; modül değil) kendi adresi. Sonradan okunamaz.
+const SELF = document.currentScript && document.currentScript.src ? document.currentScript.src : '';
 
 /**
  * Sayfada çubuk varsa çubuk betiğini hazırlar (zaten yüklüyse yeni çubukları bağlar).
@@ -24,27 +30,27 @@ export function ensureLiveProgress(scope = document) {
   if (!bar || document.getElementById(SCRIPT_ID)) {
     return;
   }
-  let cfg;
+  let token;
   try {
-    cfg = JSON.parse(bar.getAttribute('data-dp-live') || '{}');
+    token = String(JSON.parse(bar.getAttribute('data-dp-live') || '{}').v || '');
   } catch {
     return;
   }
-  const src = String(cfg.src || '');
-  if (!src) {
+  const urls = progressAssetUrls(SELF, token, window.location.origin);
+  if (!urls) {
     return;
   }
   // Stil sayfada satır içi yoksa (form REST'le geldi) aynı paketin CSS'i; çubuk o ana dek boş iz olarak görünür.
-  if (cfg.css && !document.getElementById('donation-panel-inline-progress') && !document.getElementById(`${SCRIPT_ID.slice(0, -3)}-css`)) {
+  if (!document.getElementById('donation-panel-inline-progress') && !document.getElementById(STYLE_ID)) {
     const link = document.createElement('link');
-    link.id = `${SCRIPT_ID.slice(0, -3)}-css`;
+    link.id = STYLE_ID;
     link.rel = 'stylesheet';
-    link.href = String(cfg.css);
+    link.href = urls.css;
     document.head.appendChild(link);
   }
   const script = document.createElement('script');
   script.id = SCRIPT_ID;
-  script.src = src;
+  script.src = urls.js;
   script.async = true;
   document.head.appendChild(script);
 }
