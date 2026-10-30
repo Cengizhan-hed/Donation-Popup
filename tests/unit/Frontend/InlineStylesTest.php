@@ -141,7 +141,9 @@ final class InlineStylesTest extends TestCase {
 			'ui-dpx'        => 1280,
 			'experiences'   => 5120,
 			'campaign'      => 2048,
-			'compact'       => 2304,
+			// 12.3 compact v2 (+~0,9 KB: alan grubu + autofill, beyan Ayrıntılar katmanı, toplam/etki satırı, alt bölge);
+			// yüzey toplamı (çekirdek + denetimler + experiences + compact) §25 sınırı 9 KB'nin altında.
+			'compact'       => 3328,
 			'list'          => 2048,
 			'donor-account' => 3072,
 			'side-cart'     => 3072,

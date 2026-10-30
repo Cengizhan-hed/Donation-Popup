@@ -29,13 +29,13 @@ $donation_panel_phone    = isset( $donation_panel_model['phone'] ) && is_array( 
 $donation_panel_steps    = isset( $donation_panel_view['steps'] ) ? (int) $donation_panel_view['steps'] : ( $donation_panel_direct ? 3 : 2 );
 $donation_panel_trust    = ! isset( $donation_panel_view['trust'] ) || ! empty( $donation_panel_view['trust'] );
 // Ödeme adımı notu ve güven satırı aynı yeri paylaşır (bkz. $donation_panel_status).
-$donation_panel_tiers    = isset( $donation_panel_view['impact_tiers'] ) ? (array) $donation_panel_view['impact_tiers'] : array();
-$donation_panel_fixed    = ! empty( $donation_panel_view['fixed'] );
-$donation_panel_format   = static function ( $amount ) use ( $donation_panel_decimals ) {
+$donation_panel_tiers  = isset( $donation_panel_view['impact_tiers'] ) ? (array) $donation_panel_view['impact_tiers'] : array();
+$donation_panel_fixed  = ! empty( $donation_panel_view['fixed'] );
+$donation_panel_format = static function ( $amount ) use ( $donation_panel_decimals ) {
 	$decimals = floor( (float) $amount ) === (float) $amount ? 0 : $donation_panel_decimals;
 	return number_format_i18n( (float) $amount, $decimals );
 };
-$donation_panel_style    = '';
+$donation_panel_style  = '';
 foreach ( array(
 	'brand'  => '--dp-color-primary',
 	'accent' => '--dp-accent',
@@ -47,9 +47,9 @@ foreach ( array(
 		$donation_panel_style .= '' !== $donation_panel_on ? ( 'brand' === $donation_panel_slot ? '--dp-color-on-primary:' : '--dp-color-on-accent:' ) . $donation_panel_on . ';' : '';
 	}
 }
-$donation_panel_lock  = '<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-$donation_panel_back  = '<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
-$donation_panel_tax   = array();
+$donation_panel_lock = '<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+$donation_panel_back = '<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+$donation_panel_tax  = array();
 if ( ! empty( $donation_panel_view['tax_relief'] ) && class_exists( '\DonationPanel\Modules\TaxRelief\Tax_Relief_Declaration' ) ) {
 	$donation_panel_tax = \DonationPanel\Modules\TaxRelief\Tax_Relief_Declaration::texts( (array) ( new \DonationPanel\Core\Settings() )->get( 'tax_relief', array() ) );
 }
@@ -85,7 +85,7 @@ $donation_panel_top = static function ( $index, $back, $amount ) use ( $donation
  * @param int    $index Adım (1–3).
  * @param string $trust Güven satırı metni ('' = yok).
  */
-$donation_panel_status = static function ( $index, $trust ) use ( $donation_panel_key, $donation_panel_lock ) {
+$donation_panel_status     = static function ( $index, $trust ) use ( $donation_panel_key, $donation_panel_lock ) {
 	?>
 	<div class="donation-panel-compact__status">
 		<p class="donation-panel-compact__err" id="<?php echo esc_attr( $donation_panel_key . '-e' . $index ); ?>" data-dp-cerr></p>
@@ -245,7 +245,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 				<?php if ( $donation_panel_tax ) : ?>
 					<?php // Vergi indirimi beyanı: başlık + beyanın kısa hali (tek satır) + "Ayrıntılar" (tam metin kart içinde, üstte açılır; yükseklik değişmez). ?>
 					<div class="donation-panel-compact__tax">
-						<label class="donation-panel-compact__taxcheck">
+						<label class="donation-panel-check donation-panel-check--plain donation-panel-compact__taxcheck">
 							<input type="checkbox" name="<?php echo esc_attr( \DonationPanel\Modules\TaxRelief\Tax_Relief_Declaration::FIELD ); ?>" value="1" aria-describedby="<?php echo esc_attr( $donation_panel_key ); ?>-taxtext" data-dp-ctax />
 							<span class="donation-panel-compact__taxt">
 								<b><?php echo esc_html( (string) $donation_panel_tax['title'] ); ?></b>
