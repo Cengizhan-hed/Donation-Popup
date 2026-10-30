@@ -12,6 +12,8 @@
 /* Ekran dışında bekleyen çubuk sıfırda durur (görünmez; düzen değişmez), görününce dolar. */
 :is(.donation-panel[data-dp-live], .donation-panel [data-dp-live]).is-wait .donation-panel-live__fill { animation: none; transition: none; transform: translateX(-100%); }
 [dir="rtl"] :is(.donation-panel[data-dp-live], .donation-panel [data-dp-live]).is-wait .donation-panel-live__fill { transform: translateX(100%); }
+/* Sayılan rakamlar: sabit genişlikli rakamlar; kutu sayım boyunca son değerin genişliğinde (JS), komşular kaymaz. */
+.donation-panel [data-dp-live-raised], .donation-panel [data-dp-live-pct] { display: inline-block; font-variant-numeric: tabular-nums; }
 /* Önizleme satırı: bilgi satırının üstünde, aynı yerde (yükseklik değişmez); yalnız opaklık geçişi. */
 .donation-panel [data-dp-live-meta] { position: relative; }
 .donation-panel [data-dp-live-meta] > * { transition: opacity .2s ease; }

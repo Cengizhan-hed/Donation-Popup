@@ -87,14 +87,24 @@ function tween(state, slot, node, from, to, ms, format) {
   window.cancelAnimationFrame(state.raf[slot] || 0);
   if (!state.cfg.o.c || reduced() || from === to || ms <= 0) {
     node.textContent = format(to, true);
+    node.style.inlineSize = '';
+    node.style.whiteSpace = '';
     return;
   }
+  // Sayılırken metin kısalıp uzar: kutu sayım boyunca son değerin genişliğinde sabit (komşular kaymaz, CLS 0); sonda
+  // serbest bırakılır (son metin aynı genişlikte).
+  node.textContent = format(to, true);
+  node.style.inlineSize = `${node.getBoundingClientRect().width}px`;
+  node.style.whiteSpace = 'nowrap';
   const start = window.performance.now();
   const step = (now) => {
     const t = Math.min(1, (now - start) / ms);
     node.textContent = format(from + (to - from) * easeOut(t), t >= 1);
     if (t < 1) {
       state.raf[slot] = window.requestAnimationFrame(step);
+    } else {
+      node.style.inlineSize = '';
+      node.style.whiteSpace = '';
     }
   };
   state.raf[slot] = window.requestAnimationFrame(step);
@@ -162,8 +172,9 @@ function paintNumbers(root, state, shown, opts) {
   const { cfg } = state;
   const cur = cfg.cur || {};
   const entry = typeof opts.count === 'number';
-  tween(state, 'pct', part(root, 'pct'), entry ? shown * opts.count : state.pct, shown, entry ? opts.ms : PREVIEW_MS, (n) =>
-    formatPercent(n, cfg.t.pct, cur.ds, cfg.pd)
+  // Ara karelerde tam sayı (ondalık metni kutuyu genişletmez), son karede kesin değer.
+  tween(state, 'pct', part(root, 'pct'), entry ? shown * opts.count : state.pct, shown, entry ? opts.ms : PREVIEW_MS, (n, done) =>
+    done ? formatPercent(n, cfg.t.pct, cur.ds, cfg.pd) : formatPercent(Math.floor(n), cfg.t.pct, cur.ds, 0)
   );
   state.pct = shown;
   const raised = part(root, 'raised');
