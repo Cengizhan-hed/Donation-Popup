@@ -93,6 +93,8 @@ test('Sepet ve ödeme: "Bağışçılar nasıl öder" bölümü başta; genel + 
 
 test('görünen = uygulanan: tür ayarı ürün ekranında kaynağıyla görünür ve ön yüz formuna aynen uygulanır; ürün geçersiz kılar', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'ayar akışı masaüstünde (ön yüz cihaz matrisi kurgu-matrix içinde)');
+  // Ürün kaydetme + ön yüz açılışları: yük altında 30 sn varsayılanı yetmeyebilir.
+  test.setTimeout(120000);
   expect(await frontDirect(page)).toBe('0');
 
   await saveType(page, 'custom', 'direct');
@@ -102,6 +104,9 @@ test('görünen = uygulanan: tür ayarı ürün ekranında kaynağıyla görün�
   await expect(effective).toHaveAttribute('data-wdp-direct-effective', 'direct');
   await expect(effective).toHaveAttribute('data-wdp-direct-source', 'type');
   await expect(effective).toContainText(/Current value|Geçerli değer/);
+  // Bağış sekmesi açılınca satır görünür (görüntü için; değer gizli sekmede de doğru).
+  await page.locator('#woocommerce-product-data .wdp_donation_options > a').click();
+  await expect(effective).toBeVisible();
   await shot(page, info, 'urun-gecerli-deger-tur', effective);
   expect(await frontDirect(page)).toBe('1');
 
