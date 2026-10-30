@@ -16,10 +16,16 @@ if ( is_array( $wdp_heavy ) && ! empty( $wdp_heavy ) && ! is_admin() ) {
 	$wdp_heavy_rules = isset( $wdp_heavy['rules'] ) ? max( 0, (int) $wdp_heavy['rules'] ) : 0;
 	$wdp_heavy_nodes = isset( $wdp_heavy['nodes'] ) ? max( 0, (int) $wdp_heavy['nodes'] ) : 0;
 	$wdp_heavy_stick = ! empty( $wdp_heavy['sticky'] );
+	// smooth: yumuşak kaydırma (temalarda yaygın; scrollIntoView iki karede bitmez). scrollbox: iç kaydırma kabı (kök taşmayı
+	// gizler, belge gövdesi kendi içinde kayar; pencere kaydırması etkisiz).
+	$wdp_heavy_extra = ( ! empty( $wdp_heavy['smooth'] ) ? 'html,body{scroll-behavior:smooth}' : '' ) . ( ! empty( $wdp_heavy['scrollbox'] ) ? 'html{overflow:hidden;height:100%}body{height:100%;overflow-y:auto;margin:0}' : '' );
 
 	add_action(
 		'wp_head',
-		static function () use ( $wdp_heavy_rules, $wdp_heavy_stick ) {
+		static function () use ( $wdp_heavy_rules, $wdp_heavy_stick, $wdp_heavy_extra ) {
+			if ( '' !== $wdp_heavy_extra ) {
+				echo '<style id="sim-scroll-css">' . $wdp_heavy_extra . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			}
 			$css = array();
 			// Evrensel ve öznitelik alt dizgesi seçicileri: her öğe için denenir.
 			$css[] = '*{-webkit-tap-highlight-color:transparent}';

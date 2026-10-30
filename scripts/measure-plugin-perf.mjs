@@ -22,7 +22,11 @@
  *  5) INP: dokunma → panel ve tutar kartına dokunma (Event Timing `duration`), yavaş ağ + 4× CPU; INP_RUNS (5)
  *     yükleme örneğinin medyanı (eşik medyana).
  *  6b) İsteğe bağlı `--forced-layout`: açılış tıklamasının (EventDispatch click) içindeki zorunlu eşzamanlı
- *     UpdateLayoutTree/Layout sayısı ve süresi (CDP izi, 3 koşu medyanı). Yerelde `--heavy-css`: ağır tema CSS'i benzetimi.
+ *     UpdateLayoutTree/Layout sayısı ve süresi (CDP izi, 3 koşu medyanı). Yerelde `--heavy-css`: ağır tema CSS'i benzetimi;
+ *     `--scroll-sim`: sabit üstbilgi + yumuşak kaydırma + iç kaydırma kabı (hedef seçimi zor durumları).
+ *  CLS atfı: yalnız eklenti metni, boyu değişmeden ve kendi yazı tipi (aile+kalınlık+stil) o pencerede yüklenince kayarsa
+ *     tema/font sütununa yazılır (kayma kaydı metnin eklenti öğesi adını ve yazı tipini taşır).
+ *  Tetikleyici: `[data-dp-open]`, yoksa `[data-wdp-form]` (liste/döngü kartı); kart düğmesi yalnız bağlantıysa nedeni yazılır.
  *  6) Dokunuş → panel: click → `dialog[open]` görünür (MutationObserver ile algılanır; rAF yoklaması yok) + iki rAF,
  *     5 koşu medyanı. INP ve dokunuşta hedef: görünür + üstte (elementFromPoint) ilk öğe; yoksa ÖLÇÜLMEDİ.
  *  7) Lighthouse (bilgi): ≥7 koşu medyanı; yerelde eklenti açık/kapalı, uzakta `--lh-label` ile etiketli tek mod.
@@ -99,16 +103,32 @@ function pageObservers() {
     }
     return false;
   };
-  window.__dpPerf = { shifts: [], events: [], errors: [], fontTimes: [] };
+  window.__dpPerf = { shifts: [], events: [], errors: [], fontTimes: [], fontFaces: [] };
+  // Eklenti öğesi adı (tanı): kendisi ya da en yakın üst öğedeki ilk `donation-panel*` sınıfı.
+  const pluginName = (node) => {
+    for (let el = node && (node.nodeType === 1 ? node : node.parentElement); el; el = el.parentElement) {
+      const c = el.classList ? Array.from(el.classList).find((x) => x.indexOf('donation-panel') === 0) : '';
+      if (c) return c;
+    }
+    return '';
+  };
   try {
     // Web fontu yüklenme anları (CLS atfı: font swap kaymaları ayrı sütun).
     // `loadingdone` yalnız TÜM bekleyen yüklemeler bitince bir kez gelir; her yazı tipinin kendi bitişi için
-    // `loading` olayındaki her FontFace'in `loaded` sözü izlenir.
+    // `loading` olayındaki her FontFace'in `loaded` sözü izlenir (aile/kalınlık/stil ile: metin kaymasının yazı tipi eşleşmesi).
     if (document.fonts && document.fonts.addEventListener) {
       const mark = () => window.__dpPerf.fontTimes.push(performance.now());
       document.fonts.addEventListener('loadingdone', mark);
       document.fonts.addEventListener('loading', (e) => {
-        for (const face of e.fontfaces || []) face.loaded.then(mark, () => {});
+        for (const face of e.fontfaces || []) {
+          face.loaded.then(
+            () => {
+              mark();
+              window.__dpPerf.fontFaces.push({ t: performance.now(), family: face.family, weight: face.weight, style: face.style });
+            },
+            () => {}
+          );
+        }
       });
     }
   } catch (e) {
@@ -130,6 +150,13 @@ function pageObservers() {
             dy: Math.round(s.currentRect.y - s.previousRect.y),
             dh: Math.round(s.currentRect.height - s.previousRect.height),
             dx: Math.round(s.currentRect.x - s.previousRect.x),
+            // Metin düğümü: üst öğenin yazı tipi (aile, kalınlık, stil) — kayma o yazı tipinin yüklenmesiyle mi (font swap).
+            text: !!s.node && s.node.nodeType === 3,
+            font: s.node && s.node.nodeType === 3 && s.node.parentElement ? (() => {
+              const cs = getComputedStyle(s.node.parentElement);
+              return [cs.fontFamily, cs.fontWeight, cs.fontStyle];
+            })() : null,
+            name: s.node ? pluginName(s.node) : '',
           })),
         });
       }
@@ -269,10 +296,37 @@ async function measureUiLess(browser, url, prepare) {
   }
 }
 
+/** Panel tetikleyici adayları (sırayla): panel düğmesi; liste kartı / mağaza döngüsü düğmesi (`.wdp-card__cta`,
+ * `.wdp-loop-donate` panel açanları `data-wdp-form` taşır). */
+const TRIGGERS = ['[data-dp-open]', '[data-wdp-form]'];
+
+/**
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {string} [given] Sayfa tanımındaki seçici.
+ * @return {Promise<string>} Görünür öğesi olan ilk seçici (yoksa boş).
+ */
+async function resolveTrigger(page, given) {
+  for (const sel of given ? [given] : TRIGGERS) {
+    if ((await page.locator(`${sel} >> visible=true`).count()) > 0) return sel;
+  }
+  return '';
+}
+
+/**
+ * Tetikleyici yokken neden: kart düğmeleri panel açmayan bağlantıysa (ürün sayfasına gider) sayısı.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @return {Promise<string>} Not (boş olabilir).
+ */
+async function linkOnlyCards(page) {
+  const n = await page.locator('.wdp-card__cta:not([data-wdp-form]), .wdp-loop-donate:not([data-wdp-form])').count();
+  return n ? `kart düğmesi panel açmıyor (ürün sayfasına bağlantı): ${n}` : 'eşleşen tetikleyici yok';
+}
+
 /**
  * Arayüzlü sayfa: yük izi (4× CPU + yavaş 4G), baytlar, engelleyenler, CLS, INP; sonra 5 koşu dokunuş → panel.
  */
-async function measureUi(browser, url, prepare, dumpName = '', trig = '[data-dp-open]') {
+async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
   const out = {};
   const { context, page } = await openPage(browser, { throttle: true, prepare });
   try {
@@ -315,16 +369,21 @@ async function measureUi(browser, url, prepare, dumpName = '', trig = '[data-dp-
 
     // INP: dokunma → panel, tutar kartı (izleme kapalıyken; yavaşlatma sürer). İlk örnek bu yüklemeden; kalan
     // INP_RUNS-1 örnek aşağıda yeni yüklemelerle; eşik medyana uygulanır.
-    const hasTrigger = (await page.locator(`${trig} >> visible=true`).count()) > 0;
+    // Tetikleyici: verilmediyse panel düğmesi, yoksa liste/döngü kartı düğmesi (formu REST ile getirip panel açar).
+    const trig = await resolveTrigger(page, trigger);
+    const hasTrigger = Boolean(trig);
+    out.trigger = trig || '';
+    if (!trig) out.triggerNote = await linkOnlyCards(page);
     const first = await inpSample(page, hasTrigger, trig);
     const perf = first.perf;
     const inpSamples = [first];
     // CLS: yalnız yükleme (girdi öncesi kaymalar; hadRecentInput olanlar zaten dışarıda).
     const fontEnds = snap.resources.filter((r) => /\.(?:woff2?|ttf|otf)(?:\?|$)/i.test(r.url) || r.type === 'font').map((r) => r.end);
     out.fontTimes = [...perf.fontTimes, ...fontEnds].filter((n) => Number.isFinite(n) && n > 0).map((n) => Math.round(n));
-    out.cls = clsAttribution(perf.shifts, { fontTimes: out.fontTimes });
+    out.fontFaces = (perf.fontFaces || []).map((f) => ({ ...f, t: Math.round(f.t) }));
+    out.cls = clsAttribution(perf.shifts, { fontTimes: out.fontTimes, fontFaces: out.fontFaces });
     out.foreignCss = snap.resources.filter((r) => !isPluginUrl(r.url) && kindOf(r) === 'css').map((r) => `${short(r.url).slice(-50)} @${Math.round(r.end)} ${r.blocking}`);
-    out.shifts = perf.shifts.filter((s) => !s.hadRecentInput).map((s) => ({ v: +Number(s.value).toFixed(5), t: Math.round(s.startTime), src: s.sources.map((x) => (x.plugin ? 'P' : x.detached ? 'D' : 'T')).join(''), nodes: s.sources.map((x) => `${x.sel} dy${x.dy} dh${x.dh} dx${x.dx}`) }));
+    out.shifts = perf.shifts.filter((s) => !s.hadRecentInput).map((s) => ({ v: +Number(s.value).toFixed(5), t: Math.round(s.startTime), src: s.sources.map((x) => (x.plugin ? 'P' : x.detached ? 'D' : 'T')).join(''), nodes: s.sources.map((x) => `${x.sel}${x.name ? ` [${x.name}]` : ''} dy${x.dy} dh${x.dh} dx${x.dx}${x.font ? ` font:${String(x.font[0]).split(',')[0].trim()}/${x.font[1]}` : ''}`) }));
     out.observerErrors = perf.errors;
     out.hasTrigger = hasTrigger;
     for (let i = 1; i < INP_RUNS; i += 1) {
@@ -338,6 +397,7 @@ async function measureUi(browser, url, prepare, dumpName = '', trig = '[data-dp-
     out.inpOpenRuns = inp.openRuns;
     out.inpAmountRuns = inp.amountRuns;
     out.inpSkips = inpSamples.flatMap((s) => s.skips || []);
+    if (!hasTrigger) out.inpSkips.unshift(`panel: ${out.triggerNote}`);
 
     // 6) Dokunuş → panel: 5 koşu (her koşu yeni yükleme), click + 60 ms basılı kalma, dialog[open] görünür + iki rAF.
     out.tapRuns = [];
@@ -637,7 +697,9 @@ async function runLocal(argv) {
   const wc = (f) => path.join(wpDir, 'wp-content', f);
   // `--heavy-css`: ağır tema CSS'i + kalabalık DOM + sabit üstbilgi benzetimi (tema adı yok; tests/e2e/helpers/wdp-heavy-css-sim.php).
   const heavy = argv.includes('--heavy-css');
-  fs.writeFileSync(wc('wdp-heavy-css.json'), JSON.stringify(heavy ? { rules: 3000, nodes: 1000, sticky: 1 } : {}));
+  // `--scroll-sim`: sabit üstbilgi + yumuşak kaydırma + iç kaydırma kabı (dokunma hedefi seçiminin genel zor durumları).
+  const scrollSim = argv.includes('--scroll-sim') ? { sticky: 1, smooth: 1, scrollbox: 1 } : {};
+  fs.writeFileSync(wc('wdp-heavy-css.json'), JSON.stringify({ ...(heavy ? { rules: 3000, nodes: 1000, sticky: 1 } : {}), ...scrollSim }));
   for (const f of ['wdp-scope-sim-urls.json', 'wdp-perf-pages-urls.json']) fs.rmSync(wc(f), { force: true });
   const setState = (s) => fs.writeFileSync(wc('wdp-load-probe.json'), JSON.stringify(s));
   setState({});

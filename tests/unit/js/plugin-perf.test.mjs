@@ -8,6 +8,7 @@ import {
   attributeTrace,
   clsAttribution,
   eventUrl,
+  fontMatches,
   INP_RUNS,
   inlinePluginStyles,
   inpSummary,
@@ -162,6 +163,30 @@ describe('clsAttribution', () => {
     assert.equal(clsAttribution(s, { fontTimes: [551] }).plugin, 0.001); // pencere önü dışı
     assert.equal(clsAttribution(s, { fontTimes: [199] }).plugin, 0.001); // +301 ms dışı
     assert.equal(nearFontLoad(NaN, [1]), false);
+  });
+  it('yalnız eklenti metni kendi yazı tipi yüklenince kayar (Ikram ana sayfa: #text<small dy1, font 4 ms önce) → tema/font', () => {
+    const src = (font, extra = {}) => ({ plugin: true, text: true, dy: 1, dh: 0, dx: 0, font, ...extra });
+    const inter500 = { t: 4059, family: 'Inter', weight: '500', style: 'normal' };
+    const s = [{ value: 0.00002, startTime: 4063, sources: [src(['"Inter", sans-serif', '500', 'normal'])] }];
+    const r = clsAttribution(s, { fontTimes: [4059], fontFaces: [inter500] });
+    assert.equal(r.plugin, 0);
+    assert.equal(r.font, 0.00002);
+    // Başka kalınlık yüklendi → eşleşme yok → eklenti (muhafazakâr).
+    assert.equal(clsAttribution(s, { fontFaces: [{ ...inter500, weight: '700' }] }).plugin, 0.00002);
+    // Değişken yazı tipi aralığı kapsar.
+    assert.equal(clsAttribution(s, { fontFaces: [{ ...inter500, weight: '100 900' }] }).font, 0.00002);
+    // Pencere dışı (yazı tipi 400 ms önce) → eklenti.
+    assert.equal(clsAttribution(s, { fontFaces: [{ ...inter500, t: 3663 }] }).plugin, 0.00002);
+    // Boy değişti (betik metni değiştirdi) ya da öğe (metin değil) → eklenti.
+    assert.equal(clsAttribution([{ ...s[0], sources: [src(['Inter', '500', 'normal'], { dh: 3 })] }], { fontFaces: [inter500] }).plugin, 0.00002);
+    assert.equal(clsAttribution([{ ...s[0], sources: [src(null, { text: false })] }], { fontFaces: [inter500] }).plugin, 0.00002);
+  });
+  it('fontMatches: aile (tırnak/büyük harf), kalınlık (anahtar sözcük/aralık), stil', () => {
+    assert.equal(fontMatches({ family: 'Inter', weight: 'normal', style: 'normal' }, ["'inter', Arial", '400', 'normal']), true);
+    assert.equal(fontMatches({ family: 'Inter', weight: 'bold' }, ['Inter', '700', 'normal']), true);
+    assert.equal(fontMatches({ family: 'Inter', weight: '400' }, ['Roboto, Inter', '400', 'normal']), false);
+    assert.equal(fontMatches({ family: 'Inter', weight: '400', style: 'italic' }, ['Inter', '400', 'normal']), false);
+    assert.equal(fontMatches(null, ['Inter', '400', 'normal']), false);
   });
 });
 
