@@ -125,9 +125,19 @@ final class Form_Context {
 			'phone'          => self::phone(),
 			'fields'         => $shares ? array() : self::fields( $legacy ),
 			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
-			// Doğrudan (sepetsiz) bağış: gönderim sepete değil siparişe (order-pay) gider.
-			'direct'         => is_object( $product ) && class_exists( '\DonationPanel\WooCommerce\Direct\Direct_Settings' ) && \DonationPanel\WooCommerce\Direct\Direct_Settings::enabled_for( $product ),
+			'direct'         => false,
 		);
+
+		// Doğrudan (sepetsiz) bağış = ödeme davranışı; düzenden (popup/panel/alttan/sayfa içi/compact) bağımsız, her düzende
+		// aynı karar (ürün > tür > genel). Gönderim sepete değil siparişe (order-pay) gider. Doğrudan sipariş tek kalemlidir:
+		// ek bağış satırı oluşturulamadığından seçenek gösterilmez (sessiz veri kaybı yok); `addon_offered` kararı sabit tutar.
+		$model['addon_offered'] = ! empty( $model['addon'] );
+		if ( is_object( $product ) && class_exists( '\DonationPanel\WooCommerce\Direct\Direct_Settings' ) ) {
+			$model['direct'] = \DonationPanel\WooCommerce\Direct\Direct_Settings::enabled_for( $product, $model );
+		}
+		if ( $model['direct'] ) {
+			$model['addon'] = null;
+		}
 
 		// Form altı gizlilik bağlantısı: ayar açıksa ve form kişisel veri alanı topluyorsa; adres boşsa WordPress gizlilik sayfası.
 		$field_names = array_column( $model['fields'], 'name' );

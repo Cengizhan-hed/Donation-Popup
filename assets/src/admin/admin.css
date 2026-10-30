@@ -660,6 +660,28 @@
 	color: var(--dpa-ok);
 }
 
+/* Compact kart araçları (Formlar ve Görünüm) */
+.dpa-subtitle {
+	margin: 20px 0 6px;
+	font-size: 14px;
+	font-weight: 700;
+}
+.dpa-code + .dpa-tablewrap,
+.dpa-code + .dpa-row__help {
+	margin-block-start: 12px;
+}
+.dpa-compact-heights td {
+	font-variant-numeric: tabular-nums;
+}
+.dpa-figure {
+	margin: 16px 0;
+}
+.dpa-figure svg {
+	display: block;
+	max-inline-size: 100%;
+	block-size: auto;
+}
+
 /* Kod, tanılama, dosya */
 .dpa-code {
 	display: flex;

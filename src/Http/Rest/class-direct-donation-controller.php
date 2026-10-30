@@ -94,7 +94,8 @@ class Direct_Donation_Controller extends Rest_Controller {
 		if ( empty( $model ) || ! is_object( $product ) ) {
 			return $this->error( 'donation_panel_product_not_found', 'Donation form not found for this product.', 404 );
 		}
-		if ( ! Direct_Settings::enabled_for( $product ) ) {
+		// Formla aynı karar (ürün > tür > genel; tür ve ek bağış modelden).
+		if ( ! Direct_Settings::enabled_for( $product, $model ) ) {
 			return $this->error( 'donation_panel_direct_disabled', 'Direct donation is not enabled for this product.', 409 );
 		}
 

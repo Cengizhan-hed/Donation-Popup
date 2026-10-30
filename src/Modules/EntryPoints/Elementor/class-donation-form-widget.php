@@ -132,14 +132,15 @@ class Donation_Form_Widget extends \Elementor\Widget_Base {
 		$this->add_control(
 			'layout',
 			array(
-				'label'     => __( 'Layout', 'woo-donation-popup' ),
-				'type'      => \Elementor\Controls_Manager::SELECT,
-				'default'   => 'full',
-				'options'   => array(
+				'label'       => __( 'Layout', 'woo-donation-popup' ),
+				'description' => __( 'Compact: a small card with a fixed height for sliders and hero areas. Same as the shortcode layout="compact". How the donor pays is set under Donation Panel → Cart and checkout.', 'woo-donation-popup' ),
+				'type'        => \Elementor\Controls_Manager::SELECT,
+				'default'     => 'full',
+				'options'     => array(
 					'full'    => _x( 'Full', 'Donation form layout', 'woo-donation-popup' ),
 					'compact' => _x( 'Compact', 'Donation form layout', 'woo-donation-popup' ),
 				),
-				'condition' => array( 'display' => 'inline' ),
+				'condition'   => array( 'display' => 'inline' ),
 			)
 		);
 

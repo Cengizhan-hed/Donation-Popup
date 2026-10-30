@@ -85,11 +85,32 @@ class Settings {
 					'default' => '',
 				),
 			),
-			// Doğrudan (sepetsiz) bağış genel varsayılanı; ürün bazında geçersiz kılınır (`_donation_panel_direct`).
+			// Doğrudan (sepetsiz) bağış = ödeme davranışı (düzenden bağımsız). Öncelik: ürün (`_donation_panel_direct`) >
+			// bağış türü (`type_*`: '' genel ayarı kullan | cart | direct) > genel (`enabled`). Bkz. Direct_Settings::decide().
 			'direct'     => array(
-				'enabled' => array(
+				'enabled'       => array(
 					'type'    => 'bool',
 					'default' => false,
+				),
+				'type_fixed'    => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'type_custom'   => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'type_shares'   => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'type_campaign' => array(
+					'type'    => 'string',
+					'default' => '',
+				),
+				'type_addon'    => array(
+					'type'    => 'string',
+					'default' => '',
 				),
 			),
 			// Yan sepet: sağ altta yüzen düğme (tema kendi sepet simgesini gösteriyorsa kapatılabilir).
