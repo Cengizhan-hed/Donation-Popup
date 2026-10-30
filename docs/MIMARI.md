@@ -1009,3 +1009,8 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 
 ### Panel açılış yolu (12.2)
 - Tüm DOM yazmaları `showModal`dan önce tek seferde; açılış geçişi `is-open` + `@starting-style`; geometri/klavye taban ölçümü ilk karede (önce okuma, sonra yazma). Kaydırma kilidi kökte satır içi `overflow` (kök sınıfı yok — temanın kök kuralları tüm belgeyi yeniden hesaplatıyordu); yerel kipli diyalogda `inert` yazılmaz. `color-sync.mjs` yalnız `--dp-color-dynamic` varsa, boşta. Ölçüm: `npm run measure:plugin-perf -- --forced-layout [--heavy-css]`.
+
+### Sayfa içi form tembel başlatma ve toplam biçimi (12.2)
+- Sayfa içi form ekrana ~200 px yaklaşınca (IntersectionObserver) bağlanır; gizli/üst üste slayt formları bekler; belge düzeyinde tek yakalama dinleyicisi bağlanmamış forma dokunulunca/odaklanılınca olaydan önce bağlar (ilk dokunuş kaybolmaz). `data-dp-mounted="1"` = etkileşime hazır, `data-dp-ready="1"` = gerçekten bağlandı.
+- Toplam biçimi `Intl.NumberFormat` kurmaz (4× CPU'da ~52 ms): sunucunun WP ayırıcılarıyla (`data-num-thousands`/`data-num-decimal`) yazılır. Sunucu ilk durumu betikle aynıdır (seçili ilk kart, toplam, düğme metni, özet) — kayma yok.
+- Ölçüm aracı: `--scroll-sim`, liste/mağaza kartı tetikleyici, CLS atfında font eşleşmesi (aile+kalınlık+stil) tema/font sütununa.
