@@ -13,8 +13,6 @@
 .donation-panel-progress__meta { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: var(--dp-space-2) var(--dp-space-5); min-inline-size: 0; }
 .donation-panel-progress__first { color: var(--dp-color-primary-strong); font-weight: var(--dp-fw-semibold); }
 .donation-panel-bar--thin { block-size: 8px; }
-.donation-panel-bar--chunky { block-size: 20px; }
-.donation-panel-bar--chunky .donation-panel-bar__fill::before { content: attr(data-label); position: absolute; inset-inline-end: 8px; inset-block: 0; display: grid; place-items: center; font-size: 11px; font-weight: var(--dp-fw-bold); color: var(--dp-color-on-primary); z-index: 1; }
 .donation-panel-bar__ms { position: absolute; inset-block-start: 50%; inset-inline-start: calc(var(--at) * 1%); inline-size: 18px; block-size: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--dp-color-surface); border: 2.5px solid var(--dp-color-border-strong); display: grid; place-items: center; z-index: 2; transition: border-color var(--dp-dur-base), background var(--dp-dur-base), transform var(--dp-dur-slow) var(--dp-ease-spring); }
 [dir="rtl"] .donation-panel-bar__ms { margin: -9px -9px 0 0; }
 .donation-panel-bar__ms.is-hit { border-color: var(--dp-color-gold); background: var(--dp-color-gold); color: #fff; transform: scale(1.12); }
