@@ -320,7 +320,7 @@ async function resolveTrigger(page, given) {
  */
 async function linkOnlyCards(page) {
   const n = await page.locator('.wdp-card__cta:not([data-wdp-form]), .wdp-loop-donate:not([data-wdp-form])').count();
-  return n ? `kart düğmesi panel açmıyor (ürün sayfasına bağlantı): ${n}` : 'eşleşen tetikleyici yok';
+  return n ? `kart düğmesi panel açmıyor (ürün sayfasına bağlantı): ${n}` : '';
 }
 
 /**
@@ -397,7 +397,8 @@ async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
     out.inpOpenRuns = inp.openRuns;
     out.inpAmountRuns = inp.amountRuns;
     out.inpSkips = inpSamples.flatMap((s) => s.skips || []);
-    if (!hasTrigger) out.inpSkips.unshift(`panel: ${out.triggerNote}`);
+    // Sayfa içi form sayfasında panel yoktur (not boş); yalnız bağlantı-kart nedeni yazılır.
+    if (!hasTrigger && out.triggerNote) out.inpSkips.unshift(`panel: ${out.triggerNote}`);
 
     // 6) Dokunuş → panel: 5 koşu (her koşu yeni yükleme), click + 60 ms basılı kalma, dialog[open] görünür + iki rAF.
     out.tapRuns = [];
