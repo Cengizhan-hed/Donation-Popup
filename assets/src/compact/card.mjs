@@ -195,7 +195,8 @@ export function createCompact(root) {
     paintAmount();
     paintQty();
     // İlk çizimde değil, bağışçı seçtiğinde (önerilen tutar kendiliğinden önizlenmez).
-    if (root.dataset.dpReady === '1' && state.step < 3) {
+    // (Kart tembel kurulur: `data-dp-ready` yüklemede yazılır; ilk çizim ayrımı yerel bayrakla.)
+    if (state.mounted && state.step < 3) {
       emitAmount(state.value || 0);
     }
   };
@@ -672,6 +673,7 @@ export function createCompact(root) {
 
   paint();
   show(0, false);
+  state.mounted = true;
   root.dataset.dpReady = '1';
   return { show, reset, getState: () => ({ ...state }) };
 }
