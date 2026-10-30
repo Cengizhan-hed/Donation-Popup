@@ -20,15 +20,16 @@ final class Compact_Tools {
 
 	/**
 	 * Kart yüksekliği (px), varsayılan blok teması + yerel test ürünleri; `layout="compact"`, sepetli ve doğrudan aynı
-	 * (adımlar aynı hücrede üst üste; en uzun adım belirler). e2e `compact-card` "rehber yükseklikleri" testi ölçümü
-	 * bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Gerçek yükseklik tema yazı tipine ve alan sayısına göre değişir.
+	 * (adımlar aynı hücrede üst üste; en uzun adım belirler). e2e `kurgu-matrix` "compact kart yükseklikleri" testi ölçümü
+	 * bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Ölçüm 2026-10-30, TT5, 1440/820/375 px. Gerçek yükseklik tema yazı
+	 * tipine ve alan sayısına göre değişir.
 	 *
 	 * @var array<string, array{0: int, 1: int}> genişlik => [ serbest tutar (hedefsiz), hedefli kampanya ].
 	 */
 	const HEIGHTS = array(
-		'desktop' => array( 0, 0 ),
-		'tablet'  => array( 0, 0 ),
-		'mobile'  => array( 0, 0 ),
+		'desktop' => array( 496, 496 ),
+		'tablet'  => array( 496, 496 ),
+		'mobile'  => array( 492, 492 ),
 	);
 
 	/** Ölçüm toleransı (px). */

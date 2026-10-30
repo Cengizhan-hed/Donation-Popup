@@ -297,6 +297,24 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$this->assertSame( 409, $this->direct( $this->donor_body( $plain->get_id(), '20', 'k-global-no' ) )->get_status() );
 	}
 
+	public function test_donation_type_setting_sits_between_product_and_global(): void {
+		$custom = $this->create_product( '', array( Donation_Scope::META => 'yes', '_allow_custom_price' => 'yes' ) );
+		// Genel kapalı, tür "doğrudan": REST siparişi açar ve form modeli aynı kararı verir.
+		( new Settings() )->update( array( 'direct' => array( 'enabled' => false, 'type_custom' => 'direct' ) ) );
+		$this->assertSame( 'type', Direct_Settings::resolve( wc_get_product( $custom->get_id() ) )['source'] );
+		$this->order_from( $this->direct( $this->donor_body( $custom->get_id(), '20', 'k-type-direct' ) ) );
+		$this->assertTrue( \DonationPanel\Modules\Experiences\Form_Controller::model_for_id( $custom->get_id() )['direct'] );
+
+		// Genel açık, tür "sepetli": REST reddeder.
+		( new Settings() )->update( array( 'direct' => array( 'enabled' => true, 'type_custom' => 'cart' ) ) );
+		$this->assertSame( 409, $this->direct( $this->donor_body( $custom->get_id(), '20', 'k-type-cart' ) )->get_status() );
+
+		// Ürün türün üstünde (sözleşme meta anahtarı).
+		update_post_meta( $custom->get_id(), Direct_Settings::META, 'yes' );
+		$this->order_from( $this->direct( $this->donor_body( $custom->get_id(), '20', 'k-type-product' ) ) );
+		( new Settings() )->update( array( 'direct' => array( 'enabled' => false, 'type_custom' => '' ) ) );
+	}
+
 	public function test_invalid_input_creates_no_order(): void {
 		$product = $this->direct_product();
 		$bad     = $this->direct( $this->donor_body( $product->get_id(), '', 'k-bad' ) );

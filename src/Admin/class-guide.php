@@ -46,7 +46,7 @@ final class Guide {
 					__( '2. In your slider or page editor, add a Shortcode widget (or any text block) to the slide and paste the shortcode. No special widget is needed. In the block editor you can also add the "Donation form" block and choose Layout: Compact.', 'woo-donation-popup' ),
 					__( '3. Finding a product ID: go to Products → All products and point at the product name; the ID is shown under it. The shortcode builder also lists every donation product with its ID.', 'woo-donation-popup' ),
 					__( '4. Slide height: make the slide at least as tall as the card. The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide.', 'woo-donation-popup' ),
-					__( '5. Colors: Forms and appearance → Colors → Custom colors. Each color field accepts a hex value or a CSS variable from your theme or page editor, for example var(--brand), so the card follows your site palette.', 'woo-donation-popup' ),
+					__( '5. Colors: Forms and appearance → Colors → Choose my own colors. Each color field accepts a hex value or a CSS variable from your theme or page editor, for example var(--brand), so the card follows your site palette.', 'woo-donation-popup' ),
 					__( '6. If the slider moves on while a donor is halfway through, switch on "Start over when the card is hidden". The compact card is only a look: how the donor pays is set under Cart and checkout.', 'woo-donation-popup' ),
 				),
 				'code'   => '[wdp_donation_form id="123" layout="compact"]',
