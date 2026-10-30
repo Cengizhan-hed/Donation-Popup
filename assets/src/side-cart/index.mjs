@@ -180,6 +180,11 @@ function mount(root) {
         body: JSON.stringify(payload),
       });
       if (response.ok) {
+        // Store API yanıtı güncel sepettir: sayfadaki kampanya çubukları ek istek olmadan güncellenir.
+        response
+          .json()
+          .then((cart) => document.dispatchEvent(new CustomEvent('donation-panel:cart-data', { detail: { cart } })))
+          .catch((error) => window.console.debug('donation-panel: sepet yanıtı okunamadı', error));
         return true;
       }
       if (response.status !== 403) {

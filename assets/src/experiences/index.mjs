@@ -4,6 +4,9 @@
 // Ortak çekirdek (ui-core) ve form denetimleri (ui-controls) ayrı parça: Assets bu paketten önce bir kez basar.
 import './base.css';
 import '../ui2-shared/states.css';
+// Canlı kampanya çubuğu: stil + betik `progress` paketinde (kampanyalı form çizilirken kuyruğa girer); REST'le gelen
+// formda yükleyici getirir. Kampanyasız sayfada bayt yok.
+import { ensureLiveProgress } from '../ui2-shared/live-loader.mjs';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
 import { colorSyncNeeded, syncColors } from '../ui2-shared/color-sync.mjs';
@@ -125,6 +128,7 @@ function mount(root) {
       onBuild: (built) => {
         createForm(built);
         syncColorsWhenIdle(built);
+        ensureLiveProgress(built);
       },
     });
     // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
@@ -142,6 +146,7 @@ function init() {
   // Özel renk CSS değişkeniyle verildiyse düğme yazı rengi çözülen renge göre (yalnız gerekirse; boşta) ayarlanır.
   syncColorsWhenIdle();
   document.querySelectorAll('[data-dp-exp]').forEach(mount);
+  ensureLiveProgress();
 }
 
 // Sonradan eklenen formlar (ör. bağış listesi kartı) `dp:scan` olayıyla bağlanır.
