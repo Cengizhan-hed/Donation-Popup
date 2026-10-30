@@ -208,3 +208,4 @@ Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (v
 - `donation_panel_prefetch_forms` (bool $enabled, varsayılan true) — liste/mağaza/kategori kartlarının formlarını ziyaretçinin ilk etkileşiminden sonra tarayıcı ön almasıyla (`rel=prefetch`, toplu `/experiences?ids=`, ≤12/kap türü) hazırlar; false = dokunuşta tek istek. Yanıt `Cache-Control: private, max-age=300` + `Vary: Cookie` (paylaşılan önbellek yok).
 - `donation_panel_direct_enabled` (bool, WC_Product) — sözleşme aynen; artık ürün > tür (`direct.type_*`) > genel kararından SONRA son söz (kaynak `filter` olarak gösterilir).
 - `donation_panel_side_cart_suggestion` — varsayılanı artık yönetici ayarı (ayar kapalıysa boş dizi).
+- `donation_panel_experience_assets` — kampanyalı ürün form yanıtına eklenecek paket adresleri (yalnız eklenti kendi kayıtlı, sürümlü adresini ekler; istemci aynı köken ve yolu doğrular).
