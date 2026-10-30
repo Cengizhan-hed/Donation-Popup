@@ -182,6 +182,11 @@ test('12.3 renk kuralı: yalnız adlı rol renkleri; rol yoksa nötr varsayılan
     ['numbered', 'none', '#1e2a3b', /^(Default|Varsayılan)$/, '#1e2a3b', /Follows the main color|Ana rengi izler/],
     ['none', 'none', '#1e2a3b', /^(Default|Varsayılan)$/, '#1e2a3b', /Follows the main color|Ana rengi izler/],
   ];
+  // Sıfırlanan kurulumda ürün sayfası yerleşimi (eski seçenek yansıtması) bir kez kaydedilir; renk "tema" kalır.
+  await page.goto(P('donation-panel-forms'));
+  await expect(page.locator('#dpa-f-design-colors')).toHaveValue('theme');
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
   for (const [mode, status, primary, primarySrc, accent, accentSrc] of cases) {
     await setOpt(page, 'dp_ad_palette_mode', mode);
     await page.goto(P('donation-panel-forms'));
@@ -227,6 +232,44 @@ test('12.3 renk kuralı: yalnız adlı rol renkleri; rol yoksa nötr varsayılan
     expect(applied.primary, `özel renk ${mode}`).toBe('#7a1f5c');
   }
   expect((await state(page)).settings.design.brand).toBe('#7a1f5c');
+});
+
+test('12.3 Sepet ve Ödeme → Yan sepet: ayarlar açıklamalı, koşullu alanlar, doğrulama ve kayıt', async ({ page }, info) => {
+  await page.goto(P('donation-panel-checkout'));
+  const card = page.locator('#dpa-s-basket');
+  await expect(card).toBeVisible();
+  for (const id of ['floating', 'position', 'suggest', 'suggest_product', 'suggest_amounts', 'suggest_hint']) {
+    await expect(card.locator(`#dpa-f-side_cart-${id}-desc`), id).toHaveText(/\w.{30,}/);
+  }
+  // Koşullu alanlar: öneri kapalıyken ürün/tutar gizli; yüzen düğme kapalıyken köşe gizli.
+  await expect(page.locator('#dpa-f-side_cart-suggest_amounts')).toBeHidden();
+  await page.locator('#dpa-f-side_cart-suggest').check();
+  await expect(page.locator('#dpa-f-side_cart-suggest_amounts')).toBeVisible();
+  await expect(page.locator('#dpa-f-side_cart-position')).toBeVisible();
+  await page.locator('#dpa-f-side_cart-floating').uncheck();
+  await expect(page.locator('#dpa-f-side_cart-position')).toBeHidden();
+  await page.locator('#dpa-f-side_cart-floating').check();
+  await page.selectOption('#dpa-f-side_cart-position', 'start');
+  await page.fill('#dpa-f-side_cart-suggest_amounts', '10, 20, 30, 40');
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('.dpa-notice--error')).toContainText(/three|üç/);
+  await page.fill('#dpa-f-side_cart-suggest_amounts', '25,75');
+  await page.fill('#dpa-f-side_cart-suggest_hint', 'Küçük bir katkı, büyük bir dua');
+  expect(await axe(page)).toEqual([]);
+  await shot(page, info, 'AdminSepet', 'yan-sepet-ayarlari');
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
+  const sc = (await state(page)).settings.side_cart;
+  expect(sc.position).toBe('start');
+  expect(sc.suggest).toBe(true);
+  expect(sc.suggest_amounts).toBe('25, 75');
+  expect(sc.suggest_hint).toBe('Küçük bir katkı, büyük bir dua');
+  // Rehber: iki yeni bölüm, görsel ve ayar bağlantısı.
+  await page.goto(P('donation-panel-guide'));
+  for (const id of ['colors', 'side_cart']) {
+    await expect(page.locator(`#dpa-g-${id} figure svg`), id).toBeVisible();
+    await expect(page.locator(`#dpa-g-${id} a.dpa-btn`), id).toHaveAttribute('href', /#dpa-s-(colors|basket)$/);
+  }
 });
 
 /** WCAG kontrastı (rgb() dizgeleri). */

@@ -327,7 +327,9 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
     try {
       await set({ floating: true, position: 'start', suggest: false });
       await page.goto(q());
-      await addDonation(page, '&amount=60&name=Ayse');
+      // `name` WordPress sorgu değişkeni olduğundan yanıt durumu 404 olabilir; ekleme sonucu JSON'dan okunur.
+      const added = await page.request.get(addUrl('&amount=60&name=Ayse'));
+      expect((await added.json()).ok).toBe(true);
       await page.goto(q('&p=2'));
       const fab = page.locator('[data-dp-sc-fab]');
       await expect(fab).toBeVisible({ timeout: 15000 });
@@ -337,7 +339,7 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
       expect(box.x).toBeGreaterThanOrEqual(0);
 
       await set({ floating: true, position: 'end', suggest: false });
-      await page.goto(q('&p=3'));
+      await page.goto(q('&dp_v=3'));
       await expect(fab).toBeVisible({ timeout: 15000 });
       box = await fab.boundingBox();
       expect(box.x + box.width / 2, 'sağ alt köşe').toBeGreaterThan(vp.width / 2);
@@ -353,7 +355,8 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
       const other = (await (await page.request.get('/?dp_sc_other=1')).json()).id;
       expect(other).toBeGreaterThan(0);
       await set({ floating: false, position: 'end', suggest: true, suggest_product: other, suggest_amounts: '25, 75', suggest_hint: 'Küçük bir katkı, büyük bir dua' });
-      await page.goto(q('&p=4'));
+      await page.goto(q('&dp_v=4'));
+      await expect(page.locator('[data-dp-sc][data-dp-sc-mounted="1"]')).toHaveCount(1);
       await expect(page.locator('[data-dp-sc-fab]'), 'yüzen düğme kapalı').toHaveCount(0);
       await page.evaluate(() => document.dispatchEvent(new CustomEvent('wc-blocks_added_to_cart', { bubbles: true })));
       await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
