@@ -383,6 +383,10 @@ test.describe('compact kart', () => {
   test('v2: vergi indirimi beyanı başlık + kısa hal + Ayrıntılar (kart içi, yükseklik aynı, Esc kapatır)', async ({ page, baseURL }) => {
     await open(page, baseURL, { ids: [IDS.custom], query: '&dp_ctax=1' });
     const h0 = await height(page);
+    // Beyan kartı büyütmez: yükseklik beyansız kartla aynı (taban 382 px + kenarlık).
+    await open(page, baseURL, { ids: [IDS.custom] });
+    expect(Math.abs(h0 - (await height(page))), 'beyanlı = beyansız yükseklik').toBeLessThanOrEqual(0.5);
+    await open(page, baseURL, { ids: [IDS.custom], query: '&dp_ctax=1' });
     await page.locator(`${CARD} [data-dp-camount-in]`).fill('30');
     await step(page, 'amount').locator('[data-dp-cnext]').click();
     const details = step(page, 'details');
