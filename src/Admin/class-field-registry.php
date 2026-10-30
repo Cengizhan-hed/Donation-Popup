@@ -11,6 +11,8 @@
 
 namespace DonationPanel\Admin;
 
+use DonationPanel\Domain\Donation_Type;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -50,16 +52,17 @@ final class Field_Registry {
 			Admin_Bootstrap::SLUG_FORMS     => array(
 				'open'      => array( __( 'How should the form open?', 'woo-donation-popup' ), __( 'Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later.', 'woo-donation-popup' ) ),
 				'colors'    => array( __( 'Colors', 'woo-donation-popup' ), __( 'By default the form follows your theme. Pick your own colors only if you need to.', 'woo-donation-popup' ) ),
-				'compact'   => array( __( 'Compact card', 'woo-donation-popup' ), __( 'A small donation card with a fixed height for sliders and hero areas: [wdp_donation_form layout="compact"]. Colors and fonts come from the settings above.', 'woo-donation-popup' ) ),
+				'compact'   => array( __( 'Compact card (slider/hero)', 'woo-donation-popup' ), __( 'A small donation card whose height never changes, made for sliders and hero areas. It is only a look: how the donor pays (through the cart or direct) is set under Cart and checkout. Colors and fonts come from the settings above.', 'woo-donation-popup' ) ),
 				'amounts'   => array( __( 'Amounts', 'woo-donation-popup' ), __( 'Quick amount buttons shown above the free amount field.', 'woo-donation-popup' ) ),
 				'fields'    => array( __( 'Form fields', 'woo-donation-popup' ), __( 'Optional fields the donor can fill in. Whatever donors type is saved on the order exactly as typed.', 'woo-donation-popup' ) ),
 				'shares'    => array( __( 'Share-based donations', 'woo-donation-popup' ), __( 'Wording for products where donors buy shares and enter shareholder names.', 'woo-donation-popup' ) ),
 				'placement' => array( __( 'Product pages and lists', 'woo-donation-popup' ), __( 'Where the donate button appears. Shortcodes and blocks always work anywhere.', 'woo-donation-popup' ) ),
 			),
 			Admin_Bootstrap::SLUG_CHECKOUT  => array(
-				'cart'   => array( __( 'Add-on donation', 'woo-donation-popup' ), __( 'Offer one extra donation product next to the main gift.', 'woo-donation-popup' ) ),
-				'thanks' => array( __( 'Thank-you screen', 'woo-donation-popup' ), __( 'Shown after the order. Only used when the Thank-you screen module is on.', 'woo-donation-popup' ) ),
-				'tax'    => array( __( 'Tax relief declaration', 'woo-donation-popup' ), __( 'One question at checkout. Only used when the Tax relief module is on.', 'woo-donation-popup' ) ),
+				'payment' => array( __( 'How donors pay', 'woo-donation-popup' ), __( 'Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with every form style (centered window, side panel, bottom sheet, in-page form and compact card). A product setting wins over its donation type, and a donation type wins over the general setting.', 'woo-donation-popup' ) ),
+				'cart'    => array( __( 'Add-on donation', 'woo-donation-popup' ), __( 'Offer one extra donation product next to the main gift.', 'woo-donation-popup' ) ),
+				'thanks'  => array( __( 'Thank-you screen', 'woo-donation-popup' ), __( 'Shown after the order. Only used when the Thank-you screen module is on.', 'woo-donation-popup' ) ),
+				'tax'     => array( __( 'Tax relief declaration', 'woo-donation-popup' ), __( 'One question at checkout. Only used when the Tax relief module is on.', 'woo-donation-popup' ) ),
 			),
 			Admin_Bootstrap::SLUG_TOOLS     => array(
 				'data'    => array( __( 'Data', 'woo-donation-popup' ), __( 'What happens to plugin data when you delete the plugin.', 'woo-donation-popup' ) ),
@@ -493,10 +496,42 @@ final class Field_Registry {
 
 		$f['direct.enabled'] = array(
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
-			'section' => 'cart',
+			'section' => 'payment',
 			'label'   => __( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
-			'help'    => __( 'The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ),
+			'help'    => __( 'General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ),
 			'type'    => 'switch',
+		);
+
+		// Bağış türü bazında ödeme davranışı ('' = genel ayarı kullan). Öncelik: ürün > tür > genel (Direct_Settings::decide).
+		$direct_choices = array(
+			''       => __( 'Use the general setting', 'woo-donation-popup' ),
+			'cart'   => __( 'Through the cart', 'woo-donation-popup' ),
+			'direct' => __( 'Direct (skip the cart)', 'woo-donation-popup' ),
+		);
+		$type_defs      = Donation_Type::get_definitions();
+		$type_help      = array(
+			Donation_Type::FIXED    => __( 'Products with a fixed price where the donor only picks a quantity.', 'woo-donation-popup' ),
+			Donation_Type::CUSTOM   => __( 'Products where the donor types the amount.', 'woo-donation-popup' ),
+			Donation_Type::SHARES   => __( 'Share-based products with shareholder names.', 'woo-donation-popup' ),
+			Donation_Type::CAMPAIGN => __( 'Products with a goal and a progress bar.', 'woo-donation-popup' ),
+		);
+		foreach ( $type_help as $type => $help ) {
+			$f[ 'direct.type_' . $type ] = array(
+				'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+				'section' => 'payment',
+				'label'   => isset( $type_defs[ $type ]['label'] ) ? $type_defs[ $type ]['label'] : $type,
+				'help'    => $help,
+				'type'    => 'select',
+				'options' => $direct_choices,
+			);
+		}
+		$f['direct.type_addon'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'payment',
+			'label'   => __( 'Products that offer an add-on donation', 'woo-donation-popup' ),
+			'help'    => __( 'Wins over the product\'s own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct.', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => $direct_choices,
 		);
 
 		$f['side_cart.floating'] = array(

@@ -49,12 +49,14 @@ final class Admin_View {
 	 * @param string $body  Hazır HTML.
 	 * @param string $extra_class Ek sınıf.
 	 * @param string $intro Başlık altı kısa açıklama.
+	 * @param string $id    Bağlantı çapası kimliği (Rehber'den doğrudan bölüme; '' = yok).
 	 * @return string
 	 */
-	public static function card( $title, $body, $extra_class = '', $intro = '' ) {
+	public static function card( $title, $body, $extra_class = '', $intro = '', $id = '' ) {
 		$head = '' !== $title ? '<h2 class="dpa-card__title">' . esc_html( $title ) . '</h2>' : '';
 		$note = '' !== $intro ? '<p class="dpa-card__intro">' . esc_html( $intro ) . '</p>' : '';
-		return '<section class="dpa-card ' . esc_attr( $extra_class ) . '">' . $head . $note . $body . '</section>';
+		$attr = '' !== $id ? ' id="' . esc_attr( $id ) . '"' : '';
+		return '<section class="dpa-card ' . esc_attr( $extra_class ) . '"' . $attr . '>' . $head . $note . $body . '</section>';
 	}
 
 	/**

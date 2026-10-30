@@ -461,20 +461,68 @@ final class Product_Data_Tab {
 				'no' => __( 'Off', 'woo-donation-popup' ),
 			)
 		);
-		$direct_global = Direct_Settings::global_default() ? __( 'On', 'woo-donation-popup' ) : __( 'Off', 'woo-donation-popup' );
+		self::render_direct( $product, $values['direct'] );
+		echo '</div>';
+	}
+
+	/**
+	 * Ödeme davranışı (sepetli / doğrudan): ürün geçersiz kılması + geçerli değer ve kaynağı (ürün > tür > genel).
+	 *
+	 * @param \WC_Product $product Ürün.
+	 * @param string      $value   Kayıtlı ürün değeri (yes|no|'').
+	 * @return void
+	 */
+	private static function render_direct( $product, $value ) {
+		$traits   = Direct_Settings::traits_from_product( $product );
+		$fallback = Direct_Settings::decide( '', $traits['kind'], $traits['addon'], Direct_Settings::type_choices(), Direct_Settings::global_default() );
+		$current  = Direct_Settings::resolve( $product );
 		self::select(
 			'direct',
-			$values['direct'],
+			$value,
 			__( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
-			__( 'If on, the donor goes from the form straight to payment and nothing is added to the cart.', 'woo-donation-popup' ),
+			__( 'Direct: the donor goes from the form straight to payment and nothing is added to the cart. Works with every form style, including the compact card.', 'woo-donation-popup' ),
 			array(
-				/* translators: %s: On / Off */
-				''    => sprintf( __( 'General setting (currently: %s)', 'woo-donation-popup' ), $direct_global ),
-				'yes' => __( 'On', 'woo-donation-popup' ),
-				'no'  => __( 'Off', 'woo-donation-popup' ),
+				/* translators: %s: current value and where it comes from, e.g. "Direct (from the donation type: Campaign)" */
+				''    => sprintf( __( 'Donation type or general setting (now: %s)', 'woo-donation-popup' ), self::direct_text( $fallback ) ),
+				'yes' => __( 'Direct (skip the cart)', 'woo-donation-popup' ),
+				'no'  => __( 'Through the cart', 'woo-donation-popup' ),
 			)
 		);
-		echo '</div>';
+		$screen = '<a href="' . esc_url( admin_url( 'admin.php?page=' . \DonationPanel\Admin\Admin_Bootstrap::SLUG_CHECKOUT ) ) . '">' . esc_html__( 'Donation Panel → Cart and checkout → How donors pay', 'woo-donation-popup' ) . '</a>';
+		echo '<p class="form-field donation-panel-ptab__effective" data-wdp-direct-effective="' . esc_attr( $current['enabled'] ? 'direct' : 'cart' ) . '" data-wdp-direct-source="' . esc_attr( $current['source'] ) . '">'
+			/* translators: %s: current value and where it comes from */
+			. esc_html( sprintf( __( 'Current value: %s', 'woo-donation-popup' ), self::direct_text( $current ) ) )
+			. '<br><span class="description">'
+			/* translators: %s: link to the settings screen */
+			. sprintf( esc_html__( 'Donation type and general settings: %s', 'woo-donation-popup' ), $screen ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- bağlantı yukarıda kaçışlandı.
+			. '</span></p>';
+	}
+
+	/**
+	 * "Doğrudan (kaynak: …)" metni.
+	 *
+	 * @param array{enabled: bool, source: string, type: string} $resolved Karar.
+	 * @return string
+	 */
+	private static function direct_text( array $resolved ) {
+		$value = $resolved['enabled'] ? __( 'Direct (skip the cart)', 'woo-donation-popup' ) : __( 'Through the cart', 'woo-donation-popup' );
+		switch ( $resolved['source'] ) {
+			case Direct_Settings::SOURCE_PRODUCT:
+				$source = __( 'source: this product', 'woo-donation-popup' );
+				break;
+			case Direct_Settings::SOURCE_TYPE:
+				$defs  = Donation_Type::get_definitions();
+				$label = Direct_Settings::ADDON === $resolved['type'] ? __( 'Products that offer an add-on donation', 'woo-donation-popup' ) : ( isset( $defs[ $resolved['type'] ]['label'] ) ? $defs[ $resolved['type'] ]['label'] : $resolved['type'] );
+				/* translators: %s: donation type name */
+				$source = sprintf( __( 'source: donation type "%s"', 'woo-donation-popup' ), $label );
+				break;
+			case Direct_Settings::SOURCE_FILTER:
+				$source = __( 'source: a code filter on this site', 'woo-donation-popup' );
+				break;
+			default:
+				$source = __( 'source: general setting', 'woo-donation-popup' );
+		}
+		return $value . ' (' . $source . ')';
 	}
 
 	/**

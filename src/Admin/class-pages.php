@@ -112,8 +112,11 @@ final class Pages {
 					$body  .= '<div data-dpa-when="design.colors=theme">' . Admin_View::colors_note( $status, $vars ) . '</div>';
 				}
 			}
+			if ( Admin_Bootstrap::SLUG_FORMS === $page && 'compact' === $section ) {
+				$body .= Compact_Tools::render();
+			}
 			if ( '' !== $body ) {
-				$html .= Admin_View::card( $head[0], $body, 'dpa-card--section', $head[1] );
+				$html .= Admin_View::card( $head[0], $body, 'dpa-card--section', $head[1], 'dpa-s-' . $section );
 			}
 		}
 		return $html;

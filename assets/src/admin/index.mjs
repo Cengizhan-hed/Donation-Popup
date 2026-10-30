@@ -249,6 +249,33 @@ function initColorsNote(root) {
   });
 }
 
+/**
+ * Compact kart kısa kod oluşturucu: ürün seçilince kod ve kopyala düğmesi güncellenir (kayıt yok, ayar değildir).
+ *
+ * @param {HTMLElement} root Sayfa kökü.
+ */
+function initCompactBuilder(root) {
+  const select = root.querySelector('[data-dpa-compact-product]');
+  const text = root.querySelector('[data-dpa-compact-text]');
+  const copy = root.querySelector('[data-dpa-compact-code] [data-dpa-copy]');
+  const shares = root.querySelector('[data-dpa-compact-shares]');
+  if (!select || !text || !copy) {
+    return;
+  }
+  const update = () => {
+    const id = Number.parseInt(select.value, 10) || 0;
+    const code = id > 0 ? `[wdp_donation_form id="${id}" layout="compact"]` : '[wdp_donation_form layout="compact"]';
+    text.textContent = code;
+    copy.setAttribute('data-dpa-copy', code);
+    if (shares) {
+      const option = select.options[select.selectedIndex];
+      shares.hidden = !(option && option.getAttribute('data-dpa-shares') === '1');
+    }
+  };
+  select.addEventListener('change', update);
+  update();
+}
+
 const root = document.querySelector('.dpa');
 if (root) {
   root.classList.add('dpa-js');
@@ -260,6 +287,7 @@ if (root) {
   } else {
     initFields(root);
     initColorsNote(root);
+    initCompactBuilder(root);
     initTools(root);
     initCampaigns(root, api, notify, t);
   }
