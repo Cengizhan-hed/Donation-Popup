@@ -123,7 +123,9 @@ for (const kind of KINDS) {
             const loop = () => {
               const s = document.querySelector('[data-dp-surface]');
               const r = s.getBoundingClientRect();
-              frames.push({ x: r.x, y: r.y, cx: center.getBoundingClientRect().x, cw: document.body.getBoundingClientRect().width });
+              // Diyalog kapandıktan sonraki kareler (yüzey yerleşmez: kutu 0,0) hareket ölçümüne girmez.
+              const open = Boolean(document.querySelector('dialog[open]')) && r.width > 0;
+              frames.push({ open, x: r.x, y: r.y, cx: center.getBoundingClientRect().x, cw: document.body.getBoundingClientRect().width });
               if (performance.now() - t0 < 500) requestAnimationFrame(loop);
               else resolve({ frames, cx0, cw0 });
             };
@@ -132,7 +134,8 @@ for (const kind of KINDS) {
           })
       );
       const start = res.frames[0];
-      const d = res.frames.map((f) => Math.hypot(f.x - start.x, f.y - start.y));
+      const d = res.frames.filter((f) => f.open).map((f) => Math.hypot(f.x - start.x, f.y - start.y));
+      expect(res.frames.some((f) => !f.open), 'kapanış 500 ms içinde bitmeli').toBe(true);
       let back = 0;
       for (let i = 1; i < d.length; i += 1) if (d[i] + 0.75 < d[i - 1] && d[i - 1] > 0) back += 1;
       expect(back, 'kapanışta geri dönen kare').toBe(0);
