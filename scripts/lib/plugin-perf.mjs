@@ -258,6 +258,8 @@ export function attributeTrace(trace, opts = {}) {
 export const FONT_SHIFT_WINDOW = { beforeMs: 50, afterMs: 300 };
 /** Eklenti ve tema metin akışı kaymalarının aynı yazı tipi değişimi sayıldığı en büyük aralık (ms; 4× CPU'da birkaç kare). */
 export const REFLOW_PAIR_MS = 100;
+/** Yazı tipi değişiminde metin düğümü kutusunun en çok yükseklik farkı (px; yalnız eşleşen yazı tipi pencerede yüklenince). */
+export const FONT_METRIC_PX = 2;
 
 /**
  * Kayma bir web fontu yüklenmesiyle aynı zaman penceresinde mi.
@@ -303,7 +305,7 @@ export function fontMatches(face, font) {
  *    bilerek devralır, §0). Tema seçicisi bilinmez: "eklenti dışı" = eklenti işareti taşımayan her kaynak.
  *  - aksi hâlde en az bir kaynağı eklenti öğesi olan kayma → `plugin` (karışık ama font penceresi dışında olan da
  *    eklentiye yazılır — muhafazakâr).
- *  - yalnız eklenti metin düğümleri, boyları değişmeden (dh 0) kayıyor VE her birinin hesaplanmış yazı tipi (aile +
+ *  - yalnız eklenti metin düğümleri, boyları değişmeden ya da yalnız yazı tipi metriği kadar (|dh| ≤ 2 px) kayıyor VE her birinin hesaplanmış yazı tipi (aile +
  *    kalınlık + stil) pencerede yüklenen bir FontFace ile eşleşiyor → `font` (aynı yazı tipini kullanan tema öğesi o
  *    karede görünür alanda olmayabilir; metnin kendi yazı tipi değişimi kanıttır). Betik metni değiştirirse genişlik
  *    ya da kardeş öğeler de kayar; yazı tipi eşleşmesi olmadan bu kural uygulanmaz.
@@ -318,11 +320,17 @@ export function clsAttribution(shifts, opts = {}) {
   const win = opts.window || FONT_SHIFT_WINDOW;
   const fontFaces = opts.fontFaces || [];
   const live = (shifts || []).filter((s) => !s.hadRecentInput);
-  // Metnin kendi yazı tipi o pencerede yüklendi (font swap): yalnız metin düğümleri, boy değişmeden.
+  // Metnin kendi yazı tipi (aile + kalınlık + stil) o pencerede yüklendi (font swap): yalnız metin düğümleri. Metin
+  // düğümü kutusu yazı tipinin üst/alt uzunluğundan gelir: değişimde ≤ FONT_METRIC_PX yükseklik farkı (ör. dy-1 dh1)
+  // yazı tipi metriğidir (12.3 fix: geç yüklenen yazı tipiyle betiksiz sayfada aynı imza üretildi).
   const ownFontSwap = (s) =>
     (s.sources || []).length > 0 &&
     (s.sources || []).every(
-      (x) => x.text && !x.detached && x.dh === 0 && fontFaces.some((f) => nearFontLoad(Number(s.startTime), [Number(f.t)], win) && fontMatches(f, x.font))
+      (x) =>
+        x.text &&
+        !x.detached &&
+        Math.abs(Number(x.dh) || 0) <= FONT_METRIC_PX &&
+        fontFaces.some((f) => nearFontLoad(Number(s.startTime), [Number(f.t)], win) && fontMatches(f, x.font))
     );
   // Yalnız yatay metin yeniden akışı (dy=0, dh=0; genişlik/x değişir): yazı tipi metriği değişimi işareti.
   const reflowOnly = (s) => (s.sources || []).length > 0 && (s.sources || []).every((x) => !x.detached && x.dy === 0 && x.dh === 0);

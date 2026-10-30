@@ -181,6 +181,17 @@ describe('clsAttribution', () => {
     assert.equal(clsAttribution([{ ...s[0], sources: [src(['Inter', '500', 'normal'], { dh: 3 })] }], { fontFaces: [inter500] }).plugin, 0.00002);
     assert.equal(clsAttribution([{ ...s[0], sources: [src(null, { text: false })] }], { fontFaces: [inter500] }).plugin, 0.00002);
   });
+  it('12.3 fix: Ikram ana sayfa #text<b dy-1 dh1, Manrope/800 11 ms önce yüklendi → yazı tipi metriği (tema/font); eşleşmesiz eklentide', () => {
+    const src = { plugin: true, text: true, dy: -1, dh: 1, dx: 0, font: ['Manrope, sans-serif', '800', 'normal'] };
+    const s = [{ value: 0.00004, startTime: 3205, sources: [src] }];
+    const manrope = { t: 3194, family: 'Manrope', weight: '200 800', style: 'normal' };
+    assert.equal(clsAttribution(s, { fontFaces: [manrope] }).font, 0.00004);
+    assert.equal(clsAttribution(s, { fontFaces: [manrope] }).plugin, 0);
+    // Yüz bilgisi yoksa (yalnız zaman) → eklenti (muhafazakâr).
+    assert.equal(clsAttribution(s, { fontTimes: [3194] }).plugin, 0.00004);
+    // Başka aile yüklendi → eklenti.
+    assert.equal(clsAttribution(s, { fontFaces: [{ ...manrope, family: 'Inter' }] }).plugin, 0.00004);
+  });
   it('fontMatches: aile (tırnak/büyük harf), kalınlık (anahtar sözcük/aralık), stil', () => {
     assert.equal(fontMatches({ family: 'Inter', weight: 'normal', style: 'normal' }, ["'inter', Arial", '400', 'normal']), true);
     assert.equal(fontMatches({ family: 'Inter', weight: 'bold' }, ['Inter', '700', 'normal']), true);
