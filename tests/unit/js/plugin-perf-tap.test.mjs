@@ -117,8 +117,8 @@ function el(w, box, extra = {}) {
 }
 function layoutWindow(build, hitFor) {
   const w = { innerWidth: 400, innerHeight: 800, scrollY: 0 };
-  w.scrollBy = (x, y) => (w.scrollY += y);
-  w.getComputedStyle = (e) => ({ visibility: e.vis || 'visible', display: e.display || 'block', opacity: e.opacity ?? '1' });
+  w.scrollBy = (x, y) => (w.scrollY += typeof x === 'object' ? x.top || 0 : y);
+  w.getComputedStyle = (e) => ({ visibility: e.vis || 'visible', display: e.display || 'block', opacity: e.opacity ?? '1', position: e.position || 'static', transform: 'none', overflowY: 'visible' });
   const list = build(w);
   w.document = {
     querySelectorAll: () => list,
@@ -188,6 +188,31 @@ describe('pickVisibleTarget', () => {
     const t = await pickVisibleTarget(w, '[data-dp-open]');
     assert.equal(t.index, -1);
     assert.match(t.reason, /üstte header#masthead\.site-header\.is-sticky/);
+  });
+
+  it('yumuşak kaydırma (scrollIntoView iki karede yarı yolda): döngü öğeyi ortaya getirir', async () => {
+    const { w, list } = layoutWindow(
+      (win) => [el(win, { x: 10, y: 3000, w: 100, h: 44 })],
+      (l) => l[0]
+    );
+    // `scroll-behavior: smooth` benzetimi: her çağrıda yolun yalnız yarısı.
+    const box = { y: 3000, h: 44 };
+    list[0].scrollIntoView = () => (w.scrollY += (box.y + box.h / 2 - w.innerHeight / 2 - w.scrollY) / 2);
+    const t = await pickVisibleTarget(w, '[data-dp-open]');
+    assert.equal(t.index, 0);
+    assert.ok(t.y >= 0 && t.y <= w.innerHeight);
+  });
+
+  it('kaydırınca yerinden oynamayan (sabit) ekran dışı öğe: neden konum ve sabit üst öğeyi yazar', async () => {
+    const { w, list } = layoutWindow(
+      (win) => [el(win, { x: 10, y: 900, w: 100, h: 44 }, { position: 'fixed', tagName: 'DIV', id: '', className: 'bar' })],
+      () => null
+    );
+    list[0].scrollIntoView = () => {};
+    list[0].getBoundingClientRect = () => ({ left: 10, top: 900, width: 100, height: 44 });
+    const t = await pickVisibleTarget(w, '[data-dp-open]');
+    assert.equal(t.index, -1);
+    assert.match(t.reason, /#0 dikeyde ekran dışı \(üst 900, alt 944, görünüm 800; kap pencere; fixed div\.bar\)/);
   });
 
   it('uygun hedef yoksa -1 ve nedenler', async () => {

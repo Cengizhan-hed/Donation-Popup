@@ -274,22 +274,56 @@ export function nearFontLoad(t, fontTimes, win = FONT_SHIFT_WINDOW) {
 }
 
 /**
+ * Bir yazı tipi yüzü (FontFace) metnin hesaplanmış yazı tipiyle eşleşiyor mu: ilk aile adı (tırnaksız, küçük harf),
+ * kalınlık (yüzde aralık "100 900" olabilir) ve stil.
+ *
+ * @param {{family:string, weight?:string, style?:string}} face Yüklenen yüz.
+ * @param {[string, string, string]|null} font Metnin [font-family, font-weight, font-style] değeri.
+ * @return {boolean} Eşleşirse.
+ */
+export function fontMatches(face, font) {
+  if (!face || !font) return false;
+  const norm = (s) => String(s || '').trim().replace(/^["']|["']$/g, '').toLowerCase();
+  const first = norm(String(font[0] || '').split(',')[0]);
+  if (!first || first !== norm(face.family)) return false;
+  const weightOf = (w) => (w === 'bold' ? 700 : w === 'normal' || !w ? 400 : Number(w));
+  const want = weightOf(String(font[1] || '400'));
+  const range = String(face.weight || '400').trim().split(/\s+/).map(weightOf);
+  const lo = range[0];
+  const hi = range.length > 1 ? range[1] : range[0];
+  if (Number.isFinite(lo) && Number.isFinite(hi) && (want < lo || want > hi)) return false;
+  const style = (s) => (String(s || 'normal').indexOf('italic') === 0 || String(s || '').indexOf('oblique') === 0 ? 'italic' : 'normal');
+  return style(face.style) === style(font[2]);
+}
+
+/**
  * Eklenti kaynaklı CLS (yakın girdi olmayan kaymalar, `hadRecentInput` false):
  *  - kaynaklardan biri eklenti öğesi (`.donation-panel*` / `[data-dp-*]`) VE eklenti dışı (belgede duran) bir öğe de
  *    kayıyor VE kayma bir web fontu yüklenmesiyle aynı pencerede → `font` (tema/font kaynaklı; eklenti tema yazı tipini
  *    bilerek devralır, §0). Tema seçicisi bilinmez: "eklenti dışı" = eklenti işareti taşımayan her kaynak.
  *  - aksi hâlde en az bir kaynağı eklenti öğesi olan kayma → `plugin` (karışık ama font penceresi dışında olan da
  *    eklentiye yazılır — muhafazakâr).
+ *  - yalnız eklenti metin düğümleri, boyları değişmeden (dh 0) kayıyor VE her birinin hesaplanmış yazı tipi (aile +
+ *    kalınlık + stil) pencerede yüklenen bir FontFace ile eşleşiyor → `font` (aynı yazı tipini kullanan tema öğesi o
+ *    karede görünür alanda olmayabilir; metnin kendi yazı tipi değişimi kanıttır). Betik metni değiştirirse genişlik
+ *    ya da kardeş öğeler de kayar; yazı tipi eşleşmesi olmadan bu kural uygulanmaz.
  *  - kaynak düğümlerinin hepsi belgeden çıkmışsa (`node` null) eklentiye yazılmaz, `unknown` sayılır.
  *
- * @param {Array<{value:number, startTime?:number, hadRecentInput?:boolean, sources?:Array<{plugin?:boolean, detached?:boolean}>}>} shifts Kaymalar.
- * @param {{fontTimes?: number[], window?: {beforeMs:number, afterMs:number}}} [opts] Yazı tipi yükleme zamanları.
+ * @param {Array<{value:number, startTime?:number, hadRecentInput?:boolean, sources?:Array<{plugin?:boolean, detached?:boolean, text?:boolean, font?:string[]|null, dh?:number}>}>} shifts Kaymalar.
+ * @param {{fontTimes?: number[], fontFaces?: Array<{t:number, family:string, weight?:string, style?:string}>, window?: {beforeMs:number, afterMs:number}}} [opts] Yazı tipi yükleme zamanları ve yüzleri.
  * @return {{plugin:number, font:number, total:number, pluginShifts:number, fontShifts:number, unknown:number}} Toplamlar.
  */
 export function clsAttribution(shifts, opts = {}) {
   const fontTimes = opts.fontTimes || [];
   const win = opts.window || FONT_SHIFT_WINDOW;
+  const fontFaces = opts.fontFaces || [];
   const live = (shifts || []).filter((s) => !s.hadRecentInput);
+  // Metnin kendi yazı tipi o pencerede yüklendi (font swap): yalnız metin düğümleri, boy değişmeden.
+  const ownFontSwap = (s) =>
+    (s.sources || []).length > 0 &&
+    (s.sources || []).every(
+      (x) => x.text && !x.detached && x.dh === 0 && fontFaces.some((f) => nearFontLoad(Number(s.startTime), [Number(f.t)], win) && fontMatches(f, x.font))
+    );
   // Yalnız yatay metin yeniden akışı (dy=0, dh=0; genişlik/x değişir): yazı tipi metriği değişimi işareti.
   const reflowOnly = (s) => (s.sources || []).length > 0 && (s.sources || []).every((x) => !x.detached && x.dy === 0 && x.dh === 0);
   // İkinci kanıt: platform yazı tipi geri dönüşü FontFace olayı üretmeyebilir (Chromium/macOS). Eklenti-yalnız kayma
@@ -317,7 +351,7 @@ export function clsAttribution(shifts, opts = {}) {
     const src = s.sources || [];
     if (src.some((x) => x.plugin)) {
       const foreign = src.some((x) => !x.plugin && !x.detached);
-      if ((foreign && nearFontLoad(Number(s.startTime), fontTimes, win)) || (reflowOnly(s) && themeReflowNear(s))) {
+      if ((foreign && nearFontLoad(Number(s.startTime), fontTimes, win)) || (reflowOnly(s) && themeReflowNear(s)) || ownFontSwap(s)) {
         font += v;
         nf += 1;
       } else {
@@ -406,8 +440,28 @@ export async function pickVisibleTarget(w, selector) {
       reasons.push(`#${i} yatayda ekran dışı`);
       continue;
     }
-    if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'center', inline: 'nearest' });
-    await frames();
+    // Ortalama döngüsü (en çok 5): `behavior:'instant'` sayfanın `scroll-behavior: smooth` ayarını ezer (yumuşak kaydırma
+    // iki karede bitmez, öğe "dikeyde ekran dışı" kalıyordu). Hâlâ ortada değilse pencere ve en yakın kaydırma kabı
+    // farka göre kaydırılır (iç kaydırma kabı, yapışkan üstbilgi, kaydırınca yer değiştiren öğe).
+    const scroller = (node) => {
+      for (let p = node.parentElement; p && p !== doc.documentElement; p = p.parentElement) {
+        const cs = w.getComputedStyle(p);
+        if (/(auto|scroll|overlay)/.test(cs.overflowY) && p.scrollHeight > p.clientHeight + 1) return p;
+      }
+      return null;
+    };
+    const box = scroller(el);
+    for (let k = 0; k < 5; k += 1) {
+      if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+      await frames();
+      const rr = el.getBoundingClientRect();
+      const mid = rr.top + Math.min(rr.height, w.innerHeight) / 2;
+      const delta = mid - w.innerHeight / 2;
+      if (Math.abs(delta) <= w.innerHeight / 4 && rr.top + rr.height > 0 && rr.top < w.innerHeight) break;
+      if (box) box.scrollBy({ top: delta, behavior: 'instant' });
+      else w.scrollBy({ top: delta, behavior: 'instant' });
+      await frames();
+    }
     let why = hiddenWhy(el);
     // Görünür olunca başlayan giriş animasyonu: birkaç kare daha bekle (sabit bekleme değil, kare bazlı).
     for (let k = 0; why && k < 20; k += 1) {
@@ -419,12 +473,14 @@ export async function pickVisibleTarget(w, selector) {
       continue;
     }
     r = el.getBoundingClientRect();
+    // Noktalar kutunun görünür kesitinde (görünümden uzun öğe, kısmen görünen sabit çubuk).
+    const vis = { left: Math.max(r.left, 0), top: Math.max(r.top, 0), right: Math.min(r.left + r.width, w.innerWidth), bottom: Math.min(r.top + r.height, w.innerHeight) };
     let cover = '';
     let found = null;
     for (const [fx, fy] of pts) {
-      const x = r.left + r.width * fx;
-      const y = r.top + r.height * fy;
-      if (x < 0 || x > w.innerWidth || y < 0 || y > w.innerHeight) continue;
+      if (vis.right <= vis.left || vis.bottom <= vis.top) break;
+      const x = vis.left + (vis.right - vis.left) * fx;
+      const y = vis.top + (vis.bottom - vis.top) * fy;
       const hit = doc.elementFromPoint(x, y);
       if (hit && (hit === el || el.contains(hit))) {
         found = { x, y };
@@ -433,7 +489,18 @@ export async function pickVisibleTarget(w, selector) {
       if (!cover) cover = describe(hit);
     }
     if (found) return { index: i, x: Math.round(found.x), y: Math.round(found.y), reason: '' };
-    reasons.push(cover ? `#${i} üstte ${cover}` : `#${i} dikeyde ekran dışı`);
+    if (cover) {
+      reasons.push(`#${i} üstte ${cover}`);
+      continue;
+    }
+    // Neden ayrıntısı: konum, kaydırma kabı, sabit/yapışkan ya da dönüşümlü üst öğe (kaydırınca yerinden oynamayan).
+    let pinned = '';
+    for (let p = el; p && p !== doc.documentElement && !pinned; p = p.parentElement) {
+      const cs = w.getComputedStyle(p);
+      if (cs.position === 'fixed' || cs.position === 'sticky') pinned = `${cs.position} ${describe(p)}`;
+      else if (cs.transform && cs.transform !== 'none') pinned = `transform ${describe(p)}`;
+    }
+    reasons.push(`#${i} dikeyde ekran dışı (üst ${Math.round(r.top)}, alt ${Math.round(r.top + r.height)}, görünüm ${w.innerHeight}; kap ${box ? describe(box) : 'pencere'}${pinned ? `; ${pinned}` : ''})`);
   }
   return { index: -1, x: 0, y: 0, reason: reasons.slice(0, 3).join('; ') || 'eşleşen öğe yok' };
 }

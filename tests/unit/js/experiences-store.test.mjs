@@ -108,6 +108,16 @@ test('formatTotal: tam sayıda ondalık yok, simge öne', () => {
   assert.equal(formatTotal(12.5, '£', 2, 'en-GB'), '£12.50');
 });
 
+test('formatTotal: sunucu ayırıcılarıyla (number_format_i18n gibi; Intl yok)', () => {
+  const tr = { thousands: '.', decimal: ',' };
+  assert.equal(formatTotal(1250, '₺', 2, 'tr-TR', tr), '₺1.250');
+  assert.equal(formatTotal(1234567.5, '₺', 2, 'tr-TR', tr), '₺1.234.567,50');
+  assert.equal(formatTotal(1.005, '£', 2, '', { thousands: ',', decimal: '.' }), '£1.01');
+  assert.equal(formatTotal(999.999, '£', 3, '', { thousands: ',', decimal: '.' }), '£1,000.00');
+  assert.equal(formatTotal(1000, '€', 2, '', { thousands: ' ', decimal: ',' }), '€1 000');
+  assert.equal(formatTotal(null, '£', 2, '', { thousands: ',', decimal: '.' }), '£0');
+});
+
 test('boyut bütçesi: modül JS <= 25 KB gz, kritik CSS <= 8 KB gz', () => {
   const dir = path.join(ROOT, 'assets/build/experiences');
   if (!fs.existsSync(path.join(dir, 'index.js'))) {

@@ -142,7 +142,19 @@ add_action(
 		echo '<!doctype html><html ' . get_language_attributes() . '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Experiences e2e</title>';
 		wp_head();
 		echo '</head><body><main style="padding:16px"><h1>Test</h1><p>Sayfa metni.</p>';
-		echo do_shortcode('[donation_panel_experience id="' . $id . '" kind="' . esc_attr($kind) . '"]'); // phpcs:ignore
+		if ('slider' === $kind) {
+			// 12.2 slider: 6 sayfa içi form. track = yatay kayan şerit (ilk slayt görünür, diğerleri kırpılmış ekran dışı);
+			// fade = üst üste slaytlar (yalnız ilki görünür, diğerleri visibility:hidden). Genel CSS; kütüphane/tema adı yok.
+			$fade   = isset($_GET['dp_mode']) && 'fade' === $_GET['dp_mode']; // phpcs:ignore
+			$slides = '';
+			for ($i = 0; $i < 6; $i++) {
+				$style   = $fade ? ($i > 0 ? 'position:absolute;inset:0;visibility:hidden' : 'position:relative') : 'flex:0 0 100%;min-width:0';
+				$slides .= '<div class="sim-slide" data-sim-slide="' . $i . '" style="' . $style . '">' . do_shortcode('[donation_panel_experience id="' . $id . '" kind="inline"]') . '</div>';
+			}
+			echo '<div class="sim-slider" style="overflow:hidden;position:relative"><div class="sim-track" style="' . ($fade ? 'position:relative' : 'display:flex;transition:none') . '">' . $slides . '</div></div>'; // phpcs:ignore
+		} else {
+			echo do_shortcode('[donation_panel_experience id="' . $id . '" kind="' . esc_attr($kind) . '"]'); // phpcs:ignore
+		}
 		echo '</main>';
 		wp_footer();
 		echo '</body></html>';
