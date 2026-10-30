@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseColor, textOn, contrast, syncColors } from '../../../assets/src/ui2-shared/color-sync.mjs';
+import { JSDOM } from 'jsdom';
+import { colorSyncNeeded, parseColor, textOn, contrast, syncColors } from '../../../assets/src/ui2-shared/color-sync.mjs';
 import { classify, toHex, lowContrast } from '../../../assets/src/admin/color-field.mjs';
 
 test('parseColor: hex, rgb(), rgba(), boşluklu rgb ve color(srgb)', () => {
@@ -40,6 +41,17 @@ test('classify: sunucu kurallarıyla aynı', () => {
   for (const bad of ['red', 'var(--a);x', 'var(--a, var(--b))', 'url(x)', 'var(--a)}', 'var(--a, red)', '#abcd']) {
     assert.equal(classify(bad).kind, 'bad', bad);
   }
+});
+
+test('colorSyncNeeded: işaret yalnız eklenti satır içi stilinde ya da style özniteliğinde aranır (stil hesabı yok)', () => {
+  const doc = (html) => new JSDOM(`<!doctype html><html><head>${html}</head><body></body></html>`).window.document;
+  assert.equal(colorSyncNeeded(doc('<style id="donation-panel-inline-experiences">.a{--dp-color-primary:#123}</style>')), false);
+  assert.equal(colorSyncNeeded(doc('<style id="donation-panel-inline-experiences">:root{--dp-color-dynamic:1}</style>')), true);
+  assert.equal(colorSyncNeeded(doc('<style id="theme">:root{--dp-color-dynamic:1}</style>')), false, 'eklentiye ait olmayan stil sayılmaz');
+  const d = doc('');
+  d.body.innerHTML = '<div class="donation-panel" style="--dp-color-primary:var(--x,#123);--dp-color-dynamic:1"></div>';
+  assert.equal(colorSyncNeeded(d), true);
+  assert.equal(colorSyncNeeded(null), false);
 });
 
 test('toHex ve lowContrast', () => {

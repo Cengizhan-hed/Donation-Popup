@@ -342,10 +342,16 @@ async function measureUi(browser, url, prepare, dumpName = '', trig = '[data-dp-
         if (target.index < 0) continue;
         // Yığınlı iz: zorlayan JS çağrı noktası (ör. showModal) satıra yazılır.
         await browser.startTracing(page, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack'] });
+        await page.evaluate(`(${installTapProbe})(window, ${JSON.stringify(trig)}, ${target.index})`);
         const tapped = await tapAt(page, target, 'click');
-        if (tapped) await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
+        if (tapped) await page.waitForFunction(() => window.__dpTap && window.__dpTap.t1 > 0, null, { timeout: 20000 });
         await settle(page);
         const trace = JSON.parse((await browser.stopTracing()).toString('utf8'));
+        if (process.env.WDP_PERF_SAVE_TRACE && dumpName) {
+          // Yalnız tanı: izi ve dokunuş zamanlarını yerel dosyaya yaz (uzakta da yalnız zaman/olay adları; içerik yok).
+          fs.mkdirSync(OUT_DIR, { recursive: true });
+          fs.writeFileSync(path.join(OUT_DIR, `${dumpName}-acilis-${i}.json`), JSON.stringify({ tap: await page.evaluate(() => window.__dpTap), trace }));
+        }
         if (tapped) runs.push(forcedLayoutsInClick(trace));
       }
       out.forcedLayout = runs.length

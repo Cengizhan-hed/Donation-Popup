@@ -6,15 +6,19 @@ import './base.css';
 import '../ui2-shared/states.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
-import { syncColors } from '../ui2-shared/color-sync.mjs';
+import { colorSyncNeeded, syncColors } from '../ui2-shared/color-sync.mjs';
 
 /**
- * Renk eşitleme `getComputedStyle` okur (zorunlu stil hesabı; ağır tema CSS'inde pahalı): ilk boyamadan sonra boşta
- * çalışır. O ana dek sunucunun yazdığı güvenli (kontrastlı) yedek yazı rengi görünür.
+ * Renk eşitleme `getComputedStyle` okur (zorunlu stil hesabı; ağır tema CSS'inde pahalı). Dinamik renk işareti
+ * işaretlemede yoksa hiç çalışmaz (iş kuyruğa da alınmaz); varsa ilk boyamadan sonra boşta çalışır. O ana dek sunucunun
+ * yazdığı güvenli (kontrastlı) yedek yazı rengi görünür.
  *
  * @param {ParentNode} [scope] Kapsam.
  */
 function syncColorsWhenIdle(scope) {
+  if (!colorSyncNeeded(document)) {
+    return;
+  }
   const run = () => syncColors(scope);
   window.requestAnimationFrame(() => {
     if (typeof window.requestIdleCallback === 'function') {
