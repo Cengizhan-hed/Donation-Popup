@@ -358,6 +358,9 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
       await set({ floating: false, position: 'end', suggest: true, suggest_product: other, suggest_amounts: '25, 75', suggest_hint: 'Küçük bir katkı, büyük bir dua' });
       await page.goto(q('&dp_v=4'));
       await expect(page.locator('[data-dp-sc][data-dp-sc-mounted="1"]')).toHaveCount(1);
+      // WebKit, önceki sayfadan gezinmeyle iptal edilen (eklentide yakalanan) isteği sayfa hatası olarak bildirebilir;
+      // hata denetimi denetlenen sayfanın kendisinden başlar.
+      errors.length = 0;
       await expect(page.locator('[data-dp-sc-fab]'), 'yüzen düğme kapalı').toHaveCount(0);
       await page.evaluate(() => document.dispatchEvent(new CustomEvent('wc-blocks_added_to_cart', { bubbles: true })));
       await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();

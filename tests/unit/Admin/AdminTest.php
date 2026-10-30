@@ -354,19 +354,22 @@ final class AdminTest extends TestCase {
 		$res     = \DonationPanel\Frontend\Theme_Colors::resolve($palette);
 		$html    = \DonationPanel\Admin\Admin_View::colors_note('theme', $res);
 		$this->assertStringContainsString('data-dpa-color-source="primary:theme"', $html);
-		$this->assertStringContainsString('Theme palette: primary', $html);
+		// Dil bağımsız: beklenen metinler aynı çeviri işlevinden.
+		$theme_src = sprintf(__('Theme palette: %s', 'woo-donation-popup'), 'primary');
+		$this->assertStringContainsString($theme_src, $html);
 		$this->assertStringContainsString('data-dpa-color-source="action:primary"', $html);
-		$this->assertStringContainsString('Follows the main color', $html);
+		$this->assertStringContainsString(__('Follows the main color', 'woo-donation-popup'), $html);
 		$none = \DonationPanel\Frontend\Theme_Colors::resolve(array());
 		$html = \DonationPanel\Admin\Admin_View::colors_note('none', $none);
 		$this->assertStringContainsString('data-dpa-colors-note="none"', $html);
 		$this->assertStringContainsString('#' . \DonationPanel\Frontend\Theme_Colors::DEFAULT_PRIMARY, $html);
-		$this->assertStringContainsString('Default', $html);
-		$this->assertSame('Empty: Theme palette: primary (#1d3557).', \DonationPanel\Admin\Admin_View::color_fallback_text($res['primary']));
-		$this->assertSame('Empty: the button follows the main color.', \DonationPanel\Admin\Admin_View::color_fallback_text($res['action']));
+		$this->assertStringContainsString('data-dpa-color-source="primary:default"', $html);
+		$empty = sprintf(__('Empty: %1$s (%2$s).', 'woo-donation-popup'), $theme_src, '#1d3557');
+		$this->assertSame($empty, \DonationPanel\Admin\Admin_View::color_fallback_text($res['primary']));
+		$this->assertSame(__('Empty: the button follows the main color.', 'woo-donation-popup'), \DonationPanel\Admin\Admin_View::color_fallback_text($res['action']));
 		$field = \DonationPanel\Admin\Admin_View::field('design.brand', \DonationPanel\Admin\Admin_View::with_color_source(Field_Registry::fields()['design.brand'], $res['primary']), '#7a1f5c');
-		$this->assertStringContainsString('Source: your choice.', $field);
-		$this->assertStringContainsString('data-dpa-color-fallback="Empty: Theme palette: primary (#1d3557)."', $field);
+		$this->assertStringContainsString(__('Source: your choice.', 'woo-donation-popup'), $field);
+		$this->assertStringContainsString('data-dpa-color-fallback="' . esc_attr($empty) . '"', $field);
 	}
 
 	public function test_module_definitions_cover_all_seven_and_all_exist_in_registry(): void {

@@ -124,7 +124,7 @@ final class Side_Cart_Renderer {
 		$name = isset( $line['name'] ) ? (string) $line['name'] : '';
 		$qty  = isset( $line['quantity'] ) ? max( 1, (int) $line['quantity'] ) : 1;
 
-		$meta = array();
+		$meta       = array();
 		$type_label = ! empty( $line['type'] ) ? self::type_label( (string) $line['type'] ) : '';
 		if ( '' !== $type_label ) {
 			$meta[] = '<span class="donation-panel-sc__tag">' . esc_html( $type_label ) . '</span>';

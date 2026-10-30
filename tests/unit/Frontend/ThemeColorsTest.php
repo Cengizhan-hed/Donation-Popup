@@ -124,12 +124,13 @@ final class ThemeColorsTest extends TestCase {
 
 	public function test_source_labels(): void {
 		$res = Theme_Colors::resolve( array( 'theme' => $this->palette( array( 'primary' => '#1d3557' ) ) ), '', '' );
-		$this->assertSame( 'Theme palette: primary', Theme_Colors::source_label( $res['primary'] ) );
-		$this->assertSame( 'Follows the main color', Theme_Colors::source_label( $res['action'] ) );
+		// Dil bağımsız: beklenen metin aynı çeviri işlevinden (yerel .mo yüklüyse Türkçe gelir).
+		$this->assertSame( sprintf( __( 'Theme palette: %s', 'woo-donation-popup' ), 'primary' ), Theme_Colors::source_label( $res['primary'] ) );
+		$this->assertSame( __( 'Follows the main color', 'woo-donation-popup' ), Theme_Colors::source_label( $res['action'] ) );
 		$res = Theme_Colors::resolve( array(), '#123456', 'var(--cta)' );
-		$this->assertSame( 'Your choice', Theme_Colors::source_label( $res['primary'] ) );
-		$this->assertSame( 'Your choice', Theme_Colors::source_label( $res['action'] ) );
-		$this->assertSame( 'Default', Theme_Colors::source_label( Theme_Colors::resolve( array() )['primary'] ) );
+		$this->assertSame( __( 'Your choice', 'woo-donation-popup' ), Theme_Colors::source_label( $res['primary'] ) );
+		$this->assertSame( __( 'Your choice', 'woo-donation-popup' ), Theme_Colors::source_label( $res['action'] ) );
+		$this->assertSame( __( 'Default', 'woo-donation-popup' ), Theme_Colors::source_label( Theme_Colors::resolve( array() )['primary'] ) );
 	}
 
 	public function test_partial_when_only_action_role_matches(): void {
