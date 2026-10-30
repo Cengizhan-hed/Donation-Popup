@@ -96,6 +96,18 @@ export function createCompact(root) {
   const sections = STEPS.map((id) => form.querySelector(`[data-dp-cstep="${id}"]`));
   const effect = form.querySelector('[data-dp-ceffect]');
   const totalOut = form.querySelector('[data-dp-ctotal]');
+  const amountNodes = Array.from(form.querySelectorAll('[data-dp-camount], [data-dp-crecap-amount]'));
+  /**
+   * Metni yalnız değiştiyse yazar (gereksiz DOM değişikliği ve yeniden yerleşim yok).
+   *
+   * @param {Element|null} node Öğe.
+   * @param {string}       text Metin.
+   */
+  const setText = (node, text) => {
+    if (node && node.textContent !== text) {
+      node.textContent = text;
+    }
+  };
   const live = form.querySelector('[data-dp-live]');
   const quick = Array.from(form.querySelectorAll('[data-dp-cquick]'));
   const amountIn = form.querySelector('[data-dp-camount-in]');
@@ -143,29 +155,24 @@ export function createCompact(root) {
 
   /** Ana düğme: tutar geçerli olana kadar pasif ("Tutar seçin"). */
   const paintNext = (pending) => {
-    if (nextButton) {
+    if (nextButton && nextButton.getAttribute('aria-disabled') !== (pending ? 'true' : 'false')) {
       nextButton.setAttribute('aria-disabled', pending ? 'true' : 'false');
       nextButton.classList.toggle('is-pending', pending);
     }
-    if (nextLabel) {
-      nextLabel.textContent = (pending && !fixed ? ds.labelChoose : ds.labelNext) || '';
-    }
+    setText(nextLabel, (pending && !fixed ? ds.labelChoose : ds.labelNext) || '');
   };
 
   /** Seçilen tutar: üst bölgeler, özet, ödeme düğmesi. */
   const paintAmount = () => {
     const shown = state.value !== null ? money(state.value) : '';
-    form.querySelectorAll('[data-dp-camount], [data-dp-crecap-amount]').forEach((node) => {
-      node.textContent = shown;
-    });
+    amountNodes.forEach((node) => setText(node, shown));
     if (payLabel && payButton) {
-      payLabel.textContent = shown !== '' ? fill(payButton.dataset.label || '', [shown]) : payDefault;
+      setText(payLabel, shown !== '' ? fill(payButton.dataset.label || '', [shown]) : payDefault);
     }
-    if (totalOut) {
-      totalOut.textContent = shown !== '' ? shown : '—';
-    }
-    if (effect) {
-      effect.textContent = effectLine(state.value, tiers, locale);
+    // Yalnız değişince yazılır (ilk çizimde sunucu metni aynıdır: DOM/yerleşim işi yok).
+    setText(totalOut, shown !== '' ? shown : '—');
+    if (tiers.length) {
+      setText(effect, effectLine(state.value, tiers, locale));
     }
   };
 
@@ -181,11 +188,12 @@ export function createCompact(root) {
     if (qtyIn) {
       qtyIn.value = String(state.qty);
     }
-    if (qtyOut) {
-      qtyOut.textContent = String(state.qty);
-    }
+    setText(qtyOut, String(state.qty));
     qtyButtons.forEach((button) => {
-      button.disabled = Number(button.dataset.dpCqty) < 0 ? state.qty <= 1 : state.qty >= qtyMax;
+      const off = Number(button.dataset.dpCqty) < 0 ? state.qty <= 1 : state.qty >= qtyMax;
+      if (button.disabled !== off) {
+        button.disabled = off;
+      }
     });
   };
 
@@ -207,6 +215,10 @@ export function createCompact(root) {
         return;
       }
       const on = i === index;
+      // Durum zaten doğruysa dokunulmaz (ilk çizimde sunucu durumu aynıdır).
+      if (section.classList.contains('is-on') === on && section.hasAttribute('inert') === !on) {
+        return;
+      }
       section.classList.toggle('is-on', on);
       section.toggleAttribute('inert', !on);
       if (on) {
@@ -215,7 +227,9 @@ export function createCompact(root) {
         section.setAttribute('aria-hidden', 'true');
       }
     });
-    root.dataset.dpStep = STEPS[index];
+    if (root.dataset.dpStep !== STEPS[index]) {
+      root.dataset.dpStep = STEPS[index];
+    }
     const section = sections[index];
     if (focus && section) {
       const title = section.querySelector('[data-dp-ctitle]');
