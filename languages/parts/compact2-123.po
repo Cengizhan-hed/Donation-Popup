@@ -1,0 +1,50 @@
+# Turkish translations — 123-compact2 (compact kart v2: güven satırı, toplam/etki satırı, vergi beyanı Ayrıntılar, adım sayısı; Rehber).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgctxt "Compact donation card: trust line above the button"
+msgid "Secure payment"
+msgstr "Güvenli ödeme"
+
+msgctxt "Compact donation card: raised of goal"
+msgid "/ %s"
+msgstr "/ %s"
+
+msgctxt "Compact donation card: chosen amount row"
+msgid "Your donation"
+msgstr "Bağışınız"
+
+msgctxt "Compact donation card: open the full tax relief declaration"
+msgid "Details"
+msgstr "Ayrıntılar"
+
+msgctxt "Compact donation card: close the full tax relief declaration"
+msgid "Done"
+msgstr "Tamam"
+
+msgctxt "Compact donation card: tax relief declaration given"
+msgid "Declared"
+msgstr "Beyan edildi"
+
+msgid "\"Secure payment\" line"
+msgstr "\"Güvenli ödeme\" satırı"
+
+msgid "A small lock and the words \"Secure payment\" just above the card's button. If an amount has an impact phrase (Impact phrases module), the card shows it under the amounts; the tax relief declaration (Tax relief module) gets a short version with a Details link that opens the full text inside the card."
+msgstr "Kartın düğmesinin hemen üstünde küçük bir kilit ve \"Güvenli ödeme\" yazısı. Bir tutarın etki ifadesi varsa (Etki ifadeleri modülü) kart onu tutarların altında gösterir; vergi indirimi beyanı (Vergi indirimi modülü) kısa haliyle ve tam metni kartın içinde açan bir Ayrıntılar bağlantısıyla gösterilir."
+
+msgid "Steps: through the cart the card has 2 steps (amount, then your details with \"Continue to checkout\"); with direct donation it has 3 (amount, details, payment). The height is the same with or without a goal, an impact phrase or the tax relief declaration."
+msgstr "Adımlar: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç\" düğmeli bilgileriniz); doğrudan bağışta 3 adımdır (tutar, bilgiler, ödeme). Yükseklik hedef, etki ifadesi ya da vergi indirimi beyanı olsun olmasın aynıdır."
+
+msgid "4. Slide height: make the slide at least as tall as the card (about 384 px on every screen). The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
+msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın (her ekranda yaklaşık 384 px). Kompakt kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Tüm kartlara tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) yazın."
+
+msgid "7. What the donor sees: through the cart the card has 2 steps (amount, then details with \"Continue to checkout · amount\"); with direct donation it has 3 (amount, details, payment) and a thank-you. The step counter shows the real number. A small lock line (\"Secure payment\") sits above the button; you can switch it off under Compact card. With the Impact phrases module the chosen amount's impact appears next to the amount; with the Tax relief module the declaration shows its title and a short line, and \"Details\" opens the full text inside the card."
+msgstr "7. Bağışçının gördüğü: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç · tutar\" düğmeli bilgiler); doğrudan bağışta 3 adımdır (tutar, bilgiler, ödeme) ve bir teşekkür ekranı vardır. Adım sayacı gerçek sayıyı gösterir. Düğmenin üstünde küçük bir kilit satırı (\"Güvenli ödeme\") durur; Kompakt kart bölümünden kapatabilirsiniz. Etki ifadeleri modülü açıksa seçilen tutarın karşılığı tutarın yanında görünür; Vergi indirimi modülü açıksa beyan başlığı ve kısa bir satırla gösterilir, \"Ayrıntılar\" tam metni kartın içinde açar."

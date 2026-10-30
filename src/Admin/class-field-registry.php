@@ -231,6 +231,13 @@ final class Field_Registry {
 			'help'    => __( 'When the card leaves the screen (for example the slider moves to another slide), it goes back to the first step. Typed details are kept.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 		);
+		$f['compact.trust']            = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'compact',
+			'label'   => __( '"Secure payment" line', 'woo-donation-popup' ),
+			'help'    => __( 'A small lock and the words "Secure payment" just above the card\'s button. If an amount has an impact phrase (Impact phrases module), the card shows it under the amounts; the tax relief declaration (Tax relief module) gets a short version with a Details link that opens the full text inside the card.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
 		$f['form.presets_enabled']     = array(
 			'page'    => Admin_Bootstrap::SLUG_FORMS,
 			'section' => 'amounts',

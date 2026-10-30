@@ -2,9 +2,28 @@
  * Compact bağış kartı — saf mantık (DOM yok; birim test edilebilir).
  */
 import { parseAmountDetailed } from '../experiences/amount.mjs';
+import { describeImpact } from '../campaign/format.mjs';
 
-/** Adımlar (sıra sabit). Göstergede yalnız ilk üçü sayılır. */
+/**
+ * Adımlar (sıra sabit). Sepetli akışta yalnız ilk ikisi çizilir (bilgiler adımı sepete ekleyip ödemeye geçer); doğrudan
+ * akışta ilk üçü sayılır, teşekkür sayaçsızdır.
+ */
 export const STEPS = ['amount', 'details', 'pay', 'thanks'];
+
+/**
+ * Seçilen tutarın etki ifadesi ("2 sıcak yemek"; tutar aynı satırda ayrıca yazılır); kademe yoksa ''.
+ *
+ * @param {number|null} amount Tutar.
+ * @param {Array<{unit: number, one: string, other: string}>} tiers Kademeler.
+ * @param {string} locale Dil.
+ * @return {string} Metin.
+ */
+export function effectLine(amount, tiers, locale) {
+  if (!(Number(amount) > 0) || !Array.isArray(tiers) || !tiers.length) {
+    return '';
+  }
+  return describeImpact(Number(amount), tiers, locale);
+}
 
 /**
  * Kart içinde kalan (dışarı yayılmayan) olaylar — kaydırıcıya ulaşmaz. Bitiş olayları (pointerup/touchend) bilerek YOK:
@@ -78,15 +97,16 @@ export function fill(format, values) {
 }
 
 /**
- * Ekran okuyucu adım duyurusu ("Adım 2/3: Bilgileriniz"); teşekkür adımı sayaçsızdır.
+ * Ekran okuyucu adım duyurusu ("Adım 2/3: Bilgileriniz"; sepetli akışta "Adım 2/2"); teşekkür adımı sayaçsızdır.
  *
  * @param {string} format Biçim (`Step %1$d of %2$d: %3$s`).
  * @param {number} index  Adım dizini.
  * @param {string} name   Adım adı.
+ * @param {number} total  Sayılan adım sayısı (sepetli 2, doğrudan 3).
  * @return {string} Duyuru.
  */
-export function announcement(format, index, name) {
-  return index >= STEPS.length - 1 ? name : fill(format, [index + 1, STEPS.length - 1, name]);
+export function announcement(format, index, name, total = STEPS.length - 1) {
+  return index >= total ? name : fill(format, [index + 1, total, name]);
 }
 
 /**

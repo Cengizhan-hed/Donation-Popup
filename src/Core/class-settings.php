@@ -237,6 +237,11 @@ class Settings {
 					'type'    => 'bool',
 					'default' => false,
 				),
+				// Düğmenin üstünde kilit simgeli "Güvenli ödeme" satırı (12.3 compact v2).
+				'trust'         => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
 			),
 			'form'       => array(
 				'presets_enabled'  => array(

@@ -47,6 +47,8 @@ class Assets {
 		self::CORE    => 'assets/build/ui-core/index.css',
 		'ui-controls' => 'assets/build/ui-controls/index.css',
 		'ui-dpx'      => 'assets/build/ui-dpx/index.css',
+		// Alan parçaları + durum yalıtımı (form deneyimi + compact kart; 12.3).
+		'ui-fields'   => 'assets/build/ui-fields/index.css',
 	);
 
 	/**

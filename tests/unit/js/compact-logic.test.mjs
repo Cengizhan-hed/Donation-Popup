@@ -5,6 +5,7 @@ import {
   STEPS,
   announcement,
   donorsText,
+  effectLine,
   embedUrl,
   evaluateAmount,
   fill,
@@ -90,4 +91,24 @@ test('bağışçı sayısı ve yüzde', () => {
   assert.equal(percentOf(140), 100);
   assert.equal(percentOf(-3), 0);
   assert.equal(percentOf('42.6'), 43);
+});
+
+test('12.3 v2: duyuru gerçek adım sayısıyla (sepetli 2, doğrudan 3)', () => {
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', 1, 'Your details', 2), 'Step 2 of 2: Your details');
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', 0, 'Amount', 2), 'Step 1 of 2: Amount');
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', 2, 'Payment', 3), 'Step 3 of 3: Payment');
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', 3, 'Thank you', 3), 'Thank you');
+});
+
+test('12.3 v2: seçilen tutarın etki ifadesi (kademe yoksa boş)', () => {
+  const tiers = [
+    { unit: 10, one: '{count} hot meal', other: '{count} hot meals' },
+    { unit: 50, one: '{count} family food parcel', other: '{count} family food parcels' },
+  ];
+  assert.equal(effectLine(25, tiers, 'en'), '2 hot meals');
+  assert.equal(effectLine(10, tiers, 'en'), '1 hot meal');
+  assert.equal(effectLine(100, tiers, 'en'), '2 family food parcels');
+  assert.equal(effectLine(5, tiers, 'en'), '');
+  assert.equal(effectLine(null, tiers, 'en'), '');
+  assert.equal(effectLine(50, [], 'en'), '');
 });

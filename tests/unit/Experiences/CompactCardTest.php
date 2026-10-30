@@ -145,9 +145,19 @@ final class CompactCardTest extends TestCase {
 			)
 		);
 		$this->assertStringContainsString( 'data-dp-compact', $html );
-		$this->assertSame( 4, substr_count( $html, 'class="donation-panel-compact__step' ) );
+		// 12.3 compact v2: sepetli akış 2 adım (tutar, bilgiler + "Ödemeye geç"); ara ödeme adımı ve teşekkür yok.
+		$this->assertSame( 2, substr_count( $html, 'class="donation-panel-compact__step' ) );
 		$this->assertSame( 1, substr_count( $html, 'donation-panel-compact__step is-on' ) );
-		$this->assertSame( 3, substr_count( $html, 'inert aria-hidden="true"' ) );
+		$this->assertSame( 1, substr_count( $html, 'inert aria-hidden="true"' ) );
+		$this->assertStringContainsString( 'data-steps="2"', $html );
+		$this->assertStringContainsString( '>1/2<', $html );
+		$this->assertStringNotContainsString( 'data-dp-cstep="pay"', $html );
+		$this->assertSame( 1, substr_count( $html, 'data-dp-cpay ' ) );
+		$this->assertMatchesRegularExpression( '#data-dp-cpay data-label="[^"]*%s[^"]*"#', $html );
+		$this->assertStringNotContainsString( 'donation-panel-compact__note', $html );
+		// Güven satırı (varsayılan açık): satır içi SVG kilit, iki adımda.
+		$this->assertSame( 2, substr_count( $html, 'class="donation-panel-compact__trust"' ) );
+		$this->assertStringContainsString( 'width="14" height="14"', $html );
 		$this->assertStringNotContainsString( 'checked', $html );
 		$this->assertSame( 3, substr_count( $html, 'data-dp-cquick' ) );
 		$this->assertSame( 1, substr_count( $html, 'class="donation-panel-compact__rec"' ) );
@@ -169,9 +179,94 @@ final class CompactCardTest extends TestCase {
 		$model['direct'] = true;
 		$html            = $this->card()->render( $model, array( 'rest_url' => 'https://example.org/wp-json/donation-panel/v1/' ) );
 		$this->assertStringContainsString( 'data-direct="1"', $html );
+		// Doğrudan akış: 3 sayılan adım + teşekkür.
+		$this->assertSame( 4, substr_count( $html, 'class="donation-panel-compact__step' ) );
+		$this->assertSame( 3, substr_count( $html, 'inert aria-hidden="true"' ) );
+		$this->assertStringContainsString( 'data-steps="3"', $html );
+		$this->assertStringContainsString( '>2/3<', $html );
 		$this->assertStringContainsString( '<template data-dp-tpl>', $html );
 		$this->assertStringContainsString( 'data-dp-cframe', $html );
 		$this->assertMatchesRegularExpression( '#<template data-dp-tpl>.*<iframe.*</template>#s', $html );
+	}
+
+	public function test_v2_campaign_amounts_trust_impact_and_tax_relief(): void {
+		// Ham tutarla biçim: tam sayıda ondalık yok (Woo biçimi), hedef "/ £X" ile aynı satırda.
+		$model             = $this->model();
+		$model['campaign'] = array(
+			'raised'  => '0,00 ₺',
+			'goal'    => '3.000,00 ₺',
+			'percent' => 0,
+			'donors'  => 0,
+		);
+		$view              = Compact_Card::view( $model, Compact_Card::normalize_settings( array() ), 0.0, 3000.0 );
+		$this->assertStringNotContainsString( ',00', $view['campaign']['raised'] . $view['campaign']['goal'] );
+		$this->assertStringContainsString( '3.000', $view['campaign']['goal'] );
+		$this->assertTrue( $view['trust'] );
+		$this->assertSame( 2, $view['steps'] );
+		$this->assertFalse( Compact_Card::normalize_settings( array( 'trust' => false ) )['trust'] );
+		$this->assertTrue( Compact_Card::normalize_settings( array( 'trust' => '1' ) )['trust'] );
+
+		// Etki kademeleri yalnız düz metin; seçilen tutarın ifadesi için satır yeri ayrılır.
+		$model           = $this->model();
+		$model['impact'] = array(
+			'tiers'   => array(
+				array(
+					'unit'  => 10.0,
+					'one'   => '{count} <b>meal</b>',
+					'other' => '{count} meals',
+				),
+				array(
+					'unit' => 0,
+					'one'  => 'yok',
+				),
+			),
+			'presets' => array(),
+		);
+		$view            = Compact_Card::view( $model, Compact_Card::normalize_settings( array() ), null );
+		$this->assertSame(
+			array(
+				array(
+					'unit'  => 10.0,
+					'one'   => '{count} meal',
+					'other' => '{count} meals',
+				),
+			),
+			$view['impact_tiers']
+		);
+		$html = $this->card()->render( $model );
+		$this->assertStringContainsString( 'data-impact="', $html );
+		$this->assertStringContainsString( 'data-dp-ceffect', $html );
+
+		// Güven satırı kapalı: çizilmez.
+		WDP_Test_State::$options['donation_panel_settings'] = array( 'compact' => array( 'trust' => false ) );
+		$this->assertStringNotContainsString( 'donation-panel-compact__trust', $this->card()->render( $this->model() ) );
+	}
+
+	public function test_v2_tax_relief_has_title_short_text_and_details_not_a_bare_checkbox(): void {
+		WDP_Test_State::$options['donation_panel_settings'] = array(
+			'tax_relief' => array(
+				'title' => 'Boost your donation by 25% with Gift Aid',
+				'text'  => 'I am a UK taxpayer and understand the declaration.',
+			),
+		);
+		$model          = $this->model();
+		$model['steps'] = array(
+			array(
+				'id'    => 'tax_relief',
+				'label' => 'Tax relief',
+			),
+		);
+		$model['direct'] = true;
+		$html            = $this->card()->render( $model );
+		$this->assertStringContainsString( '<b>Boost your donation by 25% with Gift Aid</b>', $html );
+		$this->assertStringContainsString( 'data-dp-ctax-more', $html );
+		$this->assertStringContainsString( 'aria-expanded="false"', $html );
+		$this->assertStringContainsString( 'data-dp-ctax-sheet', $html );
+		$this->assertSame( 2, substr_count( $html, 'I am a UK taxpayer and understand the declaration.' ), 'kısa hal + tam metin' );
+		// Onay etiketi yalnız ekran okuyucu metni; tek başına görünür "Yes, I make this declaration" yok.
+		$this->assertMatchesRegularExpression( '#<span class="donation-panel-sr">[^<]+</span>\s*<span class="donation-panel-compact__taxs" aria-hidden="true">#', $html );
+		$this->assertStringNotContainsString( 'donation-panel-check__t', $html );
+		$this->assertStringContainsString( 'data-dp-crecap-tax-row hidden', $html );
 	}
 
 	public function test_elementor_layout_maps_to_shortcode_attribute(): void {
