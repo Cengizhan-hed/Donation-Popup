@@ -7,6 +7,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { audit, leakColors, ownColors } from '../helpers/theme-leak.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const AXE = fs.readFileSync(path.join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8');
@@ -372,6 +373,59 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
     } finally {
       await set({});
     }
+  });
+
+  test('12.3 tema durum yalıtımı: yan sepet kontrollerine temanın :hover/:focus/:active rengi sızmaz (dolu sepet + öneri + yüzen düğme)', async ({ page }, testInfo) => {
+    test.setTimeout(120000);
+    page.setDefaultTimeout(5000);
+    await page.goto(q());
+    await expect(page.locator('[data-dp-sc-open]')).toBeVisible({ timeout: 20000 });
+    const added = await page.request.get(addUrl(`&amount=1000&name=Ayse&shares=${encodeURIComponent(SHARES)}`));
+    expect((await added.json()).ok).toBe(true);
+    await page.goto(q('&dp_v=iso'));
+    await expect(page.locator('[data-dp-sc][data-dp-sc-mounted="1"]')).toHaveCount(1);
+    await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important;animation:none!important}' });
+    const leak = await leakColors(page);
+    const all = { checked: 0, bad: [] };
+    const add = (r) => {
+      all.checked += r.checked;
+      all.bad.push(...r.bad);
+    };
+    const fab = page.locator('[data-dp-sc-fab]');
+    await expect(fab).toBeVisible({ timeout: 15000 });
+    add(await audit(page, page.locator('[data-dp-sc]'), leak, 'fab', { x: 2, y: 200 }));
+    add(await audit(page, page.locator('header'), leak, 'trigger', { x: 2, y: 200 }));
+    await fab.click();
+    await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
+    await expect(page.locator('[data-dp-sc-suggest]').first()).toBeVisible({ timeout: 15000 });
+    const head = await page.locator('.donation-panel-sc__title').boundingBox();
+    // Eklentinin kendi belirteç renkleri (tema paletinden türeyebilir) sızıntı sayılmaz; yalnız temanın durum kuralları.
+    for (const own of await ownColors(page.locator('[data-dp-sc-surface]'))) leak.delete(own);
+    add(await audit(page, page.locator('[data-dp-sc-surface]'), leak, 'drawer', { x: head.x + 4, y: head.y + head.height / 2 }));
+    testInfo.annotations.push({ type: 'ölçüm', description: `${process.env.WDP_EXP_THEME || 'twentytwentyfive'} yan sepet: kontrol×durum=${all.checked}, sızıntı=${all.bad.length}, tema renk sayısı=${leak.size}` });
+    expect(all.checked).toBeGreaterThan(10);
+    const uniq = [...new Set(all.bad.map((b) => b.replace(/^\S+ /, '')))];
+    expect(uniq, uniq.join('\n')).toEqual([]);
+  });
+
+  test('12.3 renk görüntüsü: yan sepet + yüzen düğme (yalnız WDP_COLOR_SHOTS ile; tema × cihaz)', async ({ page }, testInfo) => {
+    test.skip(!process.env.WDP_COLOR_SHOTS, 'yalnız görüntü toplama koşusunda');
+    await page.goto(q());
+    await expect(page.locator('[data-dp-sc-open]')).toBeVisible({ timeout: 20000 });
+    await page.request.get(addUrl(`&amount=1000&name=Ayse&shares=${encodeURIComponent('Ahmet Yılmaz,Ayşe Yılmaz')}`));
+    await page.request.get(addUrl(`&amount=500&dedication=${encodeURIComponent('Anneannem için')}`));
+    await page.goto(q('&dp_v=shot'));
+    await expect(page.locator('[data-dp-sc][data-dp-sc-mounted="1"]')).toHaveCount(1);
+    const dir = path.join(process.env.WDP_COLOR_SHOTS, process.env.WDP_EXP_THEME || 'twentytwentyfive');
+    fs.mkdirSync(dir, { recursive: true });
+    const fab = page.locator('[data-dp-sc-fab]');
+    await expect(fab).toBeVisible({ timeout: 15000 });
+    await page.waitForTimeout(600);
+    await page.screenshot({ path: path.join(dir, `yansepet-dugme-${testInfo.project.name}.png`) });
+    await fab.click();
+    await expect(page.locator('[data-dp-sc-overlay].is-open')).toBeVisible();
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: path.join(dir, `yansepet-acik-${testInfo.project.name}.png`) });
   });
 
   test('tasarım görüntüsü (yalnız WDP_UI2_SHOTS ile)', async ({ page }, testInfo) => {

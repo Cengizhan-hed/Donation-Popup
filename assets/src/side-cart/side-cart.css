@@ -126,6 +126,10 @@
 :root .donation-panel-sc__remove:hover:not([disabled]) { color: var(--dp-color-text); }
 :root .donation-panel-sc__suggest-btn.dpx-btn:is(:hover, :focus, :active) { background-color: var(--dpx-card); color: var(--dp-color-primary-strong); }
 :root .donation-panel-sc__suggest-btn.dpx-btn:hover { background-color: var(--dpx-soft); }
+/* Odak halkası yalıtımı (12.3; temanın `button:focus { outline }` kuralı sızmaz): fare/dokunuşta halka yok, klavyede
+   eklentinin kendi halkası (form katmanıyla aynı belirteç). */
+:root :is(.donation-panel-sc__trigger, .donation-panel-sc__fab, .donation-panel-sc a, .donation-panel-sc button):is(:hover, :focus, :active):not(:focus-visible) { outline-style: none; }
+:root :is(.donation-panel-sc__trigger, .donation-panel-sc__fab, .donation-panel-sc a, .donation-panel-sc button):focus-visible { outline: 2px solid var(--dp-color-focus-ring, currentColor); outline-offset: 2px; }
 @keyframes dp-sc-fab-in { from { opacity: 0; transform: translateY(24px) scale(.6); } to { opacity: 1; transform: none; } }
 @keyframes dp-sc-fab-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
 @media (prefers-reduced-motion: reduce) { .donation-panel-sc__fab { transition: none; animation: none; } .donation-panel-sc__fab.is-entering, .donation-panel-sc__fab.is-pulse { animation: none; } }

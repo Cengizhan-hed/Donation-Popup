@@ -45,4 +45,4 @@
 :root .dpx-btn--primary:is(:hover, :focus, :active) { background-color: var(--dpx-accent); color: var(--dpx-on-accent); text-decoration-line: none; }
 :root .dpx-btn--outline:is(:hover, :focus, :active) { background-color: var(--dpx-card); color: var(--dp-color-text); text-decoration-line: none; }
 :root .dpx-btn--outline:hover { background-color: var(--dpx-chip); }
-:root .dpx-btn--link:is(:hover, :focus, :active) { background-color: transparent; color: var(--dp-color-text); text-decoration-line: underline; }
+:root .dpx-btn--link:is(:hover, :focus, :active) { background-color: transparent; border-color: transparent; color: var(--dp-color-text); text-decoration-line: underline; }

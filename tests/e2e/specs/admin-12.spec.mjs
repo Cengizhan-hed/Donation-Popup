@@ -234,6 +234,35 @@ test('12.3 renk kuralı: yalnız adlı rol renkleri; rol yoksa nötr varsayılan
   expect((await state(page)).settings.design.brand).toBe('#7a1f5c');
 });
 
+test('12.3 renk görüntüsü: gerçek tema paletiyle yönetici kaynak satırı + ürün düğmesi + açık form (yalnız WDP_COLOR_SHOTS; tema × cihaz)', async ({ page }, info) => {
+  test.skip(!process.env.WDP_COLOR_SHOTS || !process.env.WDP_EXP_PRODUCT_ID, 'yalnız görüntü toplama koşusunda');
+  const theme = process.env.WDP_EXP_THEME || 'twentytwentyfive';
+  const dir = path.join(process.env.WDP_COLOR_SHOTS, theme);
+  fs.mkdirSync(dir, { recursive: true });
+  const dev = info.project.name;
+  await page.goto(P('donation-panel-forms'));
+  await page.click('[data-dpa-save]');
+  await expect(page.locator('[data-dpa-msg]')).toHaveText(/Saved|Kaydedildi/);
+  const card = page.locator('#dpa-s-colors');
+  await card.scrollIntoViewIfNeeded();
+  await card.screenshot({ path: path.join(dir, `yonetici-renkler-${dev}.png`) });
+  const rows = (await page.locator('[data-dpa-color-source]').count()) ? await noteRows(page) : null;
+  const status = rows ? await page.locator('[data-dpa-when="design.colors=theme"] [data-dpa-colors-note]').getAttribute('data-dpa-colors-note') : '';
+  const applied = await appliedVars(page);
+  if (rows) {
+    // Ayarda görünen = uygulanan (gerçek tema paleti).
+    expect(applied.primary).toBe(rows.primary.hex);
+    expect(applied.accent).toBe(rows.action.hex);
+  }
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: path.join(dir, `urun-${dev}.png`) });
+  await page.locator('.donation-panel-trigger').first().click();
+  await expect(page.locator('dialog[open]').first()).toBeVisible();
+  await page.waitForTimeout(700);
+  await page.screenshot({ path: path.join(dir, `form-acik-${dev}.png`) });
+  fs.writeFileSync(path.join(dir, `renkler-${dev}.json`), JSON.stringify({ theme, status, rows, applied }, null, 2));
+});
+
 test('12.3 Sepet ve Ödeme → Yan sepet: ayarlar açıklamalı, koşullu alanlar, doğrulama ve kayıt', async ({ page }, info) => {
   await page.goto(P('donation-panel-checkout'));
   const card = page.locator('#dpa-s-basket');
