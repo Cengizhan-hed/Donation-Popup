@@ -29,8 +29,40 @@ async function open(page, baseURL, id, direct, query = '') {
   await page.evaluate(() => document.fonts.ready);
 }
 
+/**
+ * Etkin adımda görünen bloklar arasındaki en büyük dikey boşluk (px). Durum satırında yalnız görünen metin (güven satırı ya
+ * da hata) sayılır; ayrılmış boş yer boşluk sayılır.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @return {Promise<number>} En büyük boşluk.
+ */
+const maxGap = (page) =>
+  page.locator(CARD).first().evaluate((card) => {
+    const step = card.querySelector('.donation-panel-compact__step.is-on');
+    if (!step) return 0;
+    const boxes = [];
+    Array.from(step.children).forEach((el) => {
+      if (el.matches('template, .donation-panel-compact__sheet, [hidden]')) return;
+      let target = el;
+      if (el.classList.contains('donation-panel-compact__status')) {
+        target = el.classList.contains('has-err') ? el.querySelector('[data-dp-cerr]') : el.querySelector('.donation-panel-compact__trust');
+      }
+      if (!target) return;
+      const r = target.getBoundingClientRect();
+      if (r.height > 0) boxes.push(r);
+    });
+    let max = 0;
+    for (let i = 1; i < boxes.length; i++) {
+      max = Math.max(max, boxes[i].top - boxes[i - 1].bottom);
+    }
+    return Math.round(max * 10) / 10;
+  });
+
+const GAPS = {};
+
 async function shot(page, name) {
   await page.waitForTimeout(320);
+  GAPS[name] = await maxGap(page);
   await page.locator(CARD).first().screenshot({ path: path.join(SHOTS, `${name}.png`) });
 }
 
@@ -58,8 +90,8 @@ async function fillDetails(page) {
 }
 
 test.describe('compact görüntüler', () => {
-  test.beforeEach((_, testInfo) => {
-    test.skip(!SHOTS || !IDS.custom || testInfo.project.name !== 'desktop', 'WDP_COMPACT_SHOTS + masaüstü');
+  test.beforeEach(() => {
+    test.skip(!SHOTS || !IDS.custom || test.info().project.name !== 'desktop', 'WDP_COMPACT_SHOTS + masaüstü');
     test.setTimeout(900000);
   });
 
@@ -111,6 +143,8 @@ test.describe('compact görüntüler', () => {
       }
     }
     fs.writeFileSync(path.join(SHOTS, 'yukseklik.json'), `${JSON.stringify(out, null, 2)}\n`);
+    fs.writeFileSync(path.join(SHOTS, 'bosluk.json'), `${JSON.stringify(GAPS, null, 2)}\n`);
     console.log(`COMPACT_SHOT_HEIGHTS ${JSON.stringify(out)}`);
+    console.log(`COMPACT_SHOT_GAPS ${JSON.stringify(GAPS)}`);
   });
 });

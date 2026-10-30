@@ -1,12 +1,13 @@
 /**
- * Compact bağış kartı denetleyicisi: 4 adım (tutar → bilgiler → ödeme → teşekkür) aynı grid hücresinde; yükseklik CSS ile
- * sabittir, burada ölçüm YOKTUR. Pasif adımlar `inert` + `aria-hidden`. Ödeme: doğrudan bağışta order-pay sayfası mevcut
- * katmanda (popup / alttan panel) aynı kökenli çerçevede; sepet akışında üst pencerede ödeme sayfası.
+ * Compact bağış kartı denetleyicisi: adımlar aynı grid hücresinde; yükseklik CSS ile sabittir, burada ölçüm YOKTUR. Pasif
+ * adımlar `inert` + `aria-hidden`. Sepetli akış 2 adım (tutar → bilgiler; bilgiler adımının düğmesi sepete ekleyip üst
+ * pencerede ödeme sayfasını açar). Doğrudan akış 3 adım (tutar → bilgiler → ödeme) + teşekkür: order-pay sayfası mevcut
+ * katmanda (popup / alttan panel) aynı kökenli çerçevede.
  */
 import { addToCart, phoneValue } from '../experiences/form.mjs';
 import { formatTotal } from '../experiences/store.mjs';
 import { createLayer } from '../experiences/layer.mjs';
-import { ISOLATED_EVENTS, STEPS, announcement, donorsText, embedUrl, evaluateAmount, fill, frameState, horizontalWheel, moveStep, percentOf } from './logic.mjs';
+import { ISOLATED_EVENTS, STEPS, announcement, donorsText, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel, moveStep, percentOf } from './logic.mjs';
 
 /**
  * Kart olaylarını kaydırıcılardan yalıtır (kütüphaneye özel kod yok): olaylar kart kökünde durur; yatay tekerlek sayfayı/
@@ -38,15 +39,23 @@ function isolate(root) {
  */
 function readConfig(ds) {
   const decimals = Number(ds.decimals || 2);
+  let tiers;
+  try {
+    tiers = ds.impact ? JSON.parse(ds.impact) : [];
+  } catch {
+    tiers = [];
+  }
   return {
     fixed: ds.kind === 'fixed',
     direct: ds.direct === '1',
+    total: Number(ds.steps) || (ds.direct === '1' ? 3 : 2),
     decimals,
     currency: { decimals, thousandSeparator: ds.thousandSep ?? ',', decimalSeparator: ds.decimalSep ?? '.' },
     locale: document.documentElement.lang || undefined,
     symbol: ds.symbol || '',
     unit: Number(ds.unit || 0),
     qtyMax: Math.max(1, Number(ds.qtyMax || 1)),
+    tiers: Array.isArray(tiers) ? tiers : [],
   };
 }
 
@@ -82,8 +91,11 @@ export function createCompact(root) {
     return null;
   }
   const ds = form.dataset;
-  const { fixed, direct, decimals, currency, locale, symbol, unit, qtyMax } = readConfig(ds);
+  const { fixed, direct, total, decimals, currency, locale, symbol, unit, qtyMax, tiers } = readConfig(ds);
+  // Sepetli akışta ödeme/teşekkür adımı çizilmez (null).
   const sections = STEPS.map((id) => form.querySelector(`[data-dp-cstep="${id}"]`));
+  const effect = form.querySelector('[data-dp-ceffect]');
+  const totalOut = form.querySelector('[data-dp-ctotal]');
   const live = form.querySelector('[data-dp-live]');
   const quick = Array.from(form.querySelectorAll('[data-dp-cquick]'));
   const amountIn = form.querySelector('[data-dp-camount-in]');
@@ -98,7 +110,8 @@ export function createCompact(root) {
   const payDefault = payLabel ? payLabel.textContent : '';
   const state = { step: 0, qty: 1, quick: null, busy: false, payUrl: '', round: 0, value: null };
 
-  const money = (value) => formatTotal(value, symbol, decimals, locale);
+  // WooCommerce ayırıcılarıyla; tam sayıda ondalık yok.
+  const money = (value) => formatTotal(value, symbol, decimals, locale, { thousands: currency.thousandSeparator, decimal: currency.decimalSeparator });
   const amount = () =>
     evaluateAmount({ fixed, quick: state.quick, raw: amountIn ? amountIn.value : '', unit, qty: state.qty, min: Number(ds.min || 0), currency });
   const amountMessage = (error) => ({ amount: ds.msgAmount, format: ds.msgFormat, min: ds.msgMin })[error] || '';
@@ -119,6 +132,10 @@ export function createCompact(root) {
     if (node) {
       node.textContent = message || '';
       node.classList.toggle('is-on', Boolean(message));
+      // Hata, güven satırının yerini alır (aynı ayrılmış satır; yükseklik değişmez).
+      if (node.parentElement) {
+        node.parentElement.classList.toggle('has-err', Boolean(message));
+      }
     }
     section.querySelectorAll('[aria-invalid="true"]').forEach((el) => el.removeAttribute('aria-invalid'));
     fields.forEach((el) => el.setAttribute('aria-invalid', 'true'));
@@ -143,6 +160,12 @@ export function createCompact(root) {
     });
     if (payLabel && payButton) {
       payLabel.textContent = shown !== '' ? fill(payButton.dataset.label || '', [shown]) : payDefault;
+    }
+    if (totalOut) {
+      totalOut.textContent = shown !== '' ? shown : '—';
+    }
+    if (effect) {
+      effect.textContent = effectLine(state.value, tiers, locale);
     }
   };
 
@@ -174,6 +197,10 @@ export function createCompact(root) {
    * @param {boolean} focus Odak taşınsın mı (false: sessiz; ilk çizim ve görünmezken sıfırlama).
    */
   const show = (index, focus = true) => {
+    if (index !== 1) {
+      // Beyan katmanı açıksa kapanır (show yalnız kurulumdan sonra çağrılır).
+      closeSheet();
+    }
     state.step = index;
     sections.forEach((section, i) => {
       if (!section) {
@@ -197,7 +224,7 @@ export function createCompact(root) {
       }
     }
     if (live && section && focus) {
-      live.textContent = announcement(ds.msgStep || '', index, section.dataset.stepName || '');
+      live.textContent = announcement(ds.msgStep || '', index, section.dataset.stepName || '', total);
     }
   };
 
@@ -452,17 +479,18 @@ export function createCompact(root) {
 
   const pay = async () => {
     // Katman aynı siparişin ödeme sayfasıyla yeniden açıldıysa yeni istek yok.
-    if (state.busy || (direct && state.payUrl)) {
+    if (state.busy || (direct && state.payUrl) || !payButton) {
       return;
     }
+    const at = state.step;
     state.busy = true;
     payButton.classList.add('is-loading');
-    setError(2, '');
+    setError(at, '');
     try {
       handleOutcome(await addToCart(root, root.dataset.dpProduct, values(), direct, state.round ? `#${state.round}` : ''));
     } catch (error) {
       closeLayer();
-      setError(2, (error && error.message === 'rate' ? ds.msgRate : ds.msgFailed) || '');
+      setError(state.step, (error && error.message === 'rate' ? ds.msgRate : ds.msgFailed) || '');
     } finally {
       state.busy = false;
       payButton.classList.remove('is-loading');
@@ -473,6 +501,68 @@ export function createCompact(root) {
     // Katman (popup / mobilde alttan panel) ödeme düğmesine bağlanır; açılış anında, sipariş isteği beklenmeden.
     payButton.setAttribute('data-dp-open', '');
     layer = createLayer(paySection);
+  }
+
+  /** Ödeme adımı özeti: ad, e-posta (yazıldıysa), vergi indirimi beyanı (verildiyse). */
+  function fillRecap() {
+    const text = (name) => {
+      const input = form.querySelector(`input[name="${name}"]`);
+      return input ? input.value.trim() : '';
+    };
+    const name = form.querySelector('[data-dp-crecap-name]');
+    if (name) {
+      name.textContent = text('donation_full_name');
+    }
+    const email = form.querySelector('[data-dp-crecap-email]');
+    const emailRow = form.querySelector('[data-dp-crecap-email-row]');
+    if (email && emailRow) {
+      email.textContent = text('donation_email');
+      emailRow.hidden = email.textContent === '';
+    }
+    const taxRow = form.querySelector('[data-dp-crecap-tax-row]');
+    const tax = form.querySelector('[data-dp-ctax]');
+    if (taxRow) {
+      taxRow.hidden = !(tax && tax.checked);
+    }
+  }
+
+  // ---- Vergi indirimi beyanının tam metni: kart içi katman (yükseklik değişmez); Esc / "Tamam" kapatır, odak geri döner ----
+  const taxMore = form.querySelector('[data-dp-ctax-more]');
+  const taxSheet = form.querySelector('[data-dp-ctax-sheet]');
+  const setSheet = (open, focus = true) => {
+    if (!taxMore || !taxSheet) {
+      return;
+    }
+    taxSheet.classList.toggle('is-open', open);
+    taxSheet.toggleAttribute('inert', !open);
+    taxMore.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // Katman açıkken arkasındaki adım içeriği erişilemez (yalnız katman).
+    Array.from(taxSheet.parentElement.children).forEach((child) => {
+      if (child !== taxSheet) {
+        child.toggleAttribute('inert', open);
+      }
+    });
+    if (focus) {
+      (open ? taxSheet : taxMore).focus({ preventScroll: true });
+    }
+  };
+  function closeSheet() {
+    if (taxSheet && taxSheet.classList.contains('is-open')) {
+      setSheet(false, false);
+    }
+  }
+  if (taxMore && taxSheet) {
+    taxMore.addEventListener('click', () => setSheet(true));
+    const done = taxSheet.querySelector('[data-dp-ctax-close]');
+    if (done) {
+      done.addEventListener('click', () => setSheet(false));
+    }
+    taxSheet.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setSheet(false);
+      }
+    });
   }
 
   // ---- Gezinme ----
@@ -509,11 +599,12 @@ export function createCompact(root) {
         return;
       }
       setError(1, '');
-      const name = form.querySelector('[data-dp-crecap-name]');
-      const nameInput = form.querySelector('input[name="donation_full_name"]');
-      if (name) {
-        name.textContent = nameInput ? nameInput.value.trim() : '';
+      if (!direct) {
+        // Sepetli akışın son adımı: sepete ekler, ödeme sayfasına geçer.
+        pay();
+        return;
       }
+      fillRecap();
       // Sürüm değişince (tutar/bilgi) eski ödeme sayfası kullanılmaz; aynı içerik aynı siparişi bulur (sunucu).
       state.payUrl = '';
       show(2);
@@ -560,8 +651,8 @@ export function createCompact(root) {
         node.hidden = hidden;
       }
     };
+    // Toplanan her zaman görünür ("£0 / £3,000 · İlk bağışı siz yapın"); yüzde ve bağışçı sayısı yalnız bağış varken.
     set('[data-dp-craised]', fmt(data.raised), false);
-    set('[data-dp-craised-row]', null, zero);
     set('[data-dp-cfirst]', null, !zero);
     set('[data-dp-cpct]', `${pct}%`, zero);
     const bar = block.querySelector('[data-dp-cbar]');
@@ -574,7 +665,7 @@ export function createCompact(root) {
     }
     const donors = block.querySelector('[data-dp-cdonors]');
     if (donors) {
-      const text = donorsText(data.donors, donors.dataset.one || '', donors.dataset.many || '', locale);
+      const text = zero ? '' : donorsText(data.donors, donors.dataset.one || '', donors.dataset.many || '', locale);
       donors.textContent = text;
       donors.hidden = text === '';
     }

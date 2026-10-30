@@ -131,9 +131,15 @@ async function compactFlow(page, behavior) {
     await email.fill(DONOR.email);
   }
   await step('details').locator('input[name="donation_phone"]').fill(DONOR.phone);
-  await step('details').locator('button[type="submit"]').click();
-  await expect(step('pay')).toHaveClass(/is-on/);
-  const pay = step('pay').locator('[data-dp-cpay]');
+  // 12.3 compact v2: sepetli akış 2 adım (bilgiler adımının düğmesi sepete ekleyip ödemeye geçer), doğrudan 3 adım.
+  if (behavior === 'direct') {
+    await expect(step('details').locator('[data-dp-cpay]')).toHaveCount(0);
+    await step('details').locator('button[type="submit"]').click();
+    await expect(step('pay')).toHaveClass(/is-on/);
+  } else {
+    await expect(card.locator('[data-dp-cstep="pay"]')).toHaveCount(0);
+  }
+  const pay = (behavior === 'direct' ? step('pay') : step('details')).locator('[data-dp-cpay]');
   if (behavior === 'direct') {
     await expect(pay).toHaveAttribute('aria-haspopup', 'dialog');
     await pay.click();
