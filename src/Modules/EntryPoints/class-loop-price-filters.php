@@ -72,6 +72,15 @@ class Loop_Price_Filters {
 		if ( 'off' === $mode ) {
 			return $html;
 		}
+		// Aynı kartın İKİNCİ süzgeç geçişi (12.3): blok temalarda ürün düğmesi bloğu kartı önce
+		// `woocommerce_loop_add_to_cart_link`, sonra `render_block` süzgecinden geçirir. Girdi bu ürün için zaten bizim çizdiğimiz
+		// düğmeyse o düğme (yalnız kendi `<a>` öğemiz; işaretleme eskisiyle aynı) döner. Eskiden ikinci geçiş "başka giriş var"
+		// sayıp form özniteliklerini siliyordu: mağaza kartı formu açmıyor, ürün sayfasına gidiyordu. Ayrı bir ikinci kart yine
+		// yalnız bağlantı olur (tek giriş kuralı).
+		$own = 'data-wdp-form="' . (int) $product->get_id() . '"';
+		if ( false !== strpos( (string) $html, $own ) && preg_match( '#<a [^>]*class="button wdp-loop-donate[^"]*"[^>]*' . preg_quote( $own, '#' ) . '[^>]*>.*?</a>#s', (string) $html, $m ) ) {
+			return $m[0];
+		}
 		// Liste/arşiv kartlarında düğme ürün sayfasına götürür; form ürün sayfasında açılır (kartlarda ağır form basılmaz).
 		$url         = method_exists( $product, 'get_permalink' ) ? $product->get_permalink() : get_permalink( $product->get_id() );
 		$text        = Shortcodes::resolve_button_text( '' );

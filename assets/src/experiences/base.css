@@ -1,11 +1,20 @@
 /* Donation Panel — Experiences (E2A): form, katman ve yüzey kuralları. Belirteç/sıfırlama/düğme çekirdeği ui2-shared/core.css
  * içindedir (sayfada bir kez, her yüzeyden önce basılır); burada tekrar tanımlanmaz. Tema özel seçici yok. */
 /* ---------- Katman (overlay) ve yüzeyler: popup / yan panel / alt panel ---------- */
-.donation-panel-overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay); display: grid; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 0; border: 0; color: inherit; background: var(--dp-color-scrim); opacity: 0; visibility: hidden; overflow: hidden; transition: opacity var(--dp-dur-base) var(--dp-ease-out), visibility 0s linear var(--dp-dur-base); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+/* Hareket (12.3, titreme yok): yalnız transform/opacity; açılış 260 ms (--dp-dur-base), kapanış 220 ms (layer.mjs), yaysız
+   yumuşak çıkış (taşma yok: kenara yaslı panel kenardan ayrılıp geri sekmez). Karartma ayrı katmandır (::before) ve yalnız
+   opaklığı değişir; yüzey (panel) karartmanın opaklığını devralmaz, baştan tam opak kayar. Bulanıklık (backdrop-filter) yok:
+   her karede tüm sayfayı yeniden bulanıklaştırıp kare düşürüyordu. Azaltılmış harekette süreler ~0 (core.css). */
+.donation-panel-overlay { position: fixed; inset: 0; z-index: var(--dp-z-overlay); display: grid; inline-size: 100%; block-size: 100%; max-inline-size: none; max-block-size: none; margin: 0; padding: 0; border: 0; color: inherit; background: transparent; visibility: hidden; overflow: hidden; overflow: clip; transition: visibility 0s linear var(--dp-dur-base); }
+/* overflow: clip (kök neden, 12.3): `hidden` kap betikle/odakla kaydırılabilir. showModal başlığa odaklanırken yüzey henüz
+   ekran dışındaydı (translateX(100%)) → tarayıcı katmanı yana kaydırıp başlığı görünür yapıyordu; panel solda belirip
+   dönüşüm küçüldükçe sağa "kayarak" yerine oturuyordu (titreme). clip kaydırılamaz; destek yoksa layer.mjs sıfırlar. */
+.donation-panel-overlay::before { content: ""; position: absolute; inset: 0; background: var(--dp-color-scrim); opacity: 0; transition: opacity var(--dp-dur-base) var(--dp-ease-out); }
 /* <dialog> üst katmanda (başka eklentinin yüzen öğeleri üste çıkamaz); kapalıyken hiç yerleşmez. */
 .donation-panel-overlay:not([open]) { display: none; }
 .donation-panel-overlay::backdrop { background: transparent; }
-.donation-panel-overlay.is-open { opacity: 1; visibility: visible; transition-delay: 0s; }
+.donation-panel-overlay.is-open { visibility: visible; transition-delay: 0s; }
+.donation-panel-overlay.is-open::before { opacity: 1; }
 .donation-panel-overlay--modal { place-items: center; padding: var(--dp-space-6); }
 .donation-panel-overlay--panel { justify-items: end; }
 .donation-panel-overlay--sheet { align-items: end; }
@@ -23,10 +32,10 @@
 .donation-panel-surface__body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: var(--dp-space-2) var(--dp-gutter) var(--dp-space-6); scrollbar-width: thin; }
 
 /* Masaüstü: popup = ortada, yay ile açılır; panel = yan; alt panel = alttan */
-.donation-panel-surface--modal { inline-size: min(100%, 500px); border-radius: var(--dp-radius-sheet); transform: translateY(14px) scale(.96); opacity: 0; transition: transform var(--dp-dur-slow) var(--dp-ease-spring-soft), opacity var(--dp-dur-base) var(--dp-ease-out); max-block-size: min(100%, 780px); }
-.donation-panel-surface--panel { inline-size: min(100%, 460px); block-size: 100%; border-radius: 0; transform: translateX(calc(100% * var(--dp-dir, 1))); transition: transform var(--dp-dur-slow) var(--dp-ease-spring-soft); }
+.donation-panel-surface--modal { inline-size: min(100%, 500px); border-radius: var(--dp-radius-sheet); transform: translateY(14px) scale(.96); opacity: 0; transition: transform var(--dp-dur-base) var(--dp-ease-out), opacity var(--dp-dur-base) var(--dp-ease-out); max-block-size: min(100%, 780px); }
+.donation-panel-surface--panel { inline-size: min(100%, 460px); block-size: 100%; border-radius: 0; transform: translateX(calc(100% * var(--dp-dir, 1))); transition: transform var(--dp-dur-base) var(--dp-ease-out); }
 [dir="rtl"] .donation-panel-surface--panel { --dp-dir: -1; }
-.donation-panel-surface--sheet { inline-size: min(100%, 560px); justify-self: center; border-start-start-radius: var(--dp-radius-sheet); border-start-end-radius: var(--dp-radius-sheet); box-shadow: var(--dp-shadow-sheet); max-block-size: calc(var(--dp-vvh, 100dvh) * .94); transform: translateY(100%); transition: transform var(--dp-dur-slow) var(--dp-ease-spring-soft); margin-block-end: var(--dp-kb, 0px); }
+.donation-panel-surface--sheet { inline-size: min(100%, 560px); justify-self: center; border-start-start-radius: var(--dp-radius-sheet); border-start-end-radius: var(--dp-radius-sheet); box-shadow: var(--dp-shadow-sheet); max-block-size: calc(var(--dp-vvh, 100dvh) * .94); transform: translateY(100%); transition: transform var(--dp-dur-base) var(--dp-ease-out); margin-block-end: var(--dp-kb, 0px); }
 .donation-panel-overlay.is-open .donation-panel-surface--modal { transform: none; opacity: 1; }
 .donation-panel-overlay.is-open .donation-panel-surface--panel, .donation-panel-overlay.is-open .donation-panel-surface--sheet { transform: translateY(var(--dp-drag, 0px)); }
 .donation-panel-overlay.is-open .donation-panel-surface--panel { transform: none; }
@@ -49,7 +58,7 @@
 /* Açılış geçişinin başlangıcı (layer.mjs `is-open`'ı gösterimden önce ekler; tıklamada tek stil hesabı). Görünürlük
    başlangıçta açık: showModal'ın odak adımı başlığa odaklanır. Desteklemeyen tarayıcı eski yolu kullanır (JS). */
 @starting-style {
-  .donation-panel-overlay.is-open { opacity: 0; }
+  .donation-panel-overlay.is-open::before { opacity: 0; }
   .donation-panel-overlay.is-open .donation-panel-surface--modal { transform: translateY(14px) scale(.96); opacity: 0; }
   .donation-panel-overlay.is-open .donation-panel-surface--panel { transform: translateX(calc(100% * var(--dp-dir, 1))); }
   .donation-panel-overlay.is-open .donation-panel-surface--sheet { transform: translateY(100%); }
@@ -127,7 +136,7 @@
 [dir="rtl"] .donation-panel-steps__i { --dp-origin: right; }
 .donation-panel-steps__i.is-done::after, .donation-panel-steps__i.is-current::after { transform: scaleX(1); }
 .donation-panel-step { display: flex; flex-direction: column; gap: 16px; }
-.donation-panel-step:not([hidden]) { animation: dp-fadeup var(--dp-dur-base) var(--dp-ease-out); }
+.donation-panel-step.is-entering:not([hidden]) { animation: dp-fadeup var(--dp-dur-base) var(--dp-ease-out); } /* yalnız adım geçişinde (form.mjs); açılışta içerik sabit */
 .donation-panel-holder { display: flex; flex-direction: column; gap: 14px; padding-block-start: 4px; border-block-start: 1px dashed var(--dp-color-border); }
 .donation-panel-holder:first-of-type { border-block-start: 0; }
 .donation-panel-addon { margin-block-end: var(--dp-space-4); }
@@ -174,7 +183,7 @@
 .donation-panel-amounts + .donation-panel-field { margin-block-start: 10px; }
 .donation-panel-amount__badge { position: absolute; inset-block-start: -9px; inset-inline-end: 10px; padding: 2px 8px; border-radius: 999px; background: var(--dp-color-primary); color: var(--dp-color-on-primary); font-size: 10.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; line-height: 1.4; }
 .donation-panel-custom { display: flex; align-items: center; gap: 10px; min-block-size: 50px; padding: 0 14px; border: 1.5px dashed var(--dp-color-border-strong); border-radius: var(--dp-radius-field); color: var(--dp-color-text-muted); cursor: text; transition: border-color var(--dp-dur-fast); }
-.donation-panel-custom:focus-within { border-style: solid; border-color: var(--dp-color-primary); box-shadow: 0 0 0 3px var(--dp-color-primary-ring); }
+.donation-panel-custom:focus-within { border-style: solid; border-color: var(--dp-color-primary-strong); } /* halka yalnız klavyede (controls.css) */
 .donation-panel-custom__sym { font-weight: 700; color: var(--dp-color-text); }
 .donation-panel-custom__in::placeholder { color: var(--dp-color-text-muted); }
 .donation-panel-field--custom.has-error .donation-panel-custom { border-style: solid; border-color: var(--dp-color-danger); background: var(--dp-color-danger-soft); }
@@ -196,7 +205,7 @@
 
 /* Alanlar */
 .donation-panel-phone { display: flex; min-block-size: 52px; border: 1.5px solid var(--dp-color-border); border-radius: var(--dp-radius-field); overflow: hidden; background: var(--dp-color-surface); transition: border-color var(--dp-dur-fast), box-shadow var(--dp-dur-fast); }
-.donation-panel-phone:focus-within { border-color: var(--dp-color-primary); box-shadow: 0 0 0 3px var(--dp-color-primary-ring); }
+.donation-panel-phone:focus-within { border-color: var(--dp-color-primary-strong); } /* halka yalnız klavyede (controls.css) */
 .donation-panel-phone__code { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 12px; background: var(--dp-color-surface-2); border-inline-end: 1px solid var(--dp-color-border); font-size: 15px; font-weight: 600; flex: none; }
 .donation-panel-phone__chev { inline-size: 12px; block-size: 12px; color: var(--dp-color-text-muted); stroke-width: 2.4; }
 .donation-panel-phone__code:has(.donation-panel-phone__select:focus-visible) { box-shadow: inset 0 0 0 2px var(--dp-color-primary-strong); }

@@ -7,6 +7,10 @@ import '../ui2-shared/states.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
 import { colorSyncNeeded, syncColors } from '../ui2-shared/color-sync.mjs';
+import { installFocusModality } from '../ui2-shared/focus-modality.mjs';
+
+// Belirgin odak halkası yalnız klavyede (metin alanlarında fare/dokunuşta yalnız ince kenarlık rengi).
+installFocusModality();
 
 /**
  * Renk eşitleme `getComputedStyle` okur (zorunlu stil hesabı; ağır tema CSS'inde pahalı). Dinamik renk işareti
@@ -129,6 +133,8 @@ function mount(root) {
     });
     // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
     root.addEventListener('dp:added', () => layer && layer.close());
+    // Dışarıdan dokunma niyeti (ör. liste/mağaza kartı): katman DOM'u + form şimdi kurulur, tıklamada yalnız gösterilir.
+    root.addEventListener('dp:warm', () => layer && layer.warm());
   } else {
     root.dataset.dpPresented = 'inline';
     startWhenNear(root);

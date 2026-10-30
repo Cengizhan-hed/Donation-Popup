@@ -274,6 +274,49 @@ test.describe('yan sepet: ek bağış önerisi ve tasarım görüntüsü (yeni t
     expect(errors).toEqual([]);
   });
 
+  test('12.3 hareket: çekmece tek yönlü kayar, katman kaymaz, sayfa yana kaymaz, yalnız transform/opacity', async ({ page }) => {
+    const errors = await load(page);
+    const rec = await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          const body0 = document.body.getBoundingClientRect();
+          const frames = [];
+          const t0 = performance.now();
+          const loop = () => {
+            const s = document.querySelector('.donation-panel-sc__surface');
+            const o = document.querySelector('[data-dp-sc-overlay]');
+            const r = s.getBoundingClientRect();
+            const b = document.body.getBoundingClientRect();
+            frames.push({ t: performance.now() - t0, x: r.x, y: r.y, w: r.width, osl: o.scrollLeft + o.scrollTop, dx: Math.abs(b.x - body0.x), dw: Math.abs(b.width - body0.width) });
+            if (performance.now() - t0 < 700) requestAnimationFrame(loop);
+            else resolve(frames);
+          };
+          document.querySelector('[data-dp-sc-open]').click();
+          requestAnimationFrame(loop);
+        })
+    );
+    const open = rec.filter((f) => f.w > 0);
+    const end = open[open.length - 1];
+    const dist = open.map((f) => Math.hypot(f.x - end.x, f.y - end.y));
+    let reversals = 0;
+    for (let i = 1; i < dist.length; i += 1) if (dist[i] > dist[i - 1] + 0.75) reversals += 1;
+    expect(reversals, 'hedeften uzaklaşan kare').toBe(0);
+    expect(dist[0], 'açılış animasyonu').toBeGreaterThan(5);
+    expect(Math.max(...rec.map((f) => f.osl)), 'katman kaydırıldı').toBe(0);
+    expect(Math.max(...rec.map((f) => f.dx + f.dw)), 'sayfa kaydı/daraldı').toBeLessThanOrEqual(0.5);
+    const settled = open.find((f, i) => dist.slice(i).every((d) => d < 1));
+    expect(settled.t).toBeLessThanOrEqual(340);
+    const props = await page.evaluate(() => {
+      const list = (el, p) => getComputedStyle(el, p).transitionProperty.split(',').map((x) => x.trim());
+      const o = document.querySelector('[data-dp-sc-overlay]');
+      return { surface: list(document.querySelector('.donation-panel-sc__surface')), overlay: list(o), scrim: list(o, '::before') };
+    });
+    for (const p of props.surface) expect(['transform', 'opacity']).toContain(p);
+    for (const p of props.overlay) expect(['visibility']).toContain(p);
+    for (const p of props.scrim) expect(['opacity']).toContain(p);
+    expect(errors).toEqual([]);
+  });
+
   test('tasarım görüntüsü (yalnız WDP_UI2_SHOTS ile)', async ({ page }, testInfo) => {
     test.skip(!process.env.WDP_UI2_SHOTS, 'yalnız ekran görüntüsü toplama koşusunda');
     await page.goto('/?dp_sc_test=1');

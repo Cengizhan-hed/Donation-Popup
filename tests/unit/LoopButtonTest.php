@@ -57,6 +57,17 @@ final class LoopButtonTest extends TestCase {
 		$this->assertStringNotContainsString('data-wdp-form', $again);
 	}
 
+	public function test_same_card_second_filter_pass_keeps_form_attributes(): void {
+		// 12.3: blok temada aynı kart önce döngü bağlantısı, sonra render_block süzgecinden geçer; ikinci geçiş kendi
+		// düğmemizi aynen korur (eskiden öznitelikler silinip kart formu açmıyordu).
+		$p     = $this->product(26);
+		$first = \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::loop_button_html('<a class="button">Sepete ekle</a>', $p);
+		$this->assertStringContainsString('data-wdp-form="26"', $first);
+		$block = '<div class="wp-block-button">' . $first . '</div>';
+		$again = \DonationPanel\Modules\EntryPoints\Loop_Price_Filters::loop_button_html($block, $p);
+		$this->assertSame($first, $again);
+	}
+
 	public function test_loop_link_mode_has_no_form_hook(): void {
 		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ]['loop_button'] = 'link';
 		\DonationPanel\Domain\Placement_Settings::flush();

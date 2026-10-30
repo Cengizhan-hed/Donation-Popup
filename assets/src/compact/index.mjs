@@ -3,6 +3,9 @@
  */
 import './compact.css';
 import { createCompact } from './card.mjs';
+import { installFocusModality } from '../ui2-shared/focus-modality.mjs';
+
+installFocusModality();
 
 function init() {
   document.querySelectorAll('[data-dp-compact]').forEach((root) => {

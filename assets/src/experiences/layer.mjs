@@ -7,15 +7,15 @@
  */
 import { NARROW_QUERY, presentedAs, shouldDismissOnDrag } from './store.mjs';
 import { KEYBOARD_MIN_PX, TEXT_FIELD, keyboardShrink, nextKeyboardUp, shouldHideActionBar } from './keyboard.mjs';
-import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
+import { isTopmost, lockPage, measureScrollbar, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 
 let layerSeq = 0;
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
-/** Kapanış animasyonu süresi (ms); azaltılmış harekette 0. */
-const CLOSE_MS = 220;
+/** Kapanış animasyonu süresi (ms; CSS --dp-dur-base ile aynı, yarıda kesilmesin); azaltılmış harekette 0. */
+const CLOSE_MS = 260;
 
 /**
  * Odaklanabilir, görünür öğeler.
@@ -474,6 +474,17 @@ export function createLayer(root, hooks = {}) {
         close();
       }
     });
+    // overflow: clip desteklemeyen tarayıcı: odak kaydırması katmanı yana kaydırırsa sıfırla (panel yerinde kalsın).
+    overlay.addEventListener(
+      'scroll',
+      () => {
+        if (overlay.scrollLeft || overlay.scrollTop) {
+          overlay.scrollLeft = 0;
+          overlay.scrollTop = 0;
+        }
+      },
+      { passive: true }
+    );
     surface.addEventListener('focusin', onFieldFocus);
     surface.addEventListener('focusout', onFieldBlur);
     root.querySelectorAll('[data-dp-close]').forEach((button) => {
@@ -519,7 +530,9 @@ export function createLayer(root, hooks = {}) {
   }
 
   // Hazırlık: niyet belli olunca (yaklaşma/dokunma/odak) katman önceden oluşturulur; dokunuşta yalnız gösterilir.
+  // Kaydırma çubuğu da burada ölçülür (düzen hesaplı; açılış tıklamasında okuma olmasın).
   const warm = () => {
+    measureScrollbar();
     if (hasTemplate()) {
       build();
     }
@@ -535,6 +548,7 @@ export function createLayer(root, hooks = {}) {
     open,
     close,
     build,
+    warm,
     isOpen: () => opened,
     destroy: () => {
       close();

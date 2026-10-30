@@ -31,6 +31,8 @@
   --dp-color-accent: var(--dp-accent, var(--dp-bridge-accent));
   --dp-color-accent-solid: color-mix(in oklab, var(--dp-color-accent) 78%, #000);
   --dp-color-primary-ring:   color-mix(in oklab, var(--dp-color-primary) 45%, transparent);
+  /* Klavye odak halkası (12.3): marka renginin yarı saydam koyu tonu; beyaz/açık yüzeyde ≥3:1 (WCAG 1.4.11). */
+  --dp-color-focus-ring:     color-mix(in oklab, var(--dp-color-primary-strong) 72%, transparent);
 
   /* ---------- 3. Renk: yüzey ve metin ---------- */
   --dp-color-surface:   var(--dp-bridge-surface);
@@ -84,7 +86,7 @@
   --dp-shadow-2: 0 2px 6px rgb(16 24 40 / .07), 0 8px 20px -6px rgb(16 24 40 / .10);
   --dp-shadow-3: 0 4px 10px rgb(16 24 40 / .06), 0 24px 56px -12px rgb(16 24 40 / .28);
   --dp-shadow-sheet: 0 -6px 30px rgb(16 24 40 / .18), 0 -1px 0 rgb(16 24 40 / .06);
-  --dp-shadow-focus: 0 0 0 3px var(--dp-color-surface), 0 0 0 5px var(--dp-color-primary-strong);
+  --dp-shadow-focus: 0 0 0 2px var(--dp-color-surface), 0 0 0 4px var(--dp-color-focus-ring); /* 2 px halka, 2 px aralık */
   --dp-z-base: 1; --dp-z-sticky: 10; --dp-z-overlay: 99990; --dp-z-toast: 99999;
 
   /* ---------- 9. Hareket ---------- */
@@ -143,7 +145,8 @@
   }
 }
 
-.donation-panel :focus-visible { box-shadow: var(--dp-shadow-focus); border-radius: var(--dp-radius-sm); }
+/* Klavye odağı (12.3): tek halka — 2 px, 2 px aralıklı outline (kenar yuvarlaklığını izler; öğenin gölgesini/köşesini değiştirmez). */
+.donation-panel :focus-visible { outline: 2px solid var(--dp-color-focus-ring); outline-offset: 2px; }
 .donation-panel [tabindex="-1"]:focus, .donation-panel [tabindex="-1"]:focus-visible { outline: none; box-shadow: none; }
 .donation-panel .donation-panel-sr { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .donation-panel-num { font-variant-numeric: tabular-nums; font-family: var(--dp-font-numeric); }

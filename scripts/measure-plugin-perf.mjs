@@ -423,6 +423,34 @@ async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
           out.tapSkips.push(target.reason);
           continue;
         }
+        // Liste/mağaza kartı (12.3): form görünür alana yaklaşınca boşta önceden alınır (`data-wdp-ready`). Gerçek
+        // ziyaretçi kartı okuyup dokunur; ölçüm ön alma bitince (en çok 8 sn) dokunur, bekleme süresi ayrıca yazılır.
+        // Ön alma olmayan sürümde öznitelik hiç gelmez: bekleme zaman aşımıyla biter, dokunuş ağ isteğiyle ölçülür.
+        if (/data-wdp-form/.test(trig)) {
+          const waited = await page.evaluate(
+            ({ sel, index }) =>
+              new Promise((resolve) => {
+                const t0 = performance.now();
+                const el = document.querySelectorAll(sel)[index];
+                const done = () => el && el.dataset.wdpReady === '1';
+                if (done()) return resolve(0);
+                const mo = new MutationObserver(() => {
+                  if (done()) {
+                    mo.disconnect();
+                    resolve(Math.round(performance.now() - t0));
+                  }
+                });
+                mo.observe(el, { attributes: true, attributeFilter: ['data-wdp-ready'] });
+                setTimeout(() => {
+                  mo.disconnect();
+                  resolve(-1);
+                }, 8000);
+              }),
+            { sel: trig, index: target.index }
+          );
+          (out.prefetchWait = out.prefetchWait || []).push(waited);
+          await settle(page);
+        }
         // Algılama MutationObserver ile (rAF yoklaması değil): açılış anına kare gecikmesi eklenmez.
         await page.evaluate(`(${installTapProbe})(window, ${JSON.stringify(trig)}, ${target.index})`);
         const signal = tapSignal(page);
@@ -433,6 +461,15 @@ async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
           continue;
         }
         out.tapRuns.push(Math.round(await page.evaluate(() => window.__dpTap.t1 - window.__dpTap.t0)));
+        // Dokunuştan panele kadar başlayan eklenti REST istekleri (12.3 hedef: 0).
+        (out.tapRequests = out.tapRequests || []).push(
+          await page.evaluate(
+            () =>
+              performance
+                .getEntriesByType('resource')
+                .filter((r) => r.startTime >= window.__dpTap.t0 && r.startTime <= window.__dpTap.t1 && /donation-panel(\/|%2F)v1/.test(r.name)).length
+          )
+        );
       }
     }
     out.tapMedian = out.tapRuns.length ? median(out.tapRuns) : NaN;
@@ -628,6 +665,10 @@ function printReport(label, rows, checks, lh) {
   for (const r of rows.filter((x) => x.ui && !x.error && x.m && !x.m.skipped)) {
     const skips = [...new Set([...(r.m.tapSkips || []), ...(r.m.inpSkips || [])])];
     if (skips.length) console.log(`ÖLÇÜLMEDİ nedeni ${r.id}: ${skips.join(' | ')}`);
+  }
+  for (const r of rows.filter((x) => x.ui && !x.error && x.m && (x.m.prefetchWait || x.m.tapRequests))) {
+    // Kart sayfaları: ön alma bekleme ms (-1 = ön alma yok/zaman aşımı) ve dokunuş→panel arasında başlayan eklenti REST isteği.
+    console.log(`Kart ön alma ${r.id}: bekleme ms [${(r.m.prefetchWait || []).join(',')}] | dokunuşta REST isteği [${(r.m.tapRequests || []).join(',')}]`);
   }
   const forcedRows = rows.filter((x) => x.ui && !x.error && x.m && x.m.forcedLayout);
   if (forcedRows.length) {

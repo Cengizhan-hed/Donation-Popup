@@ -13,10 +13,15 @@
   display: block; box-sizing: border-box; inline-size: 100%; max-inline-size: 100%; min-block-size: var(--_h); margin: 0; padding: 0 14px;
   border: 1.5px solid var(--_bd); border-radius: var(--_r); background: var(--_bg); color: var(--dp-color-text, inherit);
   font: inherit; font-size: var(--_fs); line-height: 1.4; box-shadow: none; outline: 2px solid transparent; outline-offset: 0;
-  -webkit-appearance: none; appearance: none; transition: border-color 120ms, box-shadow 120ms;
+  -webkit-appearance: none; appearance: none; transition: border-color 160ms ease-out, outline-color 160ms ease-out;
 }
+/* Odak (12.3): fare/dokunuşta yalnız kenarlık marka rengine döner (1.5 px, yumuşak geçiş; kalın halka yok). Belirgin halka
+   yalnız klavyeyle gelinen odakta (`data-dp-kbd`, focus-modality.mjs): 2 px, 2 px aralıklı, marka renginin yarı saydam tonu. */
 :root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input):is(:focus, :focus-visible) {
-  border-color: var(--_focus); box-shadow: 0 0 0 4px var(--_ring); outline: 2px solid transparent;
+  border-color: var(--_focus); box-shadow: none; outline: 2px solid transparent; outline-offset: 2px;
+}
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input):focus-visible[data-dp-kbd] {
+  outline-color: var(--dp-color-focus-ring, currentColor);
 }
 :root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input)::placeholder { color: var(--dp-color-text-faint, #6b7280); opacity: 1; }
 :root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-ac__input):is([aria-invalid="true"], .has-error *) { border-color: var(--_bad); }
@@ -36,6 +41,8 @@
 :root .donation-panel .donation-panel-custom__in { padding: 0; min-block-size: 48px; }
 :root .donation-panel .donation-panel-phone__input { padding: 0 14px; min-block-size: 50px; }
 :root .donation-panel :is(.donation-panel-custom__in, .donation-panel-phone__input):is(:focus, :focus-visible) { box-shadow: none; outline: 0; }
+/* Saran kap (tutar/telefon): fare/dokunuşta kenarlık rengi; klavyede kap çevresinde 2 px aralıklı halka. */
+:root .donation-panel :is(.donation-panel-custom, .donation-panel-phone):has(:focus-visible[data-dp-kbd]) { outline: 2px solid var(--dp-color-focus-ring, currentColor); outline-offset: 2px; }
 :root .donation-panel :is(.donation-panel-custom__in, .donation-panel-phone__input)::placeholder { color: var(--dp-color-text-muted, #5b6475); opacity: 1; }
 /* Odaktaki alan klavye/alt bölüm payıyla görünür kaydırılır (`all: revert` bunu sıfırladığı için sonra verilir). */
 :root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input, .donation-panel-custom__in, .donation-panel-phone__input) { scroll-margin-block: 24px; }
@@ -43,6 +50,6 @@
 
 /* Düğmeler: temanın düğme sızıntılarını (kenar boşluğu, büyük harf, harf aralığı, gölge) keser; değerleri sınıflar verir. */
 :root .donation-panel button { margin: 0; text-transform: none; letter-spacing: normal; text-shadow: none; text-decoration-thickness: auto; -webkit-appearance: none; appearance: none; font-family: inherit; box-sizing: border-box; }
-/* Görünür odak halkası (klavye) */
-:root .donation-panel :is(a, button, summary, [tabindex]:not([tabindex="-1"])):focus-visible { outline: 3px solid var(--dp-color-primary-strong, currentColor); outline-offset: 2px; }
+/* Görünür odak halkası (klavye; düğmede tarayıcı :focus-visible'ı yalnız klavyede eşleştirir): 2 px, aralıklı, yarı saydam marka */
+:root .donation-panel :is(a, button, summary, [tabindex]:not([tabindex="-1"])):focus-visible { outline: 2px solid var(--dp-color-focus-ring, currentColor); outline-offset: 2px; }
 :root .donation-panel :is(.donation-panel-amount, .donation-panel-check, .donation-panel-switch):focus-visible { outline-offset: 0; }
