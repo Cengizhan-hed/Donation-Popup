@@ -215,7 +215,9 @@ export function createForm(root, hooks = {}) {
   const holders = Array.from(form.querySelectorAll('[data-dp-holder]'));
   const lastStep = Math.max(0, sections.length - 1);
 
-  const money = (value) => formatTotal(value, symbol, decimals, locale);
+  // Sunucunun sayı ayırıcıları (WP number_format_i18n): metin sunucu çıktısıyla aynı, Intl kurulumu yok.
+  const numSeps = form.dataset.numDecimal !== undefined ? { thousands: form.dataset.numThousands ?? '', decimal: form.dataset.numDecimal } : null;
+  const money = (value) => formatTotal(value, symbol, decimals, locale, numSeps);
   const addonValue = () => (addonFixed > 0 ? addonFixed : parseAmount(state.addonAmount, currency));
   const totals = (fee) =>
     computeTotals({

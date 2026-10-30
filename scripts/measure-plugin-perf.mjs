@@ -60,7 +60,10 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(ROOT, 'build/e2e/plugin-perf');
 const PORT = Number(process.env.WDP_LOCAL_E2E_PORT || 8964);
 const DEVICE = devices['Pixel 7'];
-const TRACE_CATEGORIES = ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'v8', 'v8.execute', 'toplevel', 'loading', 'blink.user_timing'];
+const TRACE_CATEGORIES = ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'v8', 'v8.execute', 'toplevel', 'loading', 'blink.user_timing'].concat(
+  // Yalnız tanı (WDP_PERF_CPU_PROFILE=1): işlev düzeyinde örnekler (izdeki ProfileChunk).
+  process.env.WDP_PERF_CPU_PROFILE ? ['disabled-by-default-v8.cpu_profiler'] : []
+);
 /** Lighthouse "slow 4G" (mevcut anında açılma ölçümüyle aynı). */
 const SLOW_NET = { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 };
 const TAP_RUNS = 5;

@@ -225,11 +225,20 @@ function omit(state, key) {
  * @param {string}      symbol   Para birimi simgesi.
  * @param {number}      decimals Woo ondalık hane sayısı.
  * @param {string}      locale   Tarayıcı dili.
+ * @param {{thousands: string, decimal: string}|null} [seps] Sunucunun (WP `number_format_i18n`) ayırıcıları: verilirse
+ *   Intl kullanılmaz — sunucu çıktısıyla birebir aynı metin ve ilk `Intl.NumberFormat` kurulumunun (yavaşlatılmış CPU'da
+ *   ~50 ms) maliyeti yok.
  * @return {string} Biçimli toplam.
  */
-export function formatTotal(amount, symbol, decimals, locale) {
+export function formatTotal(amount, symbol, decimals, locale, seps = null) {
   const value = typeof amount === 'number' && Number.isFinite(amount) ? amount : 0;
   const whole = Number.isInteger(value);
+  if (seps) {
+    const digits = whole ? 0 : Math.max(0, Math.min(decimals, 2));
+    const [int, frac] = roundTo(Math.abs(value), digits).toFixed(digits).split('.');
+    const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, seps.thousands);
+    return `${symbol}${value < 0 ? '-' : ''}${grouped}${frac ? seps.decimal + frac : ''}`;
+  }
   let text;
   try {
     text = new Intl.NumberFormat(locale || undefined, {
