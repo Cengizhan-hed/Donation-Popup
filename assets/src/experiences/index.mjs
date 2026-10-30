@@ -7,6 +7,10 @@ import '../ui2-shared/states.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
 import { colorSyncNeeded, syncColors } from '../ui2-shared/color-sync.mjs';
+import { installFocusModality } from '../ui2-shared/focus-modality.mjs';
+
+// Belirgin odak halkası yalnız klavyede (metin alanlarında fare/dokunuşta yalnız ince kenarlık rengi).
+installFocusModality();
 
 /**
  * Renk eşitleme `getComputedStyle` okur (zorunlu stil hesabı; ağır tema CSS'inde pahalı). Dinamik renk işareti

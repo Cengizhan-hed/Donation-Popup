@@ -8,9 +8,11 @@
  * - Katman açıkken sayfanın geri kalanı `inert` olur (odak/ekran okuyucu dışarı kaçmaz); sayaçlı geri alınır.
  *   Yerel kipli `<dialog>` (showModal) kullanan katman `native: true` verir: tarayıcı arka planı zaten etkisiz kılar,
  *   öznitelik yazılmaz (her `inert` özniteliği o alt ağacın stilini yeniden hesaplatır).
- * - Kaydırma çubuğu kaybolunca masaüstünde sıçrama olmasın diye, YALNIZ çubuk gerçekten yer kaplıyorsa
- *   `scrollbar-gutter: stable` (desteklenmiyorsa çubuk genişliği kadar `padding-inline-end`) verilir; kaplama çubukta
- *   ya da taşmasız sayfada hiçbir şey yazılmaz (aksi halde boşluk eklenip sayfa yana kayardı).
+ * - Kaydırma çubuğu kaybolunca sayfa yana kaymasın (titreme) diye, YALNIZ çubuk gerçekten yer kaplıyorsa (klasik çubuk)
+ *   kökün `padding-inline-end` değeri çubuk genişliği kadar artırılır; kaplama çubukta ya da taşmasız sayfada hiçbir şey
+ *   yazılmaz. `scrollbar-gutter: stable` KULLANILMAZ: Chromium temanın `::-webkit-scrollbar` biçimli çubuğunda
+ *   `overflow: hidden` iken boşluğu korumuyor (ölçüldü: 1265 → 1280 px), tasarımsız eski kilit de taşmasız sayfaya boşluk
+ *   ekleyip içeriği sola kaydırıyordu. Ölçüm (çubuk + kökün mevcut iç boşluğu) niyet anında yapılır.
  *
  * Her paket ayrı derlendiği için durum `window.__dpScrollLock` üzerinde ortaktır (kopyalar aynı kaydı görür).
  */
@@ -24,7 +26,7 @@ function state() {
   if (!window[FLAG]) {
     window[FLAG] = { owners: new Map(), inert: new Map(), gutter: null, overflow: null, pad: null, gap: null };
   }
-  ['overflow', 'pad', 'gap'].forEach((key) => {
+  ['overflow', 'pad', 'gap', 'gutter'].forEach((key) => {
     if (!(key in window[FLAG])) {
       window[FLAG][key] = null; // eski sürüm paketinin kurduğu durum
     }
@@ -42,7 +44,10 @@ function state() {
 function scrollbarGap() {
   const s = state();
   if (s.gap === null) {
-    s.gap = Math.max(0, Math.round(window.innerWidth - document.documentElement.clientWidth));
+    const html = document.documentElement;
+    s.gap = Math.max(0, Math.round(window.innerWidth - html.clientWidth));
+    // Kökün mevcut iç boşluğu (tema verdiyse) korunur: kilitte değer = mevcut + çubuk.
+    s.padBase = s.gap > 0 ? parseFloat(window.getComputedStyle(html).paddingInlineEnd) || 0 : 0;
     if (!s.gapReset) {
       s.gapReset = true;
       window.addEventListener(
@@ -125,16 +130,13 @@ function apply() {
   const html = document.documentElement;
   const locked = s.owners.size > 0;
 
-  // Kaydırma çubuğu sıçraması (titreme): çubuk YALNIZ gerçekten yer kaplıyorsa (klasik çubuk) yeri korunur; kaplamıyorsa
-  // (kaplama çubuk / taşma yok) `stable` boşluk EKLEYİP sayfayı sola kaydırırdı. Ölçüm kilitten önce (niyet anında) yapılır.
-  const gap = locked ? (s.gutter !== null || s.pad !== null ? -1 : scrollbarGap()) : 0;
-  const keep = locked && (gap !== 0 || s.gutter !== null || s.pad !== null);
-  const gutterOk = typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('scrollbar-gutter', 'stable');
+  // Kaydırma çubuğu sıçraması (titreme): çubuk YALNIZ gerçekten yer kaplıyorsa (klasik çubuk) genişliği kadar iç boşluk;
+  // ölçüm kilitten ÖNCE (çoğunlukla niyet anında önbelleğe alınmış; değilse overflow yazılmadan önce burada).
+  const gap = locked && s.overflow === null ? scrollbarGap() : s.gap || 0;
   // Kaydırma kilidi (satır içi; kök sınıfı yok).
   pinStyle(html, s, 'overflow', 'overflow', 'hidden', locked);
-  pinStyle(html, s, 'gutter', 'scrollbar-gutter', 'stable', keep && gutterOk);
-  // scrollbar-gutter desteklemeyen tarayıcı: çubuk genişliği kadar iç boşluk.
-  pinStyle(html, s, 'pad', 'padding-inline-end', `${Math.max(0, gap)}px`, keep && !gutterOk && (gap > 0 || s.pad !== null));
+  pinStyle(html, s, 'gutter', 'scrollbar-gutter', 'stable', false); // eski sürüm paketinin bıraktığı değer temizlenir
+  pinStyle(html, s, 'pad', 'padding-inline-end', `${(s.padBase || 0) + gap}px`, locked && (gap > 0 || s.pad !== null));
   if (!html.getAttribute('style')) {
     html.removeAttribute('style');
   }

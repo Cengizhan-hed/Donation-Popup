@@ -141,7 +141,14 @@ add_action(
 		nocache_headers();
 		echo '<!doctype html><html ' . get_language_attributes() . '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Experiences e2e</title>';
 		wp_head();
+		// 12.3 hareket testi: `dp_sb=1` klasik (yer kaplayan) kaydırma çubuğu (Chromium), `dp_long=1` uzun sayfa (çubuk görünür).
+		if (isset($_GET['dp_sb'])) { // phpcs:ignore
+			echo '<style>::-webkit-scrollbar{width:15px;height:15px}::-webkit-scrollbar-thumb{background:#888}::-webkit-scrollbar-track{background:#eee}</style>';
+		}
 		echo '</head><body><main style="padding:16px"><h1>Test</h1><p>Sayfa metni.</p>';
+		if (isset($_GET['dp_long'])) { // phpcs:ignore
+			echo '<div id="dp-sim-center" style="margin:0 auto;max-width:300px;height:40px;background:#ddd"></div>';
+		}
 		if ('slider' === $kind) {
 			// 12.2 slider: 6 sayfa içi form. track = yatay kayan şerit (ilk slayt görünür, diğerleri kırpılmış ekran dışı);
 			// fade = üst üste slaytlar (yalnız ilki görünür, diğerleri visibility:hidden). Genel CSS; kütüphane/tema adı yok.
@@ -152,8 +159,15 @@ add_action(
 				$slides .= '<div class="sim-slide" data-sim-slide="' . $i . '" style="' . $style . '">' . do_shortcode('[donation_panel_experience id="' . $id . '" kind="inline"]') . '</div>';
 			}
 			echo '<div class="sim-slider" style="overflow:hidden;position:relative"><div class="sim-track" style="' . ($fade ? 'position:relative' : 'display:flex;transition:none') . '">' . $slides . '</div></div>'; // phpcs:ignore
+		} elseif ('list' === $kind) {
+			// 12.3 ön alma testi: bağış listesi (kart düğmesi formu REST ile alır) + işaretlemeye sokulmuş sahte düğme (başka köken).
+			echo do_shortcode('[wdp_donations button="panel"]'); // phpcs:ignore
+			echo '<div class="wdp-list-wrap" data-wdp-rest="https://evil.invalid/wp-json/donation-panel/v1/" data-wdp-kind="popup"><a class="wdp-card__cta" id="dp-rogue" href="#rogue" data-wdp-form="' . (int) $id . '">rogue</a></div>'; // phpcs:ignore
 		} else {
 			echo do_shortcode('[donation_panel_experience id="' . $id . '" kind="' . esc_attr($kind) . '"]'); // phpcs:ignore
+		}
+		if (isset($_GET['dp_long'])) { // phpcs:ignore
+			echo '<div style="height:2400px">Uzun içerik</div>';
 		}
 		echo '</main>';
 		wp_footer();

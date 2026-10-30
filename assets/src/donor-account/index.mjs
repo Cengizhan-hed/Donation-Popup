@@ -8,6 +8,9 @@ import { isTopmost, lockPage, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 import { syncColors } from '../ui2-shared/color-sync.mjs';
 import './donor-account.css';
 import { endpoint, errorKey, isEmail, isStrongEnough, nextFocusIndex, shouldDismissOnDrag } from './logic.mjs';
+import { installFocusModality } from '../ui2-shared/focus-modality.mjs';
+
+installFocusModality();
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
