@@ -35,8 +35,10 @@ const num = (text) => Number(String(text).replace(/[^0-9]/g, ''));
 function collectErrors(page) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  // 12.3 fix: `<link rel="prefetch">` kaldırıldı (form bellekte); WebKit "Prefetch request denied" istisnası artık gerekmez.
-  page.on('console', (m) => m.type() === 'error' && !/Failed to load resource/.test(m.text()) && errors.push(m.text()));
+  // WebKit yerel http sunucuda ön alma isteklerini reddeder ("URL must be secure"). 12.3 fix'ten beri eklenti `<link
+  // rel="prefetch">` basmaz (form bellekte); ileti WordPress çekirdeğinin bağlantı ön alması (speculative loading) gibi
+  // eklenti dışı kaynaklardan gelir — ortam notu, hata sayılmaz.
+  page.on('console', (m) => m.type() === 'error' && !/Failed to load resource|Prefetch request denied: URL must be secure/.test(m.text()) && errors.push(m.text()));
   page.on('response', (r) => r.status() >= 400 && errors.push(`${r.status()} ${r.url()}`));
   return errors;
 }
