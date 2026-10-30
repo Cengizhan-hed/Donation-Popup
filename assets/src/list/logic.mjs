@@ -62,39 +62,6 @@ export function shouldHandleClick(event) {
 }
 
 /**
- * Sunucunun bastığı ön alma bağlantısı (`<link rel="prefetch" data-dp-prefetch>`): aynı köken + eklentinin toplu ucu
- * (`…/donation-panel/v1/experiences` ya da `?rest_route=/donation-panel/v1/experiences`), yalnız `ids`/`kind`
- * (+ düz yapıda `rest_route`) sorgusu. Geçerliyse kimlikler ve kap türü, değilse null (yanıt HTML'i sayfaya basılır).
- *
- * @param {string} href     Bağlantı adresi.
- * @param {string} pageHref Sayfa adresi.
- * @return {{href: string, ids: string[], kind: string}|null} Bilgi.
- */
-export function parsePrefetchHref(href, pageHref) {
-  let url;
-  let page;
-  try {
-    page = new URL(String(pageHref));
-    url = new URL(String(href || ''), page.href);
-  } catch {
-    return null;
-  }
-  if (url.origin !== page.origin || url.username || url.password || url.hash) {
-    return null;
-  }
-  const route = url.searchParams.get('rest_route');
-  const pretty = /\/donation-panel\/v1\/experiences$/.test(url.pathname) && route === null;
-  const plain = route === '/donation-panel/v1/experiences';
-  const extra = Array.from(url.searchParams.keys()).some((k) => !['ids', 'kind', 'rest_route'].includes(k));
-  const kind = url.searchParams.get('kind') || '';
-  if ((!pretty && !plain) || extra || !['popup', 'side_panel', 'bottom_sheet'].includes(kind)) {
-    return null;
-  }
-  const ids = uniqueIds(String(url.searchParams.get('ids') || '').split(','));
-  return ids.length ? { href: url.href, ids, kind } : null;
-}
-
-/**
  * İşaretlemedeki REST kökü güvenilir mi: sayfayla AYNI köken ve eklentinin kendi ad alanı (güzel bağlantı
  * `…/donation-panel/v1/` ya da düz `?rest_route=/donation-panel/v1/`). Başka köken, başka yol, kimlik bilgisi/parça
  * ya da ek sorgu içeren adres reddedilir (yanıt HTML'i sayfaya basıldığı için kaynak kesin doğrulanır).

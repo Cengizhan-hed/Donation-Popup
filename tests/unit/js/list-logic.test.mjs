@@ -10,33 +10,10 @@ import {
   matchesCategory,
   parseHashSlug,
   shouldHandleClick,
-  parsePrefetchHref,
   shouldPrefetchAhead,
   trustedRestRoot,
   uniqueIds,
 } from '../../../assets/src/list/logic.mjs';
-
-test('parsePrefetchHref: yalnız aynı köken + eklenti toplu ucu, ids/kind', () => {
-  const page = 'https://site.test/magaza/';
-  assert.deepEqual(parsePrefetchHref('https://site.test/wp-json/donation-panel/v1/experiences?ids=15,12,12&kind=side_panel', page), {
-    href: 'https://site.test/wp-json/donation-panel/v1/experiences?ids=15,12,12&kind=side_panel',
-    ids: ['15', '12'],
-    kind: 'side_panel',
-  });
-  assert.equal(parsePrefetchHref('https://site.test/?rest_route=/donation-panel/v1/experiences&ids=7&kind=popup', page).kind, 'popup');
-  for (const bad of [
-    'https://evil.test/wp-json/donation-panel/v1/experiences?ids=1&kind=popup',
-    'https://site.test/wp-json/donation-panel/v1/experience/1?kind=popup',
-    'https://site.test/wp-json/donation-panel/v1/experiences?ids=1&kind=popup&x=1',
-    'https://site.test/wp-json/donation-panel/v1/experiences?ids=1&kind=inline',
-    'https://site.test/wp-json/donation-panel/v1/experiences?ids=abc&kind=popup',
-    'https://site.test/wp-json/wp/v2/experiences?ids=1&kind=popup',
-    'javascript:alert(1)',
-    '',
-  ]) {
-    assert.equal(parsePrefetchHref(bad, page), null, bad);
-  }
-});
 
 test('trustedRestRoot: yalnız aynı köken + eklenti ad alanı (yanıt HTML olarak basılır)', () => {
   const page = 'https://site.test/bagislar/?x=1';
