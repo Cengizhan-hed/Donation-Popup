@@ -1006,3 +1006,6 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 
 
 - **Hız ölçümü (12.2):** `npm run measure:plugin-perf` — INP eşiği (<200 ms) 5 yükleme örneğinin medyanına uygulanır; compact first-paint denetimi iki aşamalı (kart yüzeyi ilk göründüğü karede, adım yığını kapanış etiketi ayrıştıktan sonraki ilk karede).
+
+### Panel açılış yolu (12.2)
+- Tüm DOM yazmaları `showModal`dan önce tek seferde; açılış geçişi `is-open` + `@starting-style`; geometri/klavye taban ölçümü ilk karede (önce okuma, sonra yazma). Kaydırma kilidi kökte satır içi `overflow` (kök sınıfı yok — temanın kök kuralları tüm belgeyi yeniden hesaplatıyordu); yerel kipli diyalogda `inert` yazılmaz. `color-sync.mjs` yalnız `--dp-color-dynamic` varsa, boşta. Ölçüm: `npm run measure:plugin-perf -- --forced-layout [--heavy-css]`.
