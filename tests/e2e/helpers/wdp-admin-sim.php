@@ -47,6 +47,29 @@ add_filter(
 				'theme'
 			);
 		}
+		// 12.3: palet VAR ama rol adı yok (sayfa oluşturucu temaları gibi; canlı kırmızı bir renk dahil) ya da numaralı
+		// "palette-color-N" (bazı temalarda olduğu gibi). İkisinde de tahmin yok: nötr varsayılan + uyarı beklenir.
+		$roleless = array(
+			'roleless' => array( array( 'color1', 'Color 1', '#ffffff' ), array( 'color2', 'Color 2', '#f9f9fb' ), array( 'color3', 'Color 3', '#e2201c' ), array( 'color4', 'Color 4', '#65bc7b' ), array( 'color8', 'Color 8', '#212934' ) ),
+			'numbered' => array( array( 'palette-color-1', 'Palette Color 1', '#2872fa' ), array( 'palette-color-2', 'Palette Color 2', '#1559ed' ), array( 'palette-color-3', 'Palette Color 3', '#3a4f66' ), array( 'palette-color-8', 'Palette Color 8', '#ffffff' ) ),
+		);
+		if ( isset( $roleless[ $mode ] ) ) {
+			$rows = array();
+			foreach ( $roleless[ $mode ] as $row ) {
+				$rows[] = array(
+					'slug'  => $row[0],
+					'name'  => $row[1],
+					'color' => $row[2],
+				);
+			}
+			return new WP_Theme_JSON_Data(
+				array(
+					'version'  => 2,
+					'settings' => array( 'color' => array( 'palette' => $rows ) ),
+				),
+				'theme'
+			);
+		}
 		return $data;
 	}
 );

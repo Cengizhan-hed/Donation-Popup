@@ -20,10 +20,129 @@ final class ThemeColorsTest extends TestCase {
 		return $out;
 	}
 
-	public function test_empty_palette_yields_no_variables(): void {
-		$this->assertSame( array(), Theme_Colors::variables( array() ) );
-		$this->assertSame( array(), Theme_Colors::variables( 'garbage' ) );
-		$this->assertSame( array(), Theme_Colors::variables( array( 'default' => $this->palette( array( 'primary' => '#0000ff' ) ) ) ), 'WP varsayılan paleti kullanılmaz.' );
+	/**
+	 * Nötr varsayılanın beklenen değişkenleri.
+	 *
+	 * @return array<string, string>
+	 */
+	private function neutral(): array {
+		return array(
+			'--dp-color-primary'    => '#' . Theme_Colors::DEFAULT_PRIMARY,
+			'--dp-color-on-primary' => '#ffffff',
+			'--dp-accent'           => '#' . Theme_Colors::DEFAULT_PRIMARY,
+			'--dp-color-on-accent'  => '#ffffff',
+		);
+	}
+
+	public function test_empty_palette_yields_explicit_neutral_default(): void {
+		$this->assertSame( $this->neutral(), Theme_Colors::variables( array() ) );
+		$this->assertSame( $this->neutral(), Theme_Colors::variables( 'garbage' ) );
+		$this->assertSame( $this->neutral(), Theme_Colors::variables( array( 'default' => $this->palette( array( 'primary' => '#0000ff' ) ) ) ), 'WP varsayılan paleti kullanılmaz.' );
+		$this->assertGreaterThanOrEqual( 4.5, Theme_Colors::contrast( Theme_Colors::DEFAULT_PRIMARY, 'ffffff' ) );
+	}
+
+	/**
+	 * Gerçek tema paletlerinin benzetimleri (slug + ad) ve beklenen sonuç.
+	 *
+	 * @return array<string, array{0: mixed, 1: string, 2: string, 3: string, 4: string, 5: string}>
+	 */
+	public static function theme_palettes(): array {
+		$named = static function ( array $rows ): array {
+			$out = array();
+			foreach ( $rows as $row ) {
+				$out[] = array(
+					'slug'  => $row[0],
+					'name'  => $row[1],
+					'color' => $row[2],
+				);
+			}
+			return $out;
+		};
+		$tt5   = $named(
+			array(
+				array( 'base', 'Base', '#FFFFFF' ),
+				array( 'contrast', 'Contrast', '#111111' ),
+				array( 'accent-1', 'Accent 1', '#FFEE58' ),
+				array( 'accent-2', 'Accent 2', '#F6CFF4' ),
+				array( 'accent-3', 'Accent 3', '#503AA8' ),
+				array( 'accent-4', 'Accent 4', '#686868' ),
+				array( 'accent-5', 'Accent 5', '#FBFAF3' ),
+				array( 'accent-6', 'Accent 6', 'color-mix(in srgb, currentColor 20%, transparent)' ),
+			)
+		);
+		// Rol adı olmayan klasik tema paleti (sayfa oluşturucu temaları gibi): kırmızı tonu canlı ama ADI rol değil.
+		$roleless = $named(
+			array(
+				array( 'color1', 'Color 1', '#ffffff' ),
+				array( 'color2', 'Color 2', '#f9f9fb' ),
+				array( 'color3', 'Color 3', '#e2201c' ),
+				array( 'color4', 'Color 4', '#65bc7b' ),
+				array( 'color5', 'Color 5', '#198fd9' ),
+				array( 'color8', 'Color 8', '#212934' ),
+			)
+		);
+		$numbered = $named(
+			array(
+				array( 'palette-color-1', 'Palette Color 1', '#2872fa' ),
+				array( 'palette-color-2', 'Palette Color 2', '#1559ed' ),
+				array( 'palette-color-3', 'Palette Color 3', '#3A4F66' ),
+				array( 'palette-color-8', 'Palette Color 8', '#ffffff' ),
+			)
+		);
+		$by_name  = $named(
+			array(
+				array( 'c1', 'Primary', '#12305a' ),
+				array( 'c2', 'Accent', '#c2511c' ),
+			)
+		);
+		return array(
+			'blok tema (TT5)'            => array( array( 'theme' => $tt5 ), 'theme', '111111', 'contrast', '503aa8', 'accent-3' ),
+			'klasik, palet yok'          => array( array(), 'none', Theme_Colors::DEFAULT_PRIMARY, '', Theme_Colors::DEFAULT_PRIMARY, '' ),
+			'palet var, rol adı yok'     => array( array( 'theme' => $roleless ), 'none', Theme_Colors::DEFAULT_PRIMARY, '', Theme_Colors::DEFAULT_PRIMARY, '' ),
+			'numaralı "palette-color-N"' => array( array( 'theme' => $numbered ), 'none', Theme_Colors::DEFAULT_PRIMARY, '', Theme_Colors::DEFAULT_PRIMARY, '' ),
+			'yalnız ad eşleşmesi'        => array( array( 'theme' => $by_name ), 'theme', '12305a', 'c1', 'c2511c', 'c2' ),
+		);
+	}
+
+	/**
+	 * @dataProvider theme_palettes
+	 */
+	public function test_role_mapping_for_theme_palettes( $palette, string $status, string $primary, string $primary_slug, string $action, string $action_slug ): void {
+		$this->assertSame( $status, Theme_Colors::source_status( $palette ) );
+		$res = Theme_Colors::resolve( $palette );
+		$this->assertSame( $primary, $res['primary']['hex'] );
+		$this->assertSame( $primary_slug, $res['primary']['slug'] );
+		$this->assertSame( '' === $primary_slug ? 'default' : 'theme', $res['primary']['source'] );
+		$this->assertSame( $action, $res['action']['hex'] );
+		$this->assertSame( $action_slug, $res['action']['slug'] );
+		$this->assertSame( '' === $action_slug ? 'primary' : 'theme', $res['action']['source'] );
+		$v = Theme_Colors::variables( $palette );
+		$this->assertSame( '#' . $primary, $v['--dp-color-primary'] );
+		$this->assertSame( '#' . $action, $v['--dp-accent'] );
+		$this->assertGreaterThanOrEqual( 4.5, Theme_Colors::contrast( $action, ltrim( $v['--dp-color-on-accent'], '#' ) ) );
+	}
+
+	public function test_source_labels(): void {
+		$res = Theme_Colors::resolve( array( 'theme' => $this->palette( array( 'primary' => '#1d3557' ) ) ), '', '' );
+		// Dil bağımsız: beklenen metin aynı çeviri işlevinden (yerel .mo yüklüyse Türkçe gelir).
+		$this->assertSame( sprintf( __( 'Theme palette: %s', 'woo-donation-popup' ), 'primary' ), Theme_Colors::source_label( $res['primary'] ) );
+		$this->assertSame( __( 'Follows the main color', 'woo-donation-popup' ), Theme_Colors::source_label( $res['action'] ) );
+		$res = Theme_Colors::resolve( array(), '#123456', 'var(--cta)' );
+		$this->assertSame( __( 'Your choice', 'woo-donation-popup' ), Theme_Colors::source_label( $res['primary'] ) );
+		$this->assertSame( __( 'Your choice', 'woo-donation-popup' ), Theme_Colors::source_label( $res['action'] ) );
+		$this->assertSame( __( 'Default', 'woo-donation-popup' ), Theme_Colors::source_label( Theme_Colors::resolve( array() )['primary'] ) );
+	}
+
+	public function test_partial_when_only_action_role_matches(): void {
+		$this->assertSame( 'partial', Theme_Colors::source_status( array( 'theme' => $this->palette( array( 'accent' => '#ff6a00' ) ) ) ) );
+	}
+
+	public function test_custom_colors_never_change_whatever_the_palette(): void {
+		foreach ( array( array(), array( 'theme' => $this->palette( array( 'primary' => '#1d3557', 'accent' => '#e63946' ) ) ) ) as $palette ) {
+			$v = Theme_Colors::variables( $palette, '#AbCdEf', '#123' );
+			$this->assertSame( '#abcdef', $v['--dp-color-primary'] );
+			$this->assertSame( '#112233', $v['--dp-accent'] );
+		}
 	}
 
 	public function test_named_slugs_win(): void {
@@ -39,9 +158,9 @@ final class ThemeColorsTest extends TestCase {
 		$this->assertSame( '#003366', $v['--dp-color-primary'] );
 	}
 
-	public function test_primary_falls_back_to_first_dark_color(): void {
+	public function test_unnamed_dark_color_is_not_guessed(): void {
 		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'base' => '#ffffff', 'tint' => '#fafafa', 'ink' => '#1a1a2e' ) ) ) );
-		$this->assertSame( '#1a1a2e', $v['--dp-color-primary'] );
+		$this->assertSame( $this->neutral(), $v, '12.3: rol adı olmayan renk tahmin edilmez.' );
 	}
 
 	public function test_named_primary_below_45_contrast_is_not_picked(): void {
@@ -54,11 +173,11 @@ final class ThemeColorsTest extends TestCase {
 		$this->assertSame( '#14532d', $v['--dp-color-primary'], 'Beyaz zeminde okunmayan ana renk atlanır.' );
 	}
 
-	public function test_action_falls_back_to_first_vivid_then_primary(): void {
-		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'base' => '#ffffff', 'primary' => '#222222', 'pop' => '#ff5a1f' ) ) ) );
-		$this->assertSame( '#ff5a1f', $v['--dp-accent'] );
-		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'base' => '#ffffff', 'primary' => '#222222' ) ) ) );
-		$this->assertSame( '#222222', $v['--dp-accent'] );
+	public function test_action_never_takes_unnamed_vivid_color(): void {
+		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'base' => '#ffffff', 'primary' => '#222222', 'pop' => '#ff5a1f', 'vivid-red' => '#cf2e2e' ) ) ) );
+		$this->assertSame( '#222222', $v['--dp-accent'], '12.3: "ilk canlı renk" ve "vivid" tahmini yok; düğme ana rengi izler.' );
+		$v = Theme_Colors::variables( array( 'theme' => $this->palette( array( 'base' => '#ffffff', 'primary' => '#222222', 'secondary' => '#b42318' ) ) ) );
+		$this->assertSame( '#b42318', $v['--dp-accent'] );
 	}
 
 	public function test_button_text_always_meets_aa(): void {
@@ -80,7 +199,7 @@ final class ThemeColorsTest extends TestCase {
 
 	public function test_invalid_values_ignored(): void {
 		$v = Theme_Colors::variables( array( 'theme' => array( array( 'slug' => 'primary', 'color' => 'var(--x)' ), array( 'slug' => 'accent', 'color' => 'red' ) ) ), 'javascript:1', '</style>' );
-		$this->assertSame( array(), $v );
+		$this->assertSame( $this->neutral(), $v );
 	}
 
 	public function test_source_status_none_for_empty_or_default_only_palette(): void {
@@ -138,7 +257,7 @@ final class ThemeColorsTest extends TestCase {
 	public function test_sanitize_color_rejects_everything_else( string $value ): void {
 		$this->assertSame( '', Theme_Colors::sanitize_color( $value ) );
 		$this->assertNull( Theme_Colors::parse_var( $value ) );
-		$this->assertSame( array(), Theme_Colors::variables( array(), $value, $value ), 'Geçersiz değer CSS çıktısına girmez.' );
+		$this->assertSame( $this->neutral(), Theme_Colors::variables( array(), $value, $value ), 'Geçersiz değer CSS çıktısına girmez.' );
 		$this->assertSame( '', Theme_Colors::form_style( $value, $value ) );
 	}
 
@@ -177,6 +296,7 @@ final class ThemeColorsTest extends TestCase {
 
 	public function test_source_status_theme_for_good_palette(): void {
 		$this->assertSame( 'theme', Theme_Colors::source_status( array( 'theme' => $this->palette( array( 'base' => '#fff', 'primary' => '#1d3557' ) ) ) ) );
-		$this->assertSame( 'theme', Theme_Colors::source_status( $this->palette( array( 'ink' => '#1a1a2e' ) ) ) );
+		$this->assertSame( 'theme', Theme_Colors::source_status( $this->palette( array( 'brand' => '#1a1a2e' ) ) ) );
+		$this->assertSame( 'none', Theme_Colors::source_status( $this->palette( array( 'ink' => '#1a1a2e' ) ) ), 'Rol adı olmayan renk sayılmaz.' );
 	}
 }

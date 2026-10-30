@@ -14,7 +14,8 @@
 
 :root, .donation-panel {
   /* ---------- 1. Tema köprüsü (ham girdiler) ---------- */
-  --dp-bridge-primary:  var(--wp--preset--color--primary, var(--wp--preset--color--accent-1, #0f766e));
+  /* Yalnız açık rol adı (12.3, tahmin yok); sunucu seçimi (Theme_Colors) üstüne yazar. Yedek = DEFAULT_PRIMARY. */
+  --dp-bridge-primary:  var(--wp--preset--color--primary, #1e2a3b);
   --dp-bridge-text:     var(--wp--preset--color--contrast, var(--wp--preset--color--foreground, #1c2330));
   --dp-bridge-surface:  var(--wp--preset--color--base, var(--wp--preset--color--background, #ffffff));
   --dp-bridge-radius:   var(--wp--custom--radius, 14px);
@@ -27,7 +28,7 @@
   --dp-color-primary-soft:   color-mix(in oklab, var(--dp-color-primary) 11%, var(--dp-color-surface));
   --dp-color-primary-softer: color-mix(in oklab, var(--dp-color-primary) 5%, var(--dp-color-surface));
   /* Eylem (ana düğme) rengi: tema ön ayarından ya da ürün/ayar değerinden; yoksa marka rengi. Beyaz yazı kontrastı için gerekirse koyulaştırılır. */
-  --dp-bridge-accent: var(--wp--preset--color--accent, var(--wp--preset--color--accent-1, var(--dp-bridge-primary)));
+  --dp-bridge-accent: var(--wp--preset--color--accent, var(--dp-bridge-primary));
   --dp-color-accent: var(--dp-accent, var(--dp-bridge-accent));
   --dp-color-accent-solid: color-mix(in oklab, var(--dp-color-accent) 78%, #000);
   --dp-color-primary-ring:   color-mix(in oklab, var(--dp-color-primary) 45%, transparent);

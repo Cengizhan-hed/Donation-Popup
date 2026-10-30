@@ -60,6 +60,9 @@ export function initColorFields(root, t) {
     const status = root.querySelector('#' + field.id + '-status');
     const checkText = field.getAttribute('data-dpa-color-text') === '1';
     const host = wrap || field.parentNode;
+    // Kaynak satırı (sunucuda çevrilmiş): boşken uygulanacak renk, doluyken "Sizin seçiminiz".
+    const fallbackText = field.getAttribute('data-dpa-color-fallback') || '';
+    const mineText = field.getAttribute('data-dpa-color-mine') || '';
 
     const say = (text, warn) => {
       if (!status) {
@@ -94,15 +97,18 @@ export function initColorFields(root, t) {
       const info = classify(field.value);
       field.setAttribute('aria-invalid', info.kind === 'bad' ? 'true' : 'false');
       if (info.kind === 'empty' || info.kind === 'bad') {
-        say(info.kind === 'bad' ? t('colorBad', 'Enter a color like #12305A or a CSS variable like var(--brand).') : '', info.kind === 'bad');
+        say(info.kind === 'bad' ? t('colorBad', 'Enter a color like #12305A or a CSS variable like var(--brand).') : fallbackText, info.kind === 'bad');
         return;
       }
       const rgb = info.kind === 'hex' ? resolveColor(field.value.trim(), document, host) : resolveVar(info);
       if (!rgb) {
+        if (mineText && status && status.textContent && status.textContent.indexOf(mineText) !== 0) {
+          say(mineText + ' ' + status.textContent, false);
+        }
         return;
       }
       setPicker(rgb);
-      const parts = [];
+      const parts = mineText ? [mineText] : [];
       if (info.kind === 'var') {
         parts.push(t('colorVarOk', 'On this page the variable resolves to %s. On your site it follows your theme.').replace('%s', toHex(rgb)));
       }

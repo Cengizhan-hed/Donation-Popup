@@ -2,14 +2,17 @@
 /**
  * Yan sepet "Bağışınıza eklemek ister misiniz?" önerisi: küçük tutar kartları (tek dokunuşla eklenir).
  *
- * Öneri varsayılan olarak YOKTUR; site `donation_panel_side_cart_suggestion` filtresiyle tanımlar
- * (`product_id`, `amounts`, isteğe bağlı `title`, `hint`). Ekleme, formun kullandığı `cart/add` ucundan geçer
- * (sunucuda doğrulanır); burada yalnız gösterim verisi temizlenir (saf mantık).
+ * Öneri varsayılan olarak YOKTUR. Yönetici Sepet ve Ödeme → Yan sepet bölümünde açar (`side_cart.suggest`,
+ * `suggest_product` (0 = ek bağış ürünü `checkout.addon_product_id`), `suggest_amounts`, `suggest_hint`); geliştirici
+ * `donation_panel_side_cart_suggestion` filtresiyle değiştirebilir (`product_id`, `amounts`, `title`, `hint`).
+ * Ekleme, formun kullandığı `cart/add` ucundan geçer (sunucuda doğrulanır); burada yalnız gösterim verisi temizlenir.
  *
  * @package DonationPanel
  */
 
 namespace DonationPanel\Modules\SideCart;
+
+use DonationPanel\Core\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -56,6 +59,28 @@ final class Side_Cart_Suggestion {
 	}
 
 	/**
+	 * Yönetici ayarından ham öneri (ayar kapalıysa boş dizi). Ürün 0 ise ek bağış ürünü kullanılır.
+	 *
+	 * @param Settings|object $settings `get( $path, $default )` sunan ayar nesnesi.
+	 * @return array<string, mixed>
+	 */
+	public static function from_settings( $settings ) {
+		if ( ! is_object( $settings ) || ! method_exists( $settings, 'get' ) || ! $settings->get( 'side_cart.suggest', false ) ) {
+			return array();
+		}
+		$product = absint( $settings->get( 'side_cart.suggest_product', 0 ) );
+		if ( $product < 1 ) {
+			$product = absint( $settings->get( 'checkout.addon_product_id', 0 ) );
+		}
+		return array(
+			'product_id' => $product,
+			'amounts'    => array_map( 'trim', explode( ',', (string) $settings->get( 'side_cart.suggest_amounts', '' ) ) ),
+			'title'      => '',
+			'hint'       => (string) $settings->get( 'side_cart.suggest_hint', '' ),
+		);
+	}
+
+	/**
 	 * Şu anki öneri (filtre sonucu temizlenir; ürün yayımlanmamışsa ya da sepette zaten varsa yok).
 	 *
 	 * @param array<int, array<string, mixed>> $lines Sepet satırları (`product_id` anahtarı).
@@ -63,11 +88,11 @@ final class Side_Cart_Suggestion {
 	 */
 	public static function current( array $lines ) {
 		/**
-		 * Yan sepetteki ek bağış önerisi. Varsayılan: öneri yok.
+		 * Yan sepetteki ek bağış önerisi. Varsayılan: yönetici ayarı (kapalıysa öneri yok).
 		 *
 		 * @param array<string, mixed> $suggestion `product_id`, `amounts`, `title`, `hint`.
 		 */
-		$suggestion = self::sanitize( apply_filters( 'donation_panel_side_cart_suggestion', array() ) );
+		$suggestion = self::sanitize( apply_filters( 'donation_panel_side_cart_suggestion', self::from_settings( new Settings() ) ) );
 		if ( ! $suggestion ) {
 			return array();
 		}

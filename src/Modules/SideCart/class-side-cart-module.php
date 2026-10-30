@@ -189,7 +189,7 @@ final class Side_Cart_Module implements Module_Interface {
 				'removed'  => __( 'Removed from your basket.', 'woo-donation-popup' ),
 			),
 			'',
-			$this->floating_enabled() ? Side_Cart_Renderer::floating_button( 0 ) : ''
+			$this->floating_enabled() ? Side_Cart_Renderer::floating_button( 0, (string) $this->container->get( Settings::class )->get( 'side_cart.position', 'end' ) ) : ''
 		);
 		echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Side_Cart_Renderer tüm değerleri kaçışlar.
 	}
