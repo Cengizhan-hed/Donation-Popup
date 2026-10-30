@@ -338,7 +338,8 @@ final class AdminTest extends TestCase {
 	}
 
 	public function test_side_cart_type_tag_is_translated_label_or_nothing(): void {
-		$this->assertSame('Share-based', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('shares'));
+		$this->assertSame(\DonationPanel\Domain\Donation_Type::get_label('shares'), \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('shares'));
+		$this->assertNotSame('', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('shares'));
 		$this->assertSame('', \DonationPanel\Modules\SideCart\Side_Cart_Renderer::type_label('general'), 'Ham slug bagisciya gosterilmez');
 	}
 
