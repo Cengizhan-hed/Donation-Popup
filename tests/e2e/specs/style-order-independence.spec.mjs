@@ -95,6 +95,13 @@ test.describe('stil sıra bağımsızlığı', () => {
     for (const order of ORDERS) {
       await page.goto(url(order), { waitUntil: 'load' });
       await expect(page.locator('#ord-f .donation-panel-btn--outline'), 'sabit fiyatlı formda ikincil düğme').toHaveCount(1);
+      // Etki satırı kampanya betiğiyle (tembel başlatma) eklenir; tüm sıralarda aynı öğe kümesi için beklenir.
+      for (const section of await page.locator('section[id^="ord-"]').all()) {
+        await section.scrollIntoViewIfNeeded();
+      }
+      await page.waitForLoadState('networkidle');
+      await page.mouse.move(0, 0);
+      await expect(page.locator('#ord-h .donation-panel-impact'), 'etki satırı').toHaveCount(1);
       const snap = await snapshot(page);
       const inline = await page.locator('style[id^="donation-panel-inline-"]').evaluateAll((els) => els.map((e) => e.id));
       expect(new Set(inline).size, `stil etiketi tekrarı yok (${order}): ${inline.join(',')}`).toBe(inline.length);
@@ -106,6 +113,7 @@ test.describe('stil sıra bağımsızlığı', () => {
     const [first, ...rest] = ORDERS;
     const keys = Object.keys(shots[first]).sort();
     expect(keys.length, 'denetlenen öğe sayısı').toBeGreaterThan(10);
+    console.log(`SOI_COUNT öğe=${keys.length} sıra=${ORDERS.length} özellik=${PROPS.length}`);
     for (const order of rest) {
       expect(Object.keys(shots[order]).sort(), `aynı öğeler (${order})`).toEqual(keys);
       const diffs = [];
