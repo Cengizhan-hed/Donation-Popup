@@ -95,12 +95,15 @@ function startWhenNear(root) {
     observer = new window.IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && shown(entry.target)) {
+          // Alanı sıfır kesişim (kırpan kabın kenarına bitişik sonraki slayt) sayılmaz.
+          const area = entry.intersectionRect.width > 0 && entry.intersectionRect.height > 0;
+          if (entry.isIntersecting && area && shown(entry.target)) {
             start(entry.target);
           }
         });
       },
-      { rootMargin: '200px' }
+      // İkinci eşik: kenara bitişik (oran 0, "kesişiyor") slayt görünür alana girince geri çağrı yeniden gelsin.
+      { rootMargin: '200px', threshold: [0, 0.01] }
     );
   }
   observer.observe(root);
