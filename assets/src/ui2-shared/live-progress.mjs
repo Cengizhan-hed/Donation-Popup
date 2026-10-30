@@ -625,10 +625,6 @@ function start() {
       afterPayment(id, Number(event.detail.amount) || 0);
     }
   });
-  // Betik sonradan yüklendiyse (live-loader) o ana dek seçilen tutarları uygula.
-  const queued = window.__donationPanelLiveQueue || [];
-  window.__donationPanelLiveQueue = [];
-  queued.forEach((event) => (event.target || document).dispatchEvent(new CustomEvent(event.type, { bubbles: true, detail: event.detail })));
 }
 
 if (!window[KEY]) {

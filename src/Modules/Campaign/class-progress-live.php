@@ -116,32 +116,9 @@ final class Progress_Live {
 		if ( $fresh ) {
 			$config['fresh'] = 1;
 		}
-		$version = self::version();
-		if ( '' !== $version ) {
-			$config['v'] = $version;
-		}
+		// Güvenlik: yapılandırma yalnız veri taşır (sayı, metin kalıbı); adres yoktur ve ön yüz hiçbir öznitelikten betik/stil
+		// yüklemez. Çubuk varlıkları yalnız sunucunun kuyruğundan (Assets) gelir.
 		return $config;
-	}
-
-	/**
-	 * Çubuk paketinin sürüm belirteci (yalnız veri: [A-Za-z0-9._-]). Öznitelikte ADRES taşınmaz; REST ile sonradan
-	 * gelen formda yükleyici adresi kendi paketinin adresinden türetir (ui2-shared/live-loader-url.mjs).
-	 *
-	 * @return string
-	 */
-	public static function version() {
-		static $version = null;
-		if ( null !== $version ) {
-			return $version;
-		}
-		$version = defined( 'WDP_VERSION' ) ? (string) WDP_VERSION : '';
-		$meta    = defined( 'WDP_PLUGIN_DIR' ) ? WDP_PLUGIN_DIR . 'assets/build/progress/index.asset.php' : '';
-		if ( '' !== $meta && is_file( $meta ) ) {
-			$data    = include $meta;
-			$version = is_array( $data ) && isset( $data['version'] ) ? (string) $data['version'] : $version;
-		}
-		$version = 1 === preg_match( '/^[A-Za-z0-9._-]{1,64}$/', $version ) ? $version : '';
-		return $version;
 	}
 
 	/**

@@ -357,6 +357,28 @@ test.describe('canlı kampanya çubuğu', () => {
     expect(errors).toEqual([]);
   });
 
+  test('güvenlik: sayfaya eklenen kötü amaçlı çubuk yapılandırması hiçbir betik/stil yükletmez', async ({ page }) => {
+    const requests = [];
+    page.on('request', (r) => requests.push(r.url()));
+    await open(page, url(400));
+    const before = await page.evaluate(() => document.querySelectorAll('script, link').length);
+    await page.evaluate((id) => {
+      const box = document.createElement('div');
+      box.className = 'donation-panel';
+      box.innerHTML = [
+        `<div data-dp-live-cfg='{"id":${id},"goal":10,"src":"https://evil.test/x.js","css":"https://evil.test/x.css","v":"x\\"onload=1"}'><i data-dp-live-fill></i></div>`,
+        `<div data-dp-live-cfg='{"id":${id},"goal":10,"src":"javascript:alert(1)"}'></div>`,
+        `<div data-dp-live-cfg='{"id":${id},"goal":10,"src":"/wp-content/uploads/evil.js"}'></div>`,
+      ].join('');
+      document.body.append(box);
+      document.dispatchEvent(new CustomEvent('dp:scan'));
+      document.querySelector('#lp-inline [data-dp-form]').dispatchEvent(new CustomEvent('donation-panel:amount', { bubbles: true, detail: { productId: id, amount: 5 } }));
+    }, PRODUCT);
+    await page.waitForTimeout(800);
+    expect(await page.evaluate(() => document.querySelectorAll('script, link').length)).toBe(before);
+    expect(requests.filter((u) => /evil|uploads\/evil|javascript:/.test(u))).toEqual([]);
+  });
+
   test('erişilebilirlik: progressbar değerleri ve axe (kart + form çubuğu)', async ({ page }) => {
     await open(page, url(400));
     const bar = card(page).locator('[role="progressbar"]');
