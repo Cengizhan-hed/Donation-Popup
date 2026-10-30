@@ -250,6 +250,165 @@ test.describe('compact kart', () => {
     await expect(camp.locator('[data-dp-cfirst]')).toBeVisible();
     await expect(camp.locator('[data-dp-cpct]')).toBeHidden();
     await expect(camp.locator('[data-dp-cgoal]')).toBeVisible();
+    // 12.3 v2: "£0 / £3,000 · İlk bağışı siz yapın" tek satırda; tam sayıda ".00" yok; bağışçı sayısı 0 iken yok.
+    await expect(camp.locator('[data-dp-craised]')).toBeVisible();
+    await expect(camp.locator('[data-dp-craised]')).toHaveText(/^\D*0\D*$/);
+    await expect(camp.locator('[data-dp-cgoal]')).toHaveText(/^\/\s/);
+    expect(await camp.locator('.donation-panel-compact__nums').innerText()).not.toMatch(/[.,]00(?!\d)/);
+    await expect(camp.locator('[data-dp-cdonors]')).toBeHidden();
+    const rows = await camp.locator('[data-dp-craised], [data-dp-cgoal], [data-dp-cfirst]').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().top)));
+    expect(Math.max(...rows) - Math.min(...rows), 'tek satır').toBeLessThanOrEqual(4);
+  });
+
+  test('v2: adım sayısı akışa göre (sepetli 2, doğrudan 3), ara "ödeme sayfasında tamamlayacaksınız" adımı yok', async ({ page, baseURL }) => {
+    await open(page, baseURL, { ids: [IDS.custom], direct: false });
+    const card = page.locator(CARD).first();
+    await expect(card.locator('[data-dp-cstep]')).toHaveCount(2);
+    await expect(card.locator('[data-dp-cstep="pay"]')).toHaveCount(0);
+    await expect(step(page, 'amount').locator('.donation-panel-compact__count')).toHaveText('1/2');
+    await expect(step(page, 'details').locator('.donation-panel-compact__count')).toHaveText('2/2');
+    // Bilgiler adımının düğmesi ödemeye geçer ve tutarı gösterir (sipariş/sepete ekleme bu testte yok).
+    await card.locator('[data-dp-camount-in]').fill('40');
+    await step(page, 'amount').locator('[data-dp-cnext]').click();
+    await expect(step(page, 'details')).toHaveClass(/is-on/);
+    await expect(step(page, 'details').locator('[data-dp-cpay-label]')).toContainText('40');
+    await expect(page.locator(`${CARD} [data-dp-live]`)).toContainText('2');
+
+    await page.context().clearCookies();
+    await open(page, baseURL, { ids: [IDS.custom], direct: true });
+    await expect(page.locator(CARD).first().locator('[data-dp-cstep]')).toHaveCount(4);
+    await expect(step(page, 'amount').locator('.donation-panel-compact__count')).toHaveText('1/3');
+    await expect(step(page, 'pay').locator('.donation-panel-compact__count')).toHaveText('3/3');
+  });
+
+  test('v2: boşluk ≤24 px (her adım; hedefli, hedefsiz, sabit), üst satır tek hizada, dokunma ≥48 px', async ({ page, baseURL }) => {
+    const gap = () =>
+      page.locator(CARD).first().evaluate((card) => {
+        const active = card.querySelector('.donation-panel-compact__step.is-on');
+        const boxes = [];
+        Array.from(active.children).forEach((el) => {
+          if (el.matches('template, .donation-panel-compact__sheet, [hidden]')) return;
+          // Alt bölge: üstü görünen durum metni (güven satırı ya da hata), altı düğme.
+          let target = el;
+          if (el.classList.contains('donation-panel-compact__foot')) {
+            const status = el.querySelector('.donation-panel-compact__status');
+            const text = status && status.classList.contains('has-err') ? status.querySelector('[data-dp-cerr]') : el.querySelector('.donation-panel-compact__trust');
+            target = text || el;
+          }
+          if (target && target.getBoundingClientRect().height > 0) boxes.push(target.getBoundingClientRect());
+        });
+        let max = 0;
+        for (let i = 1; i < boxes.length; i++) max = Math.max(max, boxes[i].top - boxes[i - 1].bottom);
+        return max;
+      });
+    for (const id of [IDS.custom, IDS.campaign, IDS.fixed].filter(Boolean)) {
+      await open(page, baseURL, { ids: [id] });
+      expect(await gap(), `tutar ${id}`).toBeLessThanOrEqual(24.5);
+      const chip = step(page, 'amount').locator('.donation-panel-compact__chip');
+      if (await chip.count()) {
+        const widths = await chip.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+        expect(Math.max(...widths) - Math.min(...widths), 'hızlı tutarlar eşit genişlik').toBeLessThanOrEqual(1);
+        expect(Math.min(...(await chip.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))))).toBeGreaterThanOrEqual(48);
+        await chip.first().click();
+      }
+      await step(page, 'amount').locator('[data-dp-cnext]').click();
+      await expect(step(page, 'details')).toHaveClass(/is-on/);
+      expect(await gap(), `bilgiler ${id}`).toBeLessThanOrEqual(24.5);
+      const rows = await step(page, 'details').locator('.donation-panel-compact__field').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+      expect(Math.min(...rows), 'alan satırı ≥48 px').toBeGreaterThanOrEqual(48);
+      // Üst satır: geri, başlık, tutar, sayaç aynı hizada (dikey merkezler ±2 px); başlık tek satır.
+      const centers = await step(page, 'details')
+        .locator('.donation-panel-compact__top > *')
+        .evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return r.top + r.height / 2; }));
+      expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(2);
+      expect(await step(page, 'details').locator('[data-dp-ctitle]').evaluate((el) => getComputedStyle(el).whiteSpace)).toBe('nowrap');
+      await fillDetails(page);
+      await step(page, 'details').locator('button[type="submit"]').click();
+      await expect(step(page, 'pay')).toHaveClass(/is-on/);
+      expect(await gap(), `ödeme ${id}`).toBeLessThanOrEqual(24.5);
+    }
+  });
+
+  test('v2: güven satırı düğmenin üstünde; hata aynı yeri alır (yükseklik aynı); ayarla kapanır', async ({ page, baseURL }) => {
+    await open(page, baseURL, { ids: [IDS.custom] });
+    const amount = step(page, 'amount');
+    const trust = amount.locator('.donation-panel-compact__trust');
+    await expect(trust).toBeVisible();
+    await expect(trust.locator('svg[width="14"][height="14"]')).toHaveCount(1);
+    const h0 = await height(page);
+    const ctaTop = await amount.locator('[data-dp-cnext]').evaluate((el) => el.getBoundingClientRect().top);
+    const trustBottom = await trust.evaluate((el) => el.getBoundingClientRect().bottom);
+    expect(ctaTop - trustBottom).toBeLessThanOrEqual(24);
+    await amount.locator('[data-dp-cnext]').click({ force: true });
+    await expect(amount.locator('[data-dp-cerr]')).not.toBeEmpty();
+    await expect(trust).toBeHidden();
+    same([h0, await height(page)]);
+    await open(page, baseURL, { ids: [IDS.custom], query: '&dp_ctrust=0' });
+    // Ödeme adımının bilgilendirme notu (aynı yer) ayardan bağımsızdır; tutar ve bilgiler adımında satır yok.
+    await expect(step(page, 'amount').locator('.donation-panel-compact__trust')).toHaveCount(0);
+    await expect(step(page, 'details').locator('.donation-panel-compact__trust')).toHaveCount(0);
+    same([h0, await height(page)]);
+  });
+
+  test('v2: toplam ve etki satırı (seçilen tutar; sabit fiyatta adet × fiyat), "Başka tutar" hızlı seçimi kaldırır', async ({ page, baseURL }) => {
+    await open(page, baseURL, { ids: [IDS.custom], query: '&dp_cimpact=1' });
+    const amount = step(page, 'amount');
+    const total = amount.locator('[data-dp-ctotal]');
+    await expect(total).toHaveText('—');
+    const h0 = await height(page);
+    const chip = amount.locator('.donation-panel-compact__chip').first();
+    await chip.click();
+    await expect(amount.locator('input[data-dp-cquick]:checked')).toHaveCount(1);
+    await expect(total).toHaveText(/\d/);
+    await amount.locator('[data-dp-camount-in]').fill('60');
+    await expect(amount.locator('input[data-dp-cquick]:checked')).toHaveCount(0);
+    await expect(total).toContainText('60');
+    await expect(amount.locator('[data-dp-ceffect]')).toHaveText(/family food parcel/);
+    await amount.locator('[data-dp-camount-in]').fill('5');
+    await expect(amount.locator('[data-dp-ceffect]')).toHaveText('');
+    same([h0, await height(page)]);
+    if (IDS.fixed) {
+      await open(page, baseURL, { ids: [IDS.fixed] });
+      const fixedTotal = step(page, 'amount').locator('[data-dp-ctotal]');
+      const unit = await step(page, 'amount').locator('[data-dp-cunit]').innerText();
+      await expect(fixedTotal).toHaveText(unit);
+      const plus = step(page, 'amount').locator('[data-dp-cqty="1"]');
+      if (await plus.count()) {
+        await plus.click();
+        await expect(fixedTotal).not.toHaveText(unit);
+      }
+    }
+  });
+
+  test('v2: vergi indirimi beyanı başlık + kısa hal + Ayrıntılar (kart içi, yükseklik aynı, Esc kapatır)', async ({ page, baseURL }) => {
+    await open(page, baseURL, { ids: [IDS.custom], query: '&dp_ctax=1' });
+    const h0 = await height(page);
+    await page.locator(`${CARD} [data-dp-camount-in]`).fill('30');
+    await step(page, 'amount').locator('[data-dp-cnext]').click();
+    const details = step(page, 'details');
+    await expect(details.locator('.donation-panel-compact__taxt > b')).toHaveText('Boost your donation by 25% with Gift Aid');
+    await expect(details.locator('.donation-panel-compact__taxs')).toBeVisible();
+    const more = details.locator('[data-dp-ctax-more]');
+    expect((await more.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    await more.click();
+    const sheet = details.locator('[data-dp-ctax-sheet]');
+    await expect(sheet).toBeVisible();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+    await expect(sheet).toBeFocused();
+    await expect(sheet).toContainText('UK taxpayer');
+    same([h0, await height(page)]);
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(more).toBeFocused();
+    await more.click();
+    await sheet.locator('[data-dp-ctax-close]').click();
+    await expect(sheet).toBeHidden();
+    await details.locator('[data-dp-ctax]').check();
+    await fillDetails(page);
+    await details.locator('button[type="submit"]').click();
+    await expect(step(page, 'pay').locator('[data-dp-crecap-tax-row]')).toBeVisible();
+    same([h0, await height(page)]);
   });
 
   test('akış + yükseklik sabit (4 adım, hata, geri) + kart içi CLS 0', async ({ page, baseURL }) => {

@@ -44,8 +44,13 @@ const maxGap = (page) =>
     Array.from(step.children).forEach((el) => {
       if (el.matches('template, .donation-panel-compact__sheet, [hidden]')) return;
       let target = el;
-      if (el.classList.contains('donation-panel-compact__status')) {
-        target = el.classList.contains('has-err') ? el.querySelector('[data-dp-cerr]') : el.querySelector('.donation-panel-compact__trust');
+      if (el.classList.contains('donation-panel-compact__foot')) {
+        const status = el.querySelector('.donation-panel-compact__status');
+        const text = status && status.classList.contains('has-err') ? status.querySelector('[data-dp-cerr]') : el.querySelector('.donation-panel-compact__trust');
+        target = text || el;
+      } else if (el.classList.contains('donation-panel-compact__err') && el.textContent.trim() === '') {
+        // Eski şablon (önce): boş hata satırı görünür içerik değildir (ayrılmış boş yer boşluk sayılır).
+        return;
       }
       if (!target) return;
       const r = target.getBoundingClientRect();

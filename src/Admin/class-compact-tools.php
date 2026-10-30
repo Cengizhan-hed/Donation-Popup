@@ -21,15 +21,16 @@ final class Compact_Tools {
 	/**
 	 * Kart yüksekliği (px), varsayılan blok teması + yerel test ürünleri; `layout="compact"`, sepetli ve doğrudan aynı
 	 * (adımlar aynı hücrede üst üste; en uzun adım belirler). e2e `kurgu-matrix` "compact kart yükseklikleri" testi ölçümü
-	 * bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Ölçüm 2026-10-30, TT5, 1440/820/375 px. Gerçek yükseklik tema yazı
-	 * tipine ve alan sayısına göre değişir.
+	 * bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Ölçüm 2026-10-30 (12.3 compact v2: 382 px taban + 2 px kenarlık), TT5,
+	 * 1440/820/375/320 px; hedefli/hedefsiz/sabit fiyat, etki ifadesi ve vergi beyanı ile aynı. Tema yazı tipi çok büyükse
+	 * içerik tabanı aşar ve kart uzar.
 	 *
 	 * @var array<string, array{0: int, 1: int}> genişlik => [ serbest tutar (hedefsiz), hedefli kampanya ].
 	 */
 	const HEIGHTS = array(
-		'desktop' => array( 496, 496 ),
-		'tablet'  => array( 496, 496 ),
-		'mobile'  => array( 492, 492 ),
+		'desktop' => array( 384, 384 ),
+		'tablet'  => array( 384, 384 ),
+		'mobile'  => array( 384, 384 ),
 	);
 
 	/** Ölçüm toleransı (px). */
@@ -110,6 +111,7 @@ final class Compact_Tools {
 			. '<th scope="col">' . esc_html__( 'With goal', 'woo-donation-popup' ) . '</th>'
 			. '<th scope="col">' . esc_html__( 'CSS variable', 'woo-donation-popup' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table></div>';
 		$help  = '<p class="dpa-row__help">' . esc_html__( 'The card is as tall as its tallest step, and that height never changes while the donor moves through the steps. It is the same through the cart and with direct donation. Measured with a default block theme; your theme\'s font can change it a little.', 'woo-donation-popup' ) . '</p>'
+			. '<p class="dpa-row__help">' . esc_html__( 'Steps: through the cart the card has 2 steps (amount, then your details with "Continue to checkout"); with direct donation it has 3 (amount, details, payment). The height is the same with or without a goal, an impact phrase or the tax relief declaration.', 'woo-donation-popup' ) . '</p>'
 			. '<p class="dpa-row__help">' . esc_html__( 'To give every card the same height, for example to match your slide, set the CSS variable on the slide or on a parent element:', 'woo-donation-popup' ) . '</p>';
 		return '<h3 class="dpa-subtitle">' . esc_html__( 'Card height', 'woo-donation-popup' ) . '</h3>' . $help
 			. Admin_View::code( '.my-slide { --dp-compact-h: 560px; --dp-compact-h-sm: 600px; }' ) . $table;

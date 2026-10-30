@@ -1,11 +1,11 @@
 /* Donation Panel — compact bağış kartı (v2, 12.3). Kart yüksekliği HİÇBİR adımda değişmez: adımlar aynı grid hücresinde
- * (grid-area 1/1) üst üste durur, kap en uzun adıma eşittir ve en az `--_floor` (400 px) yüksekliktedir; pasif adım görünmez
+ * (grid-area 1/1) üst üste durur, kap en uzun adıma eşittir ve en az `--_floor` (380 px) yüksekliktedir; pasif adım görünmez
  * ama yer kaplar (visibility). JS ölçümü yok. Her adımın altı aynı: tek durum satırı (güven satırı ya da hata, yer ayrılı) +
  * ana düğme. Adım içindeki artan alan aralıklara eşit dağılır (tek büyük boşluk yok). İç kaydırma yok (yalnız beyanın tam
  * metni kart içi katmanda). Renk/yazı/köşe `--dp-*` belirteçlerinden; global seçici ve `!important` yok. Asgari yükseklik:
  * `--dp-compact-h` (masaüstü), `--dp-compact-h-md` (≤1023 px), `--dp-compact-h-sm` (≤639 px). Genişlik: `--dp-compact-w`. */
 .donation-panel.donation-panel-compact {
-  --_floor: 400px;
+  --_floor: 382px;
   --_h: var(--dp-compact-h, var(--_floor));
   --_pad: 20px;
   --_gap: 8px;
@@ -124,7 +124,7 @@
 
 /* Tutar: hızlı tutarlar eşit genişlikte; kartta yer varsa düğmeler ve alan 60 px'e kadar büyür (boş alan yerine). */
 .donation-panel-compact__main { display: grid; gap: 10px; }
-.donation-panel-compact__step:has(.donation-panel-compact__amounts) .donation-panel-compact__main { flex: 1 1 auto; max-block-size: 136px; }
+.donation-panel-compact__step:has(.donation-panel-compact__amounts) .donation-panel-compact__main { flex: 1 1 auto; max-block-size: 148px; }
 .donation-panel-compact__amounts { display: grid; grid-auto-rows: minmax(var(--_ctl), 1fr); gap: 10px; min-inline-size: 0; margin: 0; padding: 0; border: 0; }
 .donation-panel-compact__quick { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; padding-block-start: 6px; }
 .donation-panel-compact__chip {
@@ -268,10 +268,16 @@
 .donation-panel .donation-panel-compact__closed { margin: auto 0; text-align: center; color: var(--dp-color-text-muted); }
 
 /* Durum satırı: güven satırı ile hata AYNI ayrılmış yerde (iki satırlık hata sığar); hata varken güven satırı gizlenir. */
-.donation-panel-compact__status { display: grid; align-items: center; min-block-size: 30px; }
-.donation-panel-compact__status > * { grid-area: 1 / 1; }
+/* Alt bölge: durum satırı düğmeye yapışık (araya boşluk dağılmaz). Hata, güven satırının yerinde ve ondan yukarı doğru (en çok
+   iki satır, kart zemininde) açılır: akışta yer kaplamaz, yükseklik değişmez. */
+.donation-panel-compact__foot { flex: none; display: grid; gap: 6px; }
+.donation-panel-compact__status { position: relative; display: grid; align-items: end; min-block-size: 16px; }
 .donation-panel .donation-panel-compact__err {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
   margin: 0;
+  background: var(--dp-color-surface);
   font-size: 12.5px;
   font-weight: 650;
   line-height: 15px;
@@ -291,7 +297,6 @@
 .donation-panel-compact .donation-panel-compact__cta { flex: none; min-block-size: 52px; margin: 0; }
 /* Düğme metni değişince ("Tutar seçin" → "Devam et") kutu yerinde kalır: metin tam genişlikte ortalanır (kayma 0). */
 .donation-panel-compact__cta > [data-dp-cnext-label], .donation-panel-compact__cta > [data-dp-cpay-label] { flex: 1 1 auto; min-inline-size: 0; text-align: center; }
-.donation-panel-compact__cta > svg + [data-dp-cpay-label] { flex: 0 1 auto; }
 .donation-panel-compact .donation-panel-compact__cta.is-pending { opacity: .6; }
 .donation-panel-compact .donation-panel-btn--ghost.donation-panel-compact__cta { inline-size: 100%; }
 
