@@ -197,10 +197,10 @@ final class DirectBehaviorTest extends TestCase {
 		$this->assertStringContainsString( 'layout="compact"', $guide['compact']['code'] );
 		$this->assertSame( Admin_Bootstrap::SLUG_FORMS, $guide['compact']['link'][0] );
 		$this->assertSame( Admin_Bootstrap::SLUG_CHECKOUT, $guide['direct']['link'][0] );
-		$text = implode( ' ', $guide['direct']['body'] );
-		foreach ( array( 'Cart and checkout', 'How donors pay', 'Product data', 'compact card', 'Open the payment page instead' ) as $needle ) {
-			$this->assertStringContainsString( $needle, $text );
-		}
+		// Dil bağımsız: ekran yolları (genel, tür, ürün) ve sıra/geri dönüş paragrafları; ok işaretli ekran yolu en az 3.
+		$this->assertGreaterThanOrEqual( 6, count( $guide['direct']['body'] ) );
+		$this->assertGreaterThanOrEqual( 3, substr_count( implode( ' ', $guide['direct']['body'] ), '→' ) );
+		$this->assertGreaterThanOrEqual( 6, count( $guide['compact']['body'] ) );
 		$svg = Guide::figure( 'direct' );
 		$this->assertStringContainsString( 'role="img"', $svg );
 		$this->assertMatchesRegularExpression( '/<svg width="\d+" height="\d+"/', $svg, 'satır içi SVG width/height' );
