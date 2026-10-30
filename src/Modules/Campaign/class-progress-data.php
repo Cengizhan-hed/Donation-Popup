@@ -42,8 +42,11 @@ final class Progress_Data {
 			return null;
 		}
 
-		$currency  = Progress_Currency::get_active_currency();
-		$cache_key = 'dp_progress_' . $product_id . '_' . $currency;
+		$currency = Progress_Currency::get_active_currency();
+		// Anahtar saklanan toplam + bağışçı sayısını içerir: ödeme/iade toplamı değiştirince önbellek anında tazelenir
+		// (teşekkür adımındaki tek istek yeni toplamı görür). Ürün metası zaten önbellekte; ek sorgu yok.
+		$stamp     = substr( md5( (string) get_post_meta( $product_id, '_wdp_total_donation_amount', true ) . '|' . (string) get_post_meta( $product_id, '_wdp_donor_count', true ) ), 0, 8 );
+		$cache_key = 'dp_progress_' . $product_id . '_' . $currency . '_' . $stamp;
 		$cached    = get_transient( $cache_key );
 		if ( is_array( $cached ) ) {
 			return $cached;

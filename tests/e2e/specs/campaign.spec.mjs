@@ -34,14 +34,20 @@ test.describe('kampanya kartı', () => {
     const card = page.locator('[data-dp-progress]');
     await expect(card).toBeVisible();
     await expect(card.locator('[role="progressbar"]')).toHaveAttribute('aria-valuenow', '40');
-    await expect(card.locator('[data-dp-percent]')).toHaveText('40%');
-    await expect(card.locator('[data-dp-donors]')).toContainText('12');
+    await expect(card.locator('[data-dp-live-pct]')).toHaveText(/^(40%|%40)$/);
+    await expect(card.locator('[data-dp-live-donors]')).toContainText('12');
     await expect(card.locator('.donation-panel-bar__ms')).toHaveCount(3);
     await expect(card.locator('.donation-panel-bar__ms.is-hit')).toHaveCount(1);
     await expect(card.locator('[data-dp-reached]')).toBeHidden();
-    // Çubuk dolgusu son değere ulaşır (animasyon bitince): genişlik ~%40.
+    // Çubuk dolgusu son değere ulaşır (animasyon bitince): iz içinde görünen genişlik ~%40 (dolgu transform ile kayar).
     await expect
-      .poll(async () => card.locator('.donation-panel-bar__fill').evaluate((el) => Math.round((el.getBoundingClientRect().width / el.parentElement.getBoundingClientRect().width) * 100)))
+      .poll(async () =>
+        card.locator('.donation-panel-live__fill').evaluate((el) => {
+          const a = el.getBoundingClientRect();
+          const b = el.parentElement.getBoundingClientRect();
+          return Math.round(((Math.min(a.right, b.right) - Math.max(a.left, b.left)) / b.width) * 100);
+        })
+      )
       .toBe(40);
     expect(await axeViolations(page, '[data-dp-progress]')).toEqual([]);
     // Yatay taşma yok (mobil dahil).
@@ -52,7 +58,7 @@ test.describe('kampanya kartı', () => {
   test('azaltılmış harekette dolgu anında son değerde', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(URL);
-    const fill = page.locator('[data-dp-progress] .donation-panel-bar__fill');
+    const fill = page.locator('[data-dp-progress] .donation-panel-live__fill');
     await expect(fill).toBeVisible();
     expect(await fill.evaluate((el) => el.style.getPropertyValue('--p'))).toBe('40');
   });
@@ -60,12 +66,16 @@ test.describe('kampanya kartı', () => {
   test('RTL: çubuk sağdan dolar ve taşma olmaz', async ({ page }) => {
     await page.goto(URL);
     await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
-    const box = await page.locator('[data-dp-progress] .donation-panel-bar__fill').evaluate((el) => {
-      const a = el.getBoundingClientRect();
-      const b = el.parentElement.getBoundingClientRect();
-      return { fillRight: Math.round(a.right), trackRight: Math.round(b.right) };
-    });
-    expect(box.fillRight).toBe(box.trackRight);
+    // RTL: görünen dolgu izin sağ ucundan başlar.
+    await expect
+      .poll(() =>
+        page.locator('[data-dp-progress] .donation-panel-live__fill').evaluate((el) => {
+          const a = el.getBoundingClientRect();
+          const b = el.parentElement.getBoundingClientRect();
+          return { right: Math.round(Math.min(a.right, b.right)) === Math.round(b.right), share: Math.round(((b.right - Math.max(a.left, b.left)) / b.width) * 100) };
+        })
+      )
+      .toEqual({ right: true, share: 40 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
   });
 });

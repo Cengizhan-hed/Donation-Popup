@@ -104,7 +104,7 @@
 .donation-panel-compact__first { font-weight: 650; color: var(--dp-color-primary-strong); }
 .donation-panel-compact__pct { font-weight: 750; }
 .donation-panel-compact__bar { block-size: 8px; border-radius: var(--dp-radius-pill); background: var(--dp-track); overflow: hidden; }
-.donation-panel-compact__bar > span { display: block; block-size: 100%; max-inline-size: 100%; border-radius: inherit; background: var(--dp-color-primary); transition: inline-size .6s var(--dp-ease-out); }
+/* Dolum ve kişisel önizleme: ortak canlı çubuk (ui2-shared/live-progress.css, form paketiyle gelir). */
 .donation-panel-compact__meta { display: flex; gap: 12px; min-block-size: 18px; font-size: 13px; line-height: 18px; color: var(--dp-color-text-muted); white-space: nowrap; overflow: hidden; }
 
 .donation-panel-compact__impact {
@@ -224,5 +224,5 @@
 .donation-panel-compact__payalt a.is-alert { font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) {
-  .donation-panel-compact__step, .donation-panel-compact__bar > span { transition: none; }
+  .donation-panel-compact__step { transition: none; }
 }

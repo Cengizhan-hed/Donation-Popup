@@ -183,7 +183,11 @@ final class Compact_Card {
 				'goal'    => isset( $campaign['goal'] ) ? (string) $campaign['goal'] : '',
 				'percent' => isset( $campaign['percent'] ) ? max( 0, (int) $campaign['percent'] ) : 0,
 				'donors'  => isset( $campaign['donors'] ) ? max( 0, (int) $campaign['donors'] ) : 0,
-				'zero'    => null !== $raised ? $raised <= 0 : ( empty( $campaign['percent'] ) && empty( $campaign['donors'] ) ),
+				'zero'    => null !== $raised ? $raised <= 0 : ( isset( $campaign['zero'] ) ? ! empty( $campaign['zero'] ) : ( empty( $campaign['percent'] ) && empty( $campaign['donors'] ) ) ),
+				// Canlı çubuk (Campaign modülü): kesin yüzde, erişilebilir değer metni ve ön yüz yapılandırması.
+				'exact'   => isset( $campaign['percent_exact'] ) ? (float) $campaign['percent_exact'] : ( isset( $campaign['percent'] ) ? (float) $campaign['percent'] : 0.0 ),
+				'vtext'   => isset( $campaign['value_text'] ) ? (string) $campaign['value_text'] : '',
+				'live'    => isset( $campaign['live'] ) && is_array( $campaign['live'] ) ? $campaign['live'] : array(),
 			) : array(),
 			'first_text'   => $first_text,
 			'impact'       => $campaign ? '' : self::impact_text( $model ),

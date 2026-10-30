@@ -226,17 +226,24 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 					<?php endif; ?>
 
 					<?php if ( $donation_panel_camp ) : ?>
-					<div class="donation-panel-camp" data-dp-campaign>
+						<?php
+						// Canlı çubuk (Campaign modülü `live`): gerçek dolum + yalnız bu tarayıcıda kişisel önizleme.
+						$donation_panel_live  = isset( $donation_panel_camp['live'] ) && is_array( $donation_panel_camp['live'] ) ? $donation_panel_camp['live'] : array();
+						$donation_panel_czero = ! empty( $donation_panel_camp['zero'] );
+						$donation_panel_cpct  = isset( $donation_panel_camp['percent_exact'] ) ? (float) $donation_panel_camp['percent_exact'] : (float) $donation_panel_camp['percent'];
+						?>
+					<div class="donation-panel-camp<?php echo $donation_panel_live && empty( $donation_panel_live['o']['c'] ) ? ' donation-panel-live--static' : ''; ?>" data-dp-campaign<?php echo $donation_panel_live ? ' data-dp-live-cfg="' . esc_attr( (string) wp_json_encode( $donation_panel_live ) ) . '"' : ''; ?>>
 						<div class="donation-panel-camp__top">
-							<span class="donation-panel-camp__raised donation-panel-num"><?php echo esc_html( (string) $donation_panel_camp['raised'] ); ?> <small><?php esc_html_e( 'raised', 'woo-donation-popup' ); ?></small></span>
-							<span class="donation-panel-camp__pct donation-panel-num"><?php /* translators: %d: percent of goal reached. */ echo esc_html( sprintf( __( '%d%%', 'woo-donation-popup' ), (int) $donation_panel_camp['percent'] ) ); ?></span>
+							<span class="donation-panel-camp__raised donation-panel-num"><span data-dp-live-raised><?php echo esc_html( (string) $donation_panel_camp['raised'] ); ?></span> <small><?php esc_html_e( 'raised', 'woo-donation-popup' ); ?></small></span>
+							<span class="donation-panel-camp__pct donation-panel-num" data-dp-live-pct><?php echo esc_html( isset( $donation_panel_camp['percent_text'] ) ? (string) $donation_panel_camp['percent_text'] : sprintf( /* translators: %d: percent of goal reached. */ __( '%d%%', 'woo-donation-popup' ), (int) $donation_panel_camp['percent'] ) ); ?></span>
 						</div>
-						<div class="donation-panel-camp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( (string) (int) $donation_panel_camp['percent'] ); ?>" aria-label="<?php esc_attr_e( 'Goal completion rate', 'woo-donation-popup' ); ?>"><span style="inline-size:<?php echo esc_attr( (string) min( 100, max( 0, (int) $donation_panel_camp['percent'] ) ) ); ?>%"></span></div>
-						<p class="donation-panel-camp__meta">
+						<div class="donation-panel-camp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( (string) (int) $donation_panel_camp['percent'] ); ?>"<?php echo isset( $donation_panel_camp['value_text'] ) ? ' aria-valuetext="' . esc_attr( (string) $donation_panel_camp['value_text'] ) . '"' : ''; ?> aria-label="<?php esc_attr_e( 'Goal completion rate', 'woo-donation-popup' ); ?>" data-dp-live-bar><i class="donation-panel-live__fill" data-dp-live-fill style="--p:<?php echo esc_attr( (string) min( 100.0, max( 0.0, $donation_panel_cpct ) ) ); ?>"></i></div>
+						<p class="donation-panel-camp__meta" data-dp-live-meta>
 							<span><?php /* translators: %s: goal amount. */ echo esc_html( sprintf( __( 'Goal %s', 'woo-donation-popup' ), (string) $donation_panel_camp['goal'] ) ); ?></span>
-							<?php if ( (int) $donation_panel_camp['donors'] > 0 ) : ?>
-								<span><?php /* translators: %s: number of donors. */ echo esc_html( sprintf( _n( '%s supporter', '%s supporters', (int) $donation_panel_camp['donors'], 'woo-donation-popup' ), number_format_i18n( (int) $donation_panel_camp['donors'] ) ) ); ?></span>
+							<?php if ( isset( $donation_panel_camp['first_text'] ) ) : ?>
+								<span class="donation-panel-camp__first" data-dp-live-zero="show"<?php echo $donation_panel_czero ? '' : ' hidden'; ?>><?php echo esc_html( (string) $donation_panel_camp['first_text'] ); ?></span>
 							<?php endif; ?>
+							<span data-dp-live-donors data-one="<?php /* translators: %s: number of donors. */ echo esc_attr( _n( '%s supporter', '%s supporters', 1, 'woo-donation-popup' ) ); ?>" data-many="<?php /* translators: %s: number of donors. */ echo esc_attr( _n( '%s supporter', '%s supporters', 2, 'woo-donation-popup' ) ); ?>"<?php echo (int) $donation_panel_camp['donors'] > 0 ? '' : ' hidden'; ?>><?php /* translators: %s: number of donors. */ echo esc_html( sprintf( _n( '%s supporter', '%s supporters', max( 1, (int) $donation_panel_camp['donors'] ), 'woo-donation-popup' ), number_format_i18n( (int) $donation_panel_camp['donors'] ) ) ); ?></span>
 							<?php if ( isset( $donation_panel_camp['days_left'] ) ) : ?>
 								<span><?php /* translators: %s: number of days left. */ echo esc_html( sprintf( _n( '%s day left', '%s days left', (int) $donation_panel_camp['days_left'], 'woo-donation-popup' ), number_format_i18n( (int) $donation_panel_camp['days_left'] ) ) ); ?></span>
 							<?php endif; ?>
