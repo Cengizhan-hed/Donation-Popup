@@ -28,6 +28,9 @@ class Experience_Controller extends Rest_Controller {
 	/** Toplu ön alma isteği başına en çok ürün (istemci `BATCH_MAX` ile aynı). */
 	const BATCH_MAX = 12;
 
+	/** Tek ve toplu form ucunun ORTAK dakikalık bütçesi (form başına bir istek). */
+	const RATE_LIMIT = 60;
+
 	/**
 	 * Form çıktısı üretici.
 	 *
@@ -113,11 +116,11 @@ class Experience_Controller extends Rest_Controller {
 				)
 			);
 		}
-		$throttled = $this->throttle( 'entry_experience_batch', 30 );
-		if ( is_wp_error( $throttled ) ) {
-			return $throttled;
+		// Hız sınırı ürün başına ve tek formla ORTAK bütçeden (`entry_experience`, 60/dk): toplu istek sınırı delemez.
+		$ids = self::charge_ids( $this->limiter, self::parse_ids( (string) $request->get_param( 'ids' ) ), self::RATE_LIMIT );
+		if ( empty( $ids ) ) {
+			return $this->error( 'donation_panel_rate_limited', 'Too many requests. Please try again shortly.', 429 );
 		}
-		$ids  = self::parse_ids( (string) $request->get_param( 'ids' ) );
 		$kind = self::layer_kind( (string) $request->get_param( 'kind' ) );
 		$args = $this->render_args();
 
@@ -138,6 +141,25 @@ class Experience_Controller extends Rest_Controller {
 				'items' => empty( $items ) ? new \stdClass() : $items,
 			)
 		);
+	}
+
+	/**
+	 * Her kimlik ortak form bütçesinden bir istek düşer; bütçe biten kimlik (ve sonrakiler) çizilmez.
+	 *
+	 * @param \DonationPanel\Http\Rate_Limiter $limiter Hız sınırlayıcı.
+	 * @param int[]                            $ids     Kimlikler (parse_ids çıktısı; en çok BATCH_MAX).
+	 * @param int                              $limit   Dakikalık ortak sınır.
+	 * @return int[] Çizilmesine izin verilen kimlikler.
+	 */
+	public static function charge_ids( $limiter, array $ids, $limit ) {
+		$allowed = array();
+		foreach ( array_slice( $ids, 0, self::BATCH_MAX ) as $id ) {
+			if ( ! $limiter->hit( 'entry_experience', (int) $limit ) ) {
+				break;
+			}
+			$allowed[] = $id;
+		}
+		return $allowed;
 	}
 
 	/**
@@ -210,7 +232,7 @@ class Experience_Controller extends Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function get_experience( $request ) {
-		$throttled = $this->throttle( 'entry_experience', 60 );
+		$throttled = $this->throttle( 'entry_experience', self::RATE_LIMIT );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}

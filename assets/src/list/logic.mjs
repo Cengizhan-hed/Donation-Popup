@@ -61,6 +61,33 @@ export function shouldHandleClick(event) {
   return !event.button && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }
 
+/**
+ * İşaretlemedeki REST kökü güvenilir mi: sayfayla AYNI köken ve eklentinin kendi ad alanı (güzel bağlantı
+ * `…/donation-panel/v1/` ya da düz `?rest_route=/donation-panel/v1/`). Başka köken, başka yol, kimlik bilgisi/parça
+ * ya da ek sorgu içeren adres reddedilir (yanıt HTML'i sayfaya basıldığı için kaynak kesin doğrulanır).
+ *
+ * @param {string} rest     Öznitelikteki adres.
+ * @param {string} pageHref Sayfa adresi (`location.href`).
+ * @return {string} Doğrulanmış, normalleştirilmiş kök ya da ''.
+ */
+export function trustedRestRoot(rest, pageHref) {
+  let url;
+  let page;
+  try {
+    page = new URL(String(pageHref));
+    url = new URL(String(rest || ''), page.href);
+  } catch {
+    return '';
+  }
+  if (url.origin !== page.origin || url.username || url.password || url.hash) {
+    return '';
+  }
+  const pretty = /\/donation-panel\/v1\/$/.test(url.pathname) && !url.search;
+  const keys = Array.from(url.searchParams.keys());
+  const plain = keys.length === 1 && url.searchParams.get('rest_route') === '/donation-panel/v1/';
+  return pretty || plain ? url.href : '';
+}
+
 /** Toplu ön alma isteği başına en çok ürün (sunucu sınırıyla aynı). */
 export const BATCH_MAX = 12;
 

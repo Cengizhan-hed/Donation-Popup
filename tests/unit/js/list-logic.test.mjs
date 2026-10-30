@@ -10,8 +10,36 @@ import {
   parseHashSlug,
   shouldHandleClick,
   shouldPrefetchAhead,
+  trustedRestRoot,
   uniqueIds,
 } from '../../../assets/src/list/logic.mjs';
+
+test('trustedRestRoot: yalnız aynı köken + eklenti ad alanı (yanıt HTML olarak basılır)', () => {
+  const page = 'https://site.test/bagislar/?x=1';
+  assert.equal(trustedRestRoot('https://site.test/wp-json/donation-panel/v1/', page), 'https://site.test/wp-json/donation-panel/v1/');
+  assert.equal(trustedRestRoot('/alt/wp-json/donation-panel/v1/', page), 'https://site.test/alt/wp-json/donation-panel/v1/');
+  assert.equal(trustedRestRoot('https://site.test/?rest_route=/donation-panel/v1/', page), 'https://site.test/?rest_route=/donation-panel/v1/');
+  // Reddedilenler: başka köken, şema/alt alan farkı, başka ad alanı, ek sorgu, kimlik bilgisi, parça, protokol hileleri.
+  for (const bad of [
+    'https://evil.test/wp-json/donation-panel/v1/',
+    'http://site.test/wp-json/donation-panel/v1/',
+    'https://x.site.test/wp-json/donation-panel/v1/',
+    '//evil.test/wp-json/donation-panel/v1/',
+    'https://site.test/wp-json/wp/v2/',
+    'https://site.test/wp-json/donation-panel/v1/experience/1',
+    'https://site.test/wp-json/donation-panel/v1/?redirect=https://evil.test',
+    'https://site.test/?rest_route=/donation-panel/v1/&x=1',
+    'https://site.test/?rest_route=/other/v1/',
+    'https://u:p@site.test/wp-json/donation-panel/v1/',
+    'https://site.test/wp-json/donation-panel/v1/#x',
+    'javascript:alert(1)//donation-panel/v1/',
+    'data:text/html,donation-panel/v1/',
+    '',
+    null,
+  ]) {
+    assert.equal(trustedRestRoot(bad, page), '', String(bad));
+  }
+});
 
 test('parseHashSlug yalnız geçerli bagis- adreslerini kabul eder', () => {
   assert.equal(parseHashSlug('#bagis-kurban'), 'kurban');

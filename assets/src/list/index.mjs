@@ -16,6 +16,7 @@ import {
   parseHashSlug,
   shouldHandleClick,
   shouldPrefetchAhead,
+  trustedRestRoot,
   uniqueIds,
 } from './logic.mjs';
 
@@ -148,11 +149,21 @@ function markReady(id) {
  * @return {Promise<any>} JSON gövde.
  */
 async function getJson(url) {
+  return (await fetchTrusted(url)).json();
+}
+
+/**
+ * Yalnız aynı kökene istek; yönlendirme sonrası yanıt da aynı kökenden olmalı (yanıt HTML'i sayfaya basılır).
+ *
+ * @param {string} url Adres (trustedRestRoot ile doğrulanmış kökten türetilir).
+ * @return {Promise<Response>} Yanıt.
+ */
+async function fetchTrusted(url) {
   const response = await window.fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
-  if (!response.ok) {
+  if (!response.ok || (response.url && new URL(response.url).origin !== window.location.origin)) {
     throw new Error(String(response.status));
   }
-  return response.json();
+  return response;
 }
 
 /**
@@ -262,14 +273,7 @@ function prefetchBatch(rest, kind, ids) {
   chunk(todo).forEach((part) => {
     // Gövde Blob olarak saklanır (JS yığınına alınmaz, metin çözümü yok); metin + JSON çözümü ilk dokunma niyetinde
     // (boşta ana iş parçacığı yükü yok denecek kadar az).
-    const request = window
-      .fetch(buildBatchUrl(rest, part, kind), { credentials: 'same-origin', headers: { Accept: 'application/json' } })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(String(response.status));
-        }
-        return response.blob();
-      });
+    const request = fetchTrusted(buildBatchUrl(rest, part, kind)).then((response) => response.blob());
     let parsed = null;
     const items = (blob) => {
       if (!parsed) {
@@ -314,12 +318,21 @@ function prefetchBatch(rest, kind, ids) {
  * @return {{rest: string, kind: string, id: string}|null} Özellikler.
  */
 function ctaInfo(cta) {
-  const source = cta.getAttribute('data-wdp-rest') ? cta : cta.closest('.wdp-list-wrap[data-wdp-rest]');
-  const id = cta.getAttribute('data-wdp-form');
-  if (!source || !id) {
+  // Yalnız eklentinin kendi çizdiği düğmeler: liste kartı düğmesi (REST kökü liste kökünde) ya da mağaza/arşiv döngü
+  // düğmesi (`a.wdp-loop-donate`, kök düğmede). Kök aynı köken + eklenti ad alanı olmalı; kimlik yalnız rakam.
+  let source = null;
+  if (cta.matches('a.wdp-loop-donate[data-wdp-rest]')) {
+    source = cta;
+  } else if (cta.matches('.wdp-card__cta')) {
+    source = cta.closest('.wdp-list-wrap[data-wdp-rest]');
+  }
+  const id = cta.getAttribute('data-wdp-form') || '';
+  const rest = source ? trustedRestRoot(source.getAttribute('data-wdp-rest'), window.location.href) : '';
+  if (!rest || !/^[1-9]\d*$/.test(id)) {
     return null;
   }
-  return { rest: source.getAttribute('data-wdp-rest') || '', kind: source.getAttribute('data-wdp-kind') || 'popup', id };
+  const kind = source.getAttribute('data-wdp-kind');
+  return { rest, kind: ['popup', 'side_panel', 'bottom_sheet'].includes(kind) ? kind : 'popup', id };
 }
 
 /**
