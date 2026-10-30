@@ -32,6 +32,13 @@ class Experience_Controller extends Rest_Controller {
 	const RATE_LIMIT = 60;
 
 	/**
+	 * Ön alma bütçesi (form başına bir birim, dakikada): ayrı kova. Ortak 60'lık kovadan düşülseydi birkaç liste/mağaza
+	 * sayfası gezen ziyaretçi (ya da aynı IP'deki kurum ağı) dokunuşta da 429 alıp formu açamıyordu (yerel ölçümde
+	 * yeniden üretildi). 240 = dakikada 20 tam toplu istek; çizim maliyeti IP başına sınırlı kalır.
+	 */
+	const PREFETCH_LIMIT = 240;
+
+	/**
 	 * Form çıktısı üretici.
 	 *
 	 * @var Form_Renderer
@@ -116,8 +123,9 @@ class Experience_Controller extends Rest_Controller {
 				)
 			);
 		}
-		// Hız sınırı ürün başına ve tek formla ORTAK bütçeden (`entry_experience`, 60/dk): toplu istek sınırı delemez.
-		$ids = self::charge_ids( $this->limiter, self::parse_ids( (string) $request->get_param( 'ids' ) ), self::RATE_LIMIT );
+		// Hız sınırı ÜRÜN BAŞINA (her çizim bir birim; istek başına en çok BATCH_MAX): toplu istek sınırı delemez. Kova ön
+		// almaya ayrı (`entry_experience_prefetch`, PREFETCH_LIMIT/dk): ön alma dokunuştaki tek form bütçesini tüketmez.
+		$ids = self::charge_ids( $this->limiter, self::parse_ids( (string) $request->get_param( 'ids' ) ), self::PREFETCH_LIMIT );
 		if ( empty( $ids ) ) {
 			return $this->error( 'donation_panel_rate_limited', 'Too many requests. Please try again shortly.', 429 );
 		}
@@ -144,17 +152,17 @@ class Experience_Controller extends Rest_Controller {
 	}
 
 	/**
-	 * Her kimlik ortak form bütçesinden bir istek düşer; bütçe biten kimlik (ve sonrakiler) çizilmez.
+	 * Her kimlik ön alma kovasından bir birim düşer; bütçe biten kimlik (ve sonrakiler) çizilmez.
 	 *
 	 * @param \DonationPanel\Http\Rate_Limiter $limiter Hız sınırlayıcı.
 	 * @param int[]                            $ids     Kimlikler (parse_ids çıktısı; en çok BATCH_MAX).
-	 * @param int                              $limit   Dakikalık ortak sınır.
+	 * @param int                              $limit   Dakikalık sınır (form başına).
 	 * @return int[] Çizilmesine izin verilen kimlikler.
 	 */
 	public static function charge_ids( $limiter, array $ids, $limit ) {
 		$allowed = array();
 		foreach ( array_slice( $ids, 0, self::BATCH_MAX ) as $id ) {
-			if ( ! $limiter->hit( 'entry_experience', (int) $limit ) ) {
+			if ( ! $limiter->hit( 'entry_experience_prefetch', (int) $limit ) ) {
 				break;
 			}
 			$allowed[] = $id;

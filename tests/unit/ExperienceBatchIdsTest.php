@@ -16,7 +16,7 @@ final class ExperienceBatchIdsTest extends TestCase {
 		$this->assertSame( array(), Experience_Controller::parse_ids( '' ) );
 	}
 
-	public function test_rate_limit_is_charged_per_id_from_shared_bucket(): void {
+	public function test_rate_limit_is_charged_per_id(): void {
 		$limiter = new class() {
 			/** @var array<int, string> */
 			public $calls = array();
@@ -27,11 +27,12 @@ final class ExperienceBatchIdsTest extends TestCase {
 				return $this->left-- > 0;
 			}
 		};
-		$allowed = Experience_Controller::charge_ids( $limiter, range( 1, 12 ), Experience_Controller::RATE_LIMIT );
+		$allowed = Experience_Controller::charge_ids( $limiter, range( 1, 12 ), Experience_Controller::PREFETCH_LIMIT );
 		// Bütçe 3 istek: yalnız ilk 3 ürün çizilir; 4. denemede durur (sonrakiler sayaç düşürmez).
 		$this->assertSame( array( 1, 2, 3 ), $allowed );
 		$this->assertCount( 4, $limiter->calls );
-		$this->assertSame( 'entry_experience:60', $limiter->calls[0] ); // tek form ucuyla ortak kova
+		// Ön alma kendi kovasından (dokunuştaki tek form bütçesini tüketmez); her ürün bir birim.
+		$this->assertSame( 'entry_experience_prefetch:240', $limiter->calls[0] );
 	}
 
 	public function test_charge_never_exceeds_batch_max(): void {
