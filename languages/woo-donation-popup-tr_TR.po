@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 18:24:23+0000\n"
-"PO-Revision-Date: 2026-10-30 18:24:23+0000\n"
+"POT-Creation-Date: 2026-10-30 19:00:29+0000\n"
+"PO-Revision-Date: 2026-10-30 19:00:29+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -331,6 +331,10 @@ msgstr "6. Ayarlar: Bağış Paneli → Kampanyalar → Kampanya ilerleme çubu�
 #: src/Admin/class-guide.php
 msgid "7. Milestones on the shortcode bar (optional): a product custom field named _donation_panel_milestones, one per line as percent = label, for example 50 = Halfway. Developers can also use the donation_panel_milestones filter."
 msgstr "7. Kısa kod çubuğunda ara hedefler (isteğe bağlı): _donation_panel_milestones adlı ürün özel alanına her satıra bir tane, yüzde = etiket biçiminde yazın; örneğin 50 = Yarı yol. Geliştiriciler donation_panel_milestones filtresini de kullanabilir."
+
+#: src/Admin/class-guide.php
+msgid "8. Shop, category and donation list cards: when the \"Donate\" button on a card opens the form, the bar inside it works the same way (the donor's own gift, cart, new total after payment). Nothing extra to set up; the bar files load only when the donor reaches for the card of a product with a goal."
+msgstr "8. Mağaza, kategori ve bağış listesi kartları: karttaki \"Bağış yap\" düğmesi formu açtığında içindeki çubuk aynı şekilde çalışır (bağışçının kendi katkısı, sepet, ödeme sonrası yeni toplam). Ek ayar gerekmez; çubuk dosyaları yalnız bağışçı hedefi olan bir ürünün kartına yöneldiğinde yüklenir."
 
 #: src/Admin/class-field-registry.php
 msgid "A basket that slides in after a gift is added, so donors can give several gifts and pay once. Only used when the Side cart module above is on. Not shown on the cart and checkout pages, which have their own basket."
