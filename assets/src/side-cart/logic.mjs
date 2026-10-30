@@ -88,3 +88,26 @@ export function itemsInCart(cookieString) {
   const match = /(?:^|;\s*)woocommerce_items_in_cart=([^;]*)/.exec(String(cookieString || ''));
   return match ? toCount(decodeURIComponent(match[1])) : 0;
 }
+
+/**
+ * Çekmece betiği adresi (yalnız SUNUCU YANITINDAN, DOM özniteliğinden asla): aynı köken, kimlik bilgisi/parça yok, yol
+ * eklentinin `assets/build/side-cart-drawer/index.js` dosyası, sorgu yok ya da yalnız `ver`.
+ *
+ * @param {unknown} raw      Adres.
+ * @param {string}  pageHref Sayfa adresi.
+ * @return {string} Doğrulanmış adres ya da ''.
+ */
+export function trustedDrawerUrl(raw, pageHref) {
+  let url;
+  let page;
+  try {
+    page = new URL(String(pageHref));
+    url = new URL(String(raw || ''), page.href);
+  } catch {
+    return '';
+  }
+  const keys = Array.from(url.searchParams.keys());
+  const query = keys.length === 0 || (keys.length === 1 && /^[A-Za-z0-9._-]{1,64}$/.test(url.searchParams.get('ver') || ''));
+  const clean = url.origin === page.origin && !url.username && !url.password && !url.hash;
+  return raw && clean && query && /\/assets\/build\/side-cart-drawer\/index\.js$/.test(url.pathname) ? url.href : '';
+}

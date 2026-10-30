@@ -20,6 +20,7 @@ use DonationPanel\Core\Module_Interface;
 use DonationPanel\Core\Settings;
 use DonationPanel\Frontend\Assets;
 use DonationPanel\Http\Rate_Limiter;
+use DonationPanel\Modules\EntryPoints\Donations_List;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,6 +33,11 @@ final class Side_Cart_Module implements Module_Interface {
 	 * Modül slug'ı.
 	 */
 	const SLUG = 'side_cart';
+
+	/**
+	 * Çekmece etkileşim paketi (sayfa yüklemesinde yok; başlatıcı ilk gerektiğinde REST yanıtındaki adresten ekler).
+	 */
+	const DRAWER = 'side_cart_drawer';
 
 	/**
 	 * Kısa kod adı.
@@ -64,6 +70,7 @@ final class Side_Cart_Module implements Module_Interface {
 		}
 		$this->container = $container;
 		$container->get( Assets::class )->define( self::SLUG, 'assets/build/side-cart/index.js', 'assets/build/side-cart/index.css', array( 'ui-dpx' ) );
+		$container->get( Assets::class )->define( self::DRAWER, 'assets/build/side-cart-drawer/index.js', '' );
 
 		add_action( 'init', array( $this, 'register_shortcode' ) );
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
@@ -103,7 +110,7 @@ final class Side_Cart_Module implements Module_Interface {
 	 */
 	public function add_rest_controller( $controllers ) {
 		$controllers   = (array) $controllers;
-		$controllers[] = new Side_Cart_Controller( $this->container->get( Rate_Limiter::class ) );
+		$controllers[] = new Side_Cart_Controller( $this->container->get( Rate_Limiter::class ), $this->container->get( Assets::class )->script_url( self::DRAWER ) );
 		return $controllers;
 	}
 
@@ -128,7 +135,8 @@ final class Side_Cart_Module implements Module_Interface {
 	 * @return bool
 	 */
 	public function should_load() {
-		$load = ! is_admin() && ( $this->wanted || wp_script_is( Assets::handle( 'experiences' ), 'enqueued' ) );
+		// Liste/mağaza kartı formları (12.3 fix): form betiği sayfa yüklemesinde yok ama kart formu sepete ekler.
+		$load = ! is_admin() && ( $this->wanted || wp_script_is( Assets::handle( 'experiences' ), 'enqueued' ) || Donations_List::has_card_forms() );
 		if ( $load && function_exists( 'is_cart' ) && function_exists( 'is_checkout' ) && ( is_cart() || is_checkout() ) ) {
 			$load = false;
 		}
