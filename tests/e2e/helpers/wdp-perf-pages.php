@@ -34,6 +34,10 @@ add_action(
 			}
 			return '<!-- wp:html --><div class="sim-slider" style="overflow:hidden"><div class="sim-track" style="display:flex">' . $slides . '</div></div><!-- /wp:html -->';
 		};
+		if ( ! empty( $in['fixed_id'] ) ) {
+			// Sabit fiyatlı ürün → sağ panel (mobilde alttan panel).
+			$pages['panelfixed'] = '[donation_panel_experience id="' . (int) $in['fixed_id'] . '" kind="side_panel"]';
+		}
 		$pages['slider6']  = $slider( '[wdp_donation_form id="' . $id . '"]' );
 		$pages['slider6c'] = $slider( '[wdp_donation_form id="' . $id . '" layout="compact"]' );
 		$urls  = array();

@@ -468,10 +468,29 @@ export function forcedLayoutsInClick(trace, opts = {}) {
       continue;
     }
     out.forced += 1;
-    out.items.push({ name: e.name, ms: +(dur / 1000).toFixed(1), elements: Number((e.args && e.args.elementCount) || 0) });
+    const item = { name: e.name, ms: +(dur / 1000).toFixed(1), elements: Number((e.args && e.args.elementCount) || 0) };
+    // İz `disabled-by-default-devtools.timeline.stack` ile alındıysa zorlayan çağrı (ilk iki çerçeve; tanı).
+    const stack = (e.args && e.args.beginData && e.args.beginData.stackTrace) || [];
+    if (stack.length) item.stack = stack.slice(0, 2).map((f) => `${f.functionName || '?'}@${String(f.url || '').split('/').pop().split('?')[0]}:${f.lineNumber}:${f.columnNumber}`).join(' < ');
+    out.items.push(item);
   }
   out.styleMs = +out.styleMs.toFixed(1);
   out.layoutMs = +out.layoutMs.toFixed(1);
+  // Zorlayan JS çağrı noktası sayısı (yığınlı izde): aynı çağrının (ör. tarayıcının showModal içi odak adımı) birden çok
+  // kaydı tek nokta sayılır. Yığın yoksa -1.
+  out.sites = out.items.some((i) => i.stack) ? new Set(out.items.map((i) => (i.stack || '?').split(' < ')[0])).size : -1;
+  // Tıklamadan ilk boyamaya (Paint/PrePaint) kadar TÜM stil/düzen işi (zorunlu + karedeki): toplam açılış maliyeti.
+  const paint = events
+    .filter((e) => e.ph === 'X' && e.pid === c.pid && e.tid === c.tid && e.ts >= b && (e.name === 'Paint' || e.name === 'PrePaint'))
+    .sort((x, y) => x.ts - y.ts)[0];
+  const end = paint ? paint.ts + Number(paint.dur || 0) : b;
+  let frame = 0;
+  for (const e of events) {
+    if (e.ph !== 'X' || e.pid !== c.pid || e.tid !== c.tid || e.ts < a || e.ts > end) continue;
+    if (e.name === 'UpdateLayoutTree' || e.name === 'Layout') frame += Number(e.dur || 0);
+  }
+  out.toPaintMs = +((end - a) / 1000).toFixed(1);
+  out.frameStyleLayoutMs = +(frame / 1000).toFixed(1);
   return out;
 }
 

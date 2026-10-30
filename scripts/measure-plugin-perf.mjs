@@ -36,6 +36,7 @@ import { chromium, devices } from '@playwright/test';
 import {
   attributeTrace,
   clsAttribution,
+  forcedLayoutsInClick,
   INP_RUNS,
   inlinePluginStyles,
   inpSummary,
@@ -77,7 +78,9 @@ const LOCAL_PAGES = [
   { id: 'magaza', key: 'shop', ui: true },
   { id: 'bagis-urunu', key: 'donation', ui: true },
   { id: 'bagis-urunu-tutar', key: 'donation_custom', ui: true },
-  { id: 'bagis-listesi', key: 'list', ui: true },
+  // Liste kartı düğmesi formu REST ile getirip katmanı açar (`[data-wdp-form]`); dokunuş→panel ağ dahil.
+  { id: 'bagis-listesi', key: 'list', ui: true, trigger: '[data-wdp-form]' },
+  { id: 'sabit-fiyat-panel', key: 'panelfixed', ui: true },
   { id: 'sayfa-ici-form', key: 'form', ui: true },
   { id: 'compact-kart', key: 'compact', ui: true },
   { id: 'popup', key: 'popup', ui: true },
@@ -122,7 +125,8 @@ function pageObservers() {
             plugin: !!s.node && isPluginNode(s.node),
             detached: !s.node,
             // Tanı (JSON'a): düğüm ve dikey/yatay kayma; yalnız etiket + sınıf, içerik yok.
-            sel: s.node && s.node.nodeType === 1 ? `${s.node.tagName.toLowerCase()}.${String(s.node.className || '').trim().split(/\s+/).slice(0, 2).join('.')}` : s.node ? '#text' : '',
+            // Metin düğümünde üst öğe de yazılır (hangi eklenti öğesi kaydı: tanı).
+            sel: s.node && s.node.nodeType === 1 ? `${s.node.tagName.toLowerCase()}.${String(s.node.className || '').trim().split(/\s+/).slice(0, 2).join('.')}` : s.node ? `#text<${s.node.parentElement ? `${s.node.parentElement.tagName.toLowerCase()}.${String(s.node.parentElement.className || '').trim().split(/\s+/).slice(0, 2).join('.')}` : ''}` : '',
             dy: Math.round(s.currentRect.y - s.previousRect.y),
             dh: Math.round(s.currentRect.height - s.previousRect.height),
             dx: Math.round(s.currentRect.x - s.previousRect.x),
@@ -240,7 +244,7 @@ async function measureUiLess(browser, url, prepare) {
 /**
  * Arayüzlü sayfa: yük izi (4× CPU + yavaş 4G), baytlar, engelleyenler, CLS, INP; sonra 5 koşu dokunuş → panel.
  */
-async function measureUi(browser, url, prepare, dumpName = '') {
+async function measureUi(browser, url, prepare, dumpName = '', trig = '[data-dp-open]') {
   const out = {};
   const { context, page } = await openPage(browser, { throttle: true, prepare });
   try {
@@ -283,8 +287,8 @@ async function measureUi(browser, url, prepare, dumpName = '') {
 
     // INP: dokunma → panel, tutar kartı (izleme kapalıyken; yavaşlatma sürer). İlk örnek bu yüklemeden; kalan
     // INP_RUNS-1 örnek aşağıda yeni yüklemelerle; eşik medyana uygulanır.
-    const hasTrigger = (await page.locator('[data-dp-open]:visible').count()) > 0;
-    const first = await inpSample(page, hasTrigger);
+    const hasTrigger = (await page.locator(`${trig} >> visible=true`).count()) > 0;
+    const first = await inpSample(page, hasTrigger, trig);
     const perf = first.perf;
     const inpSamples = [first];
     // CLS: yalnız yükleme (girdi öncesi kaymalar; hadRecentInput olanlar zaten dışarıda).
@@ -298,7 +302,7 @@ async function measureUi(browser, url, prepare, dumpName = '') {
     for (let i = 1; i < INP_RUNS; i += 1) {
       await page.goto(url, { waitUntil: 'load', timeout: 180000 });
       await settle(page);
-      inpSamples.push(await inpSample(page, hasTrigger));
+      inpSamples.push(await inpSample(page, hasTrigger, trig));
     }
     const inp = inpSummary(inpSamples);
     out.inpOpen = inp.open;
@@ -315,13 +319,13 @@ async function measureUi(browser, url, prepare, dumpName = '') {
         await page.goto(url, { waitUntil: 'load', timeout: 180000 });
         await settle(page);
         // Görünür ve üstteki ilk tetikleyici; yoksa ya da dokunulamazsa bu koşu ÖLÇÜLMEDİ (hata değil; neden satıra).
-        const target = await visibleTarget(page, '[data-dp-open]');
+        const target = await visibleTarget(page, trig);
         if (target.index < 0) {
           out.tapSkips.push(target.reason);
           continue;
         }
         // Algılama MutationObserver ile (rAF yoklaması değil): açılış anına kare gecikmesi eklenmez.
-        await page.evaluate(`(${installTapProbe})(window, '[data-dp-open]', ${target.index})`);
+        await page.evaluate(`(${installTapProbe})(window, ${JSON.stringify(trig)}, ${target.index})`);
         if (!(await tapAt(page, target, 'click'))) continue;
         await page.waitForFunction(() => window.__dpTap && window.__dpTap.t1 > 0, null, { timeout: 20000 });
         out.tapRuns.push(Math.round(await page.evaluate(() => window.__dpTap.t1 - window.__dpTap.t0)));
@@ -334,9 +338,10 @@ async function measureUi(browser, url, prepare, dumpName = '') {
       for (let i = 0; i < FORCED_RUNS; i += 1) {
         await page.goto(url, { waitUntil: 'load', timeout: 180000 });
         await settle(page);
-        const target = await visibleTarget(page, '[data-dp-open]');
+        const target = await visibleTarget(page, trig);
         if (target.index < 0) continue;
-        await browser.startTracing(page, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline'] });
+        // Yığınlı iz: zorlayan JS çağrı noktası (ör. showModal) satıra yazılır.
+        await browser.startTracing(page, { categories: ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack'] });
         const tapped = await tapAt(page, target, 'click');
         if (tapped) await page.locator('dialog[open]').first().waitFor({ state: 'visible', timeout: 20000 });
         await settle(page);
@@ -344,7 +349,7 @@ async function measureUi(browser, url, prepare, dumpName = '') {
         if (tapped) runs.push(forcedLayoutsInClick(trace));
       }
       out.forcedLayout = runs.length
-        ? { forced: median(runs.map((r) => r.forced)), clickMs: median(runs.map((r) => r.clickMs)), styleMs: median(runs.map((r) => r.styleMs)), layoutMs: median(runs.map((r) => r.layoutMs)), runs: runs.map((r) => r.forced), items: runs[runs.length - 1].items }
+        ? { forced: median(runs.map((r) => r.forced)), clickMs: median(runs.map((r) => r.clickMs)), styleMs: median(runs.map((r) => r.styleMs)), layoutMs: median(runs.map((r) => r.layoutMs)), toPaintMs: median(runs.map((r) => r.toPaintMs)), frameMs: median(runs.map((r) => r.frameStyleLayoutMs)), sites: median(runs.map((r) => r.sites)), runs: runs.map((r) => r.forced), items: runs[runs.length - 1].items }
         : null;
     }
   } finally {
@@ -368,14 +373,15 @@ async function measureUi(browser, url, prepare, dumpName = '') {
  *
  * @param {import('@playwright/test').Page} page Sayfa.
  * @param {boolean} hasTrigger Panel tetikleyicisi var mı.
- * @return {Promise<{open:number, amount:number, perf:object}>} Süreler (ms; ölçülmediyse NaN) ve gözlemci verisi.
+ * @param {string} [trig] Tetikleyici seçicisi.
+ * @return {Promise<{open:number, amount:number, perf:object, skips:string[]}>} Süreler (ms; ölçülmediyse NaN), gözlemci verisi, atlama nedenleri.
  */
-async function inpSample(page, hasTrigger) {
+async function inpSample(page, hasTrigger, trig = '[data-dp-open]') {
   const marks = {};
   const skips = [];
   let opened = false;
   if (hasTrigger) {
-    const target = await visibleTarget(page, '[data-dp-open]');
+    const target = await visibleTarget(page, trig);
     if (target.index < 0) skips.push(target.reason);
     const t = await page.evaluate(() => performance.now());
     if (target.index >= 0 && (await tapAt(page, target))) {
@@ -516,11 +522,11 @@ function printReport(label, rows, checks, lh) {
   const forcedRows = rows.filter((x) => x.ui && !x.error && x.m && x.m.forcedLayout);
   if (forcedRows.length) {
     console.log('\nAçılış tıklamasında zorunlu eşzamanlı stil/düzen (CDP izi, ≥0.5 ms; medyan [koşular])');
-    console.log('| sayfa | zorunlu sayı | click işleyici ms | stil ms | düzen ms | son koşu ayrıntı |');
-    console.log('|---|---|---|---|---|---|');
+    console.log('| sayfa | zorunlu sayı [koşular] | zorlayan çağrı noktası | click işleyici ms | stil ms | düzen ms | tıklama→boyama ms (stil+düzen ms) | son koşu ayrıntı |');
+    console.log('|---|---|---|---|---|---|---|---|');
     for (const r of forcedRows) {
       const f = r.m.forcedLayout;
-      console.log(`| ${r.id} | ${f.forced} [${f.runs.join(',')}] | ${f.clickMs} | ${f.styleMs} | ${f.layoutMs} | ${f.items.map((i) => `${i.name === 'Layout' ? 'L' : 'S'}${i.ms}${i.elements ? `/${i.elements}` : ''}`).join(' ')} |`);
+      console.log(`| ${r.id} | ${f.forced} [${f.runs.join(',')}] | ${f.sites} | ${f.clickMs} | ${f.styleMs} | ${f.layoutMs} | ${f.toPaintMs} (${f.frameMs}) | ${f.items.map((i) => `${i.name === 'Layout' ? 'L' : 'S'}${i.ms}${i.elements ? `/${i.elements}` : ''}${i.stack ? ` (${i.stack})` : ''}`).join(' ')} |`);
     }
   }
   for (const r of rows.filter((x) => x.error)) console.log(`HATA ${r.id}: ${r.error}`);
@@ -578,10 +584,14 @@ async function runLocal(argv) {
   const matrix = loadMatrix();
   const template = ensureMatrixTemplate();
   ensureTheme(template, theme);
-  const resolved = { id: `pp-${theme}`, themeSpec: { slug: theme }, storeSpec: matrix.stores.try, checkout: 'classic', hpos: true };
+  // İsteğe bağlı mağaza (`--store gbp|eur|usd`, varsayılan try) ve dil (`--locale en_US`, varsayılan tr_TR).
+  const store = arg(argv, '--store', 'try');
+  if (!matrix.stores[store]) throw new Error(`bilinmeyen mağaza: ${store}`);
+  const locale = arg(argv, '--locale', '');
+  const resolved = { id: store === 'try' ? `pp-${theme}` : `pp-${theme}-${store}`, themeSpec: { slug: theme }, storeSpec: matrix.stores[store], checkout: 'classic', hpos: true };
   const { snap, meta } = prepareConfigSnapshot(resolved);
   const probeMeta = meta.probe || meta;
-  const wpDir = materializeWorker(resolved.id, PORT, snap, { hpos: true });
+  const wpDir = materializeWorker(resolved.id, PORT, snap, { hpos: true, ...(locale ? { locale } : {}) });
   const mu = path.join(wpDir, 'wp-content/mu-plugins');
   for (const f of ['wdp-scope-sim.php', 'wdp-load-probe.php', 'wdp-perf-pages.php', 'wdp-heavy-css-sim.php']) fs.copyFileSync(path.join(ROOT, 'tests/e2e/helpers', f), path.join(mu, f));
   restoreSqlite(wpDir, snap);
@@ -593,7 +603,7 @@ async function runLocal(argv) {
   const setState = (s) => fs.writeFileSync(wc('wdp-load-probe.json'), JSON.stringify(s));
   setState({});
   fs.writeFileSync(wc('wdp-scope-sim.json'), '{}');
-  fs.writeFileSync(wc('wdp-perf-pages.json'), JSON.stringify({ product_id: probeMeta.products.custom.id }));
+  fs.writeFileSync(wc('wdp-perf-pages.json'), JSON.stringify({ product_id: probeMeta.products.custom.id, fixed_id: probeMeta.products.fixed.id }));
 
   const phpPort = PORT + 100;
   const server = await startPhpServer({ wpDir, port: phpPort });
@@ -628,7 +638,7 @@ async function runLocal(argv) {
           const m = await measureUiLess(browser, url);
           rows.push({ id: pg.id, ui: false, url: urls[pg.key], m: { ...m, queries: dq } });
         } else {
-          setState({}); // gerçek kurulum: varsayılan modüller
+          setState(argv.includes('--modules-all') ? { modules_all: 1 } : {}); // gerçek kurulum: varsayılan modüller (isteğe bağlı: tümü)
           if (pg.key === 'compact') {
             const html = await (await fetch(url, { signal: AbortSignal.timeout(120000) })).text();
             if (!/data-dp-[a-z-]*compact|donation-panel[a-z-]*compact/i.test(html)) {
@@ -636,7 +646,7 @@ async function runLocal(argv) {
               continue;
             }
           }
-          rows.push({ id: pg.id, ui: true, url: urls[pg.key], m: await measureUi(browser, url, undefined, `local-${theme}-${pg.id}`) });
+          rows.push({ id: pg.id, ui: true, url: urls[pg.key], m: await measureUi(browser, url, undefined, `local-${theme}-${pg.id}`, pg.trigger) });
         }
         console.error(`[plugin-perf] ${theme}/${pg.id} tamam`);
       } catch (e) {

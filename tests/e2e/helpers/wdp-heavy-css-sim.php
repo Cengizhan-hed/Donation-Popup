@@ -27,6 +27,13 @@ if ( is_array( $wdp_heavy ) && ! empty( $wdp_heavy ) && ! is_admin() ) {
 			$css[] = '[class*="sim-col-"]{float:left}';
 			$css[] = 'div[class*="-wrapper"] span:not(.sim-a){letter-spacing:normal}';
 			$css[] = 'body:not(.sim-off) [class*="sim-"] > *:not(.sim-b){outline:0}';
+			// Kök öğe sınıfı / odak / bağlantı durumu / :has() bağımlı genel kurallar (temalarda yaygın): kök sınıfı
+			// değişince, odak taşınınca ya da adres (history) değişince geniş stil geçersizlemesi doğurur.
+			$css[] = 'html[class*="-lock"] body div:not(.sim-c){scroll-margin-top:0}';
+			$css[] = 'body:focus-within div[class] > span:not(.sim-d){text-decoration-skip-ink:auto}';
+			$css[] = 'a:visited span,a:any-link div{text-underline-offset:auto}';
+			$css[] = ':target ~ div,:target div{scroll-margin-top:72px}';
+			$css[] = 'body:has(dialog[open]) div:not(.sim-e) > p{orphans:2}';
 			for ( $i = 0; $i < $wdp_heavy_rules; $i++ ) {
 				$css[] = '.x-' . $i . ' .y-' . $i . ' > div:not(.z-' . $i . '){margin:0;padding:' . ( $i % 7 ) . 'px}';
 				if ( 0 === $i % 10 ) {

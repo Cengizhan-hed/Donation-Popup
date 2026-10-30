@@ -94,7 +94,7 @@
   .donation-panel-sc__head { padding-block-start: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .donation-panel-sc__overlay, .donation-panel-sc__surface { transition-duration: 1ms; } }
-html.donation-panel-sc-lock { overflow: hidden; }
+/* Kaydırma kilidi: ui2-shared/scroll-lock.mjs (kökte satır içi overflow). */
 
 /* Yüzen sepet düğmesi: sağ altta, güvenli alan içinde; sepet boşken `hidden` (istemci Woo sepet çerezine bakar).
  * Başka bir yüzen öğeyle çakışırsa --dp-sc-fab-offset ile yukarı kaydırılabilir. */

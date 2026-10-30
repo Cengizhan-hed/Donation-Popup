@@ -316,7 +316,7 @@
 .donation-panel-lines div { display: flex; justify-content: space-between; gap: 12px; }
 .donation-panel-lines .total { font-weight: var(--dp-fw-bold); font-size: var(--dp-fs-base); padding-block-start: 8px; border-block-start: 1px dashed var(--dp-color-border-strong); }
 
-html.donation-panel-lock { overflow: hidden; }
+/* Kaydırma kilidi: ui2-shared/scroll-lock.mjs kökte satır içi overflow ile (kök sınıfı yok; tema kuralları tüm belgeyi yeniden hesaplatmasın). */
 
 /* ======================================================================
  * 12.0 — Onaylı tasarım (dev/design/approved): başlık, adımlar, kartlar, sabit alt bölüm.

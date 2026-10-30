@@ -3,7 +3,7 @@
 .donation-panel-ac, .donation-panel-ac *, .donation-panel-ac *::before, .donation-panel-ac *::after, .donation-panel-ac__trigger, .donation-panel-ac__trigger *, .donation-panel-ac__checkout-note { box-sizing: border-box; }
 .donation-panel-ac { font-family: var(--dp-font-body); font-size: 1rem; line-height: 1.5; color: var(--dp-color-text); }
 .donation-panel-ac__ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-html.donation-panel-ac-lock { overflow: hidden; }
+/* Kaydırma kilidi: ui2-shared/scroll-lock.mjs (kökte satır içi overflow). */
 
 /* Tetikleyici (header kişi simgesi): 44 px dokunma hedefi */
 .donation-panel-ac__trigger { display: inline-grid; place-items: center; inline-size: 44px; block-size: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--dpx-soft); color: var(--dp-color-primary-strong); font: inherit; cursor: pointer; text-decoration: none; transition: background 160ms, transform 160ms var(--dp-ease-spring); }

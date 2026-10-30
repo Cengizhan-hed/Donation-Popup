@@ -359,7 +359,8 @@ export function createLayer(root, hooks = {}) {
     present();
     // Geometri (--dp-kb / --dp-vvh) ilk karede, boyamadan önce ve yalnız değiştiyse yazılır (afterOpenFrame).
     trigger.setAttribute('aria-expanded', 'true');
-    lockPage(ownerId, root, 'donation-panel-lock');
+    // Yerel kipli diyalogda arka plan inert'i tarayıcıdadır (öznitelik yazmak tüm alt ağaçların stilini yeniden hesaplatır).
+    lockPage(ownerId, root, 'donation-panel-lock', { native: typeof overlay.showModal === 'function' });
     // @starting-style destekleniyorsa açılış geçişi CSS'ten başlar: `is-open` gösterimden önce eklenir; katman ilk
     // karesinden görünür (visibility) olduğundan showModal'ın odak adımı başlığa (autofocus) odaklanır. Desteklemeyen
     // tarayıcıda eski yol: göster → başlangıç durumunu yerleştir (tek düzen okuması) → `is-open`.
