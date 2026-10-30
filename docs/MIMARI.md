@@ -1014,3 +1014,8 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 - Sayfa içi form ekrana ~200 px yaklaşınca (IntersectionObserver) bağlanır; gizli/üst üste slayt formları bekler; belge düzeyinde tek yakalama dinleyicisi bağlanmamış forma dokunulunca/odaklanılınca olaydan önce bağlar (ilk dokunuş kaybolmaz). `data-dp-mounted="1"` = etkileşime hazır, `data-dp-ready="1"` = gerçekten bağlandı.
 - Toplam biçimi `Intl.NumberFormat` kurmaz (4× CPU'da ~52 ms): sunucunun WP ayırıcılarıyla (`data-num-thousands`/`data-num-decimal`) yazılır. Sunucu ilk durumu betikle aynıdır (seçili ilk kart, toplam, düğme metni, özet) — kayma yok.
 - Ölçüm aracı: `--scroll-sim`, liste/mağaza kartı tetikleyici, CLS atfında font eşleşmesi (aile+kalınlık+stil) tema/font sütununa.
+
+### CSS sıra bağımsızlığı (12.2)
+- Ön yüz CSS'i: ortak kurallar `ui-core` / `ui-controls` / `ui-dpx` parçalarında; `Assets::inline_styles()` her yüzeyden önce çekirdeği ve yüzeyin `define(…, $shared)` ile bildirdiği parçaları sayfada bir kez satır içi basar.
+- Kural: bir seçici+özellik yalnız tek parçada tanımlanır (tests/unit/js/css-cascade-isolation.test.mjs); paketler ortak kuralı tekrar etmez → basım sırası sonucu değiştirmez.
+- Sıra kanıtı: `run-first-paint.mjs --spec style-order-independence` (sim `?dp_fp=order&dp_order=…`, 4 sıra, hesaplanmış stiller birebir + jeton).
