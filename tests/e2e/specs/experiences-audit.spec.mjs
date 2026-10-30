@@ -69,7 +69,7 @@ function measure(root) {
     }
     const r = el.getBoundingClientRect();
     if (r.right > rootRect.right + 1.5 || r.left < rootRect.left - 1.5) {
-      if (!el.closest('[data-dp-handle], .donation-panel-confetti, [class*="toast"]')) {
+      if (!el.closest('[data-dp-handle], [class*="toast"]')) {
         out.overflow.push(`${label(el)} dx=${Math.max(r.right - rootRect.right, rootRect.left - r.left).toFixed(1)}`);
       }
     }

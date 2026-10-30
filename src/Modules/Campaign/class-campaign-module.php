@@ -53,6 +53,7 @@ final class Campaign_Module implements Module_Interface {
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
 		add_filter( 'donation_panel_form_model', array( $this, 'filter_model' ), 15, 2 );
+		add_filter( 'donation_panel_experience_assets', array( $this, 'rest_assets' ), 10, 2 );
 		add_action( 'init', array( $this, 'register_shortcode' ) );
 	}
 
@@ -102,11 +103,46 @@ final class Campaign_Module implements Module_Interface {
 			'live'          => Progress_Live::config( $data ),
 		);
 		// Form sayfada çiziliyorsa çubuk stili (yüzeyin satır içi stilinden önce) ve betiği kuyruğa girer; REST'le gelen
-		// formda etkisizdir, orada form paketindeki yükleyici getirir.
+		// formda etkisizdir: orada REST yanıtı paketi bildirir (`rest_assets`), liste/döngü betiği getirir.
 		if ( $this->container ) {
 			$this->container->get( Assets::class )->enqueue( Progress_Live::ASSET );
 		}
 		return $model;
+	}
+
+	/**
+	 * REST'le gelen katman (mağaza/kategori döngü kartı, bağış listesi kartı): kampanyalı formlar için çubuk paketi.
+	 *
+	 * Sayfada çizilmeyen form çubuk paketini kuyruğa alamaz; yanıt, kampanyalı ürünleri ve paketin SUNUCU KAYDINDAKİ
+	 * adresini (+ satır içi stilini) taşır. İstemci paketi yalnız bu ürünlerin katmanı kurulurken (dokunma niyeti) bir kez
+	 * yükler; kampanyasız yanıtta anahtar yoktur (ek bayt yok).
+	 *
+	 * @param array<string, mixed>             $assets Paketler.
+	 * @param array<int, array<string, mixed>> $models Ürün => form modeli.
+	 * @return array<string, mixed>
+	 */
+	public function rest_assets( $assets, $models ) {
+		$assets = (array) $assets;
+		$ids    = array();
+		foreach ( (array) $models as $product_id => $model ) {
+			if ( is_array( $model ) && ! empty( $model['campaign']['live'] ) ) {
+				$ids[] = (int) $product_id;
+			}
+		}
+		if ( empty( $ids ) || ! $this->container ) {
+			return $assets;
+		}
+		$registry = $this->container->get( Assets::class );
+		$script   = $registry->script_url( Progress_Live::ASSET );
+		if ( '' === $script ) {
+			return $assets;
+		}
+		$assets[ Progress_Live::ASSET ] = array(
+			'ids'    => $ids,
+			'script' => $script,
+			'style'  => $registry->style_css( Progress_Live::ASSET ),
+		);
+		return $assets;
 	}
 
 	/**

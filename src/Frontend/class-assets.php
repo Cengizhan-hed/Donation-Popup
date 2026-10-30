@@ -163,6 +163,27 @@ class Assets {
 	}
 
 	/**
+	 * Modül betiğinin sunucu kaydındaki adresi (sürüm sorgusuyla, `wp_register_script` ile aynı). REST'le gelen katmanın
+	 * isteğe bağlı paketi (ör. kampanya çubuğu) için tek güvenilir kaynak budur; adres hiçbir zaman DOM özniteliğinden
+	 * okunmaz. Betik dosyası yoksa ya da `DONATION_PANEL_DISABLE` açıksa boş.
+	 *
+	 * @param string $slug Modül slug'ı.
+	 * @return string
+	 */
+	public function script_url( $slug ) {
+		$slug = sanitize_key( $slug );
+		if ( Front_Gate::disabled() || ! isset( $this->definitions[ $slug ] ) || '' === $this->definitions[ $slug ]['script'] ) {
+			return '';
+		}
+		$script = $this->definitions[ $slug ]['script'];
+		if ( ! is_file( $this->plugin_dir . $script ) ) {
+			return '';
+		}
+		$meta = $this->read_asset_meta( $script );
+		return add_query_arg( 'ver', rawurlencode( $meta['version'] ), $this->plugin_url . $script );
+	}
+
+	/**
 	 * Tanımlı tüm modül varlıklarını kaydeder (kuyruğa ALMAZ). Çekirdek bunu bir kancaya BAĞLAMAZ (sıfır yük
 	 * kuralı); yalnız araçlar ve testler içindir.
 	 *

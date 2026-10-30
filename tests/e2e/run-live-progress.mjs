@@ -77,6 +77,7 @@ async function main() {
         ...process.env,
         E2E_BASE_URL: `http://127.0.0.1:${PORT}`,
         WDP_EXP_PRODUCT_ID: String(probe.products.custom.id),
+        WDP_EXP_FIXED_ID: String((probe.products.fixed && probe.products.fixed.id) || ''),
         WDP_EXP_TRY: '1',
         WDP_EXP_CHECKOUT: checkout,
         WDP_EXP_STORE: JSON.stringify(store),

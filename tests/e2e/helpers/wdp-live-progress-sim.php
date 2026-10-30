@@ -4,7 +4,8 @@
  * (kampanya kartı + sayfa içi form + compact kart + katman düğmesi) gösteren test sayfası ve yerel sipariş ucu sunar.
  * Uzak ortamda KULLANILMAZ. Tema/sayfa oluşturucu adı yok.
  *
- *   /?dp_lp=1&dp_product=ID&dp_raised=400[&dp_off=preview,count,celebrate][&dp_parts=card,inline,compact,popup]
+ *   /?dp_lp=1&dp_product=ID&dp_raised=400[&dp_off=preview,count,celebrate][&dp_parts=card,inline,compact,popup,loop,list]
+ *        [&dp_loop=ID1,ID2]  (loop: WooCommerce ürün döngüsü kartları; list: kartta çubuksuz bağış listesi)
  *   /?dp_lp_order=ID&amount=50   -> yerel, tamamlanmış sipariş (kampanya toplamına sayılır), JSON döner
  */
 add_filter(
@@ -115,6 +116,13 @@ add_action(
 				echo do_shortcode( '[wdp_donation_form id="' . $id . '" layout="compact"]' ); // phpcs:ignore
 			} elseif ( 'popup' === $part ) {
 				echo do_shortcode( '[donation_panel_experience id="' . $id . '" kind="popup"]' ); // phpcs:ignore
+			} elseif ( 'loop' === $part ) {
+				// WooCommerce'in standart ürün döngüsü (mağaza/kategori kartı ile aynı süzgeçler): kart düğmesi formu REST ile açar.
+				$loop = isset( $_GET['dp_loop'] ) ? preg_replace( '/[^0-9,]/', '', (string) $_GET['dp_loop'] ) : (string) $id; // phpcs:ignore
+				echo do_shortcode( '[products ids="' . $loop . '" columns="2" orderby="post__in"]' ); // phpcs:ignore
+			} elseif ( 'list' === $part ) {
+				// Bağış listesi, kartta çubuk YOK: sayfada çubuk paketi kuyruğa girmez; katmandaki çubuk REST yanıtıyla gelir.
+				echo do_shortcode( '[wdp_donations show_progress="no" tabs="no"]' ); // phpcs:ignore
 			} elseif ( 'spacer' === $part ) {
 				echo '<div style="block-size:1600px">Spacer</div>';
 			} else {

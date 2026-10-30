@@ -135,7 +135,8 @@ class Experience_Controller extends Rest_Controller {
 		$kind = self::layer_kind( (string) $request->get_param( 'kind' ) );
 		$args = $this->render_args();
 
-		$items = array();
+		$items  = array();
+		$models = array();
 		foreach ( $ids as $product_id ) {
 			$model = Form_Controller::model_for_id( $product_id );
 			if ( empty( $model ) ) {
@@ -144,12 +145,16 @@ class Experience_Controller extends Rest_Controller {
 			$html = $this->renderer->render( $model, $kind, $args );
 			if ( '' !== $html ) {
 				$items[ (string) $product_id ] = $html;
+				$models[ $product_id ]         = $model;
 			}
 		}
 		$response = rest_ensure_response(
-			array(
-				'kind'  => $kind,
-				'items' => empty( $items ) ? new \stdClass() : $items,
+			self::with_assets(
+				array(
+					'kind'  => $kind,
+					'items' => empty( $items ) ? new \stdClass() : $items,
+				),
+				$models
 			)
 		);
 		// Tarayıcı düzeyi ön alma (`<link rel="prefetch">`, Prefetch_Links): yanıt YALNIZ o tarayıcının önbelleğinde kısa
@@ -158,6 +163,30 @@ class Experience_Controller extends Rest_Controller {
 		$response->header( 'Cache-Control', 'private, max-age=' . self::PREFETCH_TTL );
 		$response->header( 'Vary', 'Cookie' );
 		return $response;
+	}
+
+	/**
+	 * Yanıttaki formların isteğe bağlı ek paketleri (`assets`; ör. kampanya çubuğu `progress`). Sayfada çizilmeyen (REST'le
+	 * gelen) katman bu paketleri kendisi kuyruğa alamaz; istemci yalnız bu sunucu yanıtındaki (doğrulanmış) adresi kullanır,
+	 * DOM özniteliğinden adres okumaz. Modül kapalıysa filtre bağlı değildir: anahtar yanıtta yer almaz.
+	 *
+	 * @param array<string, mixed>             $data   Yanıt gövdesi.
+	 * @param array<int, array<string, mixed>> $models Yanıttaki formların modelleri (ürün => model).
+	 * @return array<string, mixed>
+	 */
+	public static function with_assets( array $data, array $models ) {
+		/**
+		 * REST'le gelen formların ek paketleri. Biçim: `slug => array( 'ids' => int[], 'script' => url, 'style' => css )`.
+		 * İstemci yalnız bildiği slug'ları (`progress`) ve eklentinin kendi derleme yolundaki aynı kökenli adresi kabul eder.
+		 *
+		 * @param array<string, array<string, mixed>> $assets Paketler.
+		 * @param array<int, array<string, mixed>>    $models Ürün => form modeli.
+		 */
+		$assets = apply_filters( 'donation_panel_experience_assets', array(), $models );
+		if ( is_array( $assets ) && ! empty( $assets ) ) {
+			$data['assets'] = $assets;
+		}
+		return $data;
 	}
 
 	/**
@@ -266,13 +295,15 @@ class Experience_Controller extends Rest_Controller {
 			return $this->error( 'donation_panel_product_not_found', 'Donation form not found for this product.', 404 );
 		}
 
-		$response = $this->no_store(
-			array(
-				'product_id' => $product_id,
-				'kind'       => $kind,
-				'html'       => $html,
+		return $this->no_store(
+			self::with_assets(
+				array(
+					'product_id' => $product_id,
+					'kind'       => $kind,
+					'html'       => $html,
+				),
+				array( $product_id => $model )
 			)
 		);
-		return $response;
 	}
 }

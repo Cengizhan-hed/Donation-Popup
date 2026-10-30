@@ -85,6 +85,11 @@ const LOCAL_PAGES = [
   { id: 'magaza', key: 'shop', ui: true },
   { id: 'bagis-urunu', key: 'donation', ui: true },
   { id: 'bagis-urunu-tutar', key: 'donation_custom', ui: true },
+  // Kampanyalı (hedefli) ürün sayfası: form + canlı çubuk paketi (`progress`) sayfada.
+  { id: 'kampanya-urunu', key: 'campaign', ui: true },
+  // Kampanyalı kart içeren ürün döngüsü (mağaza/kategori kartı; ilk kart kampanyalı): katmandaki çubuk paketi yalnız
+  // dokunma niyetinde, REST yanıtının bildirdiği sunucu adresinden yüklenir; sayfa yüklemesinde çubuk paketi yok.
+  { id: 'kampanyali-dongu', key: 'camploop', ui: true, trigger: '[data-wdp-form]' },
   // Liste kartı düğmesi formu REST ile getirip katmanı açar (`[data-wdp-form]`); dokunuş→panel ağ dahil.
   { id: 'bagis-listesi', key: 'list', ui: true, trigger: '[data-wdp-form]' },
   { id: 'sabit-fiyat-panel', key: 'panelfixed', ui: true },
@@ -761,7 +766,14 @@ async function runLocal(argv) {
   const setState = (s) => fs.writeFileSync(wc('wdp-load-probe.json'), JSON.stringify(s));
   setState({});
   fs.writeFileSync(wc('wdp-scope-sim.json'), '{}');
-  fs.writeFileSync(wc('wdp-perf-pages.json'), JSON.stringify({ product_id: probeMeta.products.custom.id, fixed_id: probeMeta.products.fixed.id }));
+  fs.writeFileSync(
+    wc('wdp-perf-pages.json'),
+    JSON.stringify({
+      product_id: probeMeta.products.custom.id,
+      fixed_id: probeMeta.products.fixed.id,
+      campaign_id: probeMeta.products.campaign ? probeMeta.products.campaign.id : 0,
+    })
+  );
 
   const phpPort = PORT + 100;
   const server = await startPhpServer({ wpDir, port: phpPort });
@@ -775,6 +787,7 @@ async function runLocal(argv) {
     const urls = { ...JSON.parse(fs.readFileSync(wc('wdp-scope-sim-urls.json'), 'utf8')), ...JSON.parse(fs.readFileSync(wc('wdp-perf-pages-urls.json'), 'utf8')) };
     urls.donation = probeMeta.products.fixed.path;
     urls.donation_custom = probeMeta.products.custom.path;
+    if (probeMeta.products.campaign) urls.campaign = probeMeta.products.campaign.path;
     const queries = async (p) => {
       const q = async (s) => {
         setState(s);

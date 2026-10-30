@@ -6,6 +6,7 @@ import {
   buildExperienceUrl,
   chunk,
   hostKey,
+  lazyAsset,
   matchesCategory,
   parseHashSlug,
   shouldHandleClick,
@@ -120,4 +121,35 @@ test('shouldHandleClick: değiştirici tuşlar varsayılan davranışta kalır',
   assert.equal(shouldHandleClick({ button: 0 }), true);
   assert.equal(shouldHandleClick({ button: 0, ctrlKey: true }), false);
   assert.equal(shouldHandleClick({ button: 1 }), false);
+});
+
+test('lazyAsset: kampanya çubuğu paketi yalnız sunucu yanıtından, eklentinin kendi derleme yolu, yalnız ver sorgusu', () => {
+  const page = 'https://site.test/magaza/';
+  const ok = 'https://site.test/wp-content/plugins/woo-donation-popup/assets/build/progress/index.js?ver=2642a68c';
+  assert.deepEqual(lazyAsset({ assets: { progress: { ids: [15, '15', 'x', 0, 12], script: ok, style: '.a{}' } } }, 'progress', page), {
+    ids: ['15', '12'],
+    script: ok,
+    style: '.a{}',
+  });
+  assert.equal(lazyAsset({ assets: { progress: { ids: [1], script: '/wp-content/plugins/p/assets/build/progress/index.js' } } }, 'progress', page).style, '');
+  for (const bad of [
+    'https://evil.test/wp-content/plugins/p/assets/build/progress/index.js',
+    'https://site.test/wp-content/uploads/evil.js',
+    'https://site.test/wp-content/plugins/p/assets/build/progress/index.js?ver=1&x=2',
+    'https://site.test/wp-content/plugins/p/assets/build/progress/index.js?ver=1"onload',
+    'https://user:pw@site.test/wp-content/plugins/p/assets/build/progress/index.js',
+    'https://site.test/wp-content/plugins/p/assets/build/progress/index.js#x',
+    'https://site.test/wp-content/plugins/p/assets/build/progress/index.js/evil.js',
+    'javascript:alert(1)',
+    '',
+  ]) {
+    assert.equal(lazyAsset({ assets: { progress: { ids: [1], script: bad } } }, 'progress', page), null, bad);
+  }
+  // Bilinmeyen paket, kimliksiz giriş, eksik/bozuk yanıt.
+  assert.equal(lazyAsset({ assets: { evil: { ids: [1], script: ok } } }, 'evil', page), null);
+  assert.equal(lazyAsset({ assets: { progress: { ids: ['x'], script: ok } } }, 'progress', page), null);
+  assert.equal(lazyAsset({ assets: { progress: { ids: 1, script: ok } } }, 'progress', page), null);
+  assert.equal(lazyAsset({}, 'progress', page), null);
+  assert.equal(lazyAsset(null, 'progress', page), null);
+  assert.equal(lazyAsset({ assets: { progress: { ids: [1], script: ok } } }, '__proto__', page), null);
 });

@@ -428,18 +428,6 @@ class Donations_List {
 	}
 
 	/**
-	 * Canlı kampanya çubuğu varlıkları (Campaign modülü kapalıysa tanım yoktur, hiçbir şey yüklenmez).
-	 *
-	 * @return void
-	 */
-	private static function enqueue_progress() {
-		$plugin = Plugin::instance();
-		if ( null !== $plugin ) {
-			$plugin->container()->get( Assets::class )->enqueue( \DonationPanel\Modules\Campaign\Progress_Live::ASSET );
-		}
-	}
-
-	/**
 	 * Liste dışı kart/döngü düğmesi tetikleyicisi: yalnız `list` betiği (düğme tıklamasını yakalar, stil gerekmez) ve
 	 * engellemeyen form stili. Sıfır yük kuralı: görünür liste yokken ikinci engelleyen CSS yüklenmez.
 	 *
@@ -846,8 +834,8 @@ class Donations_List {
 		}
 
 		if ( $is_campaign ) {
-			// Kartın açtığı katmandaki canlı kampanya çubuğu (katman REST'le kurulur): çubuk stili/betiği sayfada hazır.
-			self::enqueue_progress();
+			// Kartın açtığı katmandaki canlı kampanya çubuğu paketi sayfaya basılmaz: katman REST'le kurulurken yanıt paketi
+			// bildirir ve liste betiği yalnız o an yükler (Campaign_Module::rest_assets). Kart çubuğu durağandır.
 			$html .= $media;
 			$html .= '<div class="wdp-card__body">';
 			if ( '' === $media ) {
