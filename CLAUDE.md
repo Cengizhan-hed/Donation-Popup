@@ -2,6 +2,12 @@
 
 Her oturumun başında oku. Kullanıcıyla **Türkçe** konuş. Bu dosya tek kaynaktır; ayrıntı docs/MIMARI.md (kod/altyapı) ve docs/AYAR-TURU-NOTLARI.md (kararlar/notlar).
 
+## -2. KALICI KURALLAR (2026-10-30; SÜRÜM 12.3; en üstte; her sürümde geçerli)
+- **AYARLAR VE REHBER:** Her yeni ya da değişen özellik, (a) ilgili yönetici ekranında ayarlarıyla ve her ayarın altında kısa açıklamayla, (b) Bağış Paneli → Rehber'de adım adım kullanımıyla (ekran yolları, kısa kod örnekleri, görseller) yer almadan "bitti" sayılmaz. Ayarda görünen = uygulanan. Her AŞAMA ÖZETİ'nde "ayar/rehber güncellemesi" satırı zorunlu.
+- **HIZ REGRESYONU YOK:** Hiçbir güncelleme eklentiyi, siteyi ya da sayfaları yavaşlatamaz. Her sürümde `measure:plugin-perf` (arayüzsüz sayfada 0 istek/bayt/sorgu/çerez; render engelleyen 0; satır içi CSS ve JS gzip; ana iş parçacığı süresi; uzun görev 0; eklenti CLS 0; INP; dokunuş → panel) iki uzak sitede ölçülür ve önceki sürümle karşılaştırılır. Herhangi bir ölçüt kötüleşirse sürüm kurulmaz; önce düzeltilir. Yeni özellikler bu bütçelerin içine sığmak zorunda.
+- **Model (12.3):** ana oturum ve kod ajanları Opus 5.5, zor tekil sorunlarda Fable, mekanik işler Haiku.
+- **Kurgu ayrımı (12.3):** compact düzen yalnız görünümdür; doğrudan (sepetsiz) bağış ödeme davranışıdır ve her düzenden bağımsızdır. Öncelik: ürün > bağış türü > genel.
+
 ## -1. YENİ YÖN (2026-10-26; SÜRÜM 12.0.0; bu bölüm §22'deki "11.1/12.0 aşamalı geçiş" ve "eski deneyim bir sürüm kalır" kararlarını İPTAL eder; her şeyin üstündedir)
 - **Test sitelerinde (staging30, Ikram) yalnız yeni olan çalışır; eski olan her şey kaldırılır.** Eski motor, eski yönetici ekranı, "klasik ekrana dön"/"yeni deneyimi aç" geçişleri, `includes/` altındaki eski kod/şablon/varlık tamamen silinir. Yeni deneyim her kurulumda (yeni ve güncellenen) tek deneyimdir. Hedef: eski koddan kalan satır 0.
 - **Canlı Hedef'e kurulumu kullanıcı zip'ten yapar.** Veri göçü (idempotent, kayıp 0) ve dışa açık kısa kod/kanca/meta anahtarı sözleşmesi korunur (tek uyumluluk dosyası, sözleşme testleri); eski kod, eski ekran, eski motor korunmaz.

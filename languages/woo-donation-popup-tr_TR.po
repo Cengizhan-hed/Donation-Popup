@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 21:26:05+0000\n"
-"PO-Revision-Date: 2026-10-29 21:26:05+0000\n"
+"POT-Creation-Date: 2026-10-30 13:07:20+0000\n"
+"PO-Revision-Date: 2026-10-30 13:07:20+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -52,6 +52,9 @@ msgstr "%2$d kurulum adımından %1$d tanesi tamam"
 #, php-format
 msgid "%1$d. share %2$s"
 msgstr "%1$d. hisse %2$s"
+
+msgid "%1$s (ID %2$d)"
+msgstr "%1$s (ID %2$d)"
 
 #: includes/class-donations-list.php:820
 msgid "%1$s / %2$s"
@@ -213,6 +216,9 @@ msgstr "1 Bilgi"
 msgid "1 shareholder form is incomplete."
 msgstr "1 hissedar formu eksik."
 
+msgid "1. Open Donation Panel → Forms and appearance → Compact card (slider/hero). Choose the donation product and press Copy."
+msgstr "1. Bağış Paneli → Formlar ve Görünüm → Kompakt kart (slider/hero) ekranını açın. Bağış ürününü seçin ve Kopyala'ya basın."
+
 #: includes/class-admin-form-tabs-renderer.php:511
 msgid "1) Shortcode / trigger buttons"
 msgstr "1) Shortcode / tetikleyici butonları"
@@ -229,6 +235,9 @@ msgstr "12–28 px. Daha okunaklı bir çubuk için 16–20 önerilir."
 msgid "2 Amount"
 msgstr "2 Tutar"
 
+msgid "2. In your slider or page editor, add a Shortcode widget (or any text block) to the slide and paste the shortcode. No special widget is needed. In the block editor you can also add the \"Donation form\" block and choose Layout: Compact."
+msgstr "2. Slider ya da sayfa düzenleyicinizde slayta bir Kısa kod (Shortcode) bileşeni (ya da herhangi bir metin bloğu) ekleyin ve kısa kodu yapıştırın. Özel bir bileşen gerekmez. Blok düzenleyicide \"Bağış formu\" bloğunu ekleyip Düzen: Kompakt da seçebilirsiniz."
+
 #: includes/class-admin-form-tabs-renderer.php:512
 msgid "2) Buttons inside the popup and inline form"
 msgstr "2) Popup ve gömülü form içindeki butonlar"
@@ -236,6 +245,18 @@ msgstr "2) Popup ve gömülü form içindeki butonlar"
 #: includes/class-admin-form-tabs-renderer.php:403
 msgid "3 Confirm"
 msgstr "3 Onay"
+
+msgid "3. Finding a product ID: go to Products → All products and point at the product name; the ID is shown under it. The shortcode builder also lists every donation product with its ID."
+msgstr "3. Ürün ID'sini bulma: Ürünler → Tüm ürünler'e gidin ve fareyi ürün adının üzerine getirin; ID adın altında görünür. Kısa kod oluşturucu da her bağış ürününü ID'siyle listeler."
+
+msgid "4. Slide height: make the slide at least as tall as the card. The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
+msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın. Kompakt kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Tüm kartlara tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) yazın."
+
+msgid "5. Colors: Forms and appearance → Colors → Choose my own colors. Each color field accepts a hex value or a CSS variable from your theme or page editor, for example var(--brand), so the card follows your site palette."
+msgstr "5. Renkler: Formlar ve Görünüm → Renkler → Kendi renklerimi seçeyim. Her renk alanı bir hex değeri ya da temanızın veya sayfa düzenleyicinizin bir CSS değişkenini (örneğin var(--brand)) kabul eder; böylece kart sitenizin paletini izler."
+
+msgid "6. If the slider moves on while a donor is halfway through, switch on \"Start over when the card is hidden\". The compact card is only a look: how the donor pays is set under Cart and checkout."
+msgstr "6. Bağışçı yarıdayken slider ilerliyorsa \"Kart gizlenince başa dön\" ayarını açın. Kompakt kart yalnız bir görünümdür: bağışçının nasıl ödeyeceği Sepet ve Ödeme ekranında ayarlanır."
 
 #: src/Admin/
 msgid "A clean donate button and a thank-you screen. Nothing else."
@@ -292,9 +313,15 @@ msgstr "Kısa, yumuşak bir animasyon. Azaltılmış hareket isteyen ziyaretçil
 msgid "A simplified sketch. Colors and fonts come from your theme. Mobile always uses a bottom sheet."
 msgstr "Basitleştirilmiş bir taslak. Renk ve yazı temanızdan gelir. Mobilde her zaman alttan panel kullanılır."
 
+msgid "A slide with a compact donation card placed through a Shortcode widget."
+msgstr "Kısa kod bileşeniyle yerleştirilmiş kompakt bağış kartı olan bir slayt."
+
 #: src/Admin/
 msgid "A slide-in cart so donors can review their gift without leaving the page."
 msgstr "Bağışçılar sayfadan ayrılmadan bağışlarını gözden geçirebilsin diye kayarak açılan sepet."
+
+msgid "A small donation card whose height never changes, made for sliders and hero areas. It is only a look: how the donor pays (through the cart or direct) is set under Cart and checkout. Colors and fonts come from the settings above."
+msgstr "Slider ve hero alanları için yüksekliği hiç değişmeyen küçük bir bağış kartı. Yalnız bir görünümdür: bağışçının nasıl ödeyeceği (sepetli ya da doğrudan) Sepet ve Ödeme ekranında ayarlanır. Renkler ve yazı tipleri yukarıdaki ayarlardan gelir."
 
 msgid "A small donation card with a fixed height for sliders and hero areas: [wdp_donation_form layout=\"compact\"]. Colors and fonts come from the settings above."
 msgstr "Kaydırıcı ve büyük görsel alanları için yüksekliği sabit küçük bağış kartı: [wdp_donation_form layout=\"compact\"]. Renk ve yazı tipi yukarıdaki ayarlardan gelir."
@@ -306,6 +333,9 @@ msgstr "Siparişten sonra sıcak bir onay"
 #: src/Admin/
 msgid "A warm confirmation after the order, with an optional share button."
 msgstr "Siparişten sonra sıcak bir onay; isteğe bağlı paylaş düğmesi."
+
+msgid "about %d px"
+msgstr "yaklaşık %d px"
 
 #: includes/class-admin-product-data-tab.php:645
 msgid "Accept donations + show a thank-you message"
@@ -436,6 +466,9 @@ msgstr "Elle eklenen"
 #: templates/donation-panel/experiences/form.php
 msgid "Added to your cart."
 msgstr "Sepetinize eklendi."
+
+msgid "Adding the compact card to a slider"
+msgstr "Kompakt kartı slider'a ekleme"
 
 #: assets/js/src/form/wizard.js:29
 msgid "Additional donation"
@@ -1006,6 +1039,9 @@ msgstr "Kart Border"
 msgid "Card border color."
 msgstr "Kart kenarlık rengi."
 
+msgid "Card height"
+msgstr "Kart yüksekliği"
+
 #: includes/class-admin-form-tabs-renderer.php:177
 msgid "Card radius (px)"
 msgstr "Kart Radius (px)"
@@ -1129,6 +1165,9 @@ msgstr "Ödeme sayfası hazır (klasik ödeme)"
 #: includes/class-phone-field.php:78
 msgid "China"
 msgstr "Çin"
+
+msgid "Choose a donation product and copy the shortcode into a slide, hero area or any text block. Share-based products always show the full form instead of the card."
+msgstr "Bir bağış ürünü seçin ve kısa kodu bir slayta, hero alanına ya da herhangi bir metin bloğuna kopyalayın. Hisseli ürünlerde kart yerine her zaman tam form görünür."
 
 #: includes/class-admin-product-data-tab.php:1030
 msgid "Choose a view, copy the shortcode, and paste it into a page or post."
@@ -1284,6 +1323,12 @@ msgstr "Kompakt"
 msgid "Compact card"
 msgstr "Kompakt kart"
 
+msgid "Compact card (slider/hero)"
+msgstr "Kompakt kart (slider/hero)"
+
+msgid "Compact card heights"
+msgstr "Kompakt kart yükseklikleri"
+
 msgctxt "Compact donation card: amount suggested by the site"
 msgid "Recommended"
 msgstr "Önerilen"
@@ -1298,6 +1343,9 @@ msgstr "Adım %1$d / %2$d: %3$s"
 
 msgid "Compact: a small card with a fixed height for sliders and hero areas."
 msgstr "Kompakt: kaydırıcı ve büyük görsel alanları için yüksekliği sabit küçük kart."
+
+msgid "Compact: a small card with a fixed height for sliders and hero areas. Same as the shortcode layout=\"compact\". How the donor pays is set under Donation Panel → Cart and checkout."
+msgstr "Kompakt: slider ve hero alanları için sabit yükseklikli küçük kart. Kısa koddaki layout=\"compact\" ile aynıdır. Bağışçının nasıl ödeyeceği Bağış Paneli → Sepet ve Ödeme ekranında ayarlanır."
 
 #: includes/class-admin-form-tabs-renderer.php:195
 #: includes/class-admin-form-tabs-renderer.php:239
@@ -1501,6 +1549,9 @@ msgstr "Hırvatistan"
 msgid "CSS class"
 msgstr "CSS sınıfı"
 
+msgid "CSS variable"
+msgstr "CSS değişkeni"
+
 #: src/Admin/
 msgid "Currency"
 msgstr "Para birimi"
@@ -1519,6 +1570,9 @@ msgstr "Mevcut ürün"
 
 msgid "Current product (automatic)"
 msgstr "Mevcut ürün (otomatik)"
+
+msgid "Current value: %s"
+msgstr "Geçerli değer: %s"
 
 #: includes/class-donation-type.php:67 includes/class-form-matrix.php:104
 msgid "Custom amount"
@@ -1651,6 +1705,9 @@ msgctxt "design tab"
 msgid "Button text"
 msgstr "Buton Metni"
 
+msgid "Desktop (1024 px and wider)"
+msgstr "Masaüstü (1024 px ve üzeri)"
+
 #: includes/class-admin-layout-tabs-renderer.php:197
 msgid "Desktop (1200px and up)"
 msgstr "Masaüstü (1200px ve üzeri)"
@@ -1670,11 +1727,20 @@ msgstr "Tanılama"
 msgid "Difference"
 msgstr "Fark"
 
+msgid "Direct (skip the cart)"
+msgstr "Doğrudan (sepeti atla)"
+
+msgid "Direct donation is how the donor pays, not how the form looks: nothing is added to the cart and the donor pays on WooCommerce's own payment page for the order. It works with the centered window, side panel, bottom sheet, in-page form and compact card."
+msgstr "Doğrudan bağış formun nasıl göründüğü değil, bağışçının nasıl ödediğidir: sepete hiçbir şey eklenmez ve bağışçı sipariş için WooCommerce'in kendi ödeme sayfasında öder. Ortada pencere, sağ panel, alttan panel, sayfa içi form ve kompakt kartta çalışır."
+
 msgid "Direct donation started. Waiting for payment."
 msgstr "Doğrudan bağış başlatıldı. Ödeme bekleniyor."
 
 msgid "Direct donation was not paid in time and was cancelled automatically."
 msgstr "Doğrudan bağış zamanında ödenmedi ve otomatik olarak iptal edildi."
+
+msgid "Direct: the donor goes from the form straight to payment and nothing is added to the cart. Works with every form style, including the compact card."
+msgstr "Doğrudan: bağışçı formdan doğrudan ödemeye geçer, sepete hiçbir şey eklenmez. Kompakt kart dahil her form türünde çalışır."
 
 #: includes/elementor/class-widget-donations-list.php:92
 msgid "Direction"
@@ -1845,6 +1911,9 @@ msgstr "Bağış Paneli"
 msgid "Donation Panel → Campaigns"
 msgstr "Bağış Paneli → Kampanyalar"
 
+msgid "Donation Panel → Cart and checkout → How donors pay"
+msgstr "Bağış Paneli → Sepet ve Ödeme → Bağışçılar nasıl öder"
+
 #: assets/js/src/modal.js:738
 msgid "Donation panel closed"
 msgstr "Bağış paneli kapatıldı"
@@ -1925,6 +1994,12 @@ msgstr "Bağış ayarları"
 #: includes/class-admin-product-data-tab.php:564
 msgid "Donation type"
 msgstr "Bağış tipi"
+
+msgid "Donation type and general settings: %s"
+msgstr "Bağış türü ve genel ayarlar: %s"
+
+msgid "Donation type or general setting (now: %s)"
+msgstr "Bağış türü ya da genel ayar (şu an: %s)"
 
 #: src/Admin/
 msgid "donation_panel_convert_amount converts amounts for a multi-currency plugin. donation_panel_amount_presets changes the quick amounts. donation_panel_rest_controllers adds REST controllers. The full list with examples is in docs/HOOKS.md in the plugin folder."
@@ -2371,6 +2446,15 @@ msgstr "Düğme ve alan köşeleri için %1$s–%2$s px; boşsa genel ayar kulla
 msgid "For developers: filters"
 msgstr "Geliştiriciler için: süzgeçler"
 
+msgid "For every product: Donation Panel → Cart and checkout → How donors pay → switch on \"Skip the cart (direct donation)\"."
+msgstr "Tüm ürünler için: Bağış Paneli → Sepet ve Ödeme → Bağışçılar nasıl öder → \"Sepeti atla (doğrudan bağış)\" ayarını açın."
+
+msgid "For one donation type: on the same screen choose \"Through the cart\" or \"Direct (skip the cart)\" next to Fixed amount, Custom amount, Share-based, Goal-based campaign or Products that offer an add-on donation. \"Use the general setting\" follows the switch above."
+msgstr "Bir bağış türü için: aynı ekranda Sabit tutar, Bağışçı belirler, Hisseli, Hedefli kampanya ya da Ek bağış sunan ürünler satırında \"Sepetli\" ya da \"Doğrudan (sepeti atla)\" seçin. \"Genel ayarı kullan\" yukarıdaki anahtarı izler."
+
+msgid "For one product: Products → edit the product → Product data → Donation → \"Skip the cart (direct donation)\". The line under it shows the current value and where it comes from."
+msgstr "Tek bir ürün için: Ürünler → ürünü düzenle → Ürün verileri → Bağış → \"Sepeti atla (doğrudan bağış)\". Altındaki satır geçerli değeri ve nereden geldiğini gösterir."
+
 #: src/Admin/
 msgid "For short forms."
 msgstr "Kısa formlar için."
@@ -2378,6 +2462,9 @@ msgstr "Kısa formlar için."
 #: src/Modules/DonorAccount/
 msgid "Forgot password?"
 msgstr "Şifremi unuttum"
+
+msgid "Form"
+msgstr "Form"
 
 #: includes/class-admin-form-tabs-renderer.php:163
 msgid "Form density"
@@ -2510,6 +2597,9 @@ msgstr "Genel varsayılan (Başarı sekmesi)"
 #: includes/class-admin-product-data-tab.php:551
 msgid "General setting (currently: %s)"
 msgstr "Genel ayar (şu an: %s)"
+
+msgid "General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart."
+msgstr "Tüm bağış ürünleri için genel ayar. Bağışçı formdan doğrudan ödemeye geçer; bağışçının mevcut sepeti olduğu gibi kalır. Aşağıdaki bağış türleri ve her ürün bunu değiştirebilir. Siteniz bir vekil sunucu ya da CDN arkasındaysa ziyaretçilerin ayırt edilebilmesi için Araçlar altında güvenilen vekil adreslerini girin."
 
 #: includes/class-phone-field.php:79
 msgid "Georgia"
@@ -2749,6 +2839,9 @@ msgstr "Hover gölge rengi (hex)"
 #: includes/class-admin-form-tabs-renderer.php:563
 msgid "Hover shadow: X/Y/blur/spread (px)"
 msgstr "Hover gölge: X/Y/bulanık/yayılım (px)"
+
+msgid "How donors pay"
+msgstr "Bağışçılar nasıl öder"
 
 msgid "How many of the product amounts appear as buttons on the compact card (layout=\"compact\"). 0 shows only the amount field."
 msgstr "Ürün tutarlarından kaçının kompakt kartta (layout=\"compact\") düğme olarak görüneceği. 0 seçilirse yalnız tutar alanı görünür."
@@ -3800,6 +3893,9 @@ msgstr "Kimin adına? (isteğe bağlı)"
 msgid "On donation products the donation form is used instead of the WooCommerce add-to-cart field, and the product appears in donation lists."
 msgstr "Bağış ürünlerinde WooCommerce sepete ekle alanı yerine bağış formu kullanılır ve ürün bağış listelerinde görünür."
 
+msgid "On the compact card the payment page opens in a secure window. If a payment method cannot work inside the window, the donor taps \"Open the payment page instead\". Unpaid direct donations are cancelled automatically after the WooCommerce stock hold time."
+msgstr "Kompakt kartta ödeme sayfası güvenli bir pencerede açılır. Bir ödeme yöntemi pencere içinde çalışamazsa bağışçı \"Ödeme sayfasını açın\" bağlantısına dokunur. Ödenmeyen doğrudan bağışlar WooCommerce stok tutma süresinden sonra kendiliğinden iptal edilir."
+
 #: includes/class-admin-layout-tabs-renderer.php:143
 msgid "On the front end the percent has no background; this is for legacy compatibility."
 msgstr "Frontend’de yüzde arkaplansızdır; eski uyumluluk."
@@ -3889,6 +3985,9 @@ msgstr "Tek dokunuşla hesap açın, tüm bağışlarınız bir yerde."
 msgid "Open classic settings"
 msgstr "Klasik ayarları aç"
 
+msgid "Open How donors pay"
+msgstr "Bağışçılar nasıl öder ekranını aç"
+
 #: includes/class-form-matrix.php:144
 msgid "Open panel"
 msgstr "Panel aç"
@@ -3904,6 +4003,9 @@ msgstr "Önizlemeyi aç"
 #: src/Admin/
 msgid "Open quick setup"
 msgstr "Hızlı kurulumu aç"
+
+msgid "Open the Compact card settings"
+msgstr "Kompakt kart ayarlarını aç"
 
 #: includes/class-admin-placement-tab-renderer.php:153
 msgid "Open the form test page"
@@ -3974,6 +4076,9 @@ msgstr "Sipariş numarası"
 #: src/Admin/
 msgid "Order storage"
 msgstr "Sipariş depolama"
+
+msgid "Order: the product setting wins, then the donation type, then the general setting. A direct donation is a single-line order, so the add-on donation choice is not shown when the result is direct."
+msgstr "Sıra: önce ürün ayarı, sonra bağış türü, sonra genel ayar. Doğrudan bağış tek kalemli bir sipariştir; sonuç doğrudan olduğunda ek bağış seçeneği gösterilmez."
 
 msgid "Orders counted"
 msgstr "Sayılan sipariş"
@@ -4066,6 +4171,9 @@ msgstr "Ödeme yöntemi ve varsa vergiler ödeme sayfasında görünür."
 msgid "Payment methods, taxes and currency are set in WooCommerce. Donation Panel works with both the block and the classic checkout."
 msgstr "Ödeme yöntemleri, vergiler ve para birimi WooCommerce'te ayarlanır. Bağış Paneli hem blok hem klasik ödeme sayfasıyla çalışır."
 
+msgid "Payment page"
+msgstr "Ödeme sayfası"
+
 #: includes/class-admin-design-studio-renderer.php:116
 msgid "Pending"
 msgstr "Bekleyen"
@@ -4097,6 +4205,9 @@ msgstr "Filipinler"
 #: includes/class-icon-library.php:52
 msgid "Phone"
 msgstr "Telefon"
+
+msgid "Phone (up to 639 px)"
+msgstr "Telefon (639 px'e kadar)"
 
 #: includes/class-admin-design-studio-renderer.php:326
 msgid "Phone icon"
@@ -4517,6 +4628,18 @@ msgstr "Ürünler"
 msgid "Products in chosen categories"
 msgstr "Seçili kategorilerdeki ürünler"
 
+msgid "Products that offer an add-on donation"
+msgstr "Ek bağış sunan ürünler"
+
+msgid "Products where the donor types the amount."
+msgstr "Tutarı bağışçının yazdığı ürünler."
+
+msgid "Products with a fixed price where the donor only picks a quantity."
+msgstr "Bağışçının yalnız adet seçtiği sabit fiyatlı ürünler."
+
+msgid "Products with a goal and a progress bar."
+msgstr "Hedefi ve ilerleme çubuğu olan ürünler."
+
 #: src/Admin/
 msgid "Products with a goal. Set a goal on the product's Donation tab."
 msgstr "Hedefi olan ürünler. Hedefi ürünün Bağış sekmesinde belirleyin."
@@ -4836,6 +4959,9 @@ msgstr "Ödemesi alınmış siparişleri tarayıp toplamı yeniden hesaplar."
 msgid "Scope"
 msgstr "Kapsam"
 
+msgid "Screen"
+msgstr "Ekran"
+
 #: includes/traits/trait-wdp-assets-registry.php:369
 msgid "Search"
 msgstr "Ara"
@@ -5078,6 +5204,9 @@ msgstr "Hisseli form ayarları başarıyla kaydedildi."
 msgid "Share-based forms ask for a name and phone number for each share; these fields do not change per product."
 msgstr "Hisseli formlar her hisse için ad ve telefon ister; bu alanlar ürüne göre değişmez."
 
+msgid "Share-based products with shareholder names."
+msgstr "Hissedar adları alınan hisseli ürünler."
+
 #: includes/class-donations-list.php:802
 msgid "Share: %s"
 msgstr "Hisse: %s"
@@ -5178,6 +5307,12 @@ msgstr "Kısa kod"
 #: includes/class-admin-form-tabs-renderer.php:580
 msgid "Shortcode button size"
 msgstr "Shortcode buton boyutu"
+
+msgid "Shortcode for a product"
+msgstr "Bir ürün için kısa kod"
+
+msgid "Shortcode widget"
+msgstr "Kısa kod bileşeni"
 
 #: src/Admin/
 msgid "Shortcode: works in every page editor. Without an ID it finds the product it is placed in. Add id to point at a specific product."
@@ -5386,6 +5521,9 @@ msgstr "Sepeti atla (doğrudan bağış)"
 msgid "Slice for the amount sitting in the cart, not yet paid."
 msgstr "Sepette duran, henüz ödenmemiş tutar dilimi."
 
+msgid "Slide"
+msgstr "Slayt"
+
 #: includes/class-phone-field.php:64
 msgid "Slovakia"
 msgstr "Slovakya"
@@ -5431,6 +5569,18 @@ msgstr "Başka para birimindeki bazı bağışların kuru bulunamadı ve toplama
 #: includes/class-woo-donation-popup-admin.php:433
 msgid "Something went wrong. Please try again."
 msgstr "Bir hata oluştu. Lütfen tekrar deneyin."
+
+msgid "source: a code filter on this site"
+msgstr "kaynak: bu sitedeki bir kod süzgeci"
+
+msgid "source: donation type \"%s\""
+msgstr "kaynak: bağış türü \"%s\""
+
+msgid "source: general setting"
+msgstr "kaynak: genel ayar"
+
+msgid "source: this product"
+msgstr "kaynak: bu ürün"
 
 #: includes/class-phone-field.php:143
 msgid "South Africa"
@@ -5605,6 +5755,9 @@ msgstr "İsviçre"
 msgid "Syria"
 msgstr "Suriye"
 
+msgid "Tablet (640–1023 px)"
+msgstr "Tablet (640–1023 px)"
+
 #: includes/class-admin-layout-tabs-renderer.php:201
 msgid "Tablet (768px – 1199px)"
 msgstr "Tablet (768px – 1199px)"
@@ -5748,6 +5901,9 @@ msgstr "Baştan"
 #: includes/class-admin-page-renderer.php:164
 msgid "The button shortcode opens a centered popup, the side panel shortcode opens a panel from the right, and the form shortcode shows an inline form."
 msgstr "Buton kısa kodu ortada açılan pencere, Sağ panel kısa kodu sağdan panel, Form kısa kodu sayfa içi form gösterir."
+
+msgid "The card is as tall as its tallest step, and that height never changes while the donor moves through the steps. It is the same through the cart and with direct donation. Measured with a default block theme; your theme's font can change it a little."
+msgstr "Kart en uzun adımı kadar yüksektir ve bağışçı adımlar arasında ilerlerken bu yükseklik hiç değişmez. Sepetli ve doğrudan bağışta aynıdır. Varsayılan bir blok temasıyla ölçülmüştür; temanızın yazı tipi biraz değiştirebilir."
 
 msgid "The carried-over amount was saved."
 msgstr "Devreden tutar kaydedildi."
@@ -5953,6 +6109,9 @@ msgstr "İşlem ücreti yüzdesi 0 (kapalı) veya 0,5–15 arasında olmalı."
 msgid "The processing fee percentage must be a number: 0 (off) or 0.5–15."
 msgstr "İşlem ücreti yüzdesi sayı olmalı: 0 (kapalı) veya 0,5–15 arası."
 
+msgid "The product the card is placed in (no ID)"
+msgstr "Kartın bulunduğu ürün (ID'siz)"
+
 #: includes/class-donation-type.php:63
 msgid "The product’s WooCommerce price is used; the donor only chooses a quantity."
 msgstr "Ürünün WooCommerce fiyatı kullanılır; bağışçı yalnızca adet seçer."
@@ -6096,6 +6255,9 @@ msgstr "Bu ürün bağış ürünü olarak işaretli değil."
 msgid "This product is out of stock (ID: %d)."
 msgstr "Bu ürün stokta yok (ID: %d)."
 
+msgid "This product is share-based: the shortcode shows the full in-page form, because shareholder names do not fit in a fixed-height card."
+msgstr "Bu ürün hisseli: hissedar adları sabit yükseklikli karta sığmadığı için kısa kod tam sayfa içi formu gösterir."
+
 #: src/Admin/
 msgid "This simple screen"
 msgstr "Bu sade ekran"
@@ -6123,6 +6285,15 @@ msgstr "Bu yıl"
 msgid "Three layers: confirmed (after payment), cart pending, typed-amount preview. The goal amount is in the “Goal amount” field on the product card."
 msgstr "Üç katman: onaylı (ödeme sonrası), sepet bekleyen, yazılan tutar önizlemesi. Hedef tutar ürün kartındaki “Hedef tutar” alanındadır."
 
+msgid "Through the cart"
+msgstr "Sepetli"
+
+msgid "Through the cart: form, cart, checkout, thank you. Direct: form, payment page, thank you."
+msgstr "Sepetli: form, sepet, ödeme, teşekkür. Doğrudan: form, ödeme sayfası, teşekkür."
+
+msgid "Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with every form style (centered window, side panel, bottom sheet, in-page form and compact card). A product setting wins over its donation type, and a donation type wins over the general setting."
+msgstr "Sepetli: bağış sepete eklenir ve bağışçı ödeme sayfasında öder. Doğrudan: bağışçı formdan doğrudan ödeme sayfasına geçer, sepete hiçbir şey eklenmez. Her form türünde çalışır (ortada pencere, sağ panel, alttan panel, sayfa içi form ve kompakt kart). Ürün ayarı bağış türünün, bağış türü de genel ayarın önüne geçer."
+
 #: includes/elementor/class-widget-donations-list.php:86
 msgid "Title"
 msgstr "Başlık"
@@ -6134,6 +6305,9 @@ msgstr "Hissedar ad alanlarının üstündeki başlık. Hazır metin için boş 
 #: includes/class-admin-design-studio-renderer.php:332
 msgid "Title/icon area of the extra donation (sadaqah) block."
 msgstr "Alt bağış (sadaka) bloğu başlık/ikon alanı."
+
+msgid "To give every card the same height, for example to match your slide, set the CSS variable on the slide or on a parent element:"
+msgstr "Tüm kartlara aynı yüksekliği vermek için (örneğin slaytınıza uydurmak için) CSS değişkenini slayta ya da bir üst öğeye yazın:"
 
 #: src/Modules/SocialProof/class-social-proof-renderer.php
 msgid "today"
@@ -6250,6 +6424,9 @@ msgstr "Türkiye"
 msgid "Turkmenistan"
 msgstr "Türkmenistan"
 
+msgid "Turning on direct donation"
+msgstr "Doğrudan bağışı açma"
+
 #: includes/class-admin-form-tabs-renderer.php:162
 msgid "Two columns"
 msgstr "İki Sütun"
@@ -6361,6 +6538,9 @@ msgstr "Temamın renklerini kullan: form sitenizin renk ve yazı tipine kendili�
 #: src/Admin/
 msgid "Use plain numbers separated by commas, for example 25, 50, 100."
 msgstr "Virgülle ayrılmış düz sayılar kullanın, örneğin 25, 50, 100."
+
+msgid "Use the general setting"
+msgstr "Genel ayarı kullan"
 
 #: includes/class-admin-products-list-table.php:239
 msgid "Used as an add-on donation (%d)"
@@ -6644,6 +6824,15 @@ msgstr "Pencere genişliği ve iç padding “Modal & Form Görünümü” sekme
 msgid "Window width and padding are on the “Popup & form layout” tab; this tab covers the popup’s inner color, texts, and buttons."
 msgstr "Pencere genişliği ve padding “Modal & Form Görünümü” sekmesindedir; bu sekme modalın iç rengi, yazılar ve butonları kapsar."
 
+msgid "Wins over the product's own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct."
+msgstr "Ürünün kendi bağış türünün önüne geçer. Doğrudan bağış tek kalemli bir sipariştir; sonuç doğrudan olduğunda ek bağış seçeneği bağışçıya gösterilmez."
+
+msgid "With goal"
+msgstr "Hedefli"
+
+msgid "Without goal"
+msgstr "Hedefsiz"
+
 #: assets/js/src/form/wizard.js:27
 msgctxt "wizard step"
 msgid "Amount"
@@ -6882,6 +7071,9 @@ msgstr "Bağışınız 2 gıda kolisi sağlar"
 #: src/Modules/DonorAccount/
 msgid "Your gifts will appear here after your first donation."
 msgstr "İlk bağışınızdan sonra bağışlarınız burada görünür."
+
+msgid "Your headline"
+msgstr "Başlığınız"
 
 #: includes/class-migrations.php:303 includes/class-migrations.php:382
 msgid "Your personal data is processed to complete your donation and is shared with our field teams abroad. See the privacy notice for details."

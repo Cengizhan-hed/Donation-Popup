@@ -1,5 +1,5 @@
 {
-  "translation-revision-date": "2026-10-25T11:46:35.253Z",
+  "translation-revision-date": "2026-10-30T13:07:20.904Z",
   "generator": "WDP make-json",
   "source": "blocks/donations/index.js",
   "domain": "messages",
@@ -108,6 +108,9 @@
       ],
       "“All” tab": [
         "“Tümü” sekmesi"
+      ],
+      "List title": [
+        "Liste başlığı"
       ],
       "All tab label": [
         "Tümü etiketi"
