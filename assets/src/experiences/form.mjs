@@ -253,9 +253,21 @@ export function createForm(root, hooks = {}) {
     }, 4000);
   };
 
+  // Kampanya çubuğunun kişisel önizlemesi (ortak canlı çubuk; yalnız bu tarayıcı): bağış tutarı (ücret/ek bağış hariç;
+  // sabit/hisseli: adet × fiyat). Yalnız bağışçı eylemiyle bildirilir: önerilen tutar kendiliğinden önizlenmez.
+  let emitted = 0;
+  const emitAmount = (value) => {
+    if (emitted !== value) {
+      emitted = value;
+      form.dispatchEvent(new CustomEvent('donation-panel:amount', { bubbles: true, detail: { productId: Number(form.dataset.productId), amount: value } }));
+    }
+  };
+
   const dispatch = (action) => {
     state = reducer(state, action);
     paint();
+    const donation = Number(totals(state.fee).donation);
+    emitAmount(Number.isFinite(donation) && donation > 0 ? donation : 0);
   };
 
   const setLine = (name, value, visible) => {
@@ -634,7 +646,8 @@ export function createForm(root, hooks = {}) {
     state = initialState(seed);
     paint();
     announce(form.dataset.msgAdded || '');
-    document.dispatchEvent(new CustomEvent('donation-panel:cart-added', { detail: { productId: Number(productId) } }));
+    document.dispatchEvent(new CustomEvent('donation-panel:cart-added', { detail: { productId: Number(productId), amount: emitted } }));
+    emitAmount(0);
     root.dispatchEvent(new CustomEvent('dp:added', { bubbles: true }));
   };
 

@@ -251,6 +251,10 @@ class Donations_List {
 		}
 
 		$html = self::apply_request_ids( $html );
+		if ( 'link' !== $atts['button'] ) {
+			// Kart formları tarayıcı düzeyinde önceden alınır (sayfa sonunda <link rel="prefetch">; önbellekli HTML'de de).
+			Prefetch_Links::add_from_html( $html, 'popup' === $atts['button'] ? 'popup' : 'side_panel' );
+		}
 		if ( ! empty( $built['empty'] ) && function_exists( 'current_user_can' ) && current_user_can( 'edit_products' ) ) {
 			$notice = Admin_Notice::admin_notice_html( self::empty_reason( $atts ) );
 			$html   = preg_replace( '/(<div\b[^>]*\bclass="[^"]*wdp-list-wrap[^"]*"[^>]*>)/', '$1' . $notice, $html, 1 );
@@ -420,6 +424,18 @@ class Donations_List {
 		$assets->enqueue( self::ASSET_SLUG );
 		if ( $with_form ) {
 			$assets->enqueue( Experiences_Module::SLUG );
+		}
+	}
+
+	/**
+	 * Canlı kampanya çubuğu varlıkları (Campaign modülü kapalıysa tanım yoktur, hiçbir şey yüklenmez).
+	 *
+	 * @return void
+	 */
+	private static function enqueue_progress() {
+		$plugin = Plugin::instance();
+		if ( null !== $plugin ) {
+			$plugin->container()->get( Assets::class )->enqueue( \DonationPanel\Modules\Campaign\Progress_Live::ASSET );
 		}
 	}
 
@@ -830,6 +846,8 @@ class Donations_List {
 		}
 
 		if ( $is_campaign ) {
+			// Kartın açtığı katmandaki canlı kampanya çubuğu (katman REST'le kurulur): çubuk stili/betiği sayfada hazır.
+			self::enqueue_progress();
 			$html .= $media;
 			$html .= '<div class="wdp-card__body">';
 			if ( '' === $media ) {

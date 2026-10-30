@@ -1,6 +1,6 @@
 <?php
 /**
- * Kampanya ilerleme kartı çıktısı (sunucu tarafında tam; ön yüz yalnız canlandırır ve tazeler).
+ * Kampanya ilerleme kartı çıktısı (sunucu tarafında tam; ön yüz yalnız canlandırır, tazeler ve kişisel önizleme ekler).
  *
  * @package DonationPanel
  */
@@ -15,24 +15,24 @@ defined( 'ABSPATH' ) || exit;
 final class Progress_Renderer {
 
 	/**
-	 * Tutarı Woo biçimiyle düz metne çevirir.
+	 * Tutarı Woo biçimiyle düz metne çevirir (tam sayıda ondalık yok).
 	 *
 	 * @param float $amount Gösterim birimindeki tutar.
 	 * @return string
 	 */
 	public static function money( $amount ) {
-		$html = function_exists( 'wc_price' ) ? (string) wc_price( (float) $amount ) : (string) $amount;
-		return trim( html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES, 'UTF-8' ) );
+		return Progress_Live::money( $amount );
 	}
 
 	/**
 	 * İlerleme kartı HTML'i.
 	 *
-	 * @param array<string, mixed> $data  Progress_Data çıktısı.
-	 * @param array<string, bool>  $show  `milestones`, `donors` bayrakları.
+	 * @param array<string, mixed>               $data    Progress_Data çıktısı.
+	 * @param array<string, bool>                $show    `milestones`, `donors` bayrakları.
+	 * @param array{p: int, c: int, k: int}|null $options Canlı çubuk ayarları (null: kayıtlı ayarlar).
 	 * @return string
 	 */
-	public static function render( array $data, array $show = array() ) {
+	public static function render( array $data, array $show = array(), $options = null ) {
 		$show       = array_merge(
 			array(
 				'milestones' => true,
@@ -40,18 +40,18 @@ final class Progress_Renderer {
 			),
 			$show
 		);
-		$percent    = (float) $data['percent'];
+		$percent    = round( Progress_Live::exact_percent( $data ), 2 );
 		$reached    = ! empty( $data['reached'] );
-		$currency   = (array) $data['currency'];
+		$zero       = ! ( (float) $data['raised'] > 0 );
 		$milestones = $show['milestones'] ? (array) $data['milestones'] : array();
-
-		$percent_text = ( floor( $percent ) === $percent ? (string) (int) $percent : (string) $percent ) . '%';
+		$live       = Progress_Live::config( $data, true, $options, 1 );
+		$donors     = $show['donors'] ? (int) $data['donors'] : 0;
 
 		ob_start();
 		?>
-<div class="donation-panel donation-panel-progress<?php echo $reached ? ' is-complete' : ''; ?><?php echo $milestones ? ' donation-panel-progress--ms' : ''; ?>" data-dp-progress data-product-id="<?php echo esc_attr( (string) (int) $data['product_id'] ); ?>" data-percent="<?php echo esc_attr( (string) $percent ); ?>" data-raised="<?php echo esc_attr( (string) $data['raised'] ); ?>" data-symbol="<?php echo esc_attr( (string) $currency['symbol'] ); ?>" data-decimals="<?php echo esc_attr( (string) (int) $currency['decimals'] ); ?>">
+<div class="donation-panel donation-panel-progress<?php echo $reached ? ' is-complete' : ''; ?><?php echo $milestones ? ' donation-panel-progress--ms' : ''; ?><?php echo esc_attr( Progress_Live::root_class( $live ) ); ?>" data-dp-progress data-product-id="<?php echo esc_attr( (string) (int) $data['product_id'] ); ?>"<?php echo Progress_Live::attr( $live ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attr() kaçışlıdır. ?>>
 	<div class="donation-panel-progress__nums">
-		<span class="donation-panel-progress__raised donation-panel-num" data-dp-raised><?php echo esc_html( self::money( (float) $data['raised'] ) ); ?></span>
+		<span class="donation-panel-progress__raised donation-panel-num" data-dp-live-raised><?php echo esc_html( self::money( (float) $data['raised'] ) ); ?></span>
 		<span class="donation-panel-progress__goal">
 			<?php
 			/* translators: %s: formatted goal amount */
@@ -59,8 +59,8 @@ final class Progress_Renderer {
 			?>
 		</span>
 	</div>
-	<div class="donation-panel-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( (string) $percent ); ?>" aria-label="<?php esc_attr_e( 'Goal completion rate', 'woo-donation-popup' ); ?>">
-		<div class="donation-panel-bar__fill" style="--p:<?php echo esc_attr( (string) $percent ); ?>"></div>
+	<div class="donation-panel-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr( (string) (int) floor( $percent ) ); ?>" aria-valuetext="<?php echo esc_attr( Progress_Live::value_text( $data, 1 ) ); ?>" aria-label="<?php esc_attr_e( 'Goal completion rate', 'woo-donation-popup' ); ?>">
+		<span class="donation-panel-bar__clip" data-dp-live-bar><i class="donation-panel-live__fill" data-dp-live-fill style="--p:<?php echo esc_attr( (string) $percent ); ?>"></i></span>
 		<?php foreach ( $milestones as $milestone ) : ?>
 			<span class="donation-panel-bar__ms<?php echo ! empty( $milestone['hit'] ) ? ' is-hit' : ''; ?>" style="--at:<?php echo esc_attr( (string) $milestone['at'] ); ?>" data-dp-ms="<?php echo esc_attr( (string) $milestone['at'] ); ?>"<?php echo $milestone['at'] >= 88 ? ' data-dp-edge="end"' : ( $milestone['at'] <= 12 ? ' data-dp-edge="start"' : '' ); ?>>
 				<svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>
@@ -69,25 +69,24 @@ final class Progress_Renderer {
 		<?php endforeach; ?>
 	</div>
 	<div class="donation-panel-stats"<?php echo $milestones ? ' style="margin-block-start:14px"' : ''; ?>>
-		<span><b class="donation-panel-num" data-dp-percent><?php echo esc_html( $percent_text ); ?></b> <?php esc_html_e( 'funded', 'woo-donation-popup' ); ?></span>
-		<?php if ( $show['donors'] && (int) $data['donors'] > 0 ) : ?>
-			<span data-dp-donors>
-				<?php
-				echo esc_html(
-					sprintf(
-						/* translators: %s: number of donors, already formatted */
-						_n( '%s supporter', '%s supporters', (int) $data['donors'], 'woo-donation-popup' ),
-						number_format_i18n( (int) $data['donors'] )
-					)
-				);
-				?>
-			</span>
-		<?php endif; ?>
-		<?php if ( $reached ) : ?>
-			<span class="donation-panel-badge donation-panel-badge--success" data-dp-reached><?php esc_html_e( 'Goal reached', 'woo-donation-popup' ); ?></span>
-		<?php else : ?>
-			<span class="donation-panel-badge donation-panel-badge--success" data-dp-reached hidden><?php esc_html_e( 'Goal reached', 'woo-donation-popup' ); ?></span>
-		<?php endif; ?>
+		<span data-dp-live-zero="hide"<?php echo $zero ? ' hidden' : ''; ?>><b class="donation-panel-num" data-dp-live-pct><?php echo esc_html( Progress_Live::percent_text( $percent, 1 ) ); ?></b> <?php esc_html_e( 'funded', 'woo-donation-popup' ); ?></span>
+		<span class="donation-panel-progress__meta" data-dp-live-meta>
+			<span class="donation-panel-progress__first" data-dp-live-zero="show"<?php echo $zero ? '' : ' hidden'; ?>><?php echo esc_html( Progress_Live::first_text() ); ?></span>
+			<?php if ( $show['donors'] ) : ?>
+				<span data-dp-live-donors data-one="<?php /* translators: %s: number of donors, already formatted */ echo esc_attr( _n( '%s supporter', '%s supporters', 1, 'woo-donation-popup' ) ); ?>" data-many="<?php /* translators: %s: number of donors, already formatted */ echo esc_attr( _n( '%s supporter', '%s supporters', 2, 'woo-donation-popup' ) ); ?>"<?php echo $donors > 0 ? '' : ' hidden'; ?>>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %s: number of donors, already formatted */
+							_n( '%s supporter', '%s supporters', max( 1, $donors ), 'woo-donation-popup' ),
+							number_format_i18n( $donors )
+						)
+					);
+					?>
+				</span>
+			<?php endif; ?>
+			<span class="donation-panel-badge donation-panel-badge--success" data-dp-reached<?php echo $reached ? '' : ' hidden'; ?>><?php esc_html_e( 'Goal reached', 'woo-donation-popup' ); ?></span>
+		</span>
 	</div>
 </div>
 		<?php

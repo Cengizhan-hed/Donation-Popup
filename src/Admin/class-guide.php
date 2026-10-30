@@ -68,6 +68,21 @@ final class Guide {
 				'figure' => 'direct',
 				'link'   => array( Admin_Bootstrap::SLUG_CHECKOUT, 'dpa-s-payment', __( 'Open How donors pay', 'woo-donation-popup' ) ),
 			),
+			'progress'   => array(
+				'title'  => __( 'Campaign progress bar', 'woo-donation-popup' ),
+				'body'   => array(
+					__( '1. Give the product a goal: Products → edit the product → Product data → Donation → goal amount. From then on the bar appears by itself in the centered window, side panel, bottom sheet, in-page form and on the compact card.', 'woo-donation-popup' ),
+					__( '2. To show the bar on its own anywhere (a page, a sidebar, a slider), use the shortcode below. Without an ID it finds the product it is placed in. Add milestones="no" or donors="no" to hide those parts.', 'woo-donation-popup' ),
+					__( '3. The real total only grows with paid orders and goes down after refunds or cancellations. Items in a cart never change it.', 'woo-donation-popup' ),
+					__( '4. Donor\'s own gift: when a donor picks or types an amount, a lighter striped part shows how far their gift would take the campaign, together with the new total. After "Add to cart" it stays as "in your cart"; removing it from the cart makes it disappear. Only that visitor sees it.', 'woo-donation-popup' ),
+					__( '5. After payment on the compact card the bar fetches the new total once, and the donor\'s part becomes part of the real bar.', 'woo-donation-popup' ),
+					__( '6. Settings: Donation Panel → Campaigns → Campaign progress bar. Switch off the donor\'s own gift, the fill and count-up animation, or the small celebration at the goal. Visitors who ask their device for less motion always see the final values without animation.', 'woo-donation-popup' ),
+					__( '7. Milestones on the shortcode bar (optional): a product custom field named _donation_panel_milestones, one per line as percent = label, for example 50 = Halfway. Developers can also use the donation_panel_milestones filter.', 'woo-donation-popup' ),
+				),
+				'code'   => '[donation_panel_progress id="123"]',
+				'figure' => 'progress',
+				'link'   => array( Admin_Bootstrap::SLUG_CAMPAIGNS, 'dpa-s-progress', __( 'Open the progress bar settings', 'woo-donation-popup' ) ),
+			),
 			'hooks'      => array(
 				'title' => __( 'For developers: filters', 'woo-donation-popup' ),
 				'body'  => array(
@@ -178,6 +193,23 @@ final class Guide {
 				. $box( 168, 110, 280, 40, __( 'Payment page', 'woo-donation-popup' ), true ) . $arrow( 448, 130, 488 )
 				. $box( 488, 110, 120, 40, __( 'Thank you', 'woo-donation-popup' ) );
 			$h    = 160;
+		} elseif ( 'progress' === $name ) {
+			$aria  = __( 'Campaign bar: the solid part is the real total from paid orders; the lighter striped part after it is the donor\'s own gift, seen only by that donor.', 'woo-donation-popup' );
+			$money = static function ( $amount ) {
+				return \DonationPanel\Modules\Campaign\Progress_Live::money( $amount );
+			};
+			$svg   = '<defs><pattern id="dpa-g-stripe" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="10" fill="#7d93b5"/><rect x="5" width="5" height="10" fill="#b5c3d8"/></pattern></defs>'
+				. '<text x="8" y="30" font-size="20" font-weight="700" fill="#1d2327">' . esc_html( $money( 1500 ) ) . '</text>'
+				/* translators: %s: goal amount. */
+				. '<text x="608" y="30" text-anchor="end" font-size="13" fill="#50575e">' . esc_html( sprintf( __( 'Goal %s', 'woo-donation-popup' ), $money( 3000 ) ) ) . '</text>'
+				. '<rect x="8" y="44" width="600" height="14" rx="7" fill="#e8ebef"/>'
+				. '<rect x="8" y="44" width="380" height="14" rx="7" fill="url(#dpa-g-stripe)"/>'
+				. '<rect x="8" y="44" width="300" height="14" rx="7" fill="#12305a"/>'
+				/* translators: 1: the donor's own gift, 2: campaign total including that gift. */
+				. '<text x="8" y="82" font-size="13" font-weight="700" fill="#12305a">' . esc_html( sprintf( __( 'With your %1$s it reaches %2$s', 'woo-donation-popup' ), $money( 400 ), $money( 1900 ) ) ) . '</text>'
+				. $label( 8, 116, __( 'Real total (paid orders)', 'woo-donation-popup' ) ) . '<path d="M150 112H300V62" fill="none" stroke="#646970" stroke-width="1.5" stroke-dasharray="4 4"/>'
+				. $label( 400, 116, __( 'Donor\'s own gift', 'woo-donation-popup' ) ) . '<path d="M396 112H350V62" fill="none" stroke="#646970" stroke-width="1.5" stroke-dasharray="4 4"/>';
+			$h = 128;
 		} else {
 			$aria = __( 'A slide with a compact donation card placed through a Shortcode widget.', 'woo-donation-popup' );
 			$svg  = '<rect x="4" y="4" width="608" height="196" rx="14" fill="#f6f7f7" stroke="#c3c4c7" stroke-width="1.5"/>'

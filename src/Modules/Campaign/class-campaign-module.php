@@ -48,6 +48,8 @@ final class Campaign_Module implements Module_Interface {
 	public function register( Container $container ) {
 		$this->container = $container;
 		$container->get( Assets::class )->define( 'campaign', 'assets/build/campaign/index.js', 'assets/build/campaign/index.css' );
+		// Canlı çubuk (tüm yüzeyler): stil satır içi (çubuğu çizen yüzeyin önünde), betik defer.
+		$container->get( Assets::class )->define( Progress_Live::ASSET, Progress_Live::SCRIPT, Progress_Live::STYLE );
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
 		add_filter( 'donation_panel_form_model', array( $this, 'filter_model' ), 15, 2 );
@@ -84,13 +86,26 @@ final class Campaign_Module implements Module_Interface {
 		$days = apply_filters( 'donation_panel_campaign_days_left', null, $product_id );
 
 		$model['campaign'] = array(
-			'raised'    => Progress_Renderer::money( (float) $data['raised'] ),
-			'goal'      => Progress_Renderer::money( (float) $data['goal'] ),
-			'percent'   => (int) round( (float) $data['percent'] ),
-			'donors'    => (int) $data['donors'],
-			'days_left' => is_numeric( $days ) ? max( 0, (int) $days ) : null,
-			'reached'   => ! empty( $data['reached'] ),
+			'raised'        => Progress_Renderer::money( (float) $data['raised'] ),
+			'goal'          => Progress_Renderer::money( (float) $data['goal'] ),
+			// Tam sayı yüzde aşağı yuvarlanır: hedefe ulaşılmadan "100%" yazılmaz.
+			'percent'       => (int) floor( Progress_Live::exact_percent( $data ) + 1e-9 ),
+			'percent_exact' => round( Progress_Live::exact_percent( $data ), 2 ),
+			'percent_text'  => Progress_Live::percent_text( Progress_Live::exact_percent( $data ), 0 ),
+			'value_text'    => Progress_Live::value_text( $data, 0 ),
+			'donors'        => (int) $data['donors'],
+			'days_left'     => is_numeric( $days ) ? max( 0, (int) $days ) : null,
+			'reached'       => ! empty( $data['reached'] ),
+			'zero'          => ! ( (float) $data['raised'] > 0 ),
+			'first_text'    => Progress_Live::first_text(),
+			// Canlı çubuk yapılandırması (herkese açık veri + ayarlar + çevrilmiş kalıplar; kişi verisi yok).
+			'live'          => Progress_Live::config( $data ),
 		);
+		// Form sayfada çiziliyorsa çubuk stili (yüzeyin satır içi stilinden önce) ve betiği kuyruğa girer; REST'le gelen
+		// formda etkisizdir, orada form paketindeki yükleyici getirir.
+		if ( $this->container ) {
+			$this->container->get( Assets::class )->enqueue( Progress_Live::ASSET );
+		}
 		return $model;
 	}
 
@@ -156,6 +171,7 @@ final class Campaign_Module implements Module_Interface {
 		);
 		$assets = $this->container->get( Assets::class );
 		$assets->enqueue( 'campaign' );
+		$assets->enqueue( Progress_Live::ASSET );
 		return $assets->inline_styles() . $html;
 	}
 }

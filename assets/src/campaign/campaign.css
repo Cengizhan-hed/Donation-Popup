@@ -1,8 +1,8 @@
 /* Simge temeli ortak çekirdekte; kampanyanın tek simgesi (ara hedef) components.css'te kendi kuralıyla çizilir. */
 /* ---------- İlerleme: kampanya kartı ---------- */
-.donation-panel-progress.is-complete .donation-panel-bar__fill { background: linear-gradient(90deg, var(--dp-color-success), color-mix(in oklab, var(--dp-color-success) 60%, #fff)); }
-[dir="rtl"] .donation-panel-progress.is-complete .donation-panel-bar__fill { background: linear-gradient(270deg, var(--dp-color-success), color-mix(in oklab, var(--dp-color-success) 60%, #fff)); }
-.donation-panel-progress.is-complete .donation-panel-bar__fill::after { display: none; }
+.donation-panel.donation-panel-progress.is-complete .donation-panel-live__fill { background: linear-gradient(90deg, var(--dp-color-success), color-mix(in oklab, var(--dp-color-success) 60%, #fff)); }
+[dir="rtl"] .donation-panel.donation-panel-progress.is-complete .donation-panel-live__fill { background: linear-gradient(270deg, var(--dp-color-success), color-mix(in oklab, var(--dp-color-success) 60%, #fff)); }
+.donation-panel-progress.is-complete .donation-panel-live__fill::after { display: none; }
 .donation-panel-progress .donation-panel-badge { margin-inline-start: auto; }
 
 /* Ara hedef etiketleri kart dışına taşmaz (kenara yakın olanlar kenara hizalanır; RTL'de merkez yönü ters). */

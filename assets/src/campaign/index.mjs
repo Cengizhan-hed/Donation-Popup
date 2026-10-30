@@ -1,10 +1,11 @@
 /**
- * Donation Panel — kampanya paketi (ilerleme, etki ifadesi, sosyal kanıt). Yalnız ilgili öğe olan sayfada yüklenir.
+ * Donation Panel — kampanya paketi (ilerleme kartı, etki ifadesi, sosyal kanıt). Yalnız ilgili öğe olan sayfada yüklenir.
  */
 // Ortak çekirdek (belirteç/düğme) ui-core parçasında; Assets bu paketten önce bir kez basar.
+// Canlı çubuk ortak bileşendir (form ve compact kart da kullanır): stili ve betiği ayrı `progress` paketinde (kısa kod
+// onu da kuyruğa alır); kartın kendi görünüm kuralları daha özgül seçicilerle (basım sırasından bağımsız).
 import './components.css';
 import './campaign.css';
-import { initProgress } from './progress.mjs';
 import { initImpact } from './impact.mjs';
 import { initFeed } from './social.mjs';
 import { syncColors } from '../ui2-shared/color-sync.mjs';
@@ -15,7 +16,6 @@ import { syncColors } from '../ui2-shared/color-sync.mjs';
  * @param {ParentNode} scope Kapsam.
  */
 function scan(scope) {
-  scope.querySelectorAll('[data-dp-progress]').forEach(initProgress);
   scope.querySelectorAll('[data-dp-form]').forEach(initImpact);
   scope.querySelectorAll('[data-dp-social="feed"]').forEach(initFeed);
 }

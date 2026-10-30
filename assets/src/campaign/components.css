@@ -4,9 +4,14 @@
 .donation-panel-progress__raised { font-size: var(--dp-fs-2xl, var(--dp-fs-xl)); font-weight: var(--dp-fw-bold); letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .donation-panel-progress__goal { font-size: var(--dp-fs-sm); color: var(--dp-color-text-muted); }
 .donation-panel-bar { position: relative; block-size: 12px; border-radius: 99px; background: var(--dp-color-surface-3); overflow: visible; margin-block: 6px 12px; }
-.donation-panel-bar__fill { position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: calc(var(--p, 0) * 1%); border-radius: inherit; background: linear-gradient(90deg, var(--dp-color-primary), color-mix(in oklab, var(--dp-color-primary) 60%, #fff)); transition: inline-size var(--dp-dur-fill) var(--dp-ease-out); overflow: hidden; }
-[dir="rtl"] .donation-panel-bar__fill { background: linear-gradient(270deg, var(--dp-color-primary), color-mix(in oklab, var(--dp-color-primary) 60%, #fff)); }
-.donation-panel-bar__fill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .45) 50%, transparent 70%); transform: translateX(-100%); animation: dp-shimmer 2.6s var(--dp-ease-in-out) 1.4s infinite; }
+/* Dolum: ortak canlı çubuk (ui2-shared/live-progress.css, yalnız transform); ara hedefler taşabilsin diye kırpma iç katmanda. */
+.donation-panel .donation-panel-bar > .donation-panel-bar__clip { position: absolute; inset: 0; border-radius: inherit; }
+.donation-panel .donation-panel-bar__clip .donation-panel-live__fill { background: linear-gradient(90deg, var(--dp-color-primary), color-mix(in oklab, var(--dp-color-primary) 60%, #fff)); overflow: hidden; }
+[dir="rtl"] .donation-panel .donation-panel-bar__clip .donation-panel-live__fill { background: linear-gradient(270deg, var(--dp-color-primary), color-mix(in oklab, var(--dp-color-primary) 60%, #fff)); }
+@media (prefers-reduced-motion: reduce) { .donation-panel .donation-panel-bar__clip .donation-panel-live__fill::after { display: none; } }
+.donation-panel .donation-panel-bar__clip .donation-panel-live__fill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .45) 50%, transparent 70%); transform: translateX(-100%); animation: dp-shimmer 2.6s var(--dp-ease-in-out) 1.4s infinite; }
+.donation-panel-progress__meta { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: var(--dp-space-2) var(--dp-space-5); min-inline-size: 0; }
+.donation-panel-progress__first { color: var(--dp-color-primary-strong); font-weight: var(--dp-fw-semibold); }
 .donation-panel-bar--thin { block-size: 8px; }
 .donation-panel-bar--chunky { block-size: 20px; }
 .donation-panel-bar--chunky .donation-panel-bar__fill::before { content: attr(data-label); position: absolute; inset-inline-end: 8px; inset-block: 0; display: grid; place-items: center; font-size: 11px; font-weight: var(--dp-fw-bold); color: var(--dp-color-on-primary); z-index: 1; }

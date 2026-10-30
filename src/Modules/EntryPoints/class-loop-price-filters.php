@@ -99,6 +99,7 @@ class Loop_Price_Filters {
 			if ( ! Render_Registry::has_product_ui( $product_id ) ) {
 				Render_Registry::mark_trigger( $product_id );
 				Donations_List::enqueue_trigger_assets();
+				Prefetch_Links::add( $product_id, 'popup' === $mode ? 'popup' : 'side_panel' );
 				$attrs .= ' data-wdp-form="' . esc_attr( (string) $product_id ) . '"'
 					. ' data-wdp-kind="' . esc_attr( 'popup' === $mode ? 'popup' : 'side_panel' ) . '"'
 					. ' data-wdp-rest="' . esc_url( rest_url( 'donation-panel/v1/' ) ) . '"'

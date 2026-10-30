@@ -7,7 +7,7 @@
 import { addToCart, phoneValue } from '../experiences/form.mjs';
 import { formatTotal } from '../experiences/store.mjs';
 import { createLayer } from '../experiences/layer.mjs';
-import { ISOLATED_EVENTS, STEPS, announcement, donorsText, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel, moveStep, percentOf } from './logic.mjs';
+import { ISOLATED_EVENTS, STEPS, announcement, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel, moveStep } from './logic.mjs';
 
 /**
  * Kart olaylarını kaydırıcılardan yalıtır (kütüphaneye özel kod yok): olaylar kart kökünde durur; yatay tekerlek sayfayı/
@@ -176,12 +176,28 @@ export function createCompact(root) {
     }
   };
 
+  /**
+   * Kampanya çubuğunun kişisel önizlemesi (ortak canlı çubuk; yalnız bu tarayıcı): seçilen tutarı bildirir.
+   *
+   * @param {number} value Tutar (0: önizleme yok).
+   */
+  const emitAmount = (value) => {
+    if (state.emitted !== value) {
+      state.emitted = value;
+      root.dispatchEvent(new CustomEvent('donation-panel:amount', { bubbles: true, detail: { productId: Number(root.dataset.dpProduct), amount: value } }));
+    }
+  };
+
   const paint = () => {
     const { value, error } = amount();
     state.value = error ? null : value;
     paintNext(error !== '');
     paintAmount();
     paintQty();
+    // İlk çizimde değil, bağışçı seçtiğinde (önerilen tutar kendiliğinden önizlenmez).
+    if (root.dataset.dpReady === '1' && state.step < 3) {
+      emitAmount(state.value || 0);
+    }
   };
 
   const paintQty = () => {
@@ -629,60 +645,13 @@ export function createCompact(root) {
     }
   });
 
-  // ---- Kampanya çubuğu: teşekkürde tek hafif istek (herkese açık, önbelleklenebilir REST) ----
+  // ---- Kampanya çubuğu: teşekkürde ortak canlı çubuk tek hafif istekle gerçek toplamı alır; önizleme dolumla birleşir ----
   function refreshCampaign() {
-    const blocks = Array.from(root.querySelectorAll('[data-dp-ccamp]'));
-    if (!blocks.length || !root.dataset.dpRest) {
-      return;
-    }
-    window
-      .fetch(`${root.dataset.dpRest}progress/${Number(root.dataset.dpProduct)}`, { credentials: 'same-origin' })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (data) {
-          blocks.forEach((block) => paintCampaign(block, data));
-        }
-      })
-      .catch(() => undefined);
-  }
-
-  /**
-   * @param {HTMLElement} block Kampanya bloğu.
-   * @param {object}      data  `progress/{id}` yanıtı.
-   */
-  function paintCampaign(block, data) {
-    const cur = data.currency || {};
-    const fmt = (v) => formatTotal(Number(v) || 0, cur.symbol ?? symbol, Number(cur.decimals ?? decimals), locale);
-    const zero = !(Number(data.raised) > 0);
-    const pct = percentOf(data.percent);
-    block.dataset.zero = zero ? '1' : '0';
-    const set = (selector, text, hidden) => {
-      const node = block.querySelector(selector);
-      if (node) {
-        if (text !== null) {
-          node.textContent = text;
-        }
-        node.hidden = hidden;
-      }
-    };
-    // Toplanan her zaman görünür ("£0 / £3,000 · İlk bağışı siz yapın"); yüzde ve bağışçı sayısı yalnız bağış varken.
-    set('[data-dp-craised]', fmt(data.raised), false);
-    set('[data-dp-cfirst]', null, !zero);
-    set('[data-dp-cpct]', `${pct}%`, zero);
-    const bar = block.querySelector('[data-dp-cbar]');
-    if (bar) {
-      bar.setAttribute('aria-valuenow', String(pct));
-      const fillBar = bar.querySelector('span');
-      if (fillBar) {
-        fillBar.style.inlineSize = `${pct}%`;
-      }
-    }
-    const donors = block.querySelector('[data-dp-cdonors]');
-    if (donors) {
-      const text = zero ? '' : donorsText(data.donors, donors.dataset.one || '', donors.dataset.many || '', locale);
-      donors.textContent = text;
-      donors.hidden = text === '';
-    }
+    const paidAmount = state.value || 0;
+    emitAmount(0);
+    root.dispatchEvent(
+      new CustomEvent('donation-panel:progress-refresh', { bubbles: true, detail: { productId: Number(root.dataset.dpProduct), amount: paidAmount } })
+    );
   }
 
   // ---- Kaydırıcı uyumu ----

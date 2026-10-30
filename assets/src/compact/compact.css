@@ -109,7 +109,7 @@
 .donation-panel-compact__first::before, .donation-panel-compact__donors::before { content: "·"; margin-inline: .4em; color: var(--dp-color-text-muted); font-weight: 400; }
 .donation-panel-compact__pct { flex: none; font-weight: 750; }
 .donation-panel-compact__bar { block-size: 8px; border-radius: var(--dp-radius-pill); background: var(--dp-track); overflow: hidden; }
-.donation-panel-compact__bar > span { display: block; block-size: 100%; max-inline-size: 100%; border-radius: inherit; background: var(--dp-color-primary); transition: inline-size .6s var(--dp-ease-out); }
+/* Dolum ve kişisel önizleme: ortak canlı çubuk (ui2-shared/live-progress.css). */
 
 .donation-panel .donation-panel-compact__impact {
   margin: 0;
@@ -314,5 +314,5 @@
 [dir="rtl"] .donation-panel-compact__back svg { transform: scaleX(-1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .donation-panel-compact__step, .donation-panel-compact__bar > span, .donation-panel-compact__sheet { transition: none; }
+  .donation-panel-compact__step, .donation-panel-compact__sheet { transition: none; }
 }

@@ -15,6 +15,7 @@ import {
   matchesCategory,
   parseHashSlug,
   shouldHandleClick,
+  parsePrefetchHref,
   shouldPrefetchAhead,
   trustedRestRoot,
   uniqueIds,
@@ -194,21 +195,91 @@ function remember(map, key, pending) {
  */
 function ensureSource(rest, id, kind) {
   const key = hostKey(rest, id, kind);
-  return (
-    sources.get(key) ||
-    remember(
+  const cached = sources.get(key);
+  if (cached) {
+    return cached;
+  }
+  // Sunucunun bastığı ön alma bağlantısı bu kartı kapsıyorsa AYNI adres istenir: tarayıcı önbelleğinden gelir (ağ yok).
+  const link = prefetchFor(id, kind);
+  if (link) {
+    return remember(
       sources,
       key,
-      getJson(buildExperienceUrl(rest, id, kind)).then((data) => {
-        if (!data || typeof data.html !== 'string' || data.html === '') {
-          throw new Error('empty');
+      linkItems(link).then((items) => {
+        if (typeof items[id] !== 'string' || items[id] === '') {
+          throw new Error('missing'); // sourceHtml bir kez tek istekle yeniden dener
         }
-        markReady(id);
-        return { html: () => data.html };
+        return { html: () => items[id] };
       })
-    )
+    );
+  }
+  return remember(
+    sources,
+    key,
+    getJson(buildExperienceUrl(rest, id, kind)).then((data) => {
+      if (!data || typeof data.html !== 'string' || data.html === '') {
+        throw new Error('empty');
+      }
+      markReady(id);
+      return { html: () => data.html };
+    })
   );
 }
+
+/** Ön alma bağlantısı adresi => çözülmüş `items` sözü (bağlantı başına bir kez). */
+const linkBatches = new Map();
+
+/**
+ * @param {string} href Doğrulanmış toplu uç adresi.
+ * @return {Promise<Record<string, string>>} Ürün => HTML.
+ */
+function linkItems(href) {
+  if (!linkBatches.has(href)) {
+    remember(
+      linkBatches,
+      href,
+      getJson(href).then((data) => (data && data.items) || {})
+    );
+  }
+  return linkBatches.get(href);
+}
+
+/**
+ * Bu kartı kapsayan geçerli ön alma bağlantısı (yalnız ihtiyaçta, dokunma niyetinde okunur: yüklemede iş yok).
+ *
+ * @param {string} id   Ürün.
+ * @param {string}  kind        Kap türü.
+ * @param {boolean} requireDone Yalnız indirmesi bitmiş bağlantı (dokunuş yolu); false = kapsıyor mu (kuyruk).
+ * @return {string} Adres ya da ''.
+ */
+function prefetchFor(id, kind, requireDone = true) {
+  if (!nativePrefetch()) {
+    return ''; // bağlantı hiç alınmadı: aynı adresi istemek 12 formu dokunuşta indirirdi
+  }
+  for (const link of document.querySelectorAll('link[rel="prefetch"][data-dp-prefetch]')) {
+    const info = parsePrefetchHref(link.getAttribute('href'), window.location.href);
+    // Yalnız tarayıcı indirmeyi BİTİRDİYSE (önbellekte): sürerken aynı adresi istemek 12 formu ikinci kez indirebilirdi.
+    const done = info && (!requireDone || performance.getEntriesByName(link.href).some((r) => r.responseEnd > 0));
+    if (info && done && info.kind === kind && info.ids.includes(String(id))) {
+      return info.href;
+    }
+  }
+  return '';
+}
+
+/**
+ * Tarayıcı `<link rel="prefetch">` destekliyor mu (Safari desteklemez: orada istemci boşta kendisi alır).
+ *
+ * @return {boolean} Destek.
+ */
+function nativePrefetch() {
+  if (nativeSupport === null) {
+    const link = document.createElement('link');
+    nativeSupport = Boolean(link.relList && typeof link.relList.supports === 'function' && link.relList.supports('prefetch'));
+  }
+  return nativeSupport;
+}
+let nativeSupport = null;
 
 /**
  * HTML: önbellekteki kaynak çözülemezse (toplu yanıtta yoksa) bir kez tek istekle yeniden alınır.
@@ -427,8 +498,8 @@ function scheduleFlush() {
  */
 function queueCta(cta) {
   const info = ctaInfo(cta);
-  if (!info || aheadDisabled || sources.has(hostKey(info.rest, info.id, info.kind))) {
-    return;
+  if (!info || aheadDisabled || sources.has(hostKey(info.rest, info.id, info.kind)) || prefetchFor(info.id, info.kind, false)) {
+    return; // zaten alındı ya da tarayıcının ön alma bağlantısı kapsıyor
   }
   const group = JSON.stringify([info.rest, info.kind]);
   if (!queued.has(group)) {
@@ -439,7 +510,7 @@ function queueCta(cta) {
 }
 
 function startObserver() {
-  if (observer || typeof window.IntersectionObserver !== 'function' || !document.querySelector('[data-wdp-form]')) {
+  if (observer || typeof window.IntersectionObserver !== 'function') {
     return;
   }
   if (!shouldPrefetchAhead(window.navigator.connection)) {
@@ -500,27 +571,64 @@ function bindDocument() {
   INTENT_EVENTS.forEach((type) => document.addEventListener(type, onIntent, { capture: true, passive: true }));
 }
 
+/** Görünür alana yaklaşan (bağlantıyla önceden alınmamış) kartları izlemeye başlar (bir kez). */
+function watchCards() {
+  startObserver();
+  if (!observer) {
+    return;
+  }
+  document.querySelectorAll('[data-wdp-form]').forEach((cta) => {
+    if (!watched.has(cta)) {
+      watched.add(cta);
+      observer.observe(cta);
+    }
+  });
+}
+
 function init() {
   bindDocument();
-  startObserver();
   document.querySelectorAll('.wdp-list-wrap').forEach((wrap) => {
     if (wrap.dataset.wdpBound === '1') {
       return;
     }
     wrap.dataset.wdpBound = '1';
     bindTabs(wrap);
+    wrap.querySelectorAll('.wdp-card__cta[data-wdp-form]:not([aria-haspopup])').forEach((cta) => cta.setAttribute('aria-haspopup', 'dialog'));
   });
-  document.querySelectorAll('[data-wdp-form]').forEach((cta) => {
-    if (watched.has(cta) || !ctaInfo(cta)) {
-      return;
-    }
-    watched.add(cta);
-    if (!cta.hasAttribute('aria-haspopup')) {
-      cta.setAttribute('aria-haspopup', 'dialog');
-    }
-    if (observer) {
-      observer.observe(cta);
-    }
+  // Ön alma ziyaretçinin İLK etkileşiminde (kaydırma, fare hareketi, dokunma, tuş) başlar: yüklemede eklenti betiği
+  // yalnız dinleyici kaydeder (ana iş süresi tabanla aynı) ve hiç etkileşmeyen ziyaretçi (bot, hemen çıkan) sunucuya ek
+  // istek göndermez. Tarayıcı `<link rel="prefetch">` destekliyorsa ilk kartları TARAYICI alır; kalan/desteklemeyen
+  // (Safari) kartlar görünür alana yaklaşınca istemcide boşta toplu alınır. Karta ilk etkileşim doğrudan dokunuşsa form o
+  // an tek istekle alınır.
+  if (!firstScheduled) {
+    firstScheduled = true;
+    FIRST_INTERACTION.forEach((type) => window.addEventListener(type, onFirstInteraction, { capture: true, passive: true }));
+  }
+}
+let firstScheduled = false;
+const FIRST_INTERACTION = ['scroll', 'pointermove', 'pointerdown', 'touchstart', 'keydown', 'wheel'];
+
+function onFirstInteraction() {
+  FIRST_INTERACTION.forEach((type) => window.removeEventListener(type, onFirstInteraction, { capture: true }));
+  if (nativePrefetch()) {
+    activatePrefetchLinks();
+  }
+  watchCards();
+}
+
+/**
+ * Sunucunun etkisiz `<template data-dp-prefetch-links>` içinde bastığı ön alma bağlantılarını sayfa yüklendikten sonra
+ * `<head>`'e taşır: tarayıcı toplu ucu en düşük öncelikle alır (ilk yükte bayt/bant yok; betik `fetch()` başlatmaz).
+ * Yalnız doğrulanan (aynı köken + eklenti toplu ucu) bağlantılar taşınır.
+ */
+function activatePrefetchLinks() {
+  document.querySelectorAll('template[data-dp-prefetch-links]').forEach((tpl) => {
+    tpl.content.querySelectorAll('link[rel="prefetch"][data-dp-prefetch]').forEach((link) => {
+      if (parsePrefetchHref(link.getAttribute('href'), window.location.href)) {
+        document.head.appendChild(document.importNode(link, false));
+      }
+    });
+    tpl.remove();
   });
 }
 

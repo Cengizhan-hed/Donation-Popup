@@ -203,3 +203,7 @@ Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (v
 
 ## 12.2 notları
 - `donation_panel_compact_text` (string $text, int $product_id) — hedefsiz üründe kart etki cümlesi (düz metin, '' = gizle). Şablonlar: `donation-panel/experiences/compact.php`, `donation-panel/payment/embed.php`. Sorgu bayrağı `donation_panel_embed=1` (yalnız order-pay). Olay `dp:scan` compact kartları da bağlar.
+
+## 12.3 notları
+- `donation_panel_prefetch_forms` (bool $enabled, varsayılan true) — liste/mağaza/kategori kartlarının formlarını ziyaretçinin ilk etkileşiminden sonra tarayıcı ön almasıyla (`rel=prefetch`, toplu `/experiences?ids=`, ≤12/kap türü) hazırlar; false = dokunuşta tek istek. Yanıt `Cache-Control: private, max-age=300` + `Vary: Cookie` (paylaşılan önbellek yok).
+- `donation_panel_direct_enabled` (bool, WC_Product) — sözleşme aynen; artık ürün > tür (`direct.type_*`) > genel kararından SONRA son söz (kaynak `filter` olarak gösterilir).
