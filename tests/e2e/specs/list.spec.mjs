@@ -176,3 +176,42 @@ test('form: panel içinde ürün/kampanya görseli yok', async ({ page }) => {
   await expect(page.locator('.wdp-form-host [data-dp-surface]')).toBeVisible({ timeout: 15000 });
   expect(await page.locator('.wdp-form-host .donation-panel-form img, .wdp-form-host .donation-panel-hero').count()).toBe(0);
 });
+
+test('ön alma sürerken sayfadan ayrılma: sayfa hatası yok (WebKit "access control checks")', async ({ page }) => {
+  // Tam paket `iphone-mut2/shortcode-bad-hash` kırmızısı (467f0db ve 1b2d84a öncesi dallar): liste betiği toplu ön almayı
+  // YÜKLEMEDEN SONRA KENDİLİĞİNDEN başlatıyordu; kısa kod denetimleri sayfayı `domcontentloaded` ile hızla değiştirince
+  // istek yarıda kesiliyor, WebKit bunu "Fetch API cannot load … due to access control checks" sayfa hatası olarak
+  // yazıyordu (aynı köken; CORS değil, iptal). 1b2d84a'dan beri ön alma yalnız ilk etkileşimde başlar. Bu test: (1)
+  // etkileşimsiz ziyarette eklenti isteği yok, (2) etkileşimle başlayan istek ağdayken (yavaş sunucu) ayrılınca sayfa hatası yok.
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(String(e && e.message ? e.message : e)));
+  const logs = [];
+  page.on('console', (m) => m.type() === 'error' && logs.push(m.text()));
+  // Yavaş sunucu (sim): toplu ön alma isteği ayrılma anında hâlâ ağda.
+  // Tam paketteki ağ koruması gibi her istek yönlendiriciden geçer.
+  await page.context().route('**/*', async (route) => {
+    await route.continue();
+  });
+  await page.goto(URL, { waitUntil: 'load' });
+  await page.context().addCookies([{ name: 'dp_slow_rest', value: '1', url: new globalThis.URL(page.url()).origin }]);
+  const started = [];
+  page.on('request', (r) => /donation-panel(\/|%2F)v1(\/|%2F)experiences/.test(r.url()) && started.push(r.url()));
+  // (1) Etkileşimsiz: yükleme + boşta bekleme boyunca eklenti ön alma isteği yok; hızlı ayrılma (domcontentloaded) temiz.
+  await page.goto(URL, { waitUntil: 'load' });
+  await page.waitForTimeout(1500);
+  expect(started, 'etkileşimsiz ziyarette ön alma isteği').toEqual([]);
+  await page.goto(`${URL}&n=x`, { waitUntil: 'domcontentloaded' });
+  await page.goto(URL, { waitUntil: 'domcontentloaded' });
+  // (2) Etkileşimle başlayan istek ağdayken ayrılma (4 kez).
+  for (let i = 0; i < 4; i += 1) {
+    await page.goto(URL, { waitUntil: 'load' });
+    // İlk etkileşim → ön alma başlar; isteğin başladığı an başka sayfaya geçilir.
+    const seen = started.length;
+    await page.locator('a.wdp-list__tab').nth(1).click();
+    await expect.poll(() => started.length, { timeout: 10000 }).toBeGreaterThan(seen);
+    await page.goto(`${URL}&n=${i}#bagis-x`, { waitUntil: 'load' });
+  }
+  await page.waitForTimeout(800);
+  expect(started.length, 'ön alma isteği ayrılma anında ağdaydı').toBeGreaterThanOrEqual(4);
+  expect(errors, logs.join(' | ')).toEqual([]);
+});

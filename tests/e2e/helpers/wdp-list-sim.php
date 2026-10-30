@@ -12,6 +12,10 @@ add_filter(
 		if (0 === strpos((string) $request->get_route(), '/donation-panel/v1')) {
 			global $wpdb;
 			$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '%donation\\_panel\\_rl\\_%'"); // phpcs:ignore
+			// Yavaş sunucu benzetimi (yalnız `dp_slow_rest` çerezi varken): toplu ön alma isteği ağda sürer.
+			if (!empty($_COOKIE['dp_slow_rest']) && 0 === strpos((string) $request->get_route(), '/donation-panel/v1/experiences')) { // phpcs:ignore
+				usleep(2500000);
+			}
 		}
 		return $result;
 	},
