@@ -211,6 +211,20 @@
   .donation-panel-surface--sheet { inline-size: 100%; }
 }
 
+/* Açılış geçişinin başlangıcı (layer.mjs `is-open`'ı gösterimden önce ekler; tıklamada tek stil hesabı). Görünürlük
+   başlangıçta açık: showModal'ın odak adımı başlığa odaklanır. Desteklemeyen tarayıcı eski yolu kullanır (JS). */
+@starting-style {
+  .donation-panel-overlay.is-open { opacity: 0; }
+  .donation-panel-overlay.is-open .donation-panel-surface--modal { transform: translateY(14px) scale(.96); opacity: 0; }
+  .donation-panel-overlay.is-open .donation-panel-surface--panel { transform: translateX(calc(100% * var(--dp-dir, 1))); }
+  .donation-panel-overlay.is-open .donation-panel-surface--sheet { transform: translateY(100%); }
+}
+@media (max-width: 639.98px) {
+  @starting-style {
+    .donation-panel-overlay.is-open .donation-panel-surface--modal, .donation-panel-overlay.is-open .donation-panel-surface--panel { transform: translateY(100%); opacity: 1; }
+  }
+}
+
 /* Sabit alt eylem çubuğu: başparmak bölgesi + güvenli alan */
 /* ---------- Tutar çipleri + etki ifadesi ---------- */
 .donation-panel-legend { font-weight: var(--dp-fw-semibold); font-size: var(--dp-fs-sm); margin-block-end: var(--dp-space-3); display: block; padding: 0; }
@@ -302,7 +316,7 @@
 .donation-panel-lines div { display: flex; justify-content: space-between; gap: 12px; }
 .donation-panel-lines .total { font-weight: var(--dp-fw-bold); font-size: var(--dp-fs-base); padding-block-start: 8px; border-block-start: 1px dashed var(--dp-color-border-strong); }
 
-html.donation-panel-lock { overflow: hidden; }
+/* Kaydırma kilidi: ui2-shared/scroll-lock.mjs kökte satır içi overflow ile (kök sınıfı yok; tema kuralları tüm belgeyi yeniden hesaplatmasın). */
 
 /* ======================================================================
  * 12.0 — Onaylı tasarım (dev/design/approved): başlık, adımlar, kartlar, sabit alt bölüm.

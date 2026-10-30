@@ -102,6 +102,23 @@ export function resolveColor(value, doc, host) {
 }
 
 /**
+ * Dinamik renk işareti (`--dp-color-dynamic`) işaretlemede var mı: eklentinin satır içi `<style>` öğelerinde ya da bir
+ * öğenin `style` özniteliğinde. Stil hesaplatmaz (getComputedStyle yok); işaret yoksa renk eşitlemeye hiç gerek yoktur.
+ *
+ * @param {Document} doc Belge.
+ * @return {boolean} İşaret var mı.
+ */
+export function colorSyncNeeded(doc = typeof document !== 'undefined' ? document : null) {
+  if (!doc || !doc.querySelector) {
+    return false;
+  }
+  if (doc.querySelector('[style*="--dp-color-dynamic"]')) {
+    return true;
+  }
+  return Array.from(doc.querySelectorAll('style[id*="donation-panel"]')).some((s) => (s.textContent || '').indexOf('--dp-color-dynamic') !== -1);
+}
+
+/**
  * Kapsamdaki `.donation-panel` / form köklerinde dinamik renk işareti varsa yazı rengini çözülen renge göre ayarlar.
  * Önce tüm okumalar, sonra yazmalar (tek stil hesaplaması).
  *

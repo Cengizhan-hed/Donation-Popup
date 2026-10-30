@@ -6,7 +6,28 @@ import './base.css';
 import '../ui2-shared/states.css';
 import { createForm } from './form.mjs';
 import { createLayer } from './layer.mjs';
-import { syncColors } from '../ui2-shared/color-sync.mjs';
+import { colorSyncNeeded, syncColors } from '../ui2-shared/color-sync.mjs';
+
+/**
+ * Renk eşitleme `getComputedStyle` okur (zorunlu stil hesabı; ağır tema CSS'inde pahalı). Dinamik renk işareti
+ * işaretlemede yoksa hiç çalışmaz (iş kuyruğa da alınmaz); varsa ilk boyamadan sonra boşta çalışır. O ana dek sunucunun
+ * yazdığı güvenli (kontrastlı) yedek yazı rengi görünür.
+ *
+ * @param {ParentNode} [scope] Kapsam.
+ */
+function syncColorsWhenIdle(scope) {
+  if (!colorSyncNeeded(document)) {
+    return;
+  }
+  const run = () => syncColors(scope);
+  window.requestAnimationFrame(() => {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(run, { timeout: 300 });
+    } else {
+      window.setTimeout(run, 0);
+    }
+  });
+}
 
 /**
  * @param {HTMLElement} root Kök.
@@ -20,8 +41,8 @@ function mount(root) {
     // Katman formu ihtiyaçta (yaklaşma/dokunma/ilk açılış) oluşturulur; form o anda bağlanır.
     const layer = createLayer(root, {
       onBuild: (built) => {
-        syncColors(built);
         createForm(built);
+        syncColorsWhenIdle(built);
       },
     });
     // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
@@ -33,8 +54,8 @@ function mount(root) {
 }
 
 function init() {
-  // Özel renk CSS değişkeniyle verildiyse düğme yazı rengi çözülen renge göre (yalnız gerekirse) ayarlanır.
-  syncColors();
+  // Özel renk CSS değişkeniyle verildiyse düğme yazı rengi çözülen renge göre (yalnız gerekirse; boşta) ayarlanır.
+  syncColorsWhenIdle();
   document.querySelectorAll('[data-dp-exp]').forEach(mount);
 }
 

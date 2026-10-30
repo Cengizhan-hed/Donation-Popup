@@ -349,37 +349,149 @@ export function judgeMetric(key, value) {
 
 /**
  * TARAYICI tarafı (kendi içinde kapalı; `page.evaluate` ile `(${fn})(window, …)` biçiminde çalışır, dış ada başvurmaz):
- * `selector` ile eşleşen öğelerden görünür, yatayda ekran içinde ve ortası üstte (elementFromPoint kendisi ya da
- * çocuğu) olan ilkinin `querySelectorAll` sırasındaki indeksi; yoksa -1. Slider içindeki ekran dışı / üst üste
- * slaytlar elenir. Dikeyde ekran dışıysa öğe ortaya kaydırılarak denenir (Playwright dokunuşu da kaydırır).
+ * `selector` ile eşleşen öğelerden dokunulabilir ilkini seçer. Her aday dikeyde ortalanır (`block:'center'`; sabit /
+ * yapışkan üstbilgi altında kalmasın; kaydırılabilir kap içinde de çalışır), iki kare beklenir (yapışkan üstbilgi,
+ * giriş animasyonu yerleşsin), sonra görünürlük ve isabet denetlenir: `elementFromPoint` sonucu öğenin kendisi ya da
+ * soyundan biri olmalı (SVG çocukları dahil; `Node.contains`). Merkez örtülüyse kutunun içindeki dört noktaya daha
+ * bakılır. Slider'da yatayda ekran dışı / üst üste slaytlar elenir (yatay kaydırma yapılmaz).
+ * Dönüş `{index, x, y, reason}`: `x,y` doğrulanmış dokunma noktası (görünüm koordinatı; çağıran bu noktaya dokunur,
+ * arada kaydırma yok). Bulunamazsa `index:-1` ve `reason` (ilk üç adayın eleme nedeni; örtülüyse üstteki öğe
+ * `etiket#kimlik.sınıf`).
  *
  * @param {Window} w Pencere.
  * @param {string} selector Saf CSS seçici (Playwright sözde seçicisi değil).
- * @return {number} İndeks ya da -1.
+ * @return {Promise<{index:number, x:number, y:number, reason:string}>} Sonuç.
  */
-export function pickVisibleTarget(w, selector) {
+export async function pickVisibleTarget(w, selector) {
   const doc = w.document;
+  const frames = () =>
+    new Promise((resolve) => {
+      if (typeof w.requestAnimationFrame !== 'function') {
+        resolve();
+        return;
+      }
+      w.requestAnimationFrame(() => w.requestAnimationFrame(() => resolve()));
+    });
+  const describe = (n) => {
+    if (!n || !n.tagName) return n ? String(n.nodeName || 'düğüm') : 'yok';
+    const raw = typeof n.className === 'string' ? n.className : (n.className && n.className.baseVal) || '';
+    const cls = raw.trim() ? `.${raw.trim().split(/\s+/).slice(0, 2).join('.')}` : '';
+    return `${String(n.tagName).toLowerCase()}${n.id ? `#${n.id}` : ''}${cls}`;
+  };
+  const hiddenWhy = (el) => {
+    const cs = w.getComputedStyle(el);
+    if (cs.display === 'none') return 'display:none';
+    if (cs.visibility !== 'visible') return `visibility:${cs.visibility}`;
+    if (Number(cs.opacity) === 0) return 'opacity:0';
+    return '';
+  };
+  const pts = [
+    [0.5, 0.5],
+    [0.3, 0.5],
+    [0.7, 0.5],
+    [0.5, 0.3],
+    [0.5, 0.7],
+  ];
   const list = Array.from(doc.querySelectorAll(selector));
+  const reasons = [];
   for (let i = 0; i < list.length; i += 1) {
     const el = list[i];
     let r = el.getBoundingClientRect();
-    if (!(r.width > 0 && r.height > 0)) continue;
-    const cs = w.getComputedStyle(el);
-    if (cs.visibility !== 'visible' || cs.display === 'none' || Number(cs.opacity) === 0) continue;
-    const cx = r.left + r.width / 2;
-    if (cx < 0 || cx > w.innerWidth) continue;
-    let cy = r.top + r.height / 2;
-    if (cy < 0 || cy > w.innerHeight) {
-      // Kaydırılabilir kap (ör. alttan panel gövdesi) içinde de çalışsın: öğeyi dikeyde ortala.
-      el.scrollIntoView({ block: 'center', inline: 'nearest' });
-      r = el.getBoundingClientRect();
-      cy = r.top + r.height / 2;
-      if (cy < 0 || cy > w.innerHeight) continue;
+    if (!(r.width > 0 && r.height > 0)) {
+      reasons.push(`#${i} boyut 0`);
+      continue;
     }
-    const hit = doc.elementFromPoint(r.left + r.width / 2, cy);
-    if (hit && (hit === el || el.contains(hit))) return i;
+    const cx = r.left + r.width / 2;
+    if (cx < 0 || cx > w.innerWidth) {
+      reasons.push(`#${i} yatayda ekran dışı`);
+      continue;
+    }
+    if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'center', inline: 'nearest' });
+    await frames();
+    let why = hiddenWhy(el);
+    // Görünür olunca başlayan giriş animasyonu: birkaç kare daha bekle (sabit bekleme değil, kare bazlı).
+    for (let k = 0; why && k < 20; k += 1) {
+      await frames();
+      why = hiddenWhy(el);
+    }
+    if (why) {
+      reasons.push(`#${i} ${why}`);
+      continue;
+    }
+    r = el.getBoundingClientRect();
+    let cover = '';
+    let found = null;
+    for (const [fx, fy] of pts) {
+      const x = r.left + r.width * fx;
+      const y = r.top + r.height * fy;
+      if (x < 0 || x > w.innerWidth || y < 0 || y > w.innerHeight) continue;
+      const hit = doc.elementFromPoint(x, y);
+      if (hit && (hit === el || el.contains(hit))) {
+        found = { x, y };
+        break;
+      }
+      if (!cover) cover = describe(hit);
+    }
+    if (found) return { index: i, x: Math.round(found.x), y: Math.round(found.y), reason: '' };
+    reasons.push(cover ? `#${i} üstte ${cover}` : `#${i} dikeyde ekran dışı`);
   }
-  return -1;
+  return { index: -1, x: 0, y: 0, reason: reasons.slice(0, 3).join('; ') || 'eşleşen öğe yok' };
+}
+
+/**
+ * Chrome izinde `click` olay işleyicisinin (EventDispatch type=click; en uzunu) İÇİNDE zorunlu eşzamanlı stil/düzen
+ * hesapları (UpdateLayoutTree, Layout). `minMs` altındaki kayıtlar (ör. tek öğe odak denetimi) `small` olarak ayrı sayılır.
+ *
+ * @param {object[]|{traceEvents:object[]}} trace İz.
+ * @param {{minMs?: number, type?: string}} [opts] Seçenekler.
+ * @return {{clicks:number, clickMs:number, forced:number, small:number, styleMs:number, layoutMs:number, items:Array<{name:string, ms:number, elements:number}>}} Sonuç.
+ */
+export function forcedLayoutsInClick(trace, opts = {}) {
+  const events = Array.isArray(trace) ? trace : (trace && trace.traceEvents) || [];
+  const minUs = (opts.minMs ?? 0.5) * 1000;
+  const type = opts.type || 'click';
+  const clicks = events.filter((e) => e.name === 'EventDispatch' && e.ph === 'X' && e.args && e.args.data && e.args.data.type === type);
+  const out = { clicks: clicks.length, clickMs: 0, forced: 0, small: 0, styleMs: 0, layoutMs: 0, items: [] };
+  if (!clicks.length) return out;
+  const c = clicks.reduce((x, y) => (Number(y.dur || 0) > Number(x.dur || 0) ? y : x));
+  const a = c.ts;
+  const b = c.ts + Number(c.dur || 0);
+  out.clickMs = +(Number(c.dur || 0) / 1000).toFixed(1);
+  for (const e of events) {
+    if (e.ph !== 'X' || e.pid !== c.pid || e.tid !== c.tid || e.ts < a || e.ts > b) continue;
+    if (e.name !== 'UpdateLayoutTree' && e.name !== 'Layout') continue;
+    const dur = Number(e.dur || 0);
+    if (e.name === 'Layout') out.layoutMs += dur / 1000;
+    else out.styleMs += dur / 1000;
+    if (dur < minUs) {
+      out.small += 1;
+      continue;
+    }
+    out.forced += 1;
+    const item = { name: e.name, ms: +(dur / 1000).toFixed(1), elements: Number((e.args && e.args.elementCount) || 0) };
+    // İz `disabled-by-default-devtools.timeline.stack` ile alındıysa zorlayan çağrı (ilk iki çerçeve; tanı).
+    const stack = (e.args && e.args.beginData && e.args.beginData.stackTrace) || [];
+    if (stack.length) item.stack = stack.slice(0, 2).map((f) => `${f.functionName || '?'}@${String(f.url || '').split('/').pop().split('?')[0]}:${f.lineNumber}:${f.columnNumber}`).join(' < ');
+    out.items.push(item);
+  }
+  out.styleMs = +out.styleMs.toFixed(1);
+  out.layoutMs = +out.layoutMs.toFixed(1);
+  // Zorlayan JS çağrı noktası sayısı (yığınlı izde): aynı çağrının (ör. tarayıcının showModal içi odak adımı) birden çok
+  // kaydı tek nokta sayılır. Yığın yoksa -1.
+  out.sites = out.items.some((i) => i.stack) ? new Set(out.items.map((i) => (i.stack || '?').split(' < ')[0])).size : -1;
+  // Tıklamadan ilk boyamaya (Paint/PrePaint) kadar TÜM stil/düzen işi (zorunlu + karedeki): toplam açılış maliyeti.
+  const paint = events
+    .filter((e) => e.ph === 'X' && e.pid === c.pid && e.tid === c.tid && e.ts >= b && (e.name === 'Paint' || e.name === 'PrePaint'))
+    .sort((x, y) => x.ts - y.ts)[0];
+  const end = paint ? paint.ts + Number(paint.dur || 0) : b;
+  let frame = 0;
+  for (const e of events) {
+    if (e.ph !== 'X' || e.pid !== c.pid || e.tid !== c.tid || e.ts < a || e.ts > end) continue;
+    if (e.name === 'UpdateLayoutTree' || e.name === 'Layout') frame += Number(e.dur || 0);
+  }
+  out.toPaintMs = +((end - a) / 1000).toFixed(1);
+  out.frameStyleLayoutMs = +(frame / 1000).toFixed(1);
+  return out;
 }
 
 /**
@@ -388,7 +500,8 @@ export function pickVisibleTarget(w, selector) {
  * ve visibility visible) MutationObserver ile (attributes ['open'], subtree, childList) yakalanır — rAF yoklaması
  * yok, bu yüzden açılış anına kare gecikmesi eklenmez; tıklama anında zaten açıksa hemen. Açık ama henüz görünmez
  * (ör. stil gelmedi) diyalog için yedek: her kare yeniden bakılır. Açılış anından sonra iki rAF → t1.
- * Sonuç `w.__dpTap = {t0, tOpen, t1}` (ms, performance zaman ekseni).
+ * Sonuç `w.__dpTap = {t0, tOpen, t1}` (ms, performance zaman ekseni). t1'de `w.__dpPerfSignal('tap')` (varsa) çağrılır:
+ * ölçüm betiği bitişi yoklamadan öğrenir (yoklama betiği 4× CPU'da kareyi geciktirip ölçümü bozuyordu).
  *
  * @param {Window} w Pencere.
  * @param {string} selector Tetikleyici seçicisi.
@@ -411,7 +524,13 @@ export function installTapProbe(w, selector, index) {
     done = true;
     state.tOpen = w.performance.now();
     if (mo) mo.disconnect();
-    w.requestAnimationFrame(() => w.requestAnimationFrame(() => (state.t1 = w.performance.now())));
+    w.requestAnimationFrame(() =>
+      w.requestAnimationFrame(() => {
+        state.t1 = w.performance.now();
+        // Ölçüm betiğine bitiş bildirimi (Playwright bağlaması; varsa). Yoklama betiği ölçüm penceresine girmesin.
+        if (typeof w.__dpPerfSignal === 'function') w.__dpPerfSignal('tap');
+      })
+    );
     return true;
   };
   const fallback = () => {

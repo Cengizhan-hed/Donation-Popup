@@ -58,6 +58,7 @@ export function createLayer(root, hooks = {}) {
   let baseline = 0;
   let baselineWidth = 0;
   let geoFrame = 0;
+  let openFrame = 0;
   let settleTimer = 0;
   let blurTimer = 0;
   let revealTimer = 0;
@@ -159,8 +160,15 @@ export function createLayer(root, hooks = {}) {
       return;
     }
     const below = Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop));
-    root.style.setProperty('--dp-kb', `${below}px`);
-    root.style.setProperty('--dp-vvh', `${Math.round(viewport.height)}px`);
+    const kb = `${below}px`;
+    const vvh = `${Math.round(viewport.height)}px`;
+    // Yalnız değiştiyse yaz (aynı değer de stil geçersizlemesi doğurur; ağır temada kare başına ek hesap).
+    if (root.style.getPropertyValue('--dp-kb') !== kb) {
+      root.style.setProperty('--dp-kb', kb);
+    }
+    if (root.style.getPropertyValue('--dp-vvh') !== vvh) {
+      root.style.setProperty('--dp-vvh', vvh);
+    }
   };
 
   const scheduleGeometry = () => {
@@ -320,19 +328,47 @@ export function createLayer(root, hooks = {}) {
     root.dispatchEvent(new CustomEvent('dp:closed', { bubbles: true }));
   };
 
+  /**
+   * Açılıştan sonraki ilk karede (rAF; boyamadan önce, tıklama işleyicisinin dışında): klavyesiz taban yükseklik,
+   * görsel görünüm geometrisi ve klavye durumu. Okumalar burada toplanır; tıklama işleyicisinde düzen okuması yok.
+   */
+  const afterOpenFrame = () => {
+    openFrame = 0;
+    if (!opened) {
+      return;
+    }
+    // Önce okumalar (açılışta klavye kapalı: syncKeyboard yazmaz), sonra geometri yazımı — karede zorunlu hesap yok.
+    updateBaseline();
+    syncKeyboard();
+    applyGeometry();
+  };
+
   const openNow = () => {
     if (opened || !build()) {
       return;
     }
     window.clearTimeout(closeTimer);
+    const reopening = Boolean(closeTimer) || Boolean(overlay.open); // kapanış animasyonu sürerken: diyalog zaten açık
     closeTimer = 0;
     opened = true;
     keyboardUp = false;
     keyboardDismissedFlag = false;
     fieldFocused = false;
     baseline = 0;
-    updateBaseline();
+    // Tüm DOM yazmaları showModal'dan ÖNCE ve tek seferde: zorunlu stil/düzen hesabı yalnız showModal'ın kendi odak
+    // adımında bir kez yapılır (ağır tema CSS'inde her ek zorunlu hesap onlarca ms). Tıklama işleyicisinde okuma yok.
     present();
+    // Geometri (--dp-kb / --dp-vvh) ilk karede, boyamadan önce ve yalnız değiştiyse yazılır (afterOpenFrame).
+    trigger.setAttribute('aria-expanded', 'true');
+    // Yerel kipli diyalogda arka plan inert'i tarayıcıdadır (öznitelik yazmak tüm alt ağaçların stilini yeniden hesaplatır).
+    lockPage(ownerId, root, 'donation-panel-lock', { native: typeof overlay.showModal === 'function' });
+    // @starting-style destekleniyorsa açılış geçişi CSS'ten başlar: `is-open` gösterimden önce eklenir; katman ilk
+    // karesinden görünür (visibility) olduğundan showModal'ın odak adımı başlığa (autofocus) odaklanır. Desteklemeyen
+    // tarayıcıda eski yol: göster → başlangıç durumunu yerleştir (tek düzen okuması) → `is-open`.
+    const startingStyle = !reopening && typeof window.CSSStartingStyleRule !== 'undefined';
+    if (startingStyle) {
+      overlay.classList.add('is-open');
+    }
     if (typeof overlay.showModal === 'function') {
       if (!overlay.open) {
         overlay.showModal();
@@ -340,11 +376,10 @@ export function createLayer(root, hooks = {}) {
     } else {
       overlay.setAttribute('open', '');
     }
-    // Aynı karede başlangıç durumu yerleşsin ki geçiş hemen başlasın (ilk boyamada görünür).
-    void overlay.offsetWidth;
-    overlay.classList.add('is-open');
-    trigger.setAttribute('aria-expanded', 'true');
-    lockPage(ownerId, root, 'donation-panel-lock');
+    if (!startingStyle) {
+      void overlay.offsetWidth;
+      overlay.classList.add('is-open');
+    }
     document.addEventListener('keydown', onKeydown, true);
     window.addEventListener('popstate', onPopState);
     try {
@@ -357,11 +392,14 @@ export function createLayer(root, hooks = {}) {
       viewport.addEventListener('resize', onViewportResize);
       viewport.addEventListener('scroll', scheduleGeometry);
     }
-    applyGeometry();
-    syncKeyboard();
-    // Otomatik alan odağı yok (mobilde klavye açılmasın): odak başlığa.
+    window.cancelAnimationFrame(openFrame);
+    openFrame = window.requestAnimationFrame(afterOpenFrame);
+    // Otomatik alan odağı yok (mobilde klavye açılmasın): odak başlığa. showModal başlığa (autofocus) zaten odaklandıysa
+    // yeniden çağrılmaz (ek stil hesabı yok); odak kaydırması yok (preventScroll).
     const focusStart = () => (titleNode || surface).focus({ preventScroll: true });
-    focusStart();
+    if (!overlay.contains(document.activeElement)) {
+      focusStart();
+    }
     if (!overlay.contains(document.activeElement)) {
       // Açılış karesinde katman hâlâ visibility:hidden ise (stil/geçiş yerleşmedi; sayfa yeni yüklendiyse sık) focus()
       // sessizce düşer ve modal tuzak odağı dışarıda bırakır: görünür olana dek (en çok ~30 kare) yeniden dene.
@@ -404,6 +442,10 @@ export function createLayer(root, hooks = {}) {
     if (geoFrame) {
       window.cancelAnimationFrame(geoFrame);
       geoFrame = 0;
+    }
+    if (openFrame) {
+      window.cancelAnimationFrame(openFrame);
+      openFrame = 0;
     }
     revealTarget = null;
     fieldFocused = false;
