@@ -3,6 +3,37 @@
 All notable changes to Donation Panel for WooCommerce are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [12.3.0]
+
+### Added
+- Direct donation settings at three levels: global switch, per donation type (fixed, donor-chosen, shares, campaign, add-on) and per product, with a "current value (source)" line on the product screen.
+- Compact card v2: 384 px wide, 2 or 3 steps, Gift Aid / tax declaration with a Details layer, trust line (setting `compact.trust`), shortcode builder and guide sections in the admin.
+- Live campaign progress bar on every surface (shortcode card, form in every container, compact card): personal preview of the donor's own amount, cart sync (including the side cart), refresh after payment, goal celebration, "Be the first to give" at zero; three admin settings.
+- Form prefetch: list and shop cards fetch their forms once after load, so the panel opens without a request on tap (filter `donation_panel_prefetch_forms`).
+- Color source display in the admin (theme palette role, default, or your own choice).
+- Side cart settings: floating button, button corner, add-on suggestion (product, up to 3 amounts, short line).
+
+### Changed
+- Layer open/close animation: `overflow: clip`, a separate backdrop layer, a springless 260 ms ease; the panel no longer shakes.
+- Focus: a thin border for mouse and touch, a ring for keyboard.
+- Colors: only named palette roles are used; a theme without them gets a neutral default and an admin notice instead of a guessed color.
+
+### Fixed
+- On direct donations the add-on option was silently dropped.
+- On block themes the shop card did not open the form.
+- Side cart style leaks (Storefront focus ring and button hover border).
+- An untranslated donation type name was shown in the side cart.
+
+### Security
+- REST root and prefetch URL validation (same origin and plugin namespace only).
+- The batch endpoint rate limit is charged per product.
+- Script and style URLs are never read from the DOM.
+
+### Rollback plan
+1. Reinstall the 12.2.0 plugin zip over the folder (docs/CANLIYA-ALMA.md G2 steps). Settings and orders are kept.
+2. New keys written by 12.3.0 (`direct.type_*`, `progress.*`, `compact.trust`, side cart settings) are ignored by 12.2.0 and can stay.
+3. A button color computed from a neutral default is only a display fallback; no stored color is changed.
+
 ## [12.2.0]
 
 ### Fixed — zero tolerance for unstyled content
