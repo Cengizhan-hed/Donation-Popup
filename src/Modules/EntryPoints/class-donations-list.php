@@ -419,7 +419,9 @@ class Donations_List {
 		$assets = $plugin->container()->get( Assets::class );
 		$assets->enqueue( self::ASSET_SLUG );
 		if ( $with_form ) {
-			$assets->enqueue( Experiences_Module::SLUG );
+			// Form stili sayfada (katman her karede stilli); form BETİĞİ sayfa yüklemesinde yok: liste betiği formlarla
+			// birlikte REST yanıtındaki adresten ihtiyaçta ekler (12.3 fix: liste sayfası JS baytı).
+			$assets->require_style( Experiences_Module::SLUG );
 		}
 	}
 
@@ -436,7 +438,7 @@ class Donations_List {
 		}
 		$assets = $plugin->container()->get( Assets::class );
 		$assets->enqueue( self::ASSET_SLUG, false, false );
-		$assets->enqueue( Experiences_Module::SLUG, true );
+		$assets->require_style( Experiences_Module::SLUG );
 	}
 
 	/**

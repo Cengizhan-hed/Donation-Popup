@@ -168,7 +168,7 @@ export function hostKey(rest, id, kind) {
 }
 
 /** REST'le gelen katmanın isteğe bağlı paketleri: yalnız bilinen slug ve eklentinin kendi derleme yolu. */
-const LAZY_PATHS = { progress: /\/assets\/build\/progress\/index\.js$/ };
+const LAZY_PATHS = { progress: /\/assets\/build\/progress\/index\.js$/, experiences: /\/assets\/build\/experiences\/index\.js$/ };
 
 /**
  * REST yanıtındaki (`assets`) isteğe bağlı paket bilgisi. Adres yalnız SUNUCU YANITINDAN gelir (DOM özniteliğinden asla)

@@ -149,7 +149,34 @@ let aheadDisabled = false;
  */
 function entryOf(data, html, id) {
   const progress = lazyAsset(data, 'progress', window.location.href);
-  return { html, progress: progress && progress.ids.includes(String(id)) ? progress : null };
+  return { html, progress: progress && progress.ids.includes(String(id)) ? progress : null, exp: lazyAsset(data, 'experiences', window.location.href) };
+}
+
+/** Form deneyimi paketi (bir kez) yüklendi sözü. */
+let experiencesLoad = null;
+
+/**
+ * Form deneyimi betiği: liste/mağaza kartı sayfasında sayfa yüklemesinde YOK (ilk yük baytı yok); formlar alınınca
+ * yalnız sunucu yanıtındaki doğrulanmış adresten (`lazyAsset`) bir kez eklenir. Sayfada zaten varsa hiçbir şey yapmaz.
+ *
+ * @param {{script: string}|null} info Paket bilgisi.
+ * @return {Promise<void>} Betik yüklendi (ya da gerekmiyor / yüklenemedi).
+ */
+function loadExperiences(info) {
+  if (window.__dpExperiences || document.getElementById('donation-panel-experiences-js') || !info) {
+    return Promise.resolve();
+  }
+  if (!experiencesLoad) {
+    experiencesLoad = new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.id = 'donation-panel-experiences-js';
+      script.src = info.script;
+      script.async = true;
+      script.onload = script.onerror = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+  return experiencesLoad;
 }
 
 /** Formu bellekte hazır ürünler (sonradan DOM'a gelen/yeniden çizilen kart düğmeleri de işaretlenir). */
@@ -299,8 +326,9 @@ function ensureHost(rest, id, kind) {
     remember(
       hosts,
       key,
-      sourceEntry(rest, id, kind).then(({ html, progress }) => {
+      sourceEntry(rest, id, kind).then(({ html, progress, exp }) => {
         loadProgress(progress);
+        loadExperiences(exp);
         const host = document.createElement('div');
         host.className = 'wdp-form-host';
         const template = document.createElement('template');
@@ -346,6 +374,11 @@ function prefetchBatch(rest, kind, ids) {
       return parsed;
     };
     const items = async (blob) => (await read(blob)).items || {};
+    // Yanıt boşta çözülür ve form deneyimi betiği (sayfada yoksa) şimdi yüklenir: dokunuşta ne ağ ne betik beklenir.
+    const ready = request
+      .then((blob) => new Promise((resolve) => idle(resolve)).then(() => read(blob)))
+      .then((data) => loadExperiences(lazyAsset(data, 'experiences', window.location.href)));
+    ready.catch(() => {}); // İptal/hata dokunuşta ele alınır (sayfa değişiminde işlenmemiş ret yok).
     part.forEach((id) => {
       const key = hostKey(rest, id, kind);
       const lazy = request.then(async (blob) => {
@@ -353,6 +386,7 @@ function prefetchBatch(rest, kind, ids) {
         if (blob.size < 512 && typeof (await items(blob))[id] !== 'string') {
           throw new Error('missing');
         }
+        await ready;
         markReady(id);
         // Çözümü erteleyen nesne: kap ilk kez kurulurken çözülür.
         return {
