@@ -187,6 +187,8 @@ export function createForm(root, hooks = {}) {
   const recapAmount = form.querySelector('[data-dp-recap-amount]');
   const qtyTotal = form.querySelector('[data-dp-qty-total]');
   const qtySum = form.querySelector('[data-dp-qty-sum]');
+  // Tek adette sunucu metni korunur (ör. "£100 hisse başına"): bağlanınca metin değişmez (CLS 0, §25).
+  const qtyOneText = qtySum ? qtySum.textContent : '';
   const backButton = form.querySelector('[data-dp-back]');
   const chips = Array.from(form.querySelectorAll('[data-dp-preset]'));
   const presets = chips.map((chip) => Number(chip.dataset.dpPreset));
@@ -408,7 +410,7 @@ export function createForm(root, hooks = {}) {
     if (qtySum && qtySum.dataset.unitText && state.qty > 1) {
       qtySum.textContent = `${qtySum.dataset.unitText} × ${state.qty}`;
     } else if (qtySum && qtySum.dataset.unitText) {
-      qtySum.textContent = qtySum.dataset.unitText;
+      qtySum.textContent = qtyOneText || qtySum.dataset.unitText;
     }
     setLine('donation', current.donation, true);
     setLine('fee', current.fee, current.fee > 0);

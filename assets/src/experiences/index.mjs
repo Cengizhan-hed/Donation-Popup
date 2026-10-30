@@ -29,13 +29,92 @@ function syncColorsWhenIdle(scope) {
   });
 }
 
+/** Formu gerçekten bağlanmış (createForm çalışmış) sayfa içi kökler. Öznitelik değil: kopyalanan düğüm (ör. kaydırıcının
+ * çoğalttığı slayt) özniteliği taşır ama dinleyicileri taşımaz; kopya ilk etkileşimde ayrıca bağlanır. */
+const started = new WeakSet();
+/** Bağlanmış (katman ya da tembel sayfa içi) kökler. */
+const mounted = new WeakSet();
+/** Görünür alana yaklaşınca (≈200 px) bağlama; görünmeyen slayt formları (yatayda kayan, kırpılmış) beklemede kalır. */
+let observer = null;
+
+/**
+ * Sayfa içi formu şimdi bağlar (bir kez). Sunucu çıktısı betiğin ilk çizimiyle aynıdır; bağlama görsel bir şey değiştirmez.
+ *
+ * @param {HTMLElement} root Kök.
+ */
+function start(root) {
+  if (started.has(root)) {
+    return;
+  }
+  started.add(root);
+  if (observer) {
+    observer.unobserve(root);
+  }
+  createForm(root);
+  root.dataset.dpReady = '1';
+}
+
+/** Kendi etkileşimini başlatan olaylar: form, olay hedefine ulaşmadan (yakalama evresinde) eşzamanlı bağlanır; olay
+ * yeniden uygulanmaz, aynı olay yeni dinleyicilere doğal olarak ulaşır (DOM: hedefin dinleyici listesi hedefe varınca okunur). */
+const WAKE_EVENTS = ['pointerdown', 'touchstart', 'mousedown', 'focusin', 'keydown', 'click', 'input', 'change', 'submit'];
+
+/**
+ * @param {Event} event Olay.
+ */
+function wakeFromEvent(event) {
+  const target = event.target;
+  const root = target && target.closest ? target.closest('[data-dp-exp][data-dp-kind="inline"]') : null;
+  if (root && !started.has(root)) {
+    mounted.add(root);
+    start(root);
+  }
+}
+
+/**
+ * @param {HTMLElement} el Öğe.
+ * @return {boolean} Gerçekten görünür mü (visibility/opacity; üst üste duran solma slaytları).
+ */
+function shown(el) {
+  if (typeof el.checkVisibility === 'function') {
+    return el.checkVisibility({ visibilityProperty: true, opacityProperty: true });
+  }
+  return true;
+}
+
+/**
+ * @param {HTMLElement} root Sayfa içi kök.
+ */
+function startWhenNear(root) {
+  if (typeof window.IntersectionObserver !== 'function') {
+    // Eski tarayıcı: ilk boyamadan sonra boşta bağlanır (etkileşim yine anında bağlar).
+    const idle = window.requestIdleCallback || ((fn) => window.setTimeout(fn, 1));
+    idle(() => start(root));
+    return;
+  }
+  if (!observer) {
+    observer = new window.IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && shown(entry.target)) {
+            start(entry.target);
+          }
+        });
+      },
+      { rootMargin: '200px' }
+    );
+  }
+  observer.observe(root);
+}
+
 /**
  * @param {HTMLElement} root Kök.
  */
 function mount(root) {
-  if (root.dataset.dpMounted === '1') {
+  if (mounted.has(root)) {
     return;
   }
+  mounted.add(root);
+  // Öznitelik "bağlandı / etkileşime hazır" demektir (sayfa içi formda etkileşim formu eşzamanlı bağlar).
   root.dataset.dpMounted = '1';
   if (root.dataset.dpKind !== 'inline') {
     // Katman formu ihtiyaçta (yaklaşma/dokunma/ilk açılış) oluşturulur; form o anda bağlanır.
@@ -48,10 +127,13 @@ function mount(root) {
     // "Sepete ekle, başka bağış seç": katman kapanır, bağışçı sayfada kalır.
     root.addEventListener('dp:added', () => layer && layer.close());
   } else {
-    createForm(root);
     root.dataset.dpPresented = 'inline';
+    startWhenNear(root);
   }
 }
+
+// Tembel sayfa içi formlar: belge düzeyinde tek yakalama dinleyicisi (form başına dinleyici yok; kopyalanan slaytlar da kapsanır).
+WAKE_EVENTS.forEach((type) => document.addEventListener(type, wakeFromEvent, { capture: true, passive: true }));
 
 function init() {
   // Özel renk CSS değişkeniyle verildiyse düğme yazı rengi çözülen renge göre (yalnız gerekirse; boşta) ayarlanır.

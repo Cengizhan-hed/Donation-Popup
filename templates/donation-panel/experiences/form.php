@@ -30,6 +30,34 @@ $donation_panel_currency = \DonationPanel\Support\Price::get_js_currency_setting
 $donation_panel_fee_text = rtrim( rtrim( number_format( $donation_panel_fee, 2, '.', '' ), '0' ), '.' );
 $donation_panel_single   = 'amount' !== (string) $donation_panel_steps[0]['id'];
 $donation_panel_direct   = ! empty( $donation_panel_model['direct'] );
+/*
+ * Betiğin ilk durumu (form.mjs initialState): önerilen tutar kartı seçili; serbest tutar yoksa ilk kart seçili. Sunucu aynı
+ * durumu çizer: form tembel bağlansa da (görünür olunca / ilk dokunuşta) bağlama hiçbir metni/yüksekliği değiştirmez (§25).
+ */
+$donation_panel_derived  = in_array( $donation_panel_kind, array( 'fixed', 'shares' ), true );
+$donation_panel_selected = null;
+if ( ! $donation_panel_single ) {
+	foreach ( $donation_panel_presets as $donation_panel_preset ) {
+		if ( null === $donation_panel_selected && null !== $donation_panel_model['recommended'] && abs( (float) $donation_panel_model['recommended'] - (float) $donation_panel_preset ) < 0.005 ) {
+			$donation_panel_selected = (float) $donation_panel_preset;
+		}
+	}
+	if ( null === $donation_panel_selected && empty( $donation_panel_model['allow_custom'] ) && $donation_panel_presets ) {
+		$donation_panel_selected = (float) reset( $donation_panel_presets );
+	}
+}
+$donation_panel_first_amount = $donation_panel_derived ? $donation_panel_unit : (float) $donation_panel_selected;
+// Betikteki para biçimi (store.mjs formatTotal): tam sayıda ondalık yok, değilse en çok 2 ondalık.
+$donation_panel_money = static function ( $amount ) use ( $donation_panel_symbol, $donation_panel_model ) {
+	$amount = (float) $amount;
+	return $donation_panel_symbol . number_format_i18n( $amount, floor( $amount ) === $amount ? 0 : min( 2, max( 0, (int) $donation_panel_model['decimals'] ) ) );
+};
+// İşlem ücreti önizlemesi (store.mjs withFee/computeTotals ile aynı yuvarlama): ücret kutusunun "+tutar" ipucu.
+$donation_panel_fee_preview = 0.0;
+if ( (float) $donation_panel_model['cover_fee'] > 0 && $donation_panel_first_amount > 0 ) {
+	$donation_panel_dec         = max( 0, (int) $donation_panel_model['decimals'] );
+	$donation_panel_fee_preview = round( round( $donation_panel_first_amount * ( 1 + (float) $donation_panel_model['cover_fee'] / 100 ), $donation_panel_dec ) - $donation_panel_first_amount, $donation_panel_dec );
+}
 if ( $donation_panel_direct ) {
 	$donation_panel_submit_label = _x( 'Continue to payment', 'Donation form: last step button when the donor goes straight to the payment page', 'woo-donation-popup' );
 } else {
@@ -99,12 +127,12 @@ $donation_panel_phone_field = static function ( $name, $id, $required, $extra ) 
 /**
  * İşlem ücreti ve ek bağış satırları.
  */
-$donation_panel_extras = static function () use ( $donation_panel_key, $donation_panel_fee, $donation_panel_fee_text, $donation_panel_addon, $donation_panel_symbol, $donation_panel_format ) {
+$donation_panel_extras = static function () use ( $donation_panel_key, $donation_panel_fee, $donation_panel_fee_text, $donation_panel_addon, $donation_panel_symbol, $donation_panel_format, $donation_panel_fee_preview, $donation_panel_money ) {
 	if ( $donation_panel_fee > 0 ) :
 		?>
 		<label class="donation-panel-check">
 			<input type="checkbox" name="donation_cover_fee" value="1" data-dp-fee />
-			<span class="donation-panel-check__t"><b><?php /* translators: %s: fee percent. */ echo esc_html( sprintf( __( 'Cover processing costs (+%%%s)', 'woo-donation-popup' ), $donation_panel_fee_text ) ); ?></b><span class="donation-panel-muted" data-dp-fee-hint></span></span>
+			<span class="donation-panel-check__t"><b><?php /* translators: %s: fee percent. */ echo esc_html( sprintf( __( 'Cover processing costs (+%%%s)', 'woo-donation-popup' ), $donation_panel_fee_text ) ); ?></b><span class="donation-panel-muted" data-dp-fee-hint><?php echo $donation_panel_fee_preview > 0 ? esc_html( '+' . $donation_panel_money( $donation_panel_fee_preview ) ) : ''; ?></span></span>
 		</label>
 		<?php
 	endif;
@@ -219,7 +247,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 									$donation_panel_is_recommended = null !== $donation_panel_model['recommended'] && abs( (float) $donation_panel_model['recommended'] - (float) $donation_panel_preset ) < 0.005;
 									$donation_panel_impact_text    = isset( $donation_panel_impact[ (string) (float) $donation_panel_preset ] ) ? $donation_panel_impact[ (string) (float) $donation_panel_preset ] : '';
 									?>
-									<button type="button" class="donation-panel-amount" role="radio" aria-checked="<?php echo $donation_panel_is_recommended ? 'true' : 'false'; ?>" tabindex="<?php echo ( $donation_panel_is_recommended || ( 0 === $donation_panel_index && null === $donation_panel_model['recommended'] ) ) ? '0' : '-1'; ?>" data-dp-preset="<?php echo esc_attr( (string) $donation_panel_preset ); ?>">
+									<button type="button" class="donation-panel-amount" role="radio" aria-checked="<?php echo ( null !== $donation_panel_selected && abs( $donation_panel_selected - (float) $donation_panel_preset ) < 0.005 ) ? 'true' : 'false'; ?>" tabindex="<?php echo ( ( null !== $donation_panel_selected && abs( $donation_panel_selected - (float) $donation_panel_preset ) < 0.005 ) || ( 0 === $donation_panel_index && null === $donation_panel_selected ) ) ? '0' : '-1'; ?>" data-dp-preset="<?php echo esc_attr( (string) $donation_panel_preset ); ?>">
 										<?php if ( $donation_panel_is_recommended ) : ?>
 											<span class="donation-panel-amount__badge"><?php esc_html_e( 'Most popular', 'woo-donation-popup' ); ?></span>
 										<?php endif; ?>
@@ -274,7 +302,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 									<div class="donation-panel-stepper" role="group" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-qty-label">
 										<button type="button" data-dp-qty="-1" aria-label="<?php esc_attr_e( 'Decrease', 'woo-donation-popup' ); ?>" disabled><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
 										<output class="donation-panel-num" data-dp-qty-out aria-live="polite">1</output>
-										<button type="button" data-dp-qty="1" aria-label="<?php esc_attr_e( 'Increase', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+										<button type="button" data-dp-qty="1" aria-label="<?php esc_attr_e( 'Increase', 'woo-donation-popup' ); ?>"<?php echo (int) $donation_panel_qty['max'] <= 1 ? ' disabled' : ''; ?>><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 									</div>
 								<?php endif; ?>
 								<div class="donation-panel-qtybox__sum">
@@ -292,7 +320,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 					<?php else : ?>
 					<div class="donation-panel-summary" data-dp-recap>
 						<span class="donation-panel-summary__t"><b><?php echo esc_html( (string) $donation_panel_model['title'] ); ?></b><small><?php echo esc_html( (string) $donation_panel_model['subtitle'] ); ?></small></span>
-						<strong class="donation-panel-num" data-dp-recap-amount></strong>
+						<strong class="donation-panel-num" data-dp-recap-amount><?php echo esc_html( $donation_panel_money( $donation_panel_first_amount ) ); ?></strong>
 					</div>
 					<?php endif; ?>
 
@@ -365,10 +393,10 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 
 					<?php if ( $donation_panel_fee > 0 || $donation_panel_addon ) : ?>
 					<div class="donation-panel-lines" aria-label="<?php esc_attr_e( 'Total', 'woo-donation-popup' ); ?>" data-dp-lines>
-						<div data-dp-line="donation"><span><?php esc_html_e( 'Donation', 'woo-donation-popup' ); ?></span><span class="donation-panel-num" data-dp-line-value></span></div>
+						<div data-dp-line="donation"><span><?php esc_html_e( 'Donation', 'woo-donation-popup' ); ?></span><span class="donation-panel-num" data-dp-line-value><?php echo esc_html( $donation_panel_money( $donation_panel_first_amount ) ); ?></span></div>
 						<div data-dp-line="fee" hidden><span><?php esc_html_e( 'Processing fee', 'woo-donation-popup' ); ?></span><span class="donation-panel-num" data-dp-line-value></span></div>
 						<div data-dp-line="addon" hidden><span><?php esc_html_e( 'Add-on donation', 'woo-donation-popup' ); ?></span><span class="donation-panel-num" data-dp-line-value></span></div>
-						<div class="total" data-dp-line="total"><span><?php esc_html_e( 'Total', 'woo-donation-popup' ); ?></span><span class="donation-panel-num" data-dp-line-value></span></div>
+						<div class="total" data-dp-line="total"><span><?php esc_html_e( 'Total', 'woo-donation-popup' ); ?></span><span class="donation-panel-num" data-dp-line-value><?php echo esc_html( $donation_panel_money( $donation_panel_first_amount ) ); ?></span></div>
 					</div>
 					<?php endif; ?>
 				<?php else : ?>
@@ -389,26 +417,21 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 		<?php
 		// İlk durum betiğin ilk çizimiyle aynı (CLS katkısı 0, CLAUDE.md §25): serbest tutarlı ilk adımda önerilen tutar
 		// yoksa "Tutar seçin" + bekleyen düğme ve toplam satırı gizli (form.mjs amountPending ile aynı koşul).
-		$donation_panel_has_rec = false;
-		foreach ( $donation_panel_presets as $donation_panel_preset ) {
-			$donation_panel_has_rec = $donation_panel_has_rec || ( null !== $donation_panel_model['recommended'] && abs( (float) $donation_panel_model['recommended'] - (float) $donation_panel_preset ) < 0.005 );
-		}
-		$donation_panel_pending = ! in_array( $donation_panel_kind, array( 'fixed', 'shares' ), true ) && ! $donation_panel_single && ! empty( $donation_panel_model['allow_custom'] ) && ! $donation_panel_has_rec;
+		$donation_panel_pending = ! $donation_panel_derived && ! $donation_panel_single && null === $donation_panel_selected;
 		// Tek adımlı form (ilk adım aynı zamanda son adım; form.mjs paintSteps `last`): düğme "%s bağışla" + tutar (ya da
 		// doğrudan bağışta "Ödemeye geç"), kilit görünür, ok gizli, toplam satırı gizli, sepet düğmesi (doğrudan değilse) ve
 		// yasal not görünür, yasal not varsa güven satırı gizli. Tutar betikle aynı: tutarı türetilen türde birim fiyat × 1.
 		$donation_panel_last        = 1 === count( $donation_panel_steps );
 		$donation_panel_first_label = $donation_panel_pending ? _x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : _x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' );
 		if ( $donation_panel_last && ! $donation_panel_pending ) {
-			$donation_panel_first_amount = in_array( $donation_panel_kind, array( 'fixed', 'shares' ), true ) ? $donation_panel_unit : 0.0;
-			$donation_panel_first_label  = str_replace( '%s', $donation_panel_symbol . $donation_panel_format( $donation_panel_first_amount ), $donation_panel_submit_label );
+			$donation_panel_first_label = str_replace( '%s', $donation_panel_money( $donation_panel_first_amount ), $donation_panel_submit_label );
 		}
 		$donation_panel_hide_total = $donation_panel_pending || $donation_panel_last;
 		?>
 		<div class="donation-panel-actionbar" data-single="<?php echo $donation_panel_single ? '1' : '0'; ?>">
 			<div class="donation-panel-actionbar__total" aria-live="polite" data-dp-total-row<?php echo $donation_panel_hide_total ? ' hidden' : ''; ?>>
 				<span><?php esc_html_e( 'Total', 'woo-donation-popup' ); ?></span>
-				<strong class="donation-panel-num" data-dp-total data-symbol="<?php echo esc_attr( $donation_panel_symbol ); ?>"><?php echo esc_html( $donation_panel_symbol . '0' ); ?></strong>
+				<strong class="donation-panel-num" data-dp-total data-symbol="<?php echo esc_attr( $donation_panel_symbol ); ?>"><?php echo esc_html( $donation_panel_money( $donation_panel_first_amount ) ); ?></strong>
 			</div>
 			<button class="donation-panel-btn donation-panel-btn--lg donation-panel-btn--accent<?php echo $donation_panel_pending ? ' is-pending' : ''; ?>" data-dp-submit type="submit"<?php echo $donation_panel_pending ? ' aria-disabled="true"' : ''; ?>>
 				<span class="donation-panel-btn__lock" data-dp-submit-lock<?php echo $donation_panel_last ? '' : ' hidden'; ?>><?php echo $donation_panel_lock_icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sabit SVG. ?></span>
