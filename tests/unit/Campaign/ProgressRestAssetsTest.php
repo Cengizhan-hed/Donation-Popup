@@ -81,7 +81,8 @@ final class ProgressRestAssetsTest extends TestCase {
 	public function test_guide_progress_section_mentions_shop_and_list_cards(): void {
 		$sections = \DonationPanel\Admin\Guide::sections();
 		$body     = implode( "\n", $sections['progress']['body'] );
-		$this->assertStringContainsString('Shop, category and donation list cards', $body);
+		// Test ortamının diline göre İngilizce kaynak ya da TR çeviri (languages/parts/progress2-123.po).
+		$this->assertMatchesRegularExpression('/8\. (Shop, category and donation list cards|Mağaza, kategori ve bağış listesi kartları)/u', $body);
 	}
 
 	public function test_controller_adds_assets_only_when_filter_returns_some(): void {
