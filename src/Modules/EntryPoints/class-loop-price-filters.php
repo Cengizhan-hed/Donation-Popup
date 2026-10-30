@@ -20,6 +20,13 @@ defined( 'ABSPATH' ) || exit;
 class Loop_Price_Filters {
 
 	/**
+	 * Bu istekte döngü kartı düğmesi olarak form açan ürünler.
+	 *
+	 * @var array<int, bool>
+	 */
+	private static $loop_triggers = array();
+
+	/**
 	 * Hide price for open-amount and campaign donation products when hide_price=yes.
 	 * Fixed and share products keep their price. Never blank in admin/cart/checkout/email/REST.
 	 *
@@ -87,7 +94,11 @@ class Loop_Price_Filters {
 			$product_id = (int) $product->get_id();
 			// Gerçek bağlantı kalır (JS yokken ürün sayfasına gider); JS varken form katmanı açılır.
 			// Aynı istekte bu ürün için başka bir giriş (form/düğme) çizildiyse yalnız bağlantı olarak kalır.
-			if ( ! Render_Registry::has_product_ui( $product_id ) ) {
+			// Döngü kartının KENDİ önceki çizimi "başka giriş" sayılmaz: blok temalarda ürün düğmesi bloğu aynı kartı hem
+			// `woocommerce_loop_add_to_cart_link` hem `render_block` süzgecinden geçirir (ikinci geçiş öznitelikleri siliyordu);
+			// aynı ürün ilgili ürünler gibi ikinci bir döngüde de çıkabilir. Form sayfada bir kez alınır (istemci önbelleği).
+			if ( isset( self::$loop_triggers[ $product_id ] ) || ! Render_Registry::has_product_ui( $product_id ) ) {
+				self::$loop_triggers[ $product_id ] = true;
 				Render_Registry::mark_trigger( $product_id );
 				Donations_List::enqueue_trigger_assets();
 				$attrs .= ' data-wdp-form="' . esc_attr( (string) $product_id ) . '"'
