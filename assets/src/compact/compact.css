@@ -159,7 +159,7 @@
 .donation-panel-compact__price small { font-size: 13px; color: var(--dp-color-text-muted); }
 
 /* Toplam satırı: etiket | etki ifadesi (esnek, ellipsis) | tutar. Sütunlar içerikten bağımsız: metin değişince kutu kaymaz. */
-.donation-panel .donation-panel-compact__total { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.2fr); align-items: baseline; gap: 8px; min-block-size: 32px; margin: 0; padding-block-start: 8px; border-block-start: 1px dashed var(--dp-color-border); font-size: 14px; line-height: 24px; color: var(--dp-color-text-muted); }
+.donation-panel .donation-panel-compact__total { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 8px; min-block-size: 32px; margin: 0; padding-block-start: 8px; border-block-start: 1px dashed var(--dp-color-border); font-size: 14px; line-height: 24px; color: var(--dp-color-text-muted); }
 .donation-panel-compact__total b { color: var(--dp-color-text); font-size: 18px; font-weight: 800; text-align: end; }
 .donation-panel-compact__effect { font-size: 13px; font-weight: 650; color: var(--dp-color-primary-strong); }
 .donation-panel-compact__effect:not(:empty)::before { content: "· "; color: var(--dp-color-text-muted); font-weight: 400; }
