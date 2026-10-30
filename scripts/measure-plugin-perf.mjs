@@ -306,7 +306,9 @@ const TRIGGERS = ['[data-dp-open]', '[data-wdp-form]'];
  * @return {Promise<string>} Görünür öğesi olan ilk seçici (yoksa boş).
  */
 async function resolveTrigger(page, given) {
-  for (const sel of given ? [given] : TRIGGERS) {
+  // Sayfada bağış formu/paneli (`[data-dp-exp]`) varsa ölçülen o; ilgili ürün döngüsü kartlarına düşülmez (başka ölçüm).
+  const hasExperience = (await page.locator('[data-dp-exp]').count()) > 0;
+  for (const sel of given ? [given] : hasExperience ? TRIGGERS.slice(0, 1) : TRIGGERS) {
     if ((await page.locator(`${sel} >> visible=true`).count()) > 0) return sel;
   }
   return '';
@@ -339,6 +341,11 @@ async function measureUi(browser, url, prepare, dumpName = '', trigger = '') {
     }
     await settle(page);
     const trace = JSON.parse((await browser.stopTracing()).toString('utf8'));
+    if (process.env.WDP_PERF_SAVE_TRACE && dumpName) {
+      // Yalnız tanı: yükleme izi (olay adları/zamanları; içerik yok).
+      fs.mkdirSync(OUT_DIR, { recursive: true });
+      fs.writeFileSync(path.join(OUT_DIR, `${dumpName}-yukleme.json`), JSON.stringify(trace));
+    }
     const t = attributeTrace(trace);
     out.mainThreadMs = t.scriptMs;
     out.mainThreadByFile = t.byUrl;
