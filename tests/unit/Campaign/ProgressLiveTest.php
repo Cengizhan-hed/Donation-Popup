@@ -144,7 +144,7 @@ final class ProgressLiveTest extends TestCase {
 
 	public function test_card_uses_transform_fill_live_config_and_accessible_value(): void {
 		$html = Progress_Renderer::render( $this->data( 1250.0, 3000.0, 3 ) );
-		$this->assertStringContainsString( 'data-dp-live="', $html );
+		$this->assertStringContainsString( 'data-dp-live-cfg="', $html );
 		$this->assertStringContainsString( 'class="donation-panel-live__fill" data-dp-live-fill style="--p:41.67"', $html );
 		$this->assertStringNotContainsString( 'inline-size', $html );
 		$this->assertMatchesRegularExpression( '/role="progressbar"[^>]*aria-valuenow="41"[^>]*aria-valuetext="' . preg_quote( esc_attr( $this->pct( '41.6' ) ), '/' ) . '/', $html );

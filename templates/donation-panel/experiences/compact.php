@@ -79,7 +79,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 	$live  = isset( $donation_panel_camp['live'] ) && is_array( $donation_panel_camp['live'] ) ? $donation_panel_camp['live'] : array();
 	$exact = isset( $donation_panel_camp['exact'] ) ? (float) $donation_panel_camp['exact'] : (float) $donation_panel_camp['percent'];
 	?>
-	<div class="donation-panel-compact__camp<?php echo $live && empty( $live['o']['c'] ) ? ' donation-panel-live--static' : ''; ?>" data-dp-ccamp data-zero="<?php echo $zero ? '1' : '0'; ?>"<?php echo $live ? ' data-dp-live="' . esc_attr( (string) wp_json_encode( $live ) ) . '"' : ''; ?>>
+	<div class="donation-panel-compact__camp<?php echo $live && empty( $live['o']['c'] ) ? ' donation-panel-live--static' : ''; ?>" data-dp-ccamp data-zero="<?php echo $zero ? '1' : '0'; ?>"<?php echo $live ? ' data-dp-live-cfg="' . esc_attr( (string) wp_json_encode( $live ) ) . '"' : ''; ?>>
 		<p class="donation-panel-compact__nums">
 			<span class="donation-panel-compact__raised donation-panel-num" data-dp-craised-row data-dp-live-zero="hide"<?php echo $zero ? ' hidden' : ''; ?>><b data-dp-craised data-dp-live-raised><?php echo esc_html( (string) $donation_panel_camp['raised'] ); ?></b> <small><?php esc_html_e( 'raised', 'woo-donation-popup' ); ?></small></span>
 			<span class="donation-panel-compact__first" data-dp-cfirst data-dp-live-zero="show"<?php echo $zero ? '' : ' hidden'; ?>><?php echo esc_html( (string) $donation_panel_view['first_text'] ); ?></span>

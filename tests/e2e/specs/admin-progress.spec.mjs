@@ -1,6 +1,6 @@
 /**
  * 12.3 canlı ilerleme çubuğu (yönetici): Bağış Paneli → Kampanyalar → "Kampanya ilerleme çubuğu" bölümü (3 anahtar, her
- * birinin altında açıklama, varsayılan açık), kaydedilen değer = Core ayarı (ön yüz bu ayarı `data-dp-live` yapılandırmasına
+ * birinin altında açıklama, varsayılan açık), kaydedilen değer = Core ayarı (ön yüz bu ayarı `data-dp-live-cfg` yapılandırmasına
  * yazar: birim + live-progress e2e), Rehber bölümü (ekran yolu + kısa kod + şema + ayara bağlantı), axe WCAG 2.2 AA 0, taşma 0.
  * YALNIZ yerel WP: `npm run e2e:queue -- npm run e2e:admin-e7 -- --env local --spec admin-progress`.
  */

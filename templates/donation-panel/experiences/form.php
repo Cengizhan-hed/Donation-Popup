@@ -232,7 +232,7 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 						$donation_panel_czero = ! empty( $donation_panel_camp['zero'] );
 						$donation_panel_cpct  = isset( $donation_panel_camp['percent_exact'] ) ? (float) $donation_panel_camp['percent_exact'] : (float) $donation_panel_camp['percent'];
 						?>
-					<div class="donation-panel-camp<?php echo $donation_panel_live && empty( $donation_panel_live['o']['c'] ) ? ' donation-panel-live--static' : ''; ?>" data-dp-campaign<?php echo $donation_panel_live ? ' data-dp-live="' . esc_attr( (string) wp_json_encode( $donation_panel_live ) ) . '"' : ''; ?>>
+					<div class="donation-panel-camp<?php echo $donation_panel_live && empty( $donation_panel_live['o']['c'] ) ? ' donation-panel-live--static' : ''; ?>" data-dp-campaign<?php echo $donation_panel_live ? ' data-dp-live-cfg="' . esc_attr( (string) wp_json_encode( $donation_panel_live ) ) . '"' : ''; ?>>
 						<div class="donation-panel-camp__top">
 							<span class="donation-panel-camp__raised donation-panel-num"><span data-dp-live-raised><?php echo esc_html( (string) $donation_panel_camp['raised'] ); ?></span> <small><?php esc_html_e( 'raised', 'woo-donation-popup' ); ?></small></span>
 							<span class="donation-panel-camp__pct donation-panel-num" data-dp-live-pct><?php echo esc_html( isset( $donation_panel_camp['percent_text'] ) ? (string) $donation_panel_camp['percent_text'] : sprintf( /* translators: %d: percent of goal reached. */ __( '%d%%', 'woo-donation-popup' ), (int) $donation_panel_camp['percent'] ) ); ?></span>

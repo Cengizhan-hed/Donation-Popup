@@ -18,8 +18,8 @@ const SHOTS = path.join(ROOT, 'build/handoff/RAPOR-123-progress');
 const PRODUCT = Number(process.env.WDP_EXP_PRODUCT_ID || '0');
 
 const url = (raised, parts = 'card,inline', extra = '') => `/?dp_lp=1&dp_product=${PRODUCT}&dp_raised=${raised}&dp_parts=${parts}${extra}`;
-const card = (page) => page.locator('#lp-card [data-dp-live]');
-const form = (page) => page.locator('#lp-inline [data-dp-live]');
+const card = (page) => page.locator('#lp-card [data-dp-live-cfg]');
+const form = (page) => page.locator('#lp-inline [data-dp-live-cfg]');
 const num = (text) => Number(String(text).replace(/[^0-9]/g, ''));
 
 /**
@@ -58,6 +58,9 @@ async function open(page, target) {
     }).observe({ type: 'layout-shift', buffered: true });
   });
   await page.goto(target);
+  await page.waitForFunction(() => Boolean(window.__donationPanelLiveProgress));
+  // İkinci yükleme: tema web yazı tipi önbellekte (yazı tipi değişimi kayması ölçümü bozmaz; sayım/taze veri kayması görünür).
+  await page.reload();
   await page.waitForFunction(() => Boolean(window.__donationPanelLiveProgress));
   return errors;
 }
@@ -132,7 +135,7 @@ test.describe('canlı kampanya çubuğu', () => {
     await expect(card(page).locator('[data-dp-live-pct]')).toHaveText(/40/);
     await expect(form(page).locator('[data-dp-live-pct]')).toHaveText(/40/);
     await expect.poll(() => visible(card(page).locator('.donation-panel-live__fill'))).toBe(40);
-    const heights = await page.evaluate(() => Array.from(document.querySelectorAll('[data-dp-live]')).map((el) => el.getBoundingClientRect().height));
+    const heights = await page.evaluate(() => Array.from(document.querySelectorAll('[data-dp-live-cfg]')).map((el) => el.getBoundingClientRect().height));
     await settleShift(page);
 
     await typeAmount(page, '100');
@@ -167,7 +170,7 @@ test.describe('canlı kampanya çubuğu', () => {
       await expect(bar.locator('[data-dp-live-pct]')).toHaveText(/40/);
       await expect(bar.locator('[data-dp-live-meta]')).not.toHaveClass(/is-preview/);
     }
-    const after = await page.evaluate(() => Array.from(document.querySelectorAll('[data-dp-live]')).map((el) => el.getBoundingClientRect().height));
+    const after = await page.evaluate(() => Array.from(document.querySelectorAll('[data-dp-live-cfg]')).map((el) => el.getBoundingClientRect().height));
     expect(after).toEqual(heights);
     expect(await page.evaluate(() => window.__lpShift), await page.evaluate(() => window.__lpShiftSources.join(' | '))).toBe(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
@@ -317,10 +320,15 @@ test.describe('canlı kampanya çubuğu', () => {
   });
 
   test('compact kart: hızlı tutar önizlemesi, kart yüksekliği değişmez', async ({ page }) => {
-    const errors = await open(page, url(400, 'card,compact'));
+    // Kart sayfadaki ilk eklenti yüzeyi (çubuk stilini compact kartın kendisi getirmeli).
+    const errors = await open(page, url(400, 'compact,card'));
     const compact = page.locator('#lp-compact [data-dp-compact]');
-    const camp = compact.locator('[data-dp-cstep="amount"] [data-dp-live]');
+    const camp = compact.locator('[data-dp-cstep="amount"] [data-dp-live-cfg]');
     await expect(compact).toHaveAttribute('data-dp-ready', '1');
+    // Sayfada çizilen kartta çubuk stili satır içi, betik sayfanın kuyruğundan: yükleyici ek dosya getirmez.
+    await expect(page.locator('style#donation-panel-inline-progress')).toHaveCount(1);
+    await expect(page.locator('link#donation-panel-progress-css')).toHaveCount(0);
+    await expect(page.locator('script#donation-panel-progress-js')).toHaveCount(1);
     const h0 = await compact.evaluate((el) => el.getBoundingClientRect().height);
     await settleShift(page);
     await typeInto(page, compact.locator('[data-dp-camount-in]'), '100');
@@ -338,7 +346,7 @@ test.describe('canlı kampanya çubuğu', () => {
     const errors = await open(page, url(400, 'card,popup'));
     await page.locator('[data-dp-open]').click();
     await expect(page.locator('[data-dp-overlay]')).toHaveClass(/is-open/);
-    const layerBar = page.locator('[data-dp-surface] [data-dp-live]');
+    const layerBar = page.locator('[data-dp-surface] [data-dp-live-cfg]');
     await expect(layerBar).toBeVisible();
     await typeInto(page, page.locator('[data-dp-surface] input[name="amount"]:not([type="hidden"])'), '100');
     await expect(layerBar).toHaveClass(/is-preview/);
@@ -361,7 +369,7 @@ test.describe('canlı kampanya çubuğu', () => {
     await page.addScriptTag({ content: AXE });
     const violations = await page.evaluate(async () => {
       const out = [];
-      for (const sel of ['#lp-card', '#lp-inline [data-dp-live]']) {
+      for (const sel of ['#lp-card', '#lp-inline [data-dp-live-cfg]']) {
         const r = await window.axe.run(document.querySelector(sel), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] } });
         r.violations.forEach((v) => out.push(`${sel} ${v.id}:${v.nodes[0].target.join(' ')}`));
       }

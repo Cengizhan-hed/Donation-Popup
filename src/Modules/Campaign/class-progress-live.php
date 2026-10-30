@@ -2,7 +2,7 @@
 /**
  * Canlı kampanya çubuğu: tüm yüzeylerin (kart, form, compact kart) ortak sunucu yardımcısı.
  *
- * Çubuğun ön yüz yapılandırmasını (`data-dp-live`) üretir: gerçek toplam (herkese açık, kişi verisi yok), WooCommerce
+ * Çubuğun ön yüz yapılandırmasını (`data-dp-live-cfg`) üretir: gerçek toplam (herkese açık, kişi verisi yok), WooCommerce
  * para biçimi, ayarlar (kişisel önizleme, sayma animasyonu, kutlama) ve çevrilmiş kalıplar. Sayfa HTML'inde nonce ya
  * da kullanıcıya özel içerik yoktur; sepetteki tutar yalnız tarayıcıda okunur (önbellek güvenli).
  *
@@ -145,13 +145,13 @@ final class Progress_Live {
 	}
 
 	/**
-	 * Kök öznitelikleri: `data-dp-live` (JSON) ve animasyon kapalıysa durağan sınıfı (`class` ayrıca verilir).
+	 * Kök öznitelikleri: `data-dp-live-cfg` (JSON) ve animasyon kapalıysa durağan sınıfı (`class` ayrıca verilir).
 	 *
 	 * @param array<string, mixed> $config Yapılandırma.
 	 * @return string Başında boşluk olan öznitelik dizisi.
 	 */
 	public static function attr( array $config ) {
-		return ' data-dp-live="' . esc_attr( (string) wp_json_encode( $config ) ) . '"';
+		return ' data-dp-live-cfg="' . esc_attr( (string) wp_json_encode( $config ) ) . '"';
 	}
 
 	/**

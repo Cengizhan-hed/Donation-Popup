@@ -35,7 +35,7 @@ let observer = null;
  */
 function readConfig(root) {
   try {
-    const cfg = JSON.parse(root.getAttribute('data-dp-live') || '{}');
+    const cfg = JSON.parse(root.getAttribute('data-dp-live-cfg') || '{}');
     return cfg && Number(cfg.id) > 0 && Number(cfg.goal) > 0 ? cfg : null;
   } catch {
     return null;
@@ -540,7 +540,7 @@ function mount(root) {
 
 /** Sayfadaki (ya da yeni eklenen) çubukları bulur. */
 function scan() {
-  document.querySelectorAll('[data-dp-live]').forEach(mount);
+  document.querySelectorAll('[data-dp-live-cfg]').forEach(mount);
 }
 
 /**

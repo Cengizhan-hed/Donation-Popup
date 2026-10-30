@@ -26,16 +26,21 @@ export function ensureLiveProgress(scope = document) {
     api.scan();
     return;
   }
-  const bar = scope.querySelector('[data-dp-live]');
+  const bar = scope.querySelector('[data-dp-live-cfg]');
   if (!bar || document.getElementById(SCRIPT_ID)) {
     return;
   }
-  let token;
+  let cfg;
   try {
-    token = String(JSON.parse(bar.getAttribute('data-dp-live') || '{}').v || '');
+    cfg = JSON.parse(bar.getAttribute('data-dp-live-cfg') || '{}');
   } catch {
     return;
   }
+  // Yalnız geçerli çubuk yapılandırması (ürün kimliği + hedef) yükleme başlatır.
+  if (!cfg || !(Number(cfg.id) > 0) || !(Number(cfg.goal) > 0)) {
+    return;
+  }
+  const token = String(cfg.v || '');
   const urls = progressAssetUrls(SELF, token, window.location.origin);
   if (!urls) {
     return;
