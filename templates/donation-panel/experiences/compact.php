@@ -144,7 +144,8 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 				<?php if ( ! $donation_panel_camp && '' !== (string) $donation_panel_view['impact'] ) : ?>
 					<p class="donation-panel-compact__impact"><?php echo esc_html( (string) $donation_panel_view['impact'] ); ?></p>
 				<?php endif; ?>
-				<div class="donation-panel-compact__main">
+				<?php // Esnek bölge sınıfı sunucuda (:has() seçicisi yok: stil yeniden hesabı ucuz). ?>
+				<div class="donation-panel-compact__main donation-panel-compact__main--<?php echo $donation_panel_fixed ? 'fixed' : 'amounts'; ?>">
 				<?php if ( $donation_panel_fixed ) : ?>
 					<div class="donation-panel-compact__fixed">
 						<span class="donation-panel-compact__price">
