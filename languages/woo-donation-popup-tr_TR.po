@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 19:05:57+0000\n"
-"PO-Revision-Date: 2026-10-30 19:05:57+0000\n"
+"POT-Creation-Date: 2026-10-31 06:26:03+0000\n"
+"PO-Revision-Date: 2026-10-31 06:26:03+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -240,6 +240,10 @@ msgstr "1. Bağış Paneli → Formlar ve Görünüm → Kompakt kart (slider/he
 msgid "1. Turn it on: Donation Panel → Cart and checkout → Modules → Side cart. After a gift is added, a basket slides in (a bottom sheet on phones) with the gifts, the total and \"Complete donation\"."
 msgstr "1. Açın: Bağış Paneli → Sepet ve Ödeme → Modüller → Yan sepet. Bağış eklenince bağışlar, toplam ve \"Bağışı tamamla\" düğmesiyle bir sepet açılır (telefonda alttan panel)."
 
+#: src/Admin/class-guide.php
+msgid "1. Where it is: the phone number is part of the donor details step of the donation form and of the compact card. There is nothing to set: the check works for every country and language, on phones and computers."
+msgstr "1. Nerede: telefon numarası, bağış formunun ve kompakt kartın bağışçı bilgileri adımındadır. Ayarlanacak bir şey yok: denetim her ülke ve dil için, telefonda ve bilgisayarda çalışır."
+
 #: includes/class-admin-form-tabs-renderer.php:511
 msgid "1) Shortcode / trigger buttons"
 msgstr "1) Shortcode / tetikleyici butonları"
@@ -266,6 +270,10 @@ msgstr "2. Slider ya da sayfa düzenleyicinizde slayta bir Kısa kod (Shortcode)
 #: src/Admin/class-guide.php
 msgid "2. To show the bar on its own anywhere (a page, a sidebar, a slider), use the shortcode below. Without an ID it finds the product it is placed in. Add milestones=\"no\" or donors=\"no\" to hide those parts."
 msgstr "2. Çubuğu tek başına herhangi bir yerde (sayfa, kenar çubuğu, kaydırıcı) göstermek için aşağıdaki kısa kodu kullanın. ID verilmezse bulunduğu ürünü kendisi bulur. Bu bölümleri gizlemek için milestones=\"no\" ya da donors=\"no\" ekleyin."
+
+#: src/Admin/class-guide.php
+msgid "2. What donors see: the country code list starts with your WooCommerce store country. While typing, the number is spaced the way that country writes it (for Turkey: 530 307 15 93) and no extra digits can be typed. A leading 0, 00 or country code (+90, +44) that is typed or pasted is removed by itself and the country code list follows it."
+msgstr "2. Bağışçı ne görür: ülke kodu listesi WooCommerce mağaza ülkenizle başlar. Yazarken numara o ülkenin yazış biçimiyle boşluklanır (Türkiye için: 530 307 15 93) ve fazla hane girilemez. Başa yazılan ya da yapıştırılan 0, 00 veya ülke kodu (+90, +44) kendiliğinden ayıklanır; ülke kodu listesi buna göre değişir."
 
 #: src/Admin/class-guide.php
 msgid "2. Which theme colors are used: only colors the theme names primary, brand, accent, secondary, contrast or foreground (also numbered ones such as accent-3). The main color must be readable on white; the button color must keep its text readable. Nothing is guessed from other colors."
@@ -295,6 +303,10 @@ msgid "3. The real total only grows with paid orders and goes down after refunds
 msgstr "3. Gerçek toplam yalnız ödenmiş siparişlerle artar, iade ya da iptalde azalır. Sepetteki ürünler onu hiçbir zaman değiştirmez."
 
 #: src/Admin/class-guide.php
+msgid "3. Wrong numbers: if the number is too short, a clear line appears under the field when the donor leaves it, and the Continue button stays dimmed until the number is complete. A number that does not look like a mobile number (Turkey: not starting with 5, United Kingdom: not starting with 7) only shows a hint and never blocks the gift. The same goes for countries whose number lengths vary: a number of unusual length only shows a hint, and only clearly impossible lengths are stopped."
+msgstr "3. Hatalı numara: numara eksikse bağışçı alandan çıkınca altında açık bir uyarı görünür ve numara tamamlanana kadar Devam düğmesi soluk kalır. Cep telefonuna benzemeyen numara (Türkiye: 5 ile başlamıyorsa, Birleşik Krallık: 7 ile başlamıyorsa) yalnız ipucu gösterir, bağışı asla engellemez. Numara uzunlukları değişen ülkelerde de böyledir: alışılmadık uzunluktaki numara yalnız ipucu gösterir, yalnızca açıkça imkânsız uzunluklar durdurulur."
+
+#: src/Admin/class-guide.php
 msgid "4. Donor's own gift: when a donor picks or types an amount, a lighter striped part shows how far their gift would take the campaign, together with the new total. After \"Add to cart\" it stays as \"in your cart\"; removing it from the cart makes it disappear. Only that visitor sees it."
 msgstr "4. Bağışçının kendi katkısı: bağışçı tutar seçince ya da yazınca açık tonlu, çizgili bir bölüm bağışının kampanyayı nereye taşıyacağını yeni toplamla birlikte gösterir. \"Sepete ekle\"den sonra \"sepetinizde\" olarak kalır; sepetten çıkarılınca kaybolur. Bunu yalnız o ziyaretçi görür."
 
@@ -311,6 +323,10 @@ msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın. Kompakt 
 #: src/Admin/class-guide.php
 msgid "4. To choose your own: select \"Choose my own colors\" and fill in Main color and Button color. Each field takes a hex value (#12305A) or a CSS variable from your theme or page editor, for example var(--brand). The line under each field says what is used: \"Source: your choice.\" or, when empty, the color that applies instead."
 msgstr "4. Kendiniz seçmek için: \"Kendi renklerimi seçeyim\"i seçip Ana renk ve Buton rengi alanlarını doldurun. Her alan hex değer (#12305A) ya da temanızın veya sayfa düzenleyicinizin CSS değişkenini (ör. var(--brand)) alır. Her alanın altındaki satır neyin kullanıldığını yazar: \"Kaynak: sizin seçiminiz.\" ya da alan boşsa yerine uygulanan renk."
+
+#: src/Admin/class-guide.php
+msgid "4. What is saved: the donor details on the order keep the number exactly as typed with its country code. The WooCommerce billing phone receives the same number in international format (for example +905303071593), which payment, SMS and shipping tools expect. The server checks the number again with the same rules."
+msgstr "4. Ne kaydedilir: siparişteki bağışçı bilgileri numarayı ülke koduyla, yazıldığı gibi saklar. WooCommerce fatura telefonu aynı numarayı uluslararası biçimde (örneğin +905303071593) alır; ödeme, SMS ve kargo araçları bunu bekler. Sunucu numarayı aynı kurallarla yeniden denetler."
 
 #: src/Admin/class-guide.php
 msgid "5. After payment on the compact card the bar fetches the new total once, and the donor's part becomes part of the real bar."
@@ -4427,6 +4443,10 @@ msgstr "Telefon ikonu"
 msgid "Phone number *"
 msgstr "Telefon Numarası *"
 
+#: src/Admin/class-guide.php
+msgid "Phone number field"
+msgstr "Telefon numarası alanı"
+
 #: assets/js/src/form/messages.js:110
 msgid "phone number is missing or invalid"
 msgstr "telefon alanı eksik veya hatalı"
@@ -6475,6 +6495,11 @@ msgstr "Bu kampanya artık bağış kabul etmiyor."
 msgid "This cannot be undone. It is not saved without confirmation."
 msgstr "Bu işlem geri alınamaz. Onaylamadan kaydedilmez."
 
+#: templates/donation-panel/experiences/form.php
+#: templates/donation-panel/experiences/compact.php
+msgid "This does not look like a mobile number. You can still continue."
+msgstr "Bu numara cep telefonu gibi görünmüyor. Yine de devam edebilirsiniz."
+
 msgid "This donation can only be made once per order."
 msgstr "Bu bağış her siparişte yalnızca bir kez yapılabilir."
 
@@ -6503,6 +6528,17 @@ msgstr "Bağışçının yazdığı not değildir; formun üstünde gösterilen 
 #: src/Modules/DonorAccount/
 msgid "This link is invalid or has expired. Request a new one."
 msgstr "Bu bağlantı geçersiz ya da süresi dolmuş. Yenisini isteyin."
+
+#: templates/donation-panel/experiences/form.php
+#: templates/donation-panel/experiences/compact.php
+msgid "This number has an unusual length for the selected country. Please double-check it; you can still continue."
+msgstr "Bu numaranın hane sayısı seçili ülke için alışılmadık. Lütfen bir kez daha kontrol edin; yine de devam edebilirsiniz."
+
+#: src/Modules/Experiences/class-field-validator.php
+#: templates/donation-panel/experiences/form.php
+#: templates/donation-panel/experiences/compact.php
+msgid "This phone number looks incomplete or too long. Please check the digits."
+msgstr "Bu telefon numarası eksik ya da fazla görünüyor. Lütfen haneleri kontrol edin."
 
 #: includes/class-shortcodes.php:293
 msgid "This product cannot be purchased (ID: %d)."
