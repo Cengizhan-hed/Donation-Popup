@@ -15,31 +15,37 @@ export function buildIndex(rules) {
   const byDial = {};
   Object.keys(rules).forEach((iso) => {
     const row = rules[iso];
-    if (iso === '_p' || !Array.isArray(row) || row.length < 3) {
+    if (iso[0] === '_' || !Array.isArray(row) || row.length < 3) {
       return;
     }
     const dial = String(row[0]);
     table[iso] = { dial, min: row[1], max: row[2], groups: row[3] || '', mobile: row[4] || '', zero: Boolean(row[5]) };
     (byDial[dial] = byDial[dial] || []).push(iso);
   });
-  return { table, byDial, primary: rules._p || {} };
+  return { table, byDial, primary: rules._p || {}, strict: new Set(rules._s || []) };
 }
 
 /**
- * Aynı arama kodunu paylaşan ülkelerin ortak uzunluk aralığı.
+ * Aynı arama kodunu paylaşan ülkelerin uzunluk aralığı. `min`/`max` ENGEL sınırıdır: güvenilir (`_s`) ülkede kuralın
+ * kendisi; diğerlerinde kural ±3 hane gevşetilir (E.164: en çok 15 hane). `softMin`/`softMax` kural aralığıdır: dışındaki
+ * numara engellenmez, yalnız uyarı (`length`) alır.
  *
  * @param {object} idx  Dizin.
  * @param {string} iso  Ülke.
- * @return {{min:number,max:number}} Aralık.
+ * @return {{min:number,max:number,softMin:number,softMax:number}} Aralık.
  */
 function lengthRange(idx, iso) {
   const rule = idx.table[iso];
-  let { min, max } = rule;
-  (idx.byDial[rule.dial] || []).forEach((other) => {
-    min = Math.min(min, idx.table[other].min);
-    max = Math.max(max, idx.table[other].max);
+  const out = { min: 99, max: 0, softMin: 99, softMax: 0 };
+  (idx.byDial[rule.dial] || [iso]).forEach((code) => {
+    const row = idx.table[code];
+    const strict = idx.strict.has(code);
+    out.softMin = Math.min(out.softMin, row.min);
+    out.softMax = Math.max(out.softMax, row.max);
+    out.min = Math.min(out.min, strict ? row.min : Math.max(4, row.min - 3));
+    out.max = Math.max(out.max, strict ? row.max : Math.min(15 - row.dial.length, row.max + 3));
   });
-  return { min, max };
+  return out;
 }
 
 /**
@@ -133,7 +139,7 @@ function resolveCountry(explicit, digits, preferred, idx) {
  * @return {{status:string,iso:string,dial:string,national:string,e164:string,warning:boolean}} Sonuç (status: empty|ok|short|long|unknown).
  */
 export function parsePhone(raw, defaultIso, idx) {
-  const out = { status: 'empty', iso: '', dial: '', national: '', e164: '', warning: false };
+  const out = { status: 'empty', iso: '', dial: '', national: '', e164: '', warning: false, hint: '' };
   const text = raw === null || raw === undefined ? '' : String(raw).trim();
   let digits = text.replace(/\D/g, '');
   if (digits === '') {
@@ -162,20 +168,22 @@ export function parsePhone(raw, defaultIso, idx) {
     return out;
   }
   const rule = idx.table[iso];
-  const { min, max } = lengthRange(idx, iso);
+  const range = lengthRange(idx, iso);
   const result = { ...out, iso, dial: rule.dial, national };
-  if (national.length < min) {
+  if (national.length < range.min) {
     return { ...result, status: 'short' };
   }
-  if (national.length > max) {
+  if (national.length > range.max) {
     return { ...result, status: 'long' };
   }
-  return {
-    ...result,
-    status: 'ok',
-    e164: `+${rule.dial}${national}`,
-    warning: rule.mobile !== '' && !national.startsWith(rule.mobile),
-  };
+  // Engel sınırı içinde ama kural aralığı dışında: geçer, yalnız uyarı (`length`); sonra mobil önek ipucu (`mobile`).
+  let hint = '';
+  if (national.length < range.softMin || national.length > range.softMax) {
+    hint = 'length';
+  } else if (rule.mobile !== '' && !national.startsWith(rule.mobile)) {
+    hint = 'mobile';
+  }
+  return { ...result, status: 'ok', e164: `+${rule.dial}${national}`, warning: hint !== '', hint };
 }
 
 /**

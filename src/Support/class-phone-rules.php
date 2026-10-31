@@ -34,6 +34,13 @@ class Phone_Rules {
 	private static $primary = array();
 
 	/**
+	 * Uzunluk aralığı güvenilir (resmi/doğrulanmış) ülkeler (JSON `_s`): engel yalnız bunlarda kural aralığıdır.
+	 *
+	 * @var array<int, string>
+	 */
+	private static $strict = array();
+
+	/**
 	 * Tüm ülke kuralları (iso2 küçük harf => kural).
 	 *
 	 * @return array<string, array{dial:string,min:int,max:int,groups:string,mobile:string,zero:bool}>
@@ -56,6 +63,10 @@ class Phone_Rules {
 					foreach ( $row as $dial => $code ) {
 						self::$primary[ (string) $dial ] = (string) $code;
 					}
+					continue;
+				}
+				if ( '_s' === $iso ) {
+					self::$strict = array_map( 'strval', $row );
 					continue;
 				}
 				if ( count( $row ) < 3 ) {
@@ -108,7 +119,7 @@ class Phone_Rules {
 	 *
 	 * @param mixed  $raw         Ham girdi.
 	 * @param string $default_iso Ülke kodu yoksa varsayılan ülke (ISO2).
-	 * @return array{status:string,iso:string,dial:string,national:string,e164:string,warning:bool}
+	 * @return array{status:string,iso:string,dial:string,national:string,e164:string,warning:bool,hint:string}
 	 *         status: empty | ok | short | long | unknown (ülke kodu tanınmadı).
 	 */
 	public static function parse( $raw, $default_iso = '' ) {
@@ -120,6 +131,7 @@ class Phone_Rules {
 			'national' => '',
 			'e164'     => '',
 			'warning'  => false,
+			'hint'     => '',
 		);
 		$raw    = is_scalar( $raw ) ? trim( (string) $raw ) : '';
 		$digits = (string) preg_replace( '/\D/', '', $raw );
@@ -180,15 +192,9 @@ class Phone_Rules {
 		if ( ! $rule['zero'] ) {
 			$national = ltrim( $national, '0' );
 		}
-		$min = $rule['min'];
-		$max = $rule['max'];
-		foreach ( $isos as $other ) {
-			$row = self::rule( $other );
-			if ( $row ) {
-				$min = min( $min, $row['min'] );
-				$max = max( $max, $row['max'] );
-			}
-		}
+		$range = self::range( $iso );
+		$min   = $range['min'];
+		$max   = $range['max'];
 		// Ülke kodu `+` olmadan yapıştırıldıysa (905301234567) ve numara sığmıyorsa kod ayıklanır.
 		if ( ! $explicit && strlen( $national ) > $max && 0 === strpos( $national, $dial ) ) {
 			$rest = (string) substr( $national, strlen( $dial ) );
@@ -212,9 +218,46 @@ class Phone_Rules {
 			$out['status'] = 'long';
 			return $out;
 		}
+		// Engel sınırı içinde ama kural aralığı dışında: geçer, yalnız uyarı (length); sonra mobil önek ipucu (mobile).
+		$hint = '';
+		if ( $len < $range['soft_min'] || $len > $range['soft_max'] ) {
+			$hint = 'length';
+		} elseif ( '' !== $rule['mobile'] && 0 !== strpos( $national, $rule['mobile'] ) ) {
+			$hint = 'mobile';
+		}
 		$out['status']  = 'ok';
 		$out['e164']    = '+' . $dial . $national;
-		$out['warning'] = '' !== $rule['mobile'] && 0 !== strpos( $national, $rule['mobile'] );
+		$out['warning'] = '' !== $hint;
+		$out['hint']    = $hint;
+		return $out;
+	}
+
+	/**
+	 * Aynı arama kodunu paylaşan ülkelerin uzunluk aralığı. `min`/`max` ENGEL sınırıdır: güvenilir (`_s`) ülkede kuralın
+	 * kendisi; diğerlerinde kural ±3 hane gevşetilir (E.164: en çok 15 hane). `soft_*` kural aralığıdır: dışındaki numara
+	 * engellenmez, yalnız uyarı alır. JS `lengthRange` ile aynı.
+	 *
+	 * @param string $iso ISO2 (tabloda olmalı).
+	 * @return array{min:int,max:int,soft_min:int,soft_max:int}
+	 */
+	private static function range( $iso ) {
+		$out  = array(
+			'min'      => 99,
+			'max'      => 0,
+			'soft_min' => 99,
+			'soft_max' => 0,
+		);
+		$rule = self::rule( $iso );
+		$isos = $rule ? self::isos_for_dial( $rule['dial'] ) : array();
+		foreach ( $isos as $code ) {
+			$row    = (array) self::rule( $code );
+			$strict = in_array( $code, self::$strict, true );
+
+			$out['soft_min'] = min( $out['soft_min'], $row['min'] );
+			$out['soft_max'] = max( $out['soft_max'], $row['max'] );
+			$out['min']      = min( $out['min'], $strict ? $row['min'] : max( 4, $row['min'] - 3 ) );
+			$out['max']      = max( $out['max'], $strict ? $row['max'] : min( 15 - strlen( $row['dial'] ), $row['max'] + 3 ) );
+		}
 		return $out;
 	}
 

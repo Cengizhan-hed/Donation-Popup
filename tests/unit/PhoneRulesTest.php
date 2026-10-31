@@ -43,6 +43,7 @@ final class PhoneRulesTest extends TestCase {
 		$this->assertSame( $case['national'], $r['national'] );
 		$this->assertSame( $case['e164'], $r['e164'] );
 		$this->assertSame( $case['warning'], $r['warning'] );
+		$this->assertSame( $case['hint'], $r['hint'] );
 	}
 
 	public function test_table_covers_all_countries_with_sane_ranges(): void {
@@ -62,7 +63,7 @@ final class PhoneRulesTest extends TestCase {
 	public function test_legacy_length_rules_follow_the_table(): void {
 		$rules = \DonationPanel\Support\Phone_Countries::get_national_length_rules();
 		$this->assertSame( array( 'min' => 10, 'max' => 10 ), $rules['tr'] );
-		$this->assertSame( array( 'min' => 10, 'max' => 10 ), $rules['gb'] );
+		$this->assertSame( array( 'min' => 9, 'max' => 10 ), $rules['gb'] );
 		$this->assertSame( count( Phone_Rules::table() ), count( $rules ) );
 	}
 
@@ -95,7 +96,12 @@ final class PhoneRulesTest extends TestCase {
 		$this->assertArrayNotHasKey( 'donation_phone', $run( $field( false ), '+90 530 307 15 93' ) );
 		$this->assertArrayNotHasKey( 'donation_phone', $run( $field( false ), '+44 7911 123456' ) );
 		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+90 530 307 15' ) );
-		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+44 7911 12345' ) );
+		// UK 9 ve 10 hane geçerli; 8 ve 11 hane engel. Güvenilir olmayan ülkede (DE) aralık dışı numara kabul edilir (yalnız istemci uyarısı).
+		$this->assertArrayNotHasKey( 'donation_phone', $run( $field( false ), '+44 7911 12345' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+44 7911 1234' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+44 7911 1234567' ) );
+		$this->assertArrayNotHasKey( 'donation_phone', $run( $field( false ), '+49 151 1234' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+49 151 123' ) );
 		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+90 530 307 15 93 9' ) );
 		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+999 1234567' ) );
 		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '530<script>' ) );

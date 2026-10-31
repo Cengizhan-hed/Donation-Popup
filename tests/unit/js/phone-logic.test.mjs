@@ -17,6 +17,7 @@ test('ortak vektörler: PHP ile aynı sonuç', () => {
     assert.equal(r.national, c.national, label);
     assert.equal(r.e164, c.e164, label);
     assert.equal(r.warning, c.warning, label);
+    assert.equal(r.hint, c.hint, label);
   });
 });
 
@@ -72,20 +73,33 @@ test('seçicide olmayan ülke koduna geçilmez', () => {
   assert.equal(typing('+44 79', 'tr', idx, only).iso, 'gb');
 });
 
-test('uzunluk: ≥4 farklı ülkede eksik/tam/fazla', () => {
+test('uzunluk: güvenilir ülkede engel (TR 10, UK 9–10, ABD 10), şüpheli ülkede geçiş + uyarı', () => {
   const cases = [
-    ['tr', '530 307 15 93', 'ok'],
-    ['tr', '530 307 15', 'short'],
-    ['gb', '7911 123456', 'ok'],
-    ['gb', '7911 12345', 'short'],
-    ['us', '555 123 4567', 'ok'],
-    ['us', '555 123 456', 'short'],
-    ['de', '151 12345678', 'ok'],
-    ['de', '151 1234', 'short'],
-    ['sa', '50 123 4567', 'ok'],
-    ['sa', '50 123 456', 'short'],
-    ['jp', '90 1234 5678', 'ok'],
-    ['jp', '90 1234 567', 'short'],
+    ['tr', '530 307 15 93', 'ok', ''],
+    ['tr', '530 307 15', 'short', ''],
+    ['gb', '7911 123456', 'ok', ''],
+    ['gb', '7911 12345', 'ok', ''], // UK 9 hane geçerli
+    ['gb', '7911 1234', 'short', ''],
+    ['gb', '7911 1234567', 'long', ''],
+    ['us', '555 123 4567', 'ok', ''],
+    ['us', '555 123 456', 'short', ''],
+    ['de', '151 12345678', 'ok', ''],
+    ['de', '151 1234', 'ok', 'length'], // güvenilir değil: engel yok, uyarı
+    ['de', '151 123', 'short', ''], // çok kısa: yine engel
+    ['sa', '50 123 4567', 'ok', ''],
+    ['sa', '50 123 456', 'ok', 'length'],
+    ['jp', '90 1234 5678', 'ok', ''],
+    ['jp', '90 1234 56', 'ok', 'length'],
   ];
-  cases.forEach(([iso, value, status]) => assert.equal(parsePhone(value, iso, idx).status, status, `${iso} ${value}`));
+  cases.forEach(([iso, value, status, hint]) => {
+    const r = parsePhone(value, iso, idx);
+    assert.equal(r.status, status, `${iso} ${value}`);
+    assert.equal(r.hint, hint, `${iso} ${value}`);
+  });
+});
+
+test('yazarken sınır: güvenilir ülkede kural, şüpheli ülkede gevşetilmiş en çok hane', () => {
+  assert.equal(typing('0530 307 15 93 99', 'tr', idx).national.length, 10);
+  assert.equal(typing('07911 1234567', 'gb', idx).national.length, 10);
+  assert.equal(typing('1511234567890123', 'de', idx).national.length, 13); // 11 + 3 = 14 ama E.164: ülke kodu + numara ≤ 15
 });
