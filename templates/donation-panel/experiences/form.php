@@ -131,7 +131,7 @@ $donation_panel_phone_field  = static function ( $name, $id, $required, $extra )
 		<input class="donation-panel-phone__input" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="tel" inputmode="tel" autocomplete="tel" maxlength="28" data-msg-short="<?php echo esc_attr( $donation_panel_phone_short ); ?>" data-msg-mobile="<?php echo esc_attr( $donation_panel_phone_mobile ); ?>" data-msg-length="<?php echo esc_attr( $donation_panel_phone_length ); ?>"<?php echo $required ? ' required aria-required="true"' : ''; ?> <?php echo $extra; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Çağıran kaçışlar. ?> />
 	</span>
 	<?php if ( $list ) : ?>
-		<p class="donation-panel-phone__note" data-dp-phone-note role="status" hidden></p>
+		<p class="donation-panel-muted donation-panel-phone__note" data-dp-phone-note role="status" hidden></p>
 	<?php endif; ?>
 	<?php
 };
