@@ -6,13 +6,9 @@ import {
   announcement,
   donorsText,
   effectLine,
-  embedUrl,
   evaluateAmount,
   fill,
-  frameState,
   horizontalWheel,
-  backStep,
-  countedStep,
   isolates,
   moveStep,
   percentOf,
@@ -22,12 +18,12 @@ const GBP = { decimals: 2, thousandSeparator: ',', decimalSeparator: '.' };
 const TRY3 = { decimals: 3, thousandSeparator: '.', decimalSeparator: ',' };
 const base = { fixed: false, quick: null, raw: '', unit: 0, qty: 1, min: 0, currency: GBP };
 
-test('adımlar sabit sırada: tutar → bilgiler → ödeme → teşekkür', () => {
-  assert.deepEqual(STEPS, ['amount', 'details', 'pay', 'thanks']);
+test('adımlar sabit sırada: tutar → ad/telefon (ödeme adımı ve teşekkür yok)', () => {
+  assert.deepEqual(STEPS, ['amount', 'details']);
   assert.equal(moveStep(0, -1), 0);
   assert.equal(moveStep(1, -1), 0);
-  assert.equal(moveStep(3, 1), 3);
-  assert.equal(moveStep(2, 1), 3);
+  assert.equal(moveStep(1, 1), 1);
+  assert.equal(moveStep(0, 1), 1);
 });
 
 test('tutar: boş/geçersiz/belirsiz/en düşük; hızlı tutar ve sabit fiyat', () => {
@@ -53,28 +49,8 @@ test('çevrilebilir yer tutucular sırayla ve konumla dolar', () => {
   assert.equal(fill('%s and %s', ['a']), 'a and %s');
 });
 
-test('duyuru: ilk üç adım sayaçlı, teşekkür sayaçsız', () => {
-  assert.equal(announcement('Step %1$d of %2$d: %3$s', 1, 'Your details'), 'Step 2 of 3: Your details');
-  assert.equal(announcement('Step %1$d of %2$d: %3$s', 3, 'Thank you'), 'Thank you');
-});
-
-test('ödeme çerçevesi: yalnız aynı köken, gömülü bayrak eklenir', () => {
-  const origin = 'https://example.org';
-  assert.equal(
-    embedUrl('https://example.org/checkout/order-pay/12/?pay_for_order=true&key=wc_order_x', origin),
-    'https://example.org/checkout/order-pay/12/?pay_for_order=true&key=wc_order_x&donation_panel_embed=1'
-  );
-  assert.equal(embedUrl('/checkout/order-pay/12/?key=a', origin), 'https://example.org/checkout/order-pay/12/?key=a&donation_panel_embed=1');
-  assert.equal(embedUrl('https://pay.example.com/x', origin), '');
-  assert.equal(embedUrl('javascript:alert(1)', origin), '');
-});
-
-test('çerçeve durumu: teşekkür sayfası ödendi, okunamayan belge bilinmiyor', () => {
-  assert.equal(frameState(null), 'unknown');
-  assert.equal(frameState({ bodyClasses: null, hasReceived: false }), 'unknown');
-  assert.equal(frameState({ bodyClasses: ['woocommerce-checkout', 'woocommerce-order-pay'], hasReceived: false }), 'page');
-  assert.equal(frameState({ bodyClasses: ['woocommerce-order-received'], hasReceived: false }), 'paid');
-  assert.equal(frameState({ bodyClasses: [], hasReceived: true }), 'paid');
+test('duyuru: varsayılan toplam iki adım', () => {
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', 0, 'Amount', 2), 'Step 1 of 2: Amount');
 });
 
 test('kaydırıcı yalıtımı: başlatma/hareket/tekerlek/klavye durur, bitiş olayları geçer', () => {
@@ -95,23 +71,10 @@ test('bağışçı sayısı ve yüzde', () => {
   assert.equal(percentOf('42.6'), 43);
 });
 
-test('12.4: sabit fiyatta geri ve sayılan adım (tek ekran + ödeme)', () => {
-  assert.equal(backStep(true, 2), 0);
-  assert.equal(backStep(true, 0), 0);
-  assert.equal(backStep(false, 2), 1);
-  assert.equal(backStep(false, 1), 0);
-  assert.equal(countedStep(true, 2), 1);
-  assert.equal(countedStep(true, 0), 0);
-  assert.equal(countedStep(false, 2), 2);
-  assert.equal(announcement('Step %1$d of %2$d: %3$s', countedStep(true, 2), 'Payment', 2), 'Step 2 of 2: Payment');
-  assert.equal(announcement('Step %1$d of %2$d: %3$s', countedStep(true, 3), 'Thank you', 2), 'Thank you');
-});
-
-test('12.3 v2: duyuru gerçek adım sayısıyla (sepetli 2, doğrudan 3)', () => {
+test('12.4: duyuru gerçek adım sayısıyla (serbest tutar 2, sabit fiyat tek ekran 1)', () => {
   assert.equal(announcement('Step %1$d of %2$d: %3$s', 1, 'Your details', 2), 'Step 2 of 2: Your details');
   assert.equal(announcement('Step %1$d of %2$d: %3$s', 0, 'Amount', 2), 'Step 1 of 2: Amount');
-  assert.equal(announcement('Step %1$d of %2$d: %3$s', 2, 'Payment', 3), 'Step 3 of 3: Payment');
-  assert.equal(announcement('Step %1$d of %2$d: %3$s', 3, 'Thank you', 3), 'Thank you');
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', 0, 'Donation and details', 1), 'Step 1 of 1: Donation and details');
 });
 
 test('12.3 v2: seçilen tutarın etki ifadesi (kademe yoksa boş)', () => {
