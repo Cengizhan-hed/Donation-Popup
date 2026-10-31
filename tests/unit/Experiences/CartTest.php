@@ -116,6 +116,28 @@ final class CartTest extends TestCase {
 		$this->assertSame( 1, $cart->added[0]['quantity'] );
 	}
 
+	/**
+	 * Sepetli akışta e-posta zorunlu değildir: model doğrudan bağış için e-posta zorunlu yapılmış olsa da (site ayarı doğrudan
+	 * açık) sepete ekleme e-postasız başarılı olur (sepetli compact kartta e-posta alanı yoktur; Woo ödeme sayfası alır).
+	 */
+	public function test_cart_flow_does_not_require_email_even_when_model_is_direct(): void {
+		$model           = $this->model();
+		$model['direct'] = true;
+		$fields          = array();
+		foreach ( (array) $model['fields'] as $field ) {
+			if ( isset( $field['name'] ) && 'donation_email' === $field['name'] ) {
+				$field['required']     = true;
+				$field['required_msg'] = 'Please enter your email address.';
+			}
+			$fields[] = $field;
+		}
+		$model['fields'] = $fields;
+		$cart            = new E2B_Fake_Cart();
+		$result          = ( new Cart() )->add_item( $cart, $this->product(), $model, $this->input() );
+		$this->assertTrue( $result['ok'], $result['message'] . json_encode( $result['errors'] ) );
+		$this->assertCount( 1, $cart->added );
+	}
+
 	public function test_plugin_flow_flag_is_set_only_during_add_and_post_is_untouched(): void {
 		$cart = new E2B_Fake_Cart();
 		( new Cart() )->add_item( $cart, $this->product(), $this->model(), $this->input() );

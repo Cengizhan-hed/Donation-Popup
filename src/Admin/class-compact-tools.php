@@ -19,22 +19,23 @@ defined( 'ABSPATH' ) || exit;
 final class Compact_Tools {
 
 	/**
-	 * Kart yüksekliği (px), varsayılan blok teması + yerel test ürünleri; `layout="compact"`, sepetli ve doğrudan aynı
-	 * (adımlar aynı hücrede üst üste; en uzun adım belirler). e2e `kurgu-matrix` "compact kart yükseklikleri" testi ölçümü
-	 * bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Ölçüm 2026-10-30 (12.3 compact v2: 382 px taban + 2 px kenarlık), TT5,
-	 * 1440/820/375/320 px; hedefli/hedefsiz/sabit fiyat, etki ifadesi ve vergi beyanı ile aynı. Tema yazı tipi çok büyükse
-	 * içerik tabanı aşar ve kart uzar.
+	 * Kart yüksekliği (px), varsayılan blok teması + yerel test ürünleri; `layout="compact"` (yalnız sepetli), TEK birleşik
+	 * değer: tüm ürün türleri ve adımlar aynı (adımlar aynı hücrede üst üste). e2e `kurgu-matrix` "compact kart
+	 * yükseklikleri" testi ölçümü bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Ölçüm 2026-10-31 (12.4 sade kart: 354 px taban
+	 * + 2 px kenarlık = 356), TT5, 1440/820/375/320 px; en dolu hal (serbest tutar + kampanya + etki ifadesi) doğal olarak 347 px
+	 * tutar, yani 9 px pay vardır; hedefli/hedefsiz/sabit fiyat, etki ifadesi ve vergi beyanı ile aynıdır. Tema yazı tipi çok
+	 * büyükse içerik tabanı aşar ve kart uzar.
 	 *
 	 * @var array<string, array{0: int, 1: int}> genişlik => [ serbest tutar (hedefsiz), hedefli kampanya ].
 	 */
 	const HEIGHTS = array(
-		'desktop' => array( 384, 384 ),
-		'tablet'  => array( 384, 384 ),
-		'mobile'  => array( 384, 384 ),
+		'desktop' => array( 356, 356 ),
+		'tablet'  => array( 356, 356 ),
+		'mobile'  => array( 356, 356 ),
 	);
 
 	/** Ölçüm toleransı (px). */
-	const HEIGHT_TOLERANCE = 32;
+	const HEIGHT_TOLERANCE = 2;
 
 	/** Oluşturucudaki en çok ürün. */
 	const MAX_PRODUCTS = 100;
@@ -110,9 +111,15 @@ final class Compact_Tools {
 			. '<th scope="col">' . esc_html__( 'Without goal', 'woo-donation-popup' ) . '</th>'
 			. '<th scope="col">' . esc_html__( 'With goal', 'woo-donation-popup' ) . '</th>'
 			. '<th scope="col">' . esc_html__( 'CSS variable', 'woo-donation-popup' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table></div>';
-		$help  = '<p class="dpa-row__help">' . esc_html__( 'The card is as tall as its tallest step, and that height never changes while the donor moves through the steps. It is the same through the cart and with direct donation. Measured with a default block theme; your theme\'s font can change it a little.', 'woo-donation-popup' ) . '</p>'
-			. '<p class="dpa-row__help">' . esc_html__( 'Steps: through the cart the card has 2 steps (amount, then your details with "Continue to checkout"); with direct donation it has 3 (amount, details, payment). A fixed-price product has no amount step: price × quantity = total sits on one thin line with the name and phone fields right below it, so it has 1 step through the cart and 2 with direct donation (details, payment). The height is the same with or without a goal, an impact phrase or the tax relief declaration, and a fixed-price product is as tall as the others.', 'woo-donation-popup' ) . '</p>'
-			. '<p class="dpa-row__help">' . esc_html__( 'So that a fixed-price card fits the same height, its single screen shows at most one extra line under the price row: the impact phrase, or else the product short description. When the tax relief declaration is switched on, the declaration takes that place (title and "Details" on one thin line) and the extra line is left out. A fixed-price product never shows a goal bar: a product with a goal is a goal-based product and has the amount step.', 'woo-donation-popup' ) . '</p>'
+		$help  = '<p class="dpa-row__help">' . esc_html__( 'The compact card is made for sliders and hero areas and always sends the donor to the checkout page; direct donation is not used with this layout. Its height is one single value for every product type and every step, and it never changes while the donor moves through the steps. Measured with a default block theme; your theme\'s font can change it a little.', 'woo-donation-popup' ) . '</p>'
+			. '<p class="dpa-row__help">' . esc_html__( 'Steps: a custom amount has 2 steps (amount, then name and phone with "Continue to checkout · amount"); a fixed-price product has one screen: price and a quantity selector on one thin line, then name and phone and the button. The total is shown only on the main button and changes at once when the amount or quantity changes. The card never asks for an email address (checkout does).', 'woo-donation-popup' ) . '</p>'
+			. '<p class="dpa-row__help">' . esc_html__( 'The card shows at most one extra line: the impact phrase of the chosen amount, or else the short product description. A fixed-price product never shows a goal bar: a product with a goal is a goal-based product and has the amount step. The height is the same with or without a goal, an impact phrase or the tax relief declaration.', 'woo-donation-popup' ) . '</p>'
+			. '<p class="dpa-row__help">' . sprintf(
+				/* translators: 1: card height in pixels, 2: minimum slide height in pixels. */
+				esc_html__( 'Elementor and other sliders: the card is %1$d px tall on desktop, tablet and phone. Give the slide at least %2$d px (card plus a 16 px safety margin for your theme font).', 'woo-donation-popup' ),
+				self::HEIGHTS['desktop'][0],
+				self::HEIGHTS['desktop'][0] + 16
+			) . '</p>'
 			. '<p class="dpa-row__help">' . esc_html__( 'To give every card the same height, for example to match your slide, set the CSS variable on the slide or on a parent element:', 'woo-donation-popup' ) . '</p>';
 		return '<h3 class="dpa-subtitle">' . esc_html__( 'Card height', 'woo-donation-popup' ) . '</h3>' . $help
 			. Admin_View::code( '.my-slide { --dp-compact-h: 560px; --dp-compact-h-sm: 600px; }' ) . $table;

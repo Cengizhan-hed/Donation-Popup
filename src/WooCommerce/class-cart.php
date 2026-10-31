@@ -150,6 +150,16 @@ final class Cart {
 			return $this->result( false, 409, $closed );
 		}
 
+		// Sepetli akışta e-posta zorunlu değildir (WooCommerce ödeme sayfası alır; sepetli compact kartta alan hiç yoktur): doğrudan
+		// bağış için modele eklenen e-posta zorunluluğu bu akışta uygulanmaz.
+		if ( ! empty( $model['direct'] ) && ! empty( $model['fields'] ) && is_array( $model['fields'] ) ) {
+			foreach ( $model['fields'] as $index => $field ) {
+				if ( is_array( $field ) && isset( $field['name'] ) && 'donation_email' === $field['name'] ) {
+					$model['fields'][ $index ]['required'] = false;
+				}
+			}
+		}
+
 		$validated = Field_Validator::validate( $model, $input );
 		if ( empty( $validated['valid'] ) ) {
 			return $this->result( false, 400, __( 'Please check the highlighted fields.', 'woo-donation-popup' ), (array) $validated['errors'] );

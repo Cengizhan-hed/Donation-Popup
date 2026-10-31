@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 13:57+0300\n"
+"POT-Creation-Date: 2026-10-31 14:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,6 @@ msgstr ""
 #: src/Admin/Product/class-product-data-tab.php:76
 #: src/Admin/Product/class-product-list.php:65
 #: src/Admin/Product/class-product-list.php:69
-#: templates/donation-panel/experiences/compact.php:300
 #: templates/donation-panel/experiences/form.php:415
 #: templates/donation-panel/thanks/summary.php:39
 msgid "Donation"
@@ -90,14 +89,16 @@ msgid ""
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:481
-#: src/Admin/class-field-registry.php:525
+#: src/Admin/class-field-registry.php:518
 msgid "Skip the cart (direct donation)"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:482
 msgid ""
 "Direct: the donor goes from the form straight to payment and nothing is "
-"added to the cart. Works with every form style, including the compact card."
+"added to the cart. Works with the centered window, side panel, bottom sheet "
+"and in-page form. Not applied to the compact card: it always goes through "
+"the cart."
 msgstr ""
 
 #. translators: %s: current value and where it comes from, e.g. "Direct (from the donation type: Campaign)"
@@ -107,14 +108,14 @@ msgid "Donation type or general setting (now: %s)"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:486
-#: src/Admin/Product/class-product-data-tab.php:507
-#: src/Admin/class-field-registry.php:534 src/Admin/class-guide.php:243
+#: src/Admin/Product/class-product-data-tab.php:508
+#: src/Admin/class-field-registry.php:527 src/Admin/class-guide.php:244
 msgid "Direct (skip the cart)"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:487
-#: src/Admin/Product/class-product-data-tab.php:507
-#: src/Admin/class-field-registry.php:533 src/Admin/class-guide.php:238
+#: src/Admin/Product/class-product-data-tab.php:508
+#: src/Admin/class-field-registry.php:526 src/Admin/class-guide.php:239
 msgid "Through the cart"
 msgstr ""
 
@@ -128,149 +129,153 @@ msgstr ""
 msgid "Current value: %s"
 msgstr ""
 
+#: src/Admin/Product/class-product-data-tab.php:495
+msgid "The compact card ignores this value and always goes through the cart."
+msgstr ""
+
 #. translators: %s: link to the settings screen
-#: src/Admin/Product/class-product-data-tab.php:496
+#: src/Admin/Product/class-product-data-tab.php:497
 #, php-format
 msgid "Donation type and general settings: %s"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:510
+#: src/Admin/Product/class-product-data-tab.php:511
 msgid "source: this product"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:514
-#: src/Admin/class-field-registry.php:556
+#: src/Admin/Product/class-product-data-tab.php:515
+#: src/Admin/class-field-registry.php:549
 msgid "Products that offer an add-on donation"
 msgstr ""
 
 #. translators: %s: donation type name
-#: src/Admin/Product/class-product-data-tab.php:516
+#: src/Admin/Product/class-product-data-tab.php:517
 #, php-format
 msgid "source: donation type \"%s\""
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:519
+#: src/Admin/Product/class-product-data-tab.php:520
 msgid "source: a code filter on this site"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:522
+#: src/Admin/Product/class-product-data-tab.php:523
 msgid "source: general setting"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:535
+#: src/Admin/Product/class-product-data-tab.php:536
 #: src/WooCommerce/class-donation-order-meta.php:54
 #: templates/donation-panel/experiences/form.php:222
 #: templates/donation-panel/experiences/form.php:223
 msgid "Donation type"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:536
+#: src/Admin/Product/class-product-data-tab.php:537
 msgid ""
 "Choose how this product’s donation form works; only the selected type’s "
 "settings appear below."
 msgstr ""
 
 #. translators: %s: formatted product price
-#: src/Admin/Product/class-product-data-tab.php:568
+#: src/Admin/Product/class-product-data-tab.php:569
 #, php-format
 msgid ""
 "The donation amount is the product price: %s. You can change the price on "
 "the \"General\" tab."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:570
+#: src/Admin/Product/class-product-data-tab.php:571
 msgid ""
 "This product has no price; enter a regular price on the \"General\" tab for "
 "a fixed amount."
 msgstr ""
 
 #. translators: %s: currency symbol
-#: src/Admin/Product/class-product-data-tab.php:579
+#: src/Admin/Product/class-product-data-tab.php:580
 #, php-format
 msgid "Goal amount (%s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:580
+#: src/Admin/Product/class-product-data-tab.php:581
 msgid ""
 "Campaign goal at which the progress bar is 100% (in the store’s main "
 "currency). Empty or zero cannot be saved."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:589
+#: src/Admin/Product/class-product-data-tab.php:590
 msgid ""
 "The donor enters the amount. The WooCommerce General price field may stay "
 "empty for these types."
 msgstr ""
 
 #. translators: %s: currency symbol
-#: src/Admin/Product/class-product-data-tab.php:594
-#: src/Admin/Product/class-product-data-tab.php:814
+#: src/Admin/Product/class-product-data-tab.php:595
+#: src/Admin/Product/class-product-data-tab.php:815
 #, php-format
 msgid "Minimum amount (%s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:595
+#: src/Admin/Product/class-product-data-tab.php:596
 msgid "The lowest amount the donor can enter. 0 means no minimum."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:604
+#: src/Admin/Product/class-product-data-tab.php:605
 msgid "Maximum shares"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:605
+#: src/Admin/Product/class-product-data-tab.php:606
 msgid "The highest number of shares the donor can select at once (maximum 50)."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:619
+#: src/Admin/Product/class-product-data-tab.php:620
 msgid "When the goal is reached"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:620
+#: src/Admin/Product/class-product-data-tab.php:621
 msgid ""
 "When the campaign reaches its goal, should donations keep being accepted, or "
 "should they be closed?"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:622
+#: src/Admin/Product/class-product-data-tab.php:623
 msgid "Keep accepting donations (no message)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:623
+#: src/Admin/Product/class-product-data-tab.php:624
 msgid "Accept donations + show a thank-you message"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:624
+#: src/Admin/Product/class-product-data-tab.php:625
 msgid "Close new donations + show a message"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:630
+#: src/Admin/Product/class-product-data-tab.php:631
 msgid "Message when the goal is reached"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:631
+#: src/Admin/Product/class-product-data-tab.php:632
 msgid ""
 "If left empty, the default thank-you text is used (maximum 300 characters)."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:660
+#: src/Admin/Product/class-product-data-tab.php:661
 msgid "Raised so far"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:662
+#: src/Admin/Product/class-product-data-tab.php:663
 msgid "Progress toward goal"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:664
+#: src/Admin/Product/class-product-data-tab.php:665
 #: src/Admin/class-pages.php:204 src/Admin/class-pages.php:223
 msgid "Carried over"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:665
+#: src/Admin/Product/class-product-data-tab.php:666
 #: src/Admin/class-pages.php:209 src/Admin/class-pages.php:223
 msgid "Added by hand"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:666
+#: src/Admin/Product/class-product-data-tab.php:667
 #: src/Admin/class-pages.php:215 src/Admin/class-pages.php:223
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:289
 #: blocks/donations/index.js:180
@@ -278,7 +283,7 @@ msgid "Progress"
 msgstr ""
 
 #. translators: %d: number of orders
-#: src/Admin/Product/class-product-data-tab.php:672
+#: src/Admin/Product/class-product-data-tab.php:673
 #, php-format
 msgid "%d order could not be converted"
 msgid_plural "%d orders could not be converted"
@@ -286,235 +291,235 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: link to the Campaigns screen
-#: src/Admin/Product/class-product-data-tab.php:680
+#: src/Admin/Product/class-product-data-tab.php:681
 #, php-format
 msgid ""
 "These figures are shown for reference. To add an amount by hand or "
 "recalculate the total, open %s."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:681
+#: src/Admin/Product/class-product-data-tab.php:682
 msgid "Donation Panel → Campaigns"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:698
+#: src/Admin/Product/class-product-data-tab.php:699
 msgid "Amount options"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:698
+#: src/Admin/Product/class-product-data-tab.php:699
 msgid "Quick amount buttons, quantity, and processing fee"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:701
-#: src/Admin/class-field-registry.php:244
+#: src/Admin/Product/class-product-data-tab.php:702
+#: src/Admin/class-field-registry.php:237
 msgid "Quick amount buttons"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:701
+#: src/Admin/Product/class-product-data-tab.php:702
 msgid "Shows one-click amount buttons above the amount field."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:705
-#: src/Admin/class-field-registry.php:57 src/Admin/class-field-registry.php:256
+#: src/Admin/Product/class-product-data-tab.php:706
+#: src/Admin/class-field-registry.php:57 src/Admin/class-field-registry.php:249
 msgid "Amounts"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:706
+#: src/Admin/Product/class-product-data-tab.php:707
 msgid ""
 "Whole numbers only; separate with commas, spaces, or semicolons (maximum 6). "
 "If left empty, the amounts from the general setting are used. Buttons below "
 "the minimum amount are not shown."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:712
+#: src/Admin/Product/class-product-data-tab.php:713
 msgid "Suggested amount"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:713
+#: src/Admin/Product/class-product-data-tab.php:714
 msgid ""
 "Shows a \"Most chosen\" label on that amount of the list. It is not pre-"
 "selected. A value that is not on the list blocks saving."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:722
+#: src/Admin/Product/class-product-data-tab.php:723
 msgid "Quantity selector"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:722
+#: src/Admin/Product/class-product-data-tab.php:723
 msgid ""
 "Shows quantity plus/minus buttons on a fixed-amount form. If off, the "
 "quantity is always 1."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:725
+#: src/Admin/Product/class-product-data-tab.php:726
 msgid "Cover processing fee"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:725
+#: src/Admin/Product/class-product-data-tab.php:726
 msgid ""
 "Offers the donor the option to also cover the payment processing cost (on "
 "all donation types)."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:729
+#: src/Admin/Product/class-product-data-tab.php:730
 msgid "Processing fee (%)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:730
+#: src/Admin/Product/class-product-data-tab.php:731
 msgid ""
 "0 = off; otherwise a percentage between 0.5 and 15. A value outside the "
 "range is not saved."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:747
+#: src/Admin/Product/class-product-data-tab.php:748
 #: src/Admin/class-field-registry.php:58
 msgid "Form fields"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:747
+#: src/Admin/Product/class-product-data-tab.php:748
 msgid "Dedication and anonymous donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:749
+#: src/Admin/Product/class-product-data-tab.php:750
 msgid "Dedication field"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:749
+#: src/Admin/Product/class-product-data-tab.php:750
 msgid "Shows a field to write who the donation is on behalf of."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:750
+#: src/Admin/Product/class-product-data-tab.php:751
 msgid "Dedication placeholder"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:750
+#: src/Admin/Product/class-product-data-tab.php:751
 msgid "Sample text shown inside the dedication field when it is empty."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:751
+#: src/Admin/Product/class-product-data-tab.php:752
 #: src/Modules/Experiences/class-form-context.php:504
 msgid "Anonymous donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:751
+#: src/Admin/Product/class-product-data-tab.php:752
 msgid ""
 "If checked, the donor name is hidden on public lists; it remains visible on "
 "order records."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:754
+#: src/Admin/Product/class-product-data-tab.php:755
 msgid ""
 "Share-based forms ask for a name and phone number for each share; these "
 "fields do not change per product."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:770
+#: src/Admin/Product/class-product-data-tab.php:771
 msgid "Extra donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:770
+#: src/Admin/Product/class-product-data-tab.php:771
 msgid "A second, smaller donation row added to the form"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:772
+#: src/Admin/Product/class-product-data-tab.php:773
 msgid ""
 "On a goal campaign the extra donation is not shown on the form; the settings "
 "are used if you switch to other types."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:774
+#: src/Admin/Product/class-product-data-tab.php:775
 msgid "Add an extra donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:774
+#: src/Admin/Product/class-product-data-tab.php:775
 msgid "Lets the donor add a small extra donation on top of the main donation."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:778
+#: src/Admin/Product/class-product-data-tab.php:779
 msgctxt "product data tab"
 msgid "Button text"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:779
+#: src/Admin/Product/class-product-data-tab.php:780
 msgid "Text of the button that opens the extra donation."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:781
+#: src/Admin/Product/class-product-data-tab.php:782
 msgid "Add extra donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:799
+#: src/Admin/Product/class-product-data-tab.php:800
 msgid "Extra donation product"
 msgstr ""
 
 #. translators: %d: default product ID
-#: src/Admin/Product/class-product-data-tab.php:803
+#: src/Admin/Product/class-product-data-tab.php:804
 #, php-format
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default (#%d) "
 "is used."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:806
+#: src/Admin/Product/class-product-data-tab.php:807
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default is "
 "used, and if that is also missing the row is not added."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:815
+#: src/Admin/Product/class-product-data-tab.php:816
 msgid "Lower limit applied when the donor types the amount themselves."
 msgstr ""
 
 #. translators: %s: currency symbol
-#: src/Admin/Product/class-product-data-tab.php:822
+#: src/Admin/Product/class-product-data-tab.php:823
 #, php-format
 msgid "Fixed amount (%s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:823
+#: src/Admin/Product/class-product-data-tab.php:824
 msgid ""
 "If filled, the extra donation is added at this amount and the minimum amount "
 "is ignored."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:832
+#: src/Admin/Product/class-product-data-tab.php:833
 msgid "Extra donation note"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:833
+#: src/Admin/Product/class-product-data-tab.php:834
 msgid "Description shown next to the extra donation row."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:849
-#: src/Admin/Product/class-product-data-tab.php:858
+#: src/Admin/Product/class-product-data-tab.php:850
+#: src/Admin/Product/class-product-data-tab.php:859
 msgid "Shortcode"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:850
+#: src/Admin/Product/class-product-data-tab.php:851
 msgid "Choose a view, copy the shortcode, and paste it into a page or post."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:852
+#: src/Admin/Product/class-product-data-tab.php:853
 msgid "View"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:859
-#: src/Admin/class-admin-view.php:301 src/Admin/class-compact-tools.php:82
+#: src/Admin/Product/class-product-data-tab.php:860
+#: src/Admin/class-admin-view.php:301 src/Admin/class-compact-tools.php:83
 msgid "Copy"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:873
+#: src/Admin/Product/class-product-data-tab.php:874
 msgid "Button (opens in the center)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:877
+#: src/Admin/Product/class-product-data-tab.php:878
 #: src/Admin/class-field-registry.php:128
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:127
 #: blocks/donation-form/index.js:107
 msgid "Side panel"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:881
+#: src/Admin/Product/class-product-data-tab.php:882
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:125
 #: blocks/donation-form/index.js:105
 msgid "Inline form"
@@ -624,7 +629,7 @@ msgstr ""
 #: src/Modules/DonorAccount/class-donor-account-module.php:288
 #: src/Modules/SideCart/class-side-cart-module.php:196
 #: templates/donation-panel/experiences/bottom-sheet.php:16
-#: templates/donation-panel/experiences/compact.php:139
+#: templates/donation-panel/experiences/compact.php:130
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
 #: templates/donation-panel/experiences/side-panel.php:16
@@ -720,7 +725,7 @@ msgid "Quick setup"
 msgstr ""
 
 #: src/Admin/class-admin-view.php:30 src/Admin/class-field-registry.php:37
-#: src/Admin/class-guide.php:191
+#: src/Admin/class-guide.php:192
 msgid "Guide"
 msgstr ""
 
@@ -743,12 +748,12 @@ msgid "Needs attention:"
 msgstr ""
 
 #: src/Admin/class-admin-view.php:219 src/Admin/class-field-registry.php:158
-#: src/Admin/class-guide.php:252
+#: src/Admin/class-guide.php:253
 msgid "Main color"
 msgstr ""
 
 #: src/Admin/class-admin-view.php:220 src/Admin/class-field-registry.php:172
-#: src/Admin/class-guide.php:254
+#: src/Admin/class-guide.php:255
 msgid "Button color"
 msgstr ""
 
@@ -783,106 +788,114 @@ msgstr ""
 msgid "Save changes"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:70
+#: src/Admin/class-compact-tools.php:71
 msgid "The product the card is placed in (no ID)"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:76
+#: src/Admin/class-compact-tools.php:77
 msgid "Shortcode for a product"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:77
+#: src/Admin/class-compact-tools.php:78
 msgid ""
 "Choose a donation product and copy the shortcode into a slide, hero area or "
 "any text block. Share-based products always show the full form instead of "
 "the card."
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:83
+#: src/Admin/class-compact-tools.php:84
 msgid ""
 "This product is share-based: the shortcode shows the full in-page form, "
 "because shareholder names do not fit in a fixed-height card."
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:94
+#: src/Admin/class-compact-tools.php:95
 msgid "Desktop (1024 px and wider)"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:95
+#: src/Admin/class-compact-tools.php:96
 msgid "Tablet (640–1023 px)"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:96
+#: src/Admin/class-compact-tools.php:97
 msgid "Phone (up to 639 px)"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:108
+#: src/Admin/class-compact-tools.php:109
 msgid "Compact card heights"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:109
+#: src/Admin/class-compact-tools.php:110
 msgid "Screen"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:110
+#: src/Admin/class-compact-tools.php:111
 msgid "Without goal"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:111
+#: src/Admin/class-compact-tools.php:112
 msgid "With goal"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:112
-msgid "CSS variable"
-msgstr ""
-
 #: src/Admin/class-compact-tools.php:113
-msgid ""
-"The card is as tall as its tallest step, and that height never changes while "
-"the donor moves through the steps. It is the same through the cart and with "
-"direct donation. Measured with a default block theme; your theme's font can "
-"change it a little."
+msgid "CSS variable"
 msgstr ""
 
 #: src/Admin/class-compact-tools.php:114
 msgid ""
-"Steps: through the cart the card has 2 steps (amount, then your details with "
-"\"Continue to checkout\"); with direct donation it has 3 (amount, details, "
-"payment). A fixed-price product has no amount step: price × quantity = total "
-"sits on one thin line with the name and phone fields right below it, so it "
-"has 1 step through the cart and 2 with direct donation (details, payment). "
-"The height is the same with or without a goal, an impact phrase or the tax "
-"relief declaration, and a fixed-price product is as tall as the others."
+"The compact card is made for sliders and hero areas and always sends the "
+"donor to the checkout page; direct donation is not used with this layout. "
+"Its height is one single value for every product type and every step, and it "
+"never changes while the donor moves through the steps. Measured with a "
+"default block theme; your theme's font can change it a little."
 msgstr ""
 
 #: src/Admin/class-compact-tools.php:115
 msgid ""
-"So that a fixed-price card fits the same height, its single screen shows at "
-"most one extra line under the price row: the impact phrase, or else the "
-"product short description. When the tax relief declaration is switched on, "
-"the declaration takes that place (title and \"Details\" on one thin line) "
-"and the extra line is left out. A fixed-price product never shows a goal "
-"bar: a product with a goal is a goal-based product and has the amount step."
+"Steps: a custom amount has 2 steps (amount, then name and phone with "
+"\"Continue to checkout · amount\"); a fixed-price product has one screen: "
+"price and a quantity selector on one thin line, then name and phone and the "
+"button. The total is shown only on the main button and changes at once when "
+"the amount or quantity changes. The card never asks for an email address "
+"(checkout does)."
 msgstr ""
 
 #: src/Admin/class-compact-tools.php:116
+msgid ""
+"The card shows at most one extra line: the impact phrase of the chosen "
+"amount, or else the short product description. A fixed-price product never "
+"shows a goal bar: a product with a goal is a goal-based product and has the "
+"amount step. The height is the same with or without a goal, an impact phrase "
+"or the tax relief declaration."
+msgstr ""
+
+#. translators: 1: card height in pixels, 2: minimum slide height in pixels.
+#: src/Admin/class-compact-tools.php:119
+#, php-format
+msgid ""
+"Elementor and other sliders: the card is %1$d px tall on desktop, tablet and "
+"phone. Give the slide at least %2$d px (card plus a 16 px safety margin for "
+"your theme font)."
+msgstr ""
+
+#: src/Admin/class-compact-tools.php:123
 msgid ""
 "To give every card the same height, for example to match your slide, set the "
 "CSS variable on the slide or on a parent element:"
 msgstr ""
 
-#: src/Admin/class-compact-tools.php:117
+#: src/Admin/class-compact-tools.php:124
 msgid "Card height"
 msgstr ""
 
 #. translators: %d: height in pixels
-#: src/Admin/class-compact-tools.php:129
+#: src/Admin/class-compact-tools.php:136
 #, php-format
 msgid "about %d px"
 msgstr ""
 
 #. translators: 1: product name, 2: product ID
-#: src/Admin/class-compact-tools.php:164
+#: src/Admin/class-compact-tools.php:171
 #, php-format
 msgid "%1$s (ID %2$d)"
 msgstr ""
@@ -928,7 +941,7 @@ msgid ""
 "module is on."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:51 src/Admin/class-guide.php:74
+#: src/Admin/class-field-registry.php:51 src/Admin/class-guide.php:75
 msgid "Campaign progress bar"
 msgstr ""
 
@@ -967,9 +980,10 @@ msgstr ""
 
 #: src/Admin/class-field-registry.php:56
 msgid ""
-"A small donation card whose height never changes, made for sliders and hero "
-"areas. It is only a look: how the donor pays (through the cart or direct) is "
-"set under Cart and checkout. Colors and fonts come from the settings above."
+"The compact card is made for sliders and hero areas and always sends the "
+"donor to the checkout page: it adds the gift to the cart and opens "
+"WooCommerce checkout. Direct donation is not used with this layout. Its "
+"height never changes. Colors and fonts come from the settings above."
 msgstr ""
 
 #: src/Admin/class-field-registry.php:57
@@ -1008,10 +1022,10 @@ msgstr ""
 msgid ""
 "Through the cart: the gift is added to the cart and the donor pays on the "
 "checkout page. Direct: the donor goes from the form straight to a payment "
-"page and nothing is added to the cart. This works with every form style "
-"(centered window, side panel, bottom sheet, in-page form and compact card). "
-"A product setting wins over its donation type, and a donation type wins over "
-"the general setting."
+"page and nothing is added to the cart. This works with the centered window, "
+"side panel, bottom sheet and in-page form; the compact card always goes "
+"through the cart. A product setting wins over its donation type, and a "
+"donation type wins over the general setting."
 msgstr ""
 
 #: src/Admin/class-field-registry.php:64
@@ -1024,7 +1038,7 @@ msgstr ""
 msgid "Offer one extra donation product next to the main gift."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:65 src/Admin/class-guide.php:167
+#: src/Admin/class-field-registry.php:65 src/Admin/class-guide.php:168
 #: src/Admin/class-settings-store.php:64
 msgid "Side cart"
 msgstr ""
@@ -1224,231 +1238,219 @@ msgid ""
 "slide), it goes back to the first step. Typed details are kept."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:237
-msgid "\"Secure payment\" line"
-msgstr ""
-
 #: src/Admin/class-field-registry.php:238
-msgid ""
-"A small lock and the words \"Secure payment\" just above the card's button. "
-"If an amount has an impact phrase (Impact phrases module), the card shows it "
-"under the amounts; the tax relief declaration (Tax relief module) gets a "
-"short version with a Details link that opens the full text inside the card."
-msgstr ""
-
-#: src/Admin/class-field-registry.php:245
 msgid "Shows ready-made amounts. A product can switch them off for itself."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:257
+#: src/Admin/class-field-registry.php:250
 msgid ""
 "Numbers separated by commas, for example 25, 50, 100. At most six; leave "
 "empty for the store default."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:267
+#: src/Admin/class-field-registry.php:260
 msgid "On behalf of / dedication"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:267
+#: src/Admin/class-field-registry.php:260
 msgid "Lets donors give in someone's name or memory."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:268
+#: src/Admin/class-field-registry.php:261
 msgid "Anonymous option"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:268
+#: src/Admin/class-field-registry.php:261
 msgid "Hides the donor name on public lists. The order keeps the real name."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:269
+#: src/Admin/class-field-registry.php:262
 msgid "Two steps"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:269
+#: src/Admin/class-field-registry.php:262
 msgid "Splits the form into amount first, details second."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:270
+#: src/Admin/class-field-registry.php:263
 msgid "Trust line"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:270
+#: src/Admin/class-field-registry.php:263
 msgid "A short reassurance line under the donate button."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:289
+#: src/Admin/class-field-registry.php:282
 msgid "Dedication field hint"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:290
+#: src/Admin/class-field-registry.php:283
 msgid ""
 "The hint inside the dedication field. Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:301
+#: src/Admin/class-field-registry.php:294
 msgid "Trust line wording"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:302
+#: src/Admin/class-field-registry.php:295
 msgid "Leave empty for the built-in secure payment sentence."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:314
+#: src/Admin/class-field-registry.php:307
 msgid "Shareholder heading"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:315
+#: src/Admin/class-field-registry.php:308
 msgid ""
 "Title above the shareholder name fields. Leave empty for the built-in "
 "wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:326
+#: src/Admin/class-field-registry.php:319
 msgid "Copy shareholder button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:327
+#: src/Admin/class-field-registry.php:320
 msgid "Lets donors repeat the first shareholder's details quickly."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:340
+#: src/Admin/class-field-registry.php:333
 msgid "Replace \"Add to cart\" with the donate button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:341
+#: src/Admin/class-field-registry.php:334
 msgid ""
 "Uses the standard WooCommerce spots on product pages. If your page layout "
 "has no such spot, a fallback button is drawn."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:354
+#: src/Admin/class-field-registry.php:347
 msgid "Position"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:355
+#: src/Admin/class-field-registry.php:348
 msgid "Where on the product page the donate button goes."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:358
+#: src/Admin/class-field-registry.php:351
 msgid "Where the add-to-cart button was"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:359
+#: src/Admin/class-field-registry.php:352
 msgid "After the short description"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:360
+#: src/Admin/class-field-registry.php:353
 msgid "Below the product summary"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:371
+#: src/Admin/class-field-registry.php:364
 msgid "Hide the product price"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:372
+#: src/Admin/class-field-registry.php:365
 msgid "Donation products usually have no fixed price to show."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:385
+#: src/Admin/class-field-registry.php:378
 msgid "Show a title above the in-page form"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:386
+#: src/Admin/class-field-registry.php:379
 msgid "Only for the \"In the page\" style."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:399
+#: src/Admin/class-field-registry.php:392
 msgid "Button in product lists"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:400
+#: src/Admin/class-field-registry.php:393
 msgid "What the button does in shop and category lists."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:403
+#: src/Admin/class-field-registry.php:396
 msgid "Opens the form panel"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:404
+#: src/Admin/class-field-registry.php:397
 msgid "Opens a centered window"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:405
+#: src/Admin/class-field-registry.php:398
 msgid "Links to the product page"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:406
+#: src/Admin/class-field-registry.php:399
 msgid "No button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:417
+#: src/Admin/class-field-registry.php:410
 msgid "Which products are donation products"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:418
+#: src/Admin/class-field-registry.php:411
 msgid ""
 "All products, only chosen categories, or only products you mark on the "
 "product page."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:421
+#: src/Admin/class-field-registry.php:414
 msgid "All products"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:422
+#: src/Admin/class-field-registry.php:415
 msgid "Products in chosen categories"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:423
+#: src/Admin/class-field-registry.php:416
 msgid "Only products I mark"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:434
+#: src/Admin/class-field-registry.php:427
 msgid "Category IDs"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:435
+#: src/Admin/class-field-registry.php:428
 msgid ""
 "Used with \"chosen categories\". Category IDs separated by commas (see "
 "Products > Categories)."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:447
+#: src/Admin/class-field-registry.php:440
 msgid "Add-on product ID"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:448
+#: src/Admin/class-field-registry.php:441
 msgid ""
 "The WooCommerce product ID of the extra donation. Leave 0 to offer none. A "
 "product can set its own add-on."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:459
+#: src/Admin/class-field-registry.php:452
 msgid "Add-on label"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:460
+#: src/Admin/class-field-registry.php:453
 msgid ""
 "The wording of the switch donors see. Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:472
+#: src/Admin/class-field-registry.php:465
 msgid "Thank-you message"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:473
+#: src/Admin/class-field-registry.php:466
 msgid ""
 "Shown on the thank-you screen and in the thank-you e-mail after a donation. "
 "Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:479
+#: src/Admin/class-field-registry.php:472
 msgid "Thank-you in donor e-mails"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:480
+#: src/Admin/class-field-registry.php:473
 msgid ""
 "Adds a short thank-you above the order table in the \"Processing\" and "
 "\"Completed\" e-mails donors receive. It uses the thank-you message above, "
@@ -1460,61 +1462,61 @@ msgid ""
 "from WooCommerce → Settings → Emails."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:486
+#: src/Admin/class-field-registry.php:479
 msgid "Celebration animation"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:487
+#: src/Admin/class-field-registry.php:480
 msgid ""
 "A short, gentle animation. It switches off by itself for visitors who prefer "
 "reduced motion."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:493
+#: src/Admin/class-field-registry.php:486
 msgid "Share button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:494
+#: src/Admin/class-field-registry.php:487
 msgid "Lets donors share the campaign after giving."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:499
+#: src/Admin/class-field-registry.php:492
 msgid "Step title"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:499
+#: src/Admin/class-field-registry.php:492
 msgid "Short label for the step."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:500
+#: src/Admin/class-field-registry.php:493
 msgid "Heading"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:500
+#: src/Admin/class-field-registry.php:493
 msgid "The question heading the donor sees."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:501
+#: src/Admin/class-field-registry.php:494
 msgid "Explanation"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:501
+#: src/Admin/class-field-registry.php:494
 msgid "A sentence or two explaining the declaration."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:502
+#: src/Admin/class-field-registry.php:495
 msgid "Checkbox wording"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:502
+#: src/Admin/class-field-registry.php:495
 msgid "The sentence next to the tick box. It is never ticked in advance."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:517
+#: src/Admin/class-field-registry.php:510
 msgid "Trusted proxy addresses"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:518
+#: src/Admin/class-field-registry.php:511
 msgid ""
 "Leave empty unless your site runs behind a proxy or CDN. One address or "
 "range per line (for example 10.0.0.0/8). Visitor addresses sent by these "
@@ -1522,164 +1524,169 @@ msgid ""
 "addresses you do not control."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:526
+#: src/Admin/class-field-registry.php:519
 msgid ""
 "General setting for every donation product. The donor goes from the form "
 "straight to payment and a cart the donor already has stays untouched. "
-"Donation types below and each product can override it. If your site runs "
+"Donation types below and each product can override it. Not applied to the "
+"compact card: that layout always goes through the cart. If your site runs "
 "behind a proxy or CDN, set the trusted proxy addresses under Tools so "
 "visitors can be told apart."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:526
+#: src/Admin/class-field-registry.php:519
 msgid ""
 "With direct donation the form always asks for the donor's email address "
 "(required): WooCommerce's payment page does not ask for billing details, and "
 "payment methods and order emails need it."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:532
+#: src/Admin/class-field-registry.php:525
 msgid "Use the general setting"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:538
+#: src/Admin/class-field-registry.php:531
 msgid "Products with a fixed price where the donor only picks a quantity."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:539
+#: src/Admin/class-field-registry.php:532
 msgid "Products where the donor types the amount."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:540
+#: src/Admin/class-field-registry.php:533
 msgid "Share-based products with shareholder names."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:541
+#: src/Admin/class-field-registry.php:534
 msgid "Products with a goal and a progress bar."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:557
+#: src/Admin/class-field-registry.php:541
+msgid "Not applied to the compact card (it always goes through the cart)."
+msgstr ""
+
+#: src/Admin/class-field-registry.php:550
 msgid ""
 "Wins over the product's own donation type. A direct donation is a single-"
 "line order, so the add-on choice is not shown to the donor when the result "
-"is direct."
+"is direct. Not applied to the compact card (it always goes through the cart)."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:565
+#: src/Admin/class-field-registry.php:558
 msgid "Floating basket button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:566
+#: src/Admin/class-field-registry.php:559
 msgid ""
 "A round basket button in the bottom corner. It appears only after a gift is "
 "added and disappears when the basket is empty. Switch it off if your theme "
 "already shows its own cart icon."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:572
+#: src/Admin/class-field-registry.php:565
 msgid "Button corner"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:573
+#: src/Admin/class-field-registry.php:566
 msgid ""
 "Which bottom corner the floating basket button sits in. Choose the corner "
 "that does not cover your chat or back-to-top button. On right-to-left sites "
 "the sides swap."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:576 src/Admin/class-guide.php:272
+#: src/Admin/class-field-registry.php:569 src/Admin/class-guide.php:273
 msgid "Bottom right"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:577 src/Admin/class-guide.php:265
+#: src/Admin/class-field-registry.php:570 src/Admin/class-guide.php:266
 msgid "Bottom left"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:584
+#: src/Admin/class-field-registry.php:577
 msgid "Suggest an extra gift in the basket"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:585
+#: src/Admin/class-field-registry.php:578
 msgid ""
 "Shows \"Would you like to add to your donation?\" with up to three small "
 "amounts under the gifts. One tap adds it with the donor details already in "
 "the basket. Hidden when that gift is already in the basket."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:591
+#: src/Admin/class-field-registry.php:584
 msgid "Suggested donation product ID"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:592
+#: src/Admin/class-field-registry.php:585
 msgid ""
 "The WooCommerce product ID of the gift to suggest (Products → All products, "
 "the ID shows when you point at a name). Leave 0 to use the add-on product "
 "above. It must be a published donation product."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:599
+#: src/Admin/class-field-registry.php:592
 msgid "Suggested amounts"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:600
+#: src/Admin/class-field-registry.php:593
 msgid ""
 "Up to three amounts separated by commas, for example 50, 100. Shown in your "
 "store currency."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:607
+#: src/Admin/class-field-registry.php:600
 msgid "Short line under the name"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:608
+#: src/Admin/class-field-registry.php:601
 msgid ""
 "Optional, one short sentence. Leave empty to show only the product name."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:616
+#: src/Admin/class-field-registry.php:609
 msgid "Show a privacy link under the form"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:617
+#: src/Admin/class-field-registry.php:610
 msgid ""
 "Shown only when the form asks for personal details: email (direct donation "
 "only), dedication or shareholder details."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:628
+#: src/Admin/class-field-registry.php:621
 msgid "Link text"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:629
+#: src/Admin/class-field-registry.php:622
 msgid "Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:640
+#: src/Admin/class-field-registry.php:633
 msgid "Link address"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:641
+#: src/Admin/class-field-registry.php:634
 msgid "Leave empty to use the privacy policy page set in WordPress."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:653
+#: src/Admin/class-field-registry.php:646
 msgid "Delete plugin data when the plugin is deleted"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:654
+#: src/Admin/class-field-registry.php:647
 msgid ""
 "Removes the plugin's settings and product options. Orders and order records "
 "are never touched. This cannot be undone."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:656
+#: src/Admin/class-field-registry.php:649
 msgid ""
 "All plugin settings and product options will be deleted when the plugin is "
 "deleted. Orders are not affected. This cannot be undone. Have you made a "
 "backup?"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:689
+#: src/Admin/class-field-registry.php:682
 msgid "Hex or CSS variable (e.g. var(--e-global-color-primary))."
 msgstr ""
 
@@ -1729,11 +1736,17 @@ msgstr ""
 
 #: src/Admin/class-guide.php:45
 msgid ""
+"The compact card is made for sliders and hero areas and always sends the "
+"donor to the checkout page; direct donation is not used with this layout."
+msgstr ""
+
+#: src/Admin/class-guide.php:46
+msgid ""
 "1. Open Donation Panel → Forms and appearance → Compact card (slider/hero). "
 "Choose the donation product and press Copy."
 msgstr ""
 
-#: src/Admin/class-guide.php:46
+#: src/Admin/class-guide.php:47
 msgid ""
 "2. In your slider or page editor, add a Shortcode widget (or any text block) "
 "to the slide and paste the shortcode. No special widget is needed. In the "
@@ -1741,74 +1754,71 @@ msgid ""
 "Compact."
 msgstr ""
 
-#: src/Admin/class-guide.php:47
+#: src/Admin/class-guide.php:48
 msgid ""
 "3. Finding a product ID: go to Products → All products and point at the "
 "product name; the ID is shown under it. The shortcode builder also lists "
 "every donation product with its ID."
 msgstr ""
 
-#: src/Admin/class-guide.php:48
+#: src/Admin/class-guide.php:49
 msgid ""
-"4. Slide height: make the slide at least as tall as the card (about 384 px "
-"on every screen). The Compact card screen shows the card heights for "
-"desktop, tablet and phone. To give every card one height, set --dp-compact-h "
-"(and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
+"4. Slide height: make the slide at least as tall as the card (356 px on "
+"every screen, see step 8). The Compact card screen shows the card heights "
+"for desktop, tablet and phone. To give every card one height, set --dp-"
+"compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
 msgstr ""
 
-#: src/Admin/class-guide.php:49
+#: src/Admin/class-guide.php:50
 msgid ""
 "5. Colors: Forms and appearance → Colors → Choose my own colors. Each color "
 "field accepts a hex value or a CSS variable from your theme or page editor, "
 "for example var(--brand), so the card follows your site palette."
 msgstr ""
 
-#: src/Admin/class-guide.php:50
-msgid ""
-"6. If the slider moves on while a donor is halfway through, switch on "
-"\"Start over when the card is hidden\". The compact card is only a look: how "
-"the donor pays is set under Cart and checkout."
-msgstr ""
-
 #: src/Admin/class-guide.php:51
 msgid ""
-"7. What the donor sees: through the cart the card has 2 steps (amount, then "
-"details with \"Continue to checkout · amount\"); with direct donation it has "
-"3 (amount, details, payment) and a thank-you. The step counter shows the "
-"real number (it is hidden when there is only one step). A fixed-price or "
-"quantity product has no amount step: price × quantity = total sits on one "
-"thin line, with the name, phone (and email, if you ask for it) fields right "
-"below it, the Gift Aid line if it is on, the lock line and the main button; "
-"through the cart that is a single screen with \"Continue to checkout · "
-"amount\", with direct donation it is a single screen plus payment. A small "
-"lock line (\"Secure payment\") sits above the button; you can switch it off "
-"under Compact card. With the Impact phrases module the chosen amount's "
-"impact appears next to the amount; with the Tax relief module the "
-"declaration shows its title and a short line, and \"Details\" opens the full "
-"text inside the card."
+"6. If the slider moves on while a donor is halfway through, switch on "
+"\"Start over when the card is hidden\". The compact card always goes through "
+"the cart: the \"Skip the cart (direct donation)\" settings do not apply to "
+"it."
 msgstr ""
 
 #: src/Admin/class-guide.php:52
 msgid ""
-"8. Exact slide height (Elementor and other sliders): the card is 384 px tall "
-"on desktop, tablet and phone, for every product type and in both flows "
-"(measured from 320 to 1440 px). The fullest card, a fixed-price product with "
-"quantity, three fields and the tax relief declaration, needs 378 px. Give "
-"the slide at least 400 px (card plus a 16 px safety margin for your theme "
-"font); a taller slide only adds space around the card. Text in the card "
-"never wraps to extra lines, so the height does not change with the screen "
-"width."
+"7. What the donor sees: a custom amount has 2 steps (amount, then name and "
+"phone with the button \"Continue to checkout · amount\"). A fixed-price or "
+"quantity product has one screen: the price and a quantity selector on one "
+"thin line, then name and phone, the Gift Aid line if it is on, and the main "
+"button. The step counter shows the real number (it is hidden when there is "
+"only one step). The total appears only on the main button and changes at "
+"once when the amount or quantity changes. The card never asks for an email "
+"address: checkout does. With the Impact phrases module the chosen amount's "
+"impact appears as one extra line; with the Tax relief module the declaration "
+"shows its title and a short line, and \"Details\" opens the full text inside "
+"the card."
 msgstr ""
 
-#: src/Admin/class-guide.php:56
+#: src/Admin/class-guide.php:53
+msgid ""
+"8. Exact slide height (Elementor and other sliders): the card is 356 px tall "
+"on desktop, tablet and phone, for every product type and every step "
+"(measured from 320 to 1440 px). The fullest card, a custom amount with a "
+"goal bar and an impact line, needs 347 px. Give the slide at least 372 px "
+"(card plus a 16 px safety margin for your theme font); a taller slide only "
+"adds space around the card. Text in the card never wraps to extra lines, so "
+"the height does not change with the screen width."
+msgstr ""
+
+#: src/Admin/class-guide.php:57
 msgid "Open the Compact card settings"
 msgstr ""
 
-#: src/Admin/class-guide.php:59
+#: src/Admin/class-guide.php:60
 msgid "Turning on direct donation"
 msgstr ""
 
-#: src/Admin/class-guide.php:61
+#: src/Admin/class-guide.php:62
 msgid ""
 "Direct donation is how the donor pays, not how the form looks: nothing is "
 "added to the cart and the donor pays on WooCommerce's own payment page for "
@@ -1816,13 +1826,13 @@ msgid ""
 "page form and compact card."
 msgstr ""
 
-#: src/Admin/class-guide.php:62
+#: src/Admin/class-guide.php:63
 msgid ""
 "For every product: Donation Panel → Cart and checkout → How donors pay → "
 "switch on \"Skip the cart (direct donation)\"."
 msgstr ""
 
-#: src/Admin/class-guide.php:63
+#: src/Admin/class-guide.php:64
 msgid ""
 "For one donation type: on the same screen choose \"Through the cart\" or "
 "\"Direct (skip the cart)\" next to Fixed amount, Custom amount, Share-based, "
@@ -1830,21 +1840,21 @@ msgid ""
 "general setting\" follows the switch above."
 msgstr ""
 
-#: src/Admin/class-guide.php:64
+#: src/Admin/class-guide.php:65
 msgid ""
 "For one product: Products → edit the product → Product data → Donation → "
 "\"Skip the cart (direct donation)\". The line under it shows the current "
 "value and where it comes from."
 msgstr ""
 
-#: src/Admin/class-guide.php:65
+#: src/Admin/class-guide.php:66
 msgid ""
 "Order: the product setting wins, then the donation type, then the general "
 "setting. A direct donation is a single-line order, so the add-on donation "
 "choice is not shown when the result is direct."
 msgstr ""
 
-#: src/Admin/class-guide.php:66
+#: src/Admin/class-guide.php:67
 msgid ""
 "On the compact card the payment page opens in a secure window. If a payment "
 "method cannot work inside the window, the donor taps \"Open the payment page "
@@ -1852,7 +1862,7 @@ msgid ""
 "WooCommerce stock hold time."
 msgstr ""
 
-#: src/Admin/class-guide.php:67
+#: src/Admin/class-guide.php:68
 msgid ""
 "Email: the form asks for an email only with direct donation, and there it is "
 "required (the payment page does not ask for billing details, and card "
@@ -1862,11 +1872,11 @@ msgid ""
 "more."
 msgstr ""
 
-#: src/Admin/class-guide.php:71
+#: src/Admin/class-guide.php:72
 msgid "Open How donors pay"
 msgstr ""
 
-#: src/Admin/class-guide.php:76
+#: src/Admin/class-guide.php:77
 msgid ""
 "1. Give the product a goal: Products → edit the product → Product data → "
 "Donation → goal amount. From then on the bar appears by itself in the "
@@ -1874,20 +1884,20 @@ msgid ""
 "card."
 msgstr ""
 
-#: src/Admin/class-guide.php:77
+#: src/Admin/class-guide.php:78
 msgid ""
 "2. To show the bar on its own anywhere (a page, a sidebar, a slider), use "
 "the shortcode below. Without an ID it finds the product it is placed in. Add "
 "milestones=\"no\" or donors=\"no\" to hide those parts."
 msgstr ""
 
-#: src/Admin/class-guide.php:78
+#: src/Admin/class-guide.php:79
 msgid ""
 "3. The real total only grows with paid orders and goes down after refunds or "
 "cancellations. Items in a cart never change it."
 msgstr ""
 
-#: src/Admin/class-guide.php:79
+#: src/Admin/class-guide.php:80
 msgid ""
 "4. Donor's own gift: when a donor picks or types an amount, a lighter "
 "striped part shows how far their gift would take the campaign, together with "
@@ -1895,13 +1905,13 @@ msgid ""
 "it from the cart makes it disappear. Only that visitor sees it."
 msgstr ""
 
-#: src/Admin/class-guide.php:80
+#: src/Admin/class-guide.php:81
 msgid ""
 "5. After payment on the compact card the bar fetches the new total once, and "
 "the donor's part becomes part of the real bar."
 msgstr ""
 
-#: src/Admin/class-guide.php:81
+#: src/Admin/class-guide.php:82
 msgid ""
 "6. Settings: Donation Panel → Campaigns → Campaign progress bar. Switch off "
 "the donor's own gift, the fill and count-up animation, or the small "
@@ -1909,14 +1919,14 @@ msgid ""
 "always see the final values without animation."
 msgstr ""
 
-#: src/Admin/class-guide.php:82
+#: src/Admin/class-guide.php:83
 msgid ""
 "7. Milestones on the shortcode bar (optional): a product custom field named "
 "_donation_panel_milestones, one per line as percent = label, for example 50 "
 "= Halfway. Developers can also use the donation_panel_milestones filter."
 msgstr ""
 
-#: src/Admin/class-guide.php:83
+#: src/Admin/class-guide.php:84
 msgid ""
 "8. Shop, category and donation list cards: when the \"Donate\" button on a "
 "card opens the form, the bar inside it works the same way (the donor's own "
@@ -1924,15 +1934,15 @@ msgid ""
 "load only when the donor reaches for the card of a product with a goal."
 msgstr ""
 
-#: src/Admin/class-guide.php:87
+#: src/Admin/class-guide.php:88
 msgid "Open the progress bar settings"
 msgstr ""
 
-#: src/Admin/class-guide.php:90
+#: src/Admin/class-guide.php:91
 msgid "For developers: filters"
 msgstr ""
 
-#: src/Admin/class-guide.php:92
+#: src/Admin/class-guide.php:93
 msgid ""
 "donation_panel_convert_amount converts amounts for a multi-currency plugin. "
 "donation_panel_amount_presets changes the quick amounts. "
@@ -1940,96 +1950,96 @@ msgid ""
 "examples is in docs/HOOKS.md in the plugin folder."
 msgstr ""
 
-#: src/Admin/class-guide.php:97
+#: src/Admin/class-guide.php:98
 msgid "What each module does"
 msgstr ""
 
-#: src/Admin/class-guide.php:99
+#: src/Admin/class-guide.php:100
 msgid ""
 "Campaign: goal, amount raised and donor count. Impact: short equivalents "
 "next to amounts. Social proof: totals only, never personal details."
 msgstr ""
 
-#: src/Admin/class-guide.php:100
+#: src/Admin/class-guide.php:101
 msgid ""
 "Thank-you screen: a warm confirmation after the order. Tax relief: one "
 "question; a yes saves name and address on the order. Donor account: sign-in, "
 "My donations and give again. Side cart: a slide-in cart."
 msgstr ""
 
-#: src/Admin/class-guide.php:101
+#: src/Admin/class-guide.php:102
 msgid "A module that is switched off loads no code and no styles."
 msgstr ""
 
-#: src/Admin/class-guide.php:106
+#: src/Admin/class-guide.php:107
 msgid "Troubleshooting: the button does not show"
 msgstr ""
 
-#: src/Admin/class-guide.php:108
+#: src/Admin/class-guide.php:109
 msgid ""
 "Check that the product is set up as a donation product (the Donation tab in "
 "the product data box) and that it is published."
 msgstr ""
 
-#: src/Admin/class-guide.php:109
+#: src/Admin/class-guide.php:110
 msgid ""
 "If your theme does not use the standard WooCommerce hooks, a fallback button "
 "is drawn for you. If you place the shortcode or block yourself, only that "
 "one appears: never two on the same page."
 msgstr ""
 
-#: src/Admin/class-guide.php:110
+#: src/Admin/class-guide.php:111
 msgid ""
 "Still stuck? Place the shortcode in the product description or in a text "
 "block. It works in any page editor."
 msgstr ""
 
-#: src/Admin/class-guide.php:115
+#: src/Admin/class-guide.php:116
 msgid "Multi-currency stores"
 msgstr ""
 
-#: src/Admin/class-guide.php:117
+#: src/Admin/class-guide.php:118
 msgid ""
 "By default amounts are shown and charged in the active WooCommerce currency; "
 "nothing is converted."
 msgstr ""
 
-#: src/Admin/class-guide.php:118
+#: src/Admin/class-guide.php:119
 msgid ""
 "If you use a multi-currency plugin that needs conversion, a small adapter "
 "snippet connects it through the documented donation_panel_convert_amount "
 "filter. Ready-made snippets are in the plugin folder docs/site-snippets."
 msgstr ""
 
-#: src/Admin/class-guide.php:123
+#: src/Admin/class-guide.php:124
 msgid "Privacy and data protection"
 msgstr ""
 
-#: src/Admin/class-guide.php:125
+#: src/Admin/class-guide.php:126
 msgid ""
 "Donor details (dedication, on-behalf-of name, phone, email) are saved on the "
 "order exactly as typed. Orders, exports and erasure are handled by "
 "WooCommerce and the WordPress privacy tools."
 msgstr ""
 
-#: src/Admin/class-guide.php:126
+#: src/Admin/class-guide.php:127
 msgid ""
 "Write your privacy text on your own site. The plugin only shows a link under "
 "the form."
 msgstr ""
 
-#: src/Admin/class-guide.php:131
+#: src/Admin/class-guide.php:132
 msgid "Phone number field"
 msgstr ""
 
-#: src/Admin/class-guide.php:133
+#: src/Admin/class-guide.php:134
 msgid ""
 "1. Where it is: the phone number is part of the donor details step of the "
 "donation form and of the compact card. There is nothing to set: the check "
 "works for every country and language, on phones and computers."
 msgstr ""
 
-#: src/Admin/class-guide.php:134
+#: src/Admin/class-guide.php:135
 msgid ""
 "2. What donors see: the country code list starts with your WooCommerce store "
 "country. While typing, the number is spaced the way that country writes it "
@@ -2038,7 +2048,7 @@ msgid ""
 "and the country code list follows it."
 msgstr ""
 
-#: src/Admin/class-guide.php:135
+#: src/Admin/class-guide.php:136
 msgid ""
 "3. Wrong numbers: if the number is too short, a clear line appears under the "
 "field when the donor leaves it, and the Continue button stays dimmed until "
@@ -2049,7 +2059,7 @@ msgid ""
 "clearly impossible lengths are stopped."
 msgstr ""
 
-#: src/Admin/class-guide.php:136
+#: src/Admin/class-guide.php:137
 msgid ""
 "4. What is saved: the donor details on the order keep the number exactly as "
 "typed with its country code. The WooCommerce billing phone receives the same "
@@ -2058,18 +2068,18 @@ msgid ""
 "same rules."
 msgstr ""
 
-#: src/Admin/class-guide.php:141
+#: src/Admin/class-guide.php:142
 msgid "Donor e-mails"
 msgstr ""
 
-#: src/Admin/class-guide.php:143
+#: src/Admin/class-guide.php:144
 msgid ""
 "1. Nothing to install: the donation details appear in the standard "
 "WooCommerce order e-mails (Processing, Completed, New order). Customize "
 "their colors and logo under WooCommerce → Settings → Emails."
 msgstr ""
 
-#: src/Admin/class-guide.php:144
+#: src/Admin/class-guide.php:145
 msgid ""
 "2. Thank-you above the order table: Donation Panel → Cart and checkout → "
 "Thank-you screen → \"Thank-you in donor e-mails\" (on by default). Donors "
@@ -2082,14 +2092,14 @@ msgid ""
 "screen module is off."
 msgstr ""
 
-#: src/Admin/class-guide.php:145
+#: src/Admin/class-guide.php:146
 msgid ""
 "3. Change the wording: the same \"Thank-you message\" field under Thank-you "
 "screen is used on the page and in the e-mail. Leave it empty for the built-"
 "in wording. Only links, bold, italic and line breaks are kept."
 msgstr ""
 
-#: src/Admin/class-guide.php:146
+#: src/Admin/class-guide.php:147
 msgid ""
 "4. Privacy: in e-mails to donors the phone number is left out (WooCommerce "
 "already shows the billing phone); donation type, names and note stay. In e-"
@@ -2097,14 +2107,14 @@ msgid ""
 "mail, and the order itself is not changed."
 msgstr ""
 
-#: src/Admin/class-guide.php:147
+#: src/Admin/class-guide.php:148
 msgid ""
 "5. Language: e-mails to donors use the site language and the labels are "
 "translated when the e-mail is sent, so a Turkish label never appears in an "
 "English e-mail and the other way round."
 msgstr ""
 
-#: src/Admin/class-guide.php:148
+#: src/Admin/class-guide.php:149
 msgid ""
 "6. WooCommerce block e-mail editor: if you turn on WooCommerce's block-based "
 "e-mail editor (WooCommerce → Settings → Advanced → Features), everything "
@@ -2117,22 +2127,22 @@ msgid ""
 "order table."
 msgstr ""
 
-#: src/Admin/class-guide.php:151
+#: src/Admin/class-guide.php:152
 msgid "Open the Thank-you settings"
 msgstr ""
 
-#: src/Admin/class-guide.php:154
+#: src/Admin/class-guide.php:155
 msgid "Setting the colors"
 msgstr ""
 
-#: src/Admin/class-guide.php:156
+#: src/Admin/class-guide.php:157
 msgid ""
 "1. Open Donation Panel → Forms and appearance → Colors. Under \"Use my theme "
 "colors\" you see the two colors in use and where each one comes from: "
 "\"Theme palette: primary\", \"Default\" or \"Follows the main color\"."
 msgstr ""
 
-#: src/Admin/class-guide.php:157
+#: src/Admin/class-guide.php:158
 msgid ""
 "2. Which theme colors are used: only colors the theme names primary, brand, "
 "accent, secondary, contrast or foreground (also numbered ones such as "
@@ -2140,14 +2150,14 @@ msgid ""
 "keep its text readable. Nothing is guessed from other colors."
 msgstr ""
 
-#: src/Admin/class-guide.php:158
+#: src/Admin/class-guide.php:159
 msgid ""
 "3. If the theme has no such names you see \"Colors could not be read from "
 "your theme\" here and on the Overview. The form then uses a calm neutral ink "
 "color until you choose your own."
 msgstr ""
 
-#: src/Admin/class-guide.php:159
+#: src/Admin/class-guide.php:160
 msgid ""
 "4. To choose your own: select \"Choose my own colors\" and fill in Main "
 "color and Button color. Each field takes a hex value (#12305A) or a CSS "
@@ -2156,25 +2166,25 @@ msgid ""
 "the color that applies instead."
 msgstr ""
 
-#: src/Admin/class-guide.php:160
+#: src/Admin/class-guide.php:161
 msgid ""
 "5. Button text turns black or white by itself so it stays readable (contrast "
 "at least 4.5:1). Colors you choose are never changed by theme or plugin "
 "updates."
 msgstr ""
 
-#: src/Admin/class-guide.php:164
+#: src/Admin/class-guide.php:165
 msgid "Open the Colors settings"
 msgstr ""
 
-#: src/Admin/class-guide.php:169
+#: src/Admin/class-guide.php:170
 msgid ""
 "1. Turn it on: Donation Panel → Cart and checkout → Modules → Side cart. "
 "After a gift is added, a basket slides in (a bottom sheet on phones) with "
 "the gifts, the total and \"Complete donation\"."
 msgstr ""
 
-#: src/Admin/class-guide.php:170
+#: src/Admin/class-guide.php:171
 msgid ""
 "2. Floating basket button: on the same screen under Side cart. It appears "
 "only when the basket has a gift. Choose Bottom right or Bottom left so it "
@@ -2182,13 +2192,13 @@ msgid ""
 "theme shows its own cart icon."
 msgstr ""
 
-#: src/Admin/class-guide.php:171
+#: src/Admin/class-guide.php:172
 msgid ""
 "3. A basket icon in your header: place the shortcode below in a header "
 "widget or menu block. It shows the number of gifts and opens the same basket."
 msgstr ""
 
-#: src/Admin/class-guide.php:172
+#: src/Admin/class-guide.php:173
 msgid ""
 "4. Extra gift suggestion: switch on \"Suggest an extra gift in the basket\", "
 "enter the product ID (0 uses the add-on product) and up to three amounts "
@@ -2196,112 +2206,110 @@ msgid ""
 "the gift already in the basket."
 msgstr ""
 
-#: src/Admin/class-guide.php:173
+#: src/Admin/class-guide.php:174
 msgid ""
 "5. The side cart never opens on the cart and checkout pages, and pages "
 "without a donation form load none of its files."
 msgstr ""
 
-#: src/Admin/class-guide.php:177
+#: src/Admin/class-guide.php:178
 msgid "Open the Side cart settings"
 msgstr ""
 
-#: src/Admin/class-guide.php:189 src/Admin/class-pages.php:60
+#: src/Admin/class-guide.php:190 src/Admin/class-pages.php:60
 #: src/Admin/class-setup-wizard.php:141
 msgid "You do not have permission to open this page."
 msgstr ""
 
-#: src/Admin/class-guide.php:191
+#: src/Admin/class-guide.php:192
 msgid "Short answers to the questions people ask most."
 msgstr ""
 
-#: src/Admin/class-guide.php:192
+#: src/Admin/class-guide.php:193
 msgid "Guide sections"
 msgstr ""
 
-#: src/Admin/class-guide.php:214
+#: src/Admin/class-guide.php:215
 msgid "Back to overview"
 msgstr ""
 
-#: src/Admin/class-guide.php:237
+#: src/Admin/class-guide.php:238
 msgid ""
 "Through the cart: form, cart, checkout, thank you. Direct: form, payment "
 "page, thank you."
 msgstr ""
 
-#: src/Admin/class-guide.php:239 src/Admin/class-guide.php:244
+#: src/Admin/class-guide.php:240 src/Admin/class-guide.php:245
 msgid "Form"
 msgstr ""
 
-#: src/Admin/class-guide.php:240
+#: src/Admin/class-guide.php:241
 msgid "Cart"
 msgstr ""
 
-#: src/Admin/class-guide.php:241 src/Admin/class-pages.php:305
+#: src/Admin/class-guide.php:242 src/Admin/class-pages.php:305
 #: src/Admin/class-pages.php:434
 msgid "Checkout"
 msgstr ""
 
-#: src/Admin/class-guide.php:242 src/Admin/class-guide.php:246
-#: templates/donation-panel/experiences/compact.php:335
+#: src/Admin/class-guide.php:243 src/Admin/class-guide.php:247
 msgid "Thank you"
 msgstr ""
 
-#: src/Admin/class-guide.php:245
+#: src/Admin/class-guide.php:246
 msgid "Payment page"
 msgstr ""
 
-#: src/Admin/class-guide.php:249
+#: src/Admin/class-guide.php:250
 msgid ""
 "Theme palette names lead to the colors used: primary or brand becomes the "
 "main color, accent or secondary becomes the button color; without these "
 "names a neutral default is used and you are asked to choose."
 msgstr ""
 
-#: src/Admin/class-guide.php:250
+#: src/Admin/class-guide.php:251
 msgid "Theme palette"
 msgstr ""
 
-#: src/Admin/class-guide.php:255
+#: src/Admin/class-guide.php:256
 msgid "No such names"
 msgstr ""
 
-#: src/Admin/class-guide.php:256
+#: src/Admin/class-guide.php:257
 msgid "Neutral default"
 msgstr ""
 
-#: src/Admin/class-guide.php:257
+#: src/Admin/class-guide.php:258
 msgid "Choose your colors"
 msgstr ""
 
-#: src/Admin/class-guide.php:258
+#: src/Admin/class-guide.php:259
 msgid "Your choice wins"
 msgstr ""
 
-#: src/Admin/class-guide.php:261
+#: src/Admin/class-guide.php:262
 msgid ""
 "A page with the side cart open on the right: gifts, an extra gift "
 "suggestion, the total and the Complete donation button. The floating basket "
 "button sits in a bottom corner."
 msgstr ""
 
-#: src/Admin/class-guide.php:263
+#: src/Admin/class-guide.php:264
 msgid "Your page"
 msgstr ""
 
-#: src/Admin/class-guide.php:267
+#: src/Admin/class-guide.php:268
 #: src/Modules/SideCart/class-side-cart-renderer.php:209
 msgid "Your donation basket"
 msgstr ""
 
-#: src/Admin/class-guide.php:269
+#: src/Admin/class-guide.php:270
 msgid "Extra gift suggestion"
 msgstr ""
 
-#: src/Admin/class-guide.php:270
+#: src/Admin/class-guide.php:271
 #: src/Modules/DonorAccount/class-account-renderer.php:208
 #: src/Modules/SideCart/class-side-cart-renderer.php:88
-#: templates/donation-panel/experiences/compact.php:211
 #: templates/donation-panel/experiences/form.php:414
 #: templates/donation-panel/experiences/form.php:418
 #: templates/donation-panel/experiences/form.php:452
@@ -2309,63 +2317,63 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-#: src/Admin/class-guide.php:271
+#: src/Admin/class-guide.php:272
 #: src/Modules/SideCart/class-side-cart-renderer.php:89
 msgid "Complete donation"
 msgstr ""
 
-#: src/Admin/class-guide.php:275
+#: src/Admin/class-guide.php:276
 msgid ""
 "Campaign bar: the solid part is the real total from paid orders; the lighter "
 "striped part after it is the donor's own gift, seen only by that donor."
 msgstr ""
 
 #. translators: %s: goal amount.
-#: src/Admin/class-guide.php:282
+#: src/Admin/class-guide.php:283
 #: templates/donation-panel/experiences/form.php:248
 #, php-format
 msgid "Goal %s"
 msgstr ""
 
 #. translators: 1: the donor's own gift, 2: campaign total including that gift.
-#: src/Admin/class-guide.php:287
+#: src/Admin/class-guide.php:288
 #: src/Modules/Campaign/class-progress-live.php:174
 #, php-format
 msgid "With your %1$s it reaches %2$s"
 msgstr ""
 
-#: src/Admin/class-guide.php:288
+#: src/Admin/class-guide.php:289
 msgid "Real total (paid orders)"
 msgstr ""
 
-#: src/Admin/class-guide.php:289
+#: src/Admin/class-guide.php:290
 msgid "Donor's own gift"
 msgstr ""
 
-#: src/Admin/class-guide.php:292
+#: src/Admin/class-guide.php:293
 msgid "A slide with a compact donation card placed through a Shortcode widget."
 msgstr ""
 
-#: src/Admin/class-guide.php:294
+#: src/Admin/class-guide.php:295
 msgid "Slide"
 msgstr ""
 
-#: src/Admin/class-guide.php:295
+#: src/Admin/class-guide.php:296
 msgid "Your headline"
 msgstr ""
 
-#: src/Admin/class-guide.php:298
+#: src/Admin/class-guide.php:299
 msgid "Shortcode widget"
 msgstr ""
 
-#: src/Admin/class-guide.php:302
+#: src/Admin/class-guide.php:303
 #: src/Modules/EntryPoints/class-donations-list.php:982
 #: src/Modules/EntryPoints/class-shortcodes.php:318
 #: src/Modules/Experiences/class-form-renderer.php:72
 msgid "Donate"
 msgstr ""
 
-#: src/Admin/class-guide.php:333
+#: src/Admin/class-guide.php:334
 msgid "Open the full guide"
 msgstr ""
 
@@ -2907,7 +2915,7 @@ msgid "Setup progress"
 msgstr ""
 
 #: src/Admin/class-setup-wizard.php:169
-#: templates/donation-panel/experiences/compact.php:69
+#: templates/donation-panel/experiences/compact.php:66
 #: templates/donation-panel/experiences/form.php:182
 msgid "Back"
 msgstr ""
@@ -2917,8 +2925,7 @@ msgid "Skip for now"
 msgstr ""
 
 #: src/Admin/class-setup-wizard.php:171
-#: templates/donation-panel/experiences/compact.php:139
-#: templates/donation-panel/experiences/compact.php:280
+#: templates/donation-panel/experiences/compact.php:130
 #: templates/donation-panel/experiences/form.php:180
 msgid "Continue"
 msgstr ""
@@ -3183,7 +3190,7 @@ msgid "of %s goal"
 msgstr ""
 
 #: src/Modules/Campaign/class-progress-live.php:163
-#: src/Modules/Experiences/class-compact-card.php:213
+#: src/Modules/Experiences/class-compact-card.php:208
 msgid "Be the first to give"
 msgstr ""
 
@@ -3201,14 +3208,14 @@ msgstr ""
 
 #. translators: %d: percent of goal reached.
 #: src/Modules/Campaign/class-progress-live.php:192
-#: templates/donation-panel/experiences/compact.php:123
+#: templates/donation-panel/experiences/compact.php:114
 #: templates/donation-panel/experiences/form.php:244
 #, php-format
 msgid "%d%%"
 msgstr ""
 
 #: src/Modules/Campaign/class-progress-renderer.php:62
-#: templates/donation-panel/experiences/compact.php:125
+#: templates/donation-panel/experiences/compact.php:116
 #: templates/donation-panel/experiences/form.php:246
 msgid "Goal completion rate"
 msgstr ""
@@ -3221,7 +3228,7 @@ msgstr ""
 #. translators: %s: number of donors.
 #: src/Modules/Campaign/class-progress-renderer.php:76
 #: src/Modules/Campaign/class-progress-renderer.php:81
-#: templates/donation-panel/experiences/compact.php:121
+#: templates/donation-panel/experiences/compact.php:112
 #: templates/donation-panel/experiences/form.php:252
 #, php-format
 msgid "%s supporter"
@@ -3296,7 +3303,6 @@ msgstr ""
 #: src/Modules/DonorAccount/class-account-renderer.php:93
 #: src/Modules/DonorAccount/class-account-renderer.php:100
 #: src/WooCommerce/class-cart-hooks.php:272
-#: templates/donation-panel/experiences/compact.php:302
 msgid "Email"
 msgstr ""
 
@@ -3394,7 +3400,6 @@ msgid "Receipt"
 msgstr ""
 
 #: src/Modules/DonorAccount/class-account-renderer.php:180
-#: templates/donation-panel/experiences/compact.php:344
 #: templates/donation-panel/thanks/summary.php:95
 msgid "Give again"
 msgstr ""
@@ -3462,7 +3467,7 @@ msgstr ""
 #: src/Modules/DonorAccount/class-donor-account-module.php:255
 #: src/Modules/DonorAccount/class-donor-account-module.php:290
 #: templates/donation-panel/experiences/bottom-sheet.php:16
-#: templates/donation-panel/experiences/compact.php:139
+#: templates/donation-panel/experiences/compact.php:130
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
 #: templates/donation-panel/experiences/side-panel.php:16
@@ -3805,8 +3810,7 @@ msgid "Excerpt"
 msgstr ""
 
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:298
-#: templates/donation-panel/experiences/compact.php:203
-#: templates/donation-panel/experiences/compact.php:213
+#: templates/donation-panel/experiences/compact.php:187
 #: blocks/donations/index.js:181
 msgid "Price"
 msgstr ""
@@ -3979,7 +3983,7 @@ msgstr ""
 
 #: src/Modules/Experiences/class-field-validator.php:167
 #: src/Modules/Experiences/class-field-validator.php:192
-#: templates/donation-panel/experiences/compact.php:139
+#: templates/donation-panel/experiences/compact.php:130
 #: templates/donation-panel/experiences/form.php:180
 msgid "Please enter a donation amount."
 msgstr ""
@@ -3987,7 +3991,7 @@ msgstr ""
 #. translators: %s: minimum amount.
 #: src/Modules/Experiences/class-field-validator.php:198
 #: src/Modules/Experiences/class-field-validator.php:310
-#: templates/donation-panel/experiences/compact.php:139
+#: templates/donation-panel/experiences/compact.php:130
 #: templates/donation-panel/experiences/form.php:180
 #, php-format
 msgid "Minimum amount is %s."
@@ -4006,7 +4010,7 @@ msgid "Fractional amounts are not allowed on this site, e.g. %s"
 msgstr ""
 
 #: src/Modules/Experiences/class-field-validator.php:254
-#: templates/donation-panel/experiences/compact.php:233
+#: templates/donation-panel/experiences/compact.php:214
 #: templates/donation-panel/experiences/form.php:399
 #: templates/donation-panel/experiences/form.php:406
 msgid "This field is required."
@@ -4019,7 +4023,6 @@ msgid "Please use at most %d characters."
 msgstr ""
 
 #: src/Modules/Experiences/class-field-validator.php:263
-#: templates/donation-panel/experiences/compact.php:139
 msgid "Please enter a valid email address."
 msgstr ""
 
@@ -4028,7 +4031,7 @@ msgid "Please check the phone number."
 msgstr ""
 
 #: src/Modules/Experiences/class-field-validator.php:271
-#: templates/donation-panel/experiences/compact.php:255
+#: templates/donation-panel/experiences/compact.php:236
 #: templates/donation-panel/experiences/form.php:111
 msgid ""
 "This phone number looks incomplete or too long. Please check the digits."
@@ -4039,13 +4042,13 @@ msgid "One-time donation"
 msgstr ""
 
 #: src/Modules/Experiences/class-form-context.php:260
-#: templates/donation-panel/experiences/compact.php:145
+#: templates/donation-panel/experiences/compact.php:136
 #: templates/donation-panel/thanks/summary.php:43
 msgid "Amount"
 msgstr ""
 
 #: src/Modules/Experiences/class-form-context.php:265
-#: templates/donation-panel/experiences/compact.php:196
+#: templates/donation-panel/experiences/compact.php:181
 msgid "Your details"
 msgstr ""
 
@@ -4152,7 +4155,7 @@ msgid "On behalf of: %s"
 msgstr ""
 
 #: src/Modules/SideCart/class-side-cart-renderer.php:147
-#: templates/donation-panel/experiences/compact.php:206
+#: templates/donation-panel/experiences/compact.php:191
 #: templates/donation-panel/experiences/form.php:318
 msgid "Quantity"
 msgstr ""
@@ -4822,9 +4825,9 @@ msgid "The request is missing its submission key."
 msgstr ""
 
 #: src/WooCommerce/Direct/class-direct-order-factory.php:82
-#: src/WooCommerce/class-cart.php:155
+#: src/WooCommerce/class-cart.php:165
 #: templates/donation-panel/experiences/bottom-sheet.php:16
-#: templates/donation-panel/experiences/compact.php:139
+#: templates/donation-panel/experiences/compact.php:130
 #: templates/donation-panel/experiences/inline.php:16
 #: templates/donation-panel/experiences/popup.php:16
 #: templates/donation-panel/experiences/side-panel.php:16
@@ -4921,7 +4924,6 @@ msgid "Shareholder %d note"
 msgstr ""
 
 #: src/WooCommerce/class-cart-hooks.php:265
-#: templates/donation-panel/experiences/compact.php:301
 msgid "Donor"
 msgstr ""
 
@@ -4956,7 +4958,7 @@ msgstr ""
 msgid "Please enter %s or more."
 msgstr ""
 
-#: src/WooCommerce/class-cart.php:229
+#: src/WooCommerce/class-cart.php:239
 msgid "An error occurred while adding the product to the cart."
 msgstr ""
 
@@ -4992,170 +4994,99 @@ msgstr ""
 msgid "Shareholder %d phone"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:100
-msgctxt "Compact donation card: trust line above the button"
-msgid "Secure payment"
-msgstr ""
-
 #. translators: %s: campaign goal amount ("£1,250 / £3,000").
-#: templates/donation-panel/experiences/compact.php:119
+#: templates/donation-panel/experiences/compact.php:110
 #, php-format
 msgctxt "Compact donation card: raised of goal"
 msgid "/ %s"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:135
+#: templates/donation-panel/experiences/compact.php:126
 #: templates/donation-panel/experiences/form.php:212
 msgid "Donation form closed"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:139
-#: templates/donation-panel/experiences/form.php:180
-msgid ""
-"We could not open the payment page. Nothing was charged. Please try again."
-msgstr ""
-
 #. translators: 1: current step, 2: number of steps, 3: step name.
-#: templates/donation-panel/experiences/compact.php:139
+#: templates/donation-panel/experiences/compact.php:130
 #, php-format
 msgid "Step %1$d of %2$d: %3$s"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:139
-msgid "Thank you! Your donation was received."
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:139
-#: templates/donation-panel/experiences/compact.php:190
+#: templates/donation-panel/experiences/compact.php:130
+#: templates/donation-panel/experiences/compact.php:175
 #: templates/donation-panel/experiences/form.php:180
 msgid "Choose an amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:154
-#: templates/donation-panel/experiences/compact.php:172
+#: templates/donation-panel/experiences/compact.php:148
+#: templates/donation-panel/experiences/compact.php:166
 #: templates/donation-panel/experiences/form.php:261
 #: templates/donation-panel/experiences/form.php:285
 msgid "Donation amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:163
+#: templates/donation-panel/experiences/compact.php:157
 msgid "Recommended"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:172
-#: templates/donation-panel/experiences/compact.php:173
+#: templates/donation-panel/experiences/compact.php:166
+#: templates/donation-panel/experiences/compact.php:167
 #: templates/donation-panel/experiences/form.php:285
 msgid "Other amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:173
+#: templates/donation-panel/experiences/compact.php:167
 #: templates/donation-panel/experiences/form.php:286
 msgid "Enter an amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:183
-msgid "Your donation"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:196
+#: templates/donation-panel/experiences/compact.php:181
 msgid "Donation and details"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:207
+#: templates/donation-panel/experiences/compact.php:192
 #: templates/donation-panel/experiences/form.php:322
 msgid "Decrease"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:209
+#: templates/donation-panel/experiences/compact.php:194
 #: templates/donation-panel/experiences/form.php:324
 msgid "Increase"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:248
+#: templates/donation-panel/experiences/compact.php:229
 #: templates/donation-panel/experiences/form.php:124
 msgid "Country code"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:255
+#: templates/donation-panel/experiences/compact.php:236
 #: templates/donation-panel/experiences/form.php:112
 msgid "This does not look like a mobile number. You can still continue."
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:255
+#: templates/donation-panel/experiences/compact.php:236
 #: templates/donation-panel/experiences/form.php:113
 msgid ""
 "This number has an unusual length for the selected country. Please double-"
 "check it; you can still continue."
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:274
+#: templates/donation-panel/experiences/compact.php:255
 msgid "Details"
 msgstr ""
 
 #. translators: %s: formatted amount.
-#: templates/donation-panel/experiences/compact.php:283
+#: templates/donation-panel/experiences/compact.php:261
 #, php-format
 msgid "Continue to checkout · %s"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:283
+#: templates/donation-panel/experiences/compact.php:261
 msgid "Continue to checkout"
 msgstr ""
 
-#: templates/donation-panel/experiences/compact.php:290
+#: templates/donation-panel/experiences/compact.php:267
 msgid "Done"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:296
-msgid "Payment"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:304
-msgid "Declared"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:310
-msgid ""
-"You will pay in a secure payment window. Your card details never pass "
-"through this form."
-msgstr ""
-
-#. translators: %s: formatted amount.
-#: templates/donation-panel/experiences/compact.php:311
-#, php-format
-msgid "Donate %s securely"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:311
-msgid "Donate securely"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:320
-#: templates/donation-panel/experiences/compact.php:326
-msgid "Secure payment"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:322
-msgid "Close payment window"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:327
-msgid "Opening the secure payment page…"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:329
-msgid "Trouble paying here? Open the payment page instead"
-msgstr ""
-
-#: templates/donation-panel/experiences/compact.php:337
-#: templates/donation-panel/thanks/summary.php:32
-msgid "Thank you!"
-msgstr ""
-
-#. translators: 1: formatted amount, 2: product name.
-#: templates/donation-panel/experiences/compact.php:341
-#, php-format
-msgid "Your donation of %1$s to %2$s was received."
 msgstr ""
 
 #: templates/donation-panel/experiences/form.php:68
@@ -5179,6 +5110,11 @@ msgstr ""
 #: templates/donation-panel/experiences/form.php:147
 #, php-format
 msgid "Cover processing costs (+%%%s)"
+msgstr ""
+
+#: templates/donation-panel/experiences/form.php:180
+msgid ""
+"We could not open the payment page. Nothing was charged. Please try again."
 msgstr ""
 
 #. translators: 1: current step, 2: number of steps.
@@ -5268,6 +5204,10 @@ msgstr ""
 
 #: templates/donation-panel/tax-relief/step.php:22
 msgid "This step is optional. You can continue without ticking the box."
+msgstr ""
+
+#: templates/donation-panel/thanks/summary.php:32
+msgid "Thank you!"
 msgstr ""
 
 #: templates/donation-panel/thanks/summary.php:55
