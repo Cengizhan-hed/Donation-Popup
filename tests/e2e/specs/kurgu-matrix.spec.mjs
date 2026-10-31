@@ -1,10 +1,11 @@
 /**
  * 12.3 kurgu ayrımı e2e (YALNIZ yerel WP): her düzen (popup, sağ panel, alttan panel, sayfa içi form, compact kart) ×
- * her ödeme davranışı (sepetli, doğrudan). Compact = yalnız görünüm; doğrudan = ödeme davranışı, her düzende aynı uç nokta:
+ * her ödeme davranışı (sepetli, doğrudan). Doğrudan = ödeme davranışı, popup/panel/alttan/sayfa içi düzenlerde aynı uç nokta:
  *  - sepetli: `POST cart/add` → ödeme sayfası, sepette 1 kalem; `direct` isteği 0.
- *  - doğrudan: `POST direct` → order-pay (compact'ta güvenli ödeme katmanında aynı kökenli çerçeve + "ödeme sayfasını açın"
- *    bağlantısı), sepet boş; `cart/add` isteği 0.
- * Ayrıca: compact kart yükseklikleri sepetli = doğrudan ve yönetici ekranındaki tabloyla (Compact_Tools::HEIGHTS) aynı.
+ *  - doğrudan: `POST direct` → order-pay, sepet boş; `cart/add` isteği 0.
+ * Compact kart (12.4) doğrudan ayarını UYGULAMAZ: ayar açıkken de sepetli (cart/add → ödeme sayfası, direct isteği 0).
+ * Ayrıca: compact kart yükseklikleri (sepetli = doğrudan ayarlı, en kalabalık haller dahil) yönetici tablosuyla
+ * (Compact_Tools::HEIGHTS) ve serbest tutarlı kartla aynı.
  * Çalıştırma: `npm run e2e:queue -- npm run e2e:experiences -- --spec kurgu-matrix --env local`.
  */
 import fs from 'node:fs';
@@ -118,12 +119,11 @@ async function formFlow(page, layout, behavior) {
 }
 
 /**
- * Compact kart akışı (tutar → bilgiler → ödeme).
+ * Compact kart akışı (tutar → ad/telefon → "Ödemeye geç"): ödeme davranışı HER ZAMAN sepetli (doğrudan bağış ayarı uygulanmaz).
  *
  * @param {import('@playwright/test').Page} page Sayfa.
- * @param {string} behavior cart|direct.
  */
-async function compactFlow(page, behavior) {
+async function compactFlow(page) {
   await page.goto(`/?dp_compact=plain&dp_ids=${PRODUCT}`);
   const card = page.locator(`${CARD}[data-dp-ready="1"]`).first();
   await expect(card).toBeVisible({ timeout: 20000 });
@@ -137,37 +137,13 @@ async function compactFlow(page, behavior) {
   await step('amount').locator('[data-dp-cnext]').click();
   await expect(step('details')).toHaveClass(/is-on/);
   await step('details').locator('input[name="donation_full_name"]').fill(DONOR.name);
-  const email = step('details').locator('input[name="donation_email"]');
-  if (await email.count()) {
-    await email.fill(DONOR.email);
-  }
   await step('details').locator('input[name="donation_phone"]').fill(DONOR.phone);
-  // 12.3 compact v2: sepetli akış 2 adım (bilgiler adımının düğmesi sepete ekleyip ödemeye geçer), doğrudan 3 adım.
-  if (behavior === 'direct') {
-    await expect(step('details').locator('[data-dp-cpay]')).toHaveCount(0);
-    await step('details').locator('button[type="submit"]').click();
-    await expect(step('pay')).toHaveClass(/is-on/);
-  } else {
-    await expect(card.locator('[data-dp-cstep="pay"]')).toHaveCount(0);
-  }
-  const pay = (behavior === 'direct' ? step('pay') : step('details')).locator('[data-dp-cpay]');
-  if (behavior === 'direct') {
-    await expect(pay).toHaveAttribute('aria-haspopup', 'dialog');
-    await pay.click();
-    const dialog = page.locator('dialog[data-dp-overlay]');
-    await expect(dialog).toBeVisible({ timeout: 15000 });
-    const frame = page.frameLocator('[data-dp-cframe]');
-    await expect(frame.locator('input[name="payment_method"]').first()).toBeAttached({ timeout: 30000 });
-    // Çerçeve engellenirse geri dönüş: aynı order-pay adresine üst pencerede giden bağlantı hazır.
-    const alt = dialog.locator('[data-dp-cpayalt]');
-    await expect(alt).not.toHaveClass(/is-off/);
-    expect(await alt.getAttribute('href')).toMatch(/order-pay/);
-    expect(await alt.getAttribute('target')).toBe('_top');
-  } else {
-    await expect(pay).not.toHaveAttribute('aria-haspopup', 'dialog');
-    await pay.click();
-    await page.waitForURL(CHECKOUT_URL, { timeout: 30000 });
-  }
+  // Ödeme adımı, çerçeve ve e-posta alanı yok; son adımın düğmesi sepete ekleyip ödeme sayfasına geçer.
+  await expect(card.locator('[data-dp-cstep="pay"], iframe, input[name="donation_email"]')).toHaveCount(0);
+  const pay = step('details').locator('[data-dp-cpay]');
+  await expect(pay).not.toHaveAttribute('aria-haspopup', 'dialog');
+  await pay.click();
+  await page.waitForURL(CHECKOUT_URL, { timeout: 30000 });
 }
 
 test.describe('kurgu: düzen × ödeme davranışı', () => {
@@ -178,17 +154,20 @@ test.describe('kurgu: düzen × ödeme davranışı', () => {
 
   for (const layout of LAYOUTS) {
     for (const behavior of BEHAVIORS) {
-      test(`${layout} × ${behavior === 'direct' ? 'doğrudan' : 'sepetli'}`, async ({ page, baseURL }) => {
+      // Compact kart doğrudan bağış ayarını yok sayar: ayar açıkken de sepetli akış (cart/add, direct isteği yok).
+      const effective = layout === 'compact' ? 'cart' : behavior;
+      const title = layout === 'compact' && behavior === 'direct' ? 'doğrudan açık, yine sepetli' : behavior === 'direct' ? 'doğrudan' : 'sepetli';
+      test(`${layout} × ${title}`, async ({ page, baseURL }) => {
         await setBehavior(page, baseURL, behavior);
         const seen = watch(page);
         const errors = [];
         page.on('pageerror', (e) => errors.push(String(e)));
         if (layout === 'compact') {
-          await compactFlow(page, behavior);
+          await compactFlow(page);
         } else {
           await formFlow(page, layout, behavior);
         }
-        if (behavior === 'direct') {
+        if (effective === 'direct') {
           expect(seen.direct).toEqual([200]);
           expect(seen.cart).toEqual([]);
           expect((await cart(page)).items).toHaveLength(0);
@@ -229,19 +208,19 @@ test.describe('compact kart yükseklikleri', () => {
         }
         expect(Math.abs(measured.cart - measured.direct), `${key}/${col}: ${JSON.stringify(measured)}`).toBeLessThanOrEqual(0.5);
         out[key][col] = Math.round(measured.cart);
-        if (col === 2) {
-          // En kalabalık tek ekran (beyan + etki ayarı + adet + 3 alan + güven satırı) da aynı yükseklikte kalır.
-          for (const behavior of BEHAVIORS) {
-            await page.context().clearCookies();
-            await setBehavior(page, baseURL, behavior);
-            await page.goto(`/?dp_compact=plain&dp_ids=${id}&dp_ctax=1&dp_cimpact=1`);
-            const worst = page.locator(`${CARD}[data-dp-ready="1"]`).first();
-            await expect(worst).toBeVisible({ timeout: 20000 });
-            await page.evaluate(() => document.fonts.ready);
-            const h = await worst.evaluate((el) => el.getBoundingClientRect().height);
-            expect(Math.abs(h - out[key][0]), `${key}/${behavior}: sabit+beyan+etki ${h} ≠ ${out[key][0]}`).toBeLessThanOrEqual(0.5);
-          }
-          expect(Math.abs(measured.cart - out[key][0]), `${key}: sabit fiyat ${measured.cart} ≠ serbest tutar ${out[key][0]}`).toBeLessThanOrEqual(0.5);
+        // En kalabalık haller (beyan + etki ifadesi; serbest tutar + kampanya + etki; sabit fiyat + adet + beyan) aynı yükseklikte.
+        for (const behavior of BEHAVIORS) {
+          await page.context().clearCookies();
+          await setBehavior(page, baseURL, behavior);
+          await page.goto(`/?dp_compact=plain&dp_ids=${id}&dp_ctax=1&dp_cimpact=1`);
+          const worst = page.locator(`${CARD}[data-dp-ready="1"]`).first();
+          await expect(worst).toBeVisible({ timeout: 20000 });
+          await page.evaluate(() => document.fonts.ready);
+          const h = await worst.evaluate((el) => el.getBoundingClientRect().height);
+          expect(Math.abs(h - measured.cart), `${key}/${col}/${behavior}: beyan+etki ${h} ≠ ${measured.cart}`).toBeLessThanOrEqual(0.5);
+        }
+        if (col > 0) {
+          expect(Math.abs(measured.cart - out[key][0]), `${key}/${col}: ${measured.cart} ≠ serbest tutar ${out[key][0]}`).toBeLessThanOrEqual(0.5);
         }
         if (heights[key] && heights[key][col] > 0) {
           expect(Math.abs(measured.cart - heights[key][col]), `${key}/${col}: ölçülen ${measured.cart}, tablo ${heights[key][col]}`).toBeLessThanOrEqual(tolerance);

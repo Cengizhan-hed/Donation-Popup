@@ -20,8 +20,7 @@ add_filter(
 				'reset_hidden'  => isset($_GET['dp_creset']), // phpcs:ignore
 			);
 		}
-		// Compact kart v2 (123-compact2): vergi indirimi beyanı (`?dp_ctax=1`), etki ifadesi (`?dp_cimpact=1`), güven satırı
-		// kapalı (`?dp_ctrust=0`) — yalnız test verisi.
+		// Compact kart v2 (123-compact2): vergi indirimi beyanı (`?dp_ctax=1`), etki ifadesi (`?dp_cimpact=1`) — yalnız test verisi.
 		if (isset($_GET['dp_ctax'])) { // phpcs:ignore
 			$settings['modules']['tax_relief'] = true;
 			$settings['tax_relief']            = array(
@@ -33,10 +32,6 @@ add_filter(
 		if (isset($_GET['dp_cimpact'])) { // phpcs:ignore
 			$settings['modules']['impact'] = true;
 			$settings['impact']            = array( 'map' => "10={count} hot meal|{count} hot meals\n50={count} family food parcel|{count} family food parcels" );
-		}
-		if (isset($_GET['dp_ctrust'])) { // phpcs:ignore
-			$settings['compact']          = isset($settings['compact']) ? $settings['compact'] : array();
-			$settings['compact']['trust'] = '0' !== (string) $_GET['dp_ctrust']; // phpcs:ignore
 		}
 		return $settings;
 	}
