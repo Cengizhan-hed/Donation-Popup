@@ -120,6 +120,7 @@ class Card_Forms {
 			'nonce'        => '',
 			'checkout_url' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
 		);
+
 		$ids = array_values( array_filter( array_map( 'intval', $ids ) ) );
 		if ( $piece_cache ) {
 			self::prime_pieces( $ids, $kind );

@@ -192,7 +192,7 @@ class Form_Pack {
 		if ( ! is_string( $json ) ) {
 			return '';
 		}
-		return str_replace( array( '</', '<!--' ), array( '<\/', '\\' . 'u003C!--' ), $json );
+		return str_replace( array( '</', '<!--' ), array( '<\/', "\\u003C!--" ), $json );
 	}
 
 	/**

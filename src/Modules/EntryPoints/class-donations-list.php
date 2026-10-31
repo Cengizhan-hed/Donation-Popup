@@ -527,7 +527,7 @@ class Donations_List {
 
 	/**
 	 * @param array<string, mixed> $atts Sanitized atts.
-	 * @return array{html:string,empty:bool}
+	 * @return array{html:string,empty:bool,ids?:int[]}
 	 */
 	private static function build_html( $atts ) {
 		$products = self::query_products( $atts );
