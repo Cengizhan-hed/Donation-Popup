@@ -102,7 +102,7 @@ final class Compact_Card {
 		// Ödeme davranışı bu düzende her zaman sepetlidir: ürünün/türün/genel doğrudan bağış ayarı uygulanmaz.
 		$model['direct'] = false;
 		$raw             = self::campaign_raw( $model );
-		$view = self::view( $model, self::settings(), $raw ? $raw['raised'] : null, $raw ? $raw['goal'] : null );
+		$view            = self::view( $model, self::settings(), $raw ? $raw['raised'] : null, $raw ? $raw['goal'] : null );
 		return $this->loader->render_to_string(
 			'experiences/compact.php',
 			array(

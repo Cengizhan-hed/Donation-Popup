@@ -27,13 +27,13 @@ $donation_panel_qty      = (array) $donation_panel_model['quantity'];
 $donation_panel_camp     = (array) $donation_panel_view['campaign'];
 $donation_panel_phone    = isset( $donation_panel_model['phone'] ) && is_array( $donation_panel_model['phone'] ) ? $donation_panel_model['phone'] : array();
 $donation_panel_steps    = isset( $donation_panel_view['steps'] ) ? (int) $donation_panel_view['steps'] : 2;
-$donation_panel_tiers  =isset( $donation_panel_view['impact_tiers'] ) ? (array) $donation_panel_view['impact_tiers'] : array();
-$donation_panel_fixed  = ! empty( $donation_panel_view['fixed'] );
-$donation_panel_format = static function ( $amount ) use ( $donation_panel_decimals ) {
+$donation_panel_tiers    = isset( $donation_panel_view['impact_tiers'] ) ? (array) $donation_panel_view['impact_tiers'] : array();
+$donation_panel_fixed    = ! empty( $donation_panel_view['fixed'] );
+$donation_panel_format   = static function ( $amount ) use ( $donation_panel_decimals ) {
 	$decimals = floor( (float) $amount ) === (float) $amount ? 0 : $donation_panel_decimals;
 	return number_format_i18n( (float) $amount, $decimals );
 };
-$donation_panel_style  = '';
+$donation_panel_style    = '';
 foreach ( array(
 	'brand'  => '--dp-color-primary',
 	'accent' => '--dp-accent',
