@@ -159,11 +159,8 @@
 .donation-panel-compact__fixed .donation-panel-stepper button { inline-size: 48px; block-size: 48px; }
 .donation-panel-compact__fixed output { min-inline-size: 22px; }
 /* Tek ekran sıkı düzen: en kalabalık hal (adet + 3 alan + beyan + güven satırı) kartın sabit yüksekliğine sığar. */
-.donation-panel-compact__step--one { gap: 4px; padding-block: 4px 10px; }
+.donation-panel-compact__step--one { --_row: 48px; --_fp: 3px; --_fb: 2px; --_cta: 48px; --_tax: 44px; gap: 4px; padding-block: 4px 10px; }
 .donation-panel-compact__step--one .donation-panel-compact__top { min-block-size: 36px; }
-.donation-panel-compact__step--one .donation-panel-compact__field { padding-block: 3px 2px; }
-.donation-panel-compact__step--one .donation-panel-compact__group { grid-auto-rows: minmax(48px, 1fr); }
-.donation-panel-compact .donation-panel-compact__step--one .donation-panel-compact__cta { min-block-size: 48px; }
 /* Toplam satırı: etiket | etki ifadesi (esnek, ellipsis) | tutar. Sütunlar içerikten bağımsız: metin değişince kutu kaymaz. */
 .donation-panel .donation-panel-compact__total { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 8px; min-block-size: 32px; margin: 0; padding-block-start: 8px; border-block-start: 1px dashed var(--dp-color-border); font-size: 14px; line-height: 24px; color: var(--dp-color-text-muted); }
 .donation-panel-compact__total b { color: var(--dp-color-text); font-size: 18px; font-weight: 800; text-align: end; }
@@ -172,8 +169,8 @@
 
 /* Bilgiler: tek çerçeveli grup; her satırda etiket üstte (küçük), alan altta; satır ≥52 px, tamamı dokunma alanı. */
 /* Kartta yer varsa (beyan yokken) satırlar 66 px'e kadar büyür; satır sayısı `--_n` sunucudan. */
-.donation-panel-compact__group { flex: 1 1 auto; display: grid; grid-auto-rows: minmax(52px, 1fr); max-block-size: calc(var(--_n, 3) * 66px + 3px); border: 1.5px solid var(--dp-color-border-strong); border-radius: var(--dp-radius-field); overflow: hidden; }
-.donation-panel-compact__field { position: relative; display: grid; align-content: center; gap: 1px; padding: 5px 14px 4px; }
+.donation-panel-compact__group { flex: 1 1 auto; display: grid; grid-auto-rows: minmax(var(--_row, 52px), 1fr); max-block-size: calc(var(--_n, 3) * 66px + 3px); border: 1.5px solid var(--dp-color-border-strong); border-radius: var(--dp-radius-field); overflow: hidden; }
+.donation-panel-compact__field { position: relative; display: grid; align-content: center; gap: 1px; padding: var(--_fp, 5px) 14px var(--_fb, 4px); }
 .donation-panel-compact__field + .donation-panel-compact__field { border-block-start: 1px solid var(--dp-color-border); }
 .donation-panel-compact__field::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: 3px; background: var(--dp-color-primary); opacity: 0; }
 .donation-panel-compact__field:focus-within::before { opacity: 1; }
@@ -222,7 +219,7 @@
 .donation-panel-compact__trust svg { inline-size: 14px; block-size: 14px; color: var(--dp-color-success, currentColor); }
 .donation-panel-compact__status.has-err .donation-panel-compact__trust { visibility: hidden; }
 
-.donation-panel-compact .donation-panel-compact__cta { flex: none; min-block-size: 52px; margin: 0; }
+.donation-panel-compact .donation-panel-compact__cta { flex: none; min-block-size: var(--_cta, 52px); margin: 0; }
 /* Düğme metni değişince ("Tutar seçin" → "Devam et") kutu yerinde kalır: metin tam genişlikte ortalanır (kayma 0). */
 .donation-panel-compact__cta > [data-dp-cnext-label], .donation-panel-compact__cta > [data-dp-cpay-label] { flex: 1 1 auto; min-inline-size: 0; text-align: center; }
 .donation-panel-compact .donation-panel-compact__cta.is-pending { opacity: .6; }

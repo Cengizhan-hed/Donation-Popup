@@ -1,7 +1,7 @@
 /* Donation Panel — compact kart: vergi indirimi beyanı (başlık + kısa hal + Ayrıntılar katmanı). Yalnız beyan adımı
  * olan kartta basılır (compact-tax paketi). */
 /* Vergi indirimi beyanı: başlık + beyanın kısa hali (tek satır) + "Ayrıntılar"; tam metin kart içi katmanda. */
-.donation-panel-compact__tax { display: flex; align-items: center; gap: 2px; min-block-size: 52px; padding-inline: 12px 2px; border: 1.5px solid var(--dp-color-border); border-radius: var(--dp-radius-field); transition: border-color var(--dp-dur-fast), background var(--dp-dur-fast); }
+.donation-panel-compact__tax { display: flex; align-items: center; gap: 2px; min-block-size: var(--_tax, 52px); padding-inline: 12px 2px; border: 1.5px solid var(--dp-color-border); border-radius: var(--dp-radius-field); transition: border-color var(--dp-dur-fast), background var(--dp-dur-fast); }
 .donation-panel-compact__tax:has(input:checked) { border-color: var(--dp-color-primary); background: var(--dp-color-primary-soft); }
 /* Onay kutusu görünümü ortak `.donation-panel-check` kuralından (yeni bayt yok); burada yalnız yerleşim. */
 .donation-panel .donation-panel-check.donation-panel-compact__taxcheck { flex: 1 1 auto; align-items: center; gap: 10px; min-inline-size: 0; min-block-size: 48px; margin: 0; line-height: 16px; color: var(--dp-color-text); }
@@ -35,7 +35,6 @@
 :root .donation-panel .donation-panel-compact__sheetx { flex: none; inline-size: 100%; min-block-size: 44px; margin-block-start: auto; }
 
 /* Tek ekran (sabit fiyat): beyan tek ince satır (başlık + "Ayrıntılar"; kısa metin gizli, tam metin katmanda). */
-.donation-panel-compact__step--one .donation-panel-compact__tax { min-block-size: 44px; }
 .donation-panel-compact__step--one .donation-panel-compact__taxs { display: none; }
 :root .donation-panel .donation-panel-compact__step--one .donation-panel-check.donation-panel-compact__taxcheck { min-block-size: 44px; }
 

@@ -34,6 +34,32 @@ function isolate(root) {
 }
 
 /**
+ * Dokunmatik cihazda ekran klavyesi açılınca odaktaki alanın satırı klavyenin üstünde en az 12 px boşluk bırakır (sayfa
+ * kaydırılır; kart içinde ölçüm/yerleşim değişikliği yok).
+ *
+ * @param {HTMLFormElement} form Kart formu.
+ */
+function bindKeyboardGap(form) {
+  const vv = window.visualViewport;
+  if (!vv || !window.matchMedia('(pointer: coarse)').matches) {
+    return;
+  }
+  const reveal = () => {
+    const field = document.activeElement;
+    if (!(field instanceof Element) || !form.contains(field) || !field.matches(TEXT_FIELD)) {
+      return;
+    }
+    const row = field.closest('.donation-panel-compact__field') || field;
+    const over = row.getBoundingClientRect().bottom - (vv.offsetTop + vv.height - REVEAL_GAP_PX);
+    if (over > 0) {
+      window.scrollBy(0, over);
+    }
+  };
+  form.addEventListener('focusin', () => window.setTimeout(reveal, 320));
+  vv.addEventListener('resize', reveal);
+}
+
+/**
  * Formun veri öznitelikleri (Woo ayırıcıları, tür, akış).
  *
  * @param {DOMStringMap} ds Form `dataset`.
@@ -679,22 +705,7 @@ export function createCompact(root) {
 
   // ---- Ekran klavyesi (124-kbd): odaktaki alanın (satırı) alt kenarı ile klavyenin üst kenarı arasında ≥12 px boşluk. Kart
   // sayfada akışta durur, sabit alt çubuğu yoktur (gizlenecek bölüm yok; yükseklik/yerleşim değişmez); yalnız sayfa kaydırılır. ----
-  const vv = window.visualViewport;
-  const reveal = () => {
-    const field = document.activeElement;
-    if (!vv || !(field instanceof Element) || !form.contains(field) || !field.matches(TEXT_FIELD)) {
-      return;
-    }
-    const row = field.closest('.donation-panel-compact__field') || field;
-    const over = row.getBoundingClientRect().bottom - (vv.offsetTop + vv.height - REVEAL_GAP_PX);
-    if (over > 0) {
-      window.scrollBy(0, over);
-    }
-  };
-  if (vv && window.matchMedia('(pointer: coarse)').matches) {
-    form.addEventListener('focusin', () => window.setTimeout(reveal, 320));
-    vv.addEventListener('resize', reveal);
-  }
+  bindKeyboardGap(form);
 
   // ---- Kaydırıcı uyumu ----
   isolate(root);
