@@ -53,7 +53,7 @@ import {
 } from './network-guard.mjs';
 import { runMobileA11yChecks } from './mobile-a11y.mjs';
 import { runDonationFlowChecks, resolveDonationFillAmount } from './donation-flow.mjs';
-import { waitForVisibleCandidate, advanceToDetails, returnToDetails, collectHiddenTriggerDump, advanceToFinalStep, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked } from './dp-form.mjs';
+import { waitForVisibleCandidate, advanceToDetails, returnToDetails, collectHiddenTriggerDump, advanceToFinalStep, fillAmountStep, fillDonorDetails, formOf, isStepShown, setChecked, tapAction, dismissKeyboard } from './dp-form.mjs';
 import { prepareCheckoutEnv } from './checkout-setup.mjs';
 import {
   probeSimilarDonations,
@@ -910,7 +910,7 @@ async function triggerShellValidationErrors(page, mode) {
     await fillAmountStep(form, picked.fill);
     await advanceToDetails(form);
   }
-  await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS, noWaitAfter: true });
+  await tapAction(form.locator(DP_SEL.submit).first(), { timeout: CHECK_MS, noWaitAfter: true });
   await form
     .locator('[data-dp-error]')
     .filter({ hasText: /\S/ })
@@ -1264,6 +1264,7 @@ async function runSubmitFaultChecks({ browser, contextOpts, env, productPath, gu
         await fillDonorFields(root, { amountFill: '25' });
         const form = formOf(root);
         await advanceToFinalStep(form);
+        await dismissKeyboard(form);
         const t0 = Date.now();
         await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS, noWaitAfter: true });
         const summary = form.locator('[data-dp-summary].is-visible').first();
@@ -1430,7 +1431,10 @@ async function assertDonorFieldsPersist(shell, expected, failures, check) {
       `donation_full_name beklenen="${expected.name}" gerçek="${actual.name}"`
     );
   }
-  if (expected.phone != null && actual.phone !== expected.phone) {
+  // 12.4 telefon alanı yazarken ulusal biçimde gruplar (phone-logic.mjs formatNational: "5551234567" → "555 123 45 67");
+  // kaybolma ölçütü rakam dizisidir (rakam eksik/fazla/boş = hata; yalnız görüntü boşlukları serbest).
+  const digits = (v) => String(v == null ? '' : v).replace(/\D/g, '');
+  if (expected.phone != null && (actual.phone == null || digits(actual.phone) !== digits(expected.phone) || digits(expected.phone) === '')) {
     mismatches.push(
       `donation_phone beklenen="${expected.phone}" gerçek="${actual.phone}"`
     );
