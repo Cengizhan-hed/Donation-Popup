@@ -70,6 +70,83 @@ describe('port rezervasyonu', () => {
     r2.release();
   });
 
+  it('sahibi CANLI olan 7 saatlik kilit bayat sayilmaz; sunucusu kapatilmaz', () => {
+    const dir = tmpDir();
+    fs.writeFileSync(
+      path.join(dir, '9550.lock'),
+      JSON.stringify({ pid: process.pid, at: Date.now() - 7 * 3600 * 1000, childPid: 7003 })
+    );
+    const killed = [];
+    const r = reservePort(9550, { dir, pid: process.ppid, listenPidsFn: () => [7003], killFn: (p) => killed.push(p) });
+    assert.equal(r.ok, false);
+    assert.deepEqual(killed, []);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(dir, '9550.lock'), 'utf8')).pid, process.pid);
+  });
+
+  it('canli sahip 25 saat ama port dinleniyor: yine bayat degil, kapatma yok', () => {
+    const dir = tmpDir();
+    fs.writeFileSync(
+      path.join(dir, '9551.lock'),
+      JSON.stringify({ pid: process.pid, at: Date.now() - 25 * 3600 * 1000, childPid: 7004 })
+    );
+    const killed = [];
+    const r = reservePort(9551, { dir, pid: process.ppid, listenPidsFn: () => [7004], killFn: (p) => killed.push(p) });
+    assert.equal(r.ok, false);
+    assert.deepEqual(killed, []);
+  });
+
+  it('canli sahip 25 saat ve dinleyici yok: kilit devralinir, kimse oldurulmez', () => {
+    const dir = tmpDir();
+    fs.writeFileSync(
+      path.join(dir, '9552.lock'),
+      JSON.stringify({ pid: process.pid, at: Date.now() - 25 * 3600 * 1000, childPid: 7005 })
+    );
+    const killed = [];
+    const r = reservePort(9552, { dir, pid: process.ppid, listenPidsFn: noListen, killFn: (p) => killed.push(p) });
+    assert.equal(r.ok, true);
+    assert.deepEqual(killed, []);
+    r.release();
+  });
+
+  it('bayat kilit yarisi: arada baska koşu taze kilit alirsa o kazanir, devralan geri cekilir', async () => {
+    const dir = tmpDir();
+    const dead = await deadPid();
+    const lock = path.join(dir, '9560.lock');
+    fs.writeFileSync(lock, JSON.stringify({ pid: dead, at: Date.now(), childPid: 7009 }));
+    let b = null;
+    let hook = true;
+    // A kilidi rename ile devraldiktan sonra (orphan listen cagrisi) B bos dosyayi `wx` ile alir.
+    const listenA = () => {
+      if (hook) {
+        hook = false;
+        b = reservePort(9560, { dir, pid: process.ppid, listenPidsFn: noListen });
+      }
+      return [];
+    };
+    const a = reservePort(9560, { dir, pid: process.pid, listenPidsFn: listenA });
+    const winners = [a, b].filter((x) => x && x.ok);
+    assert.equal(winners.length, 1, 'tam bir kazanan');
+    const cur = JSON.parse(fs.readFileSync(lock, 'utf8'));
+    assert.equal(cur.pid, winners[0] === a ? process.pid : process.ppid);
+    assert.deepEqual(
+      fs.readdirSync(dir).filter((f) => f.includes('.stale.')),
+      []
+    );
+    for (const w of winners) w.release();
+  });
+
+  it('bayat devralma artik dosya birakmaz', () => {
+    const dir = tmpDir();
+    fs.writeFileSync(path.join(dir, '9561.lock'), JSON.stringify({ pid: 999999999, at: Date.now(), childPid: null }));
+    const r = reservePort(9561, { dir, listenPidsFn: noListen });
+    assert.equal(r.ok, true);
+    assert.deepEqual(
+      fs.readdirSync(dir).filter((f) => f.includes('.stale.')),
+      []
+    );
+    r.release();
+  });
+
   it('release yalniz kendi kilidini siler', () => {
     const dir = tmpDir();
     const a = reservePort(9540, { dir, listenPidsFn: noListen });

@@ -12,7 +12,6 @@ import { loadDeployEnvSilent, remote, resolveWpPath, setActiveDeployEnvFile } fr
 import {
   TRASH_REPORT_EVAL_FILE,
   CRON_STATUS_EVAL_FILE,
-  CRON_CRONTAB_HINT_COMMAND,
   isReadOnlyCronStatusSource,
 } from './lib/ikram-wp-guard.mjs';
 import { validateRemoteSiteUrl, buildGuardedEvalFileCommand, wpPathFlag } from './lib/deploy-guards.mjs';
@@ -46,7 +45,7 @@ function runCronStatus(env) {
     fail('cron-status.php yazma/ağ çağrısı içeriyor; reddedildi.');
   }
   runEvalFileReadOnly(env, CRON_STATUS_EVAL_FILE);
-  console.log(remote(env, CRON_CRONTAB_HINT_COMMAND));
+  console.log("not=sunucu cron'u bu araçla okunmaz; hosting panelinden bakın");
 }
 
 function main() {

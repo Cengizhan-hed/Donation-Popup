@@ -7,7 +7,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   CRON_STATUS_EVAL_FILE,
-  CRON_CRONTAB_HINT_COMMAND,
   isReadOnlyCronStatusSource,
   allowIkramWpCommand,
   normalizeRemotePluginDir,
@@ -79,15 +78,9 @@ describe('ikram-wp-guard', () => {
     assert.equal(/\bgetenv|DB_PASSWORD|AUTH_KEY|SECURE_AUTH|\$_SERVER|ABSPATH/i.test(src), false);
   });
 
-  it('cron crontab ipucu: yalniz evet/hayir, crontab satiri yazilmaz', () => {
-    const c = CRON_CRONTAB_HINT_COMMAND;
-    assert.ok(c.includes('crontab -l'));
-    assert.ok(c.includes('grep -qE'));
-    assert.ok(/wp-cron\\\.php\|wp cron event run/.test(c));
-    assert.ok(c.includes('echo crontab_wp_cron=yes'));
-    assert.ok(c.includes('echo crontab_wp_cron=no'));
-    assert.equal(/crontab\s+(-e|-r|-)\b(?!l)/.test(c.replace('crontab -l', '')), false);
-    assert.equal(/\bcat\b|>>|\btee\b/.test(c), false);
+  it('cron-status betigi crontab okumaz (hesap geneli ipucu kaldirildi)', () => {
+    const src = fs.readFileSync(path.resolve('tests/e2e/helpers/cron-status.php'), 'utf8');
+    assert.equal(/crontab/i.test(src), false);
   });
 
   it('mkdir bug: plugin path file → directory', () => {
