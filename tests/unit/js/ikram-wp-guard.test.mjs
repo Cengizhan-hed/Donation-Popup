@@ -3,7 +3,11 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
+  CRON_STATUS_EVAL_FILE,
+  isReadOnlyCronStatusSource,
   allowIkramWpCommand,
   normalizeRemotePluginDir,
   CLEANUP_EVAL_FILE,
@@ -44,6 +48,39 @@ describe('ikram-wp-guard', () => {
     assert.equal(allowIkramWpCommand("eval 'wp_delete_user(1);'").ok, false);
     assert.equal(allowIkramWpCommand("eval 'wp_untrash_post(1);'").ok, false);
     assert.equal(allowIkramWpCommand("eval 'update_post_meta(1,\"k\",\"v\");'").ok, false);
+  });
+
+  it('cron-status: yalniz izinli dosya, yazma/ag cagrisi yok, sir cikmaz', () => {
+    assert.equal(allowIkramWpCommand(`eval-file ${CRON_STATUS_EVAL_FILE}`).ok, true);
+    assert.equal(allowIkramWpCommand('eval-file tests/e2e/helpers/cron-status.php.bak').ok, false);
+    assert.equal(allowIkramWpCommand('eval-file /tmp/cron-status.php').ok, false);
+    // izin listesi genisletilmedi: cron alt komutlari hala reddedilir
+    assert.equal(allowIkramWpCommand('cron event run --due-now').ok, false);
+    assert.equal(allowIkramWpCommand('cron test').ok, false);
+    assert.equal(allowIkramWpCommand('cron event delete foo').ok, false);
+
+    const src = fs.readFileSync(path.join(ROOT, CRON_STATUS_EVAL_FILE), 'utf8');
+    assert.equal(isReadOnlyCronStatusSource(src), true);
+    assert.equal(isReadOnlyCronStatusSource('<?php wp_schedule_event(1,"hourly","x");'), false);
+    assert.equal(isReadOnlyCronStatusSource('<?php spawn_cron();'), false);
+    assert.equal(isReadOnlyCronStatusSource('<?php wp_remote_get("http://x");'), false);
+    assert.equal(isReadOnlyCronStatusSource('<?php update_option("a","b");'), false);
+    // yalniz bilinen anahtar=deger satirlari basilir
+    const keys = [...src.matchAll(/^echo '([A-Za-z_]+)=/gm)].map((m) => m[1]);
+    assert.deepEqual(keys, [
+      'DISABLE_WP_CRON',
+      'ALTERNATE_WP_CRON',
+      'events_total',
+      'events_overdue',
+      'oldest_overdue_seconds',
+      'schedules',
+    ]);
+    assert.equal(/\bgetenv|DB_PASSWORD|AUTH_KEY|SECURE_AUTH|\$_SERVER|ABSPATH/i.test(src), false);
+  });
+
+  it('cron-status betigi crontab okumaz (hesap geneli ipucu kaldirildi)', () => {
+    const src = fs.readFileSync(path.resolve('tests/e2e/helpers/cron-status.php'), 'utf8');
+    assert.equal(/crontab/i.test(src), false);
   });
 
   it('mkdir bug: plugin path file → directory', () => {

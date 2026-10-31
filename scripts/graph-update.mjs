@@ -27,7 +27,7 @@ const cp = (rel) => {
   const from = path.join(ROOT, rel);
   if (fs.existsSync(from)) fs.cpSync(from, path.join(SRC, rel), { recursive: true });
 };
-['includes', 'templates', 'blocks', 'woo-donation-popup.php', 'uninstall.php', 'assets/js/src', 'assets/js/admin', 'assets/css/src'].forEach(cp);
+['src', 'templates', 'blocks', 'woo-donation-popup.php', 'uninstall.php', 'assets/js/src', 'assets/js/admin', 'assets/css/src'].forEach(cp);
 for (const f of fs.readdirSync(path.join(ROOT, 'assets/js'))) {
   if (f.endsWith('.js')) fs.copyFileSync(path.join(ROOT, 'assets/js', f), path.join(SRC, 'assets/js', f));
 }

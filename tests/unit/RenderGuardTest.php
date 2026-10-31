@@ -2,7 +2,7 @@
 /**
  * Render koruması: hata ziyaretçiye boş, ürün editörüne uyarı döner; açık buffer'lar kapanır.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -27,7 +27,7 @@ final class RenderGuardTest extends TestCase {
 	public function test_visitor_gets_empty_string_and_buffers_are_closed(): void {
 		$level = ob_get_level();
 
-		$html = WDP_Render_Guard::html($this->failing(), 12, 'test');
+		$html = \DonationPanel\Modules\EntryPoints\Render_Guard::html($this->failing(), 12, 'test');
 
 		$this->assertSame('', $html);
 		$this->assertSame($level, ob_get_level());
@@ -35,7 +35,7 @@ final class RenderGuardTest extends TestCase {
 
 	public function test_live_frontend_hides_render_notice_even_for_editors(): void {
 		WDP_Test_State::$caps = array('edit_products');
-		$html = WDP_Render_Guard::html($this->failing(), 12, 'test');
+		$html = \DonationPanel\Modules\EntryPoints\Render_Guard::html($this->failing(), 12, 'test');
 		$this->assertSame('', $html);
 	}
 
@@ -43,7 +43,7 @@ final class RenderGuardTest extends TestCase {
 		WDP_Test_State::$caps     = array('edit_products');
 		WDP_Test_State::$is_admin = true;
 
-		$html = WDP_Render_Guard::html($this->failing(), 12, 'test');
+		$html = \DonationPanel\Modules\EntryPoints\Render_Guard::html($this->failing(), 12, 'test');
 
 		$this->assertStringContainsString('class="wdp-admin-notice"', $html);
 		$this->assertStringContainsString('role="note"', $html);
@@ -53,40 +53,47 @@ final class RenderGuardTest extends TestCase {
 	}
 
 	public function test_successful_render_passes_through(): void {
-		$this->assertSame('<p>ok</p>', WDP_Render_Guard::html(static function () {
+		$this->assertSame('<p>ok</p>', \DonationPanel\Modules\EntryPoints\Render_Guard::html(static function () {
 			return '<p>ok</p>';
 		}));
 	}
 
 	public function test_value_returns_fallback_on_error(): void {
 		$level = ob_get_level();
-		$value = WDP_Render_Guard::value($this->failing(), array('kept' => true), 'schema');
+		$value = \DonationPanel\Modules\EntryPoints\Render_Guard::value($this->failing(), array('kept' => true), 'schema');
 
 		$this->assertSame(array('kept' => true), $value);
 		$this->assertSame($level, ob_get_level());
 	}
 
 	public function test_admin_notice_is_hidden_from_visitors_and_escaped_for_editors(): void {
-		$this->assertSame('', WDP_Utils::admin_notice_html('Ürün bulunamadı'));
+		$this->assertSame('', \DonationPanel\Support\Admin_Notice::admin_notice_html('Ürün bulunamadı'));
 
 		WDP_Test_State::$caps = array('edit_products');
-		$this->assertSame('', WDP_Utils::admin_notice_html('Canlı sitede yöneticiye de gizlenir'));
+		$this->assertSame('', \DonationPanel\Support\Admin_Notice::admin_notice_html('Canlı sitede yöneticiye de gizlenir'));
 
 		WDP_Test_State::$is_admin = true;
-		$html = WDP_Utils::admin_notice_html('<b>Ürün</b> bulunamadı');
+		$html = \DonationPanel\Support\Admin_Notice::admin_notice_html('<b>Ürün</b> bulunamadı');
 
-		$this->assertSame('<div class="wdp-admin-notice" role="note">&lt;b&gt;Ürün&lt;/b&gt; bulunamadı</div>', $html);
+		// Notun küçük stili notun önünde satır içi (istek başına bir kez; stilsiz kare yok, §25).
+		$this->assertSame('<div class="wdp-admin-notice" role="note">&lt;b&gt;Ürün&lt;/b&gt; bulunamadı</div>', preg_replace('#^<style id="donation-panel-inline-notice">[^<]*</style>#', '', $html));
+
+		// Eklentinin kendi ön yüz anahtarı (ayar önizlemesi) canlı sayfadır: yöneticiye de not yok.
+		WDP_Test_State::$is_admin = false;
+		$_GET['dp_preview']       = '1';
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$this->assertSame('', \DonationPanel\Support\Admin_Notice::admin_notice_html('Ayar önizlemesi'));
+		unset($_GET['dp_preview']);
 
 		WDP_Test_State::$is_admin = false;
 		WDP_Test_State::$caps     = array('edit_products');
 		$_GET['fb-edit']         = '1';
-		WDP_Builder_Detect::reset();
-		$preview = WDP_Utils::admin_notice_html('Önizleme notu');
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$preview = \DonationPanel\Support\Admin_Notice::admin_notice_html('Önizleme notu');
 		$this->assertStringContainsString('wdp-admin-notice', $preview);
 	}
 
 	public function test_legacy_settings_helpers_accept_corrupt_option_values(): void {
-		$this->assertSame(array(), WDP_Utils::migrate_button_shadow_to_sc_modal('corrupt'));
-		$this->assertIsArray(WDP_Utils::normalize_legacy_popup_button_text(null));
+		$this->assertIsArray(\DonationPanel\Domain\Button_Settings::normalize_legacy_popup_button_text(null));
 	}
 }

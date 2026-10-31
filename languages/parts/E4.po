@@ -1,0 +1,85 @@
+# Turkish translations — E4 (yan sepet modülü).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Donation basket"
+msgstr "Bağış sepeti"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Close basket"
+msgstr "Sepeti kapat"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Your basket is empty"
+msgstr "Sepetiniz boş"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Add a gift and it will be summarised here."
+msgstr "Bir bağış ekleyin; sepet burada özetlenir."
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Continue giving"
+msgstr "Bağışa devam et"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Subtotal"
+msgstr "Ara toplam"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Payment method and any taxes are shown at checkout."
+msgstr "Ödeme yöntemi ve varsa vergiler ödeme sayfasında görünür."
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Continue to checkout"
+msgstr "Ödemeye geç"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "In honour of: %s"
+msgstr "Ithaf: %s"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "On behalf of: %s"
+msgstr "Adına: %s"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Quantity"
+msgstr "Adet"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Decrease quantity"
+msgstr "Adedi azalt"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Increase quantity"
+msgstr "Adedi artır"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+msgid "Remove"
+msgstr "Kaldır"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "Remove %s"
+msgstr "%s bağışını kaldır"
+
+#: src/Modules/SideCart/class-side-cart-renderer.php
+#, php-format
+msgid "%d gift in your basket"
+msgid_plural "%d gifts in your basket"
+msgstr[0] "Sepetinizde %d bağış var"
+msgstr[1] "Sepetinizde %d bağış var"
+
+#: src/Modules/SideCart/class-side-cart-module.php
+msgid "Removed from your basket."
+msgstr "Sepetinizden kaldırıldı."

@@ -2,7 +2,7 @@
 /**
  * PHPStan bootstrap — eklenti sabitleri. WordPress çekirdeği yüklenmez.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 if (!defined('ABSPATH')) {
@@ -12,7 +12,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', dirname(__DIR__) . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.35.2');
+	define('WDP_VERSION', '12.4.0');
 }
 if (!defined('WDP_PLUGIN_DIR')) {
 	define('WDP_PLUGIN_DIR', dirname(__DIR__) . '/');
@@ -21,5 +21,8 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.35.2');
+	define('WDP_ASSET_VERSION', '12.4.0');
 }
+
+require_once dirname(__DIR__) . '/src/Core/class-autoloader.php';
+\DonationPanel\Core\Autoloader::register(dirname(__DIR__) . '/src');

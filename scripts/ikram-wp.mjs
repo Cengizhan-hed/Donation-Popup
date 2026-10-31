@@ -34,6 +34,8 @@ import {
   CLEANUP_EVAL_FILE,
   TEMP_PRODUCT_EVAL_FILE,
   TRASH_REPORT_EVAL_FILE,
+  CRON_STATUS_EVAL_FILE,
+  isReadOnlyCronStatusSource,
 } from './lib/ikram-wp-guard.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -169,6 +171,16 @@ function runEvalFileCleanup(env, relFile) {
   console.log(out);
 }
 
+function builtinCronStatus(env) {
+  const local = path.join(ROOT, CRON_STATUS_EVAL_FILE);
+  if (!fs.existsSync(local)) fail(`Yerel dosya yok: ${CRON_STATUS_EVAL_FILE}`);
+  if (!isReadOnlyCronStatusSource(fs.readFileSync(local, 'utf8'))) {
+    fail('cron-status.php yazma/ağ çağrısı içeriyor; reddedildi.');
+  }
+  runEvalFileCleanup(env, CRON_STATUS_EVAL_FILE);
+  console.log("not=sunucu cron'u bu araçla okunmaz; hosting panelinden bakın");
+}
+
 function main() {
   console.log(IKRAM_ALLOW_REMOVAL_NOTE);
   try {
@@ -184,12 +196,16 @@ function main() {
 
   const argv = process.argv.slice(2).filter((a) => a !== '--');
   if (!argv.length) {
-    fail('Kullanım: npm run ikram:wp -- plugin list | plugin-health | php-ok | debug-log | trash-report | eval-file <dosya>');
+    fail('Kullanım: npm run ikram:wp -- plugin list | plugin-health | php-ok | debug-log | trash-report | cron-status | eval-file <dosya>');
   }
 
   const builtin = argv[0];
   if (builtin === 'trash-report') {
     runEvalFileCleanup(env, TRASH_REPORT_EVAL_FILE);
+    return;
+  }
+  if (builtin === 'cron-status') {
+    builtinCronStatus(env);
     return;
   }
   if (builtin === 'plugin-health') {

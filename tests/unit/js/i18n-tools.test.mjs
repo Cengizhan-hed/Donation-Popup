@@ -1,5 +1,5 @@
 /**
- * gen-js-strings, merge-po, i18n-text normalize/compare.
+ * merge-po, i18n-text normalize/compare.
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -8,7 +8,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { extractJsI18nCalls, renderPhpRegion } from '../../../tools/i18n/gen-js-strings.mjs';
 import { extractWpI18nCalls, makeJson, HANDLE_SOURCES } from '../../../tools/i18n/make-json.mjs';
 import { parsePoEntries, mergeParts } from '../../../tools/i18n/merge-po.mjs';
 import {
@@ -20,33 +19,6 @@ import {
 import { ROOT } from '../../../tests/e2e/helpers/env-root.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-describe('gen-js-strings', () => {
-  it('WDPApp.i18n.__ / _x çağrılarını tarar', () => {
-    const src = `
-      WDPApp.i18n.__('Save', 'woo-donation-popup');
-      WDPApp.i18n._x('Open', 'button', 'woo-donation-popup');
-    `;
-    const calls = extractJsI18nCalls(src);
-    assert.equal(calls.length, 2);
-    assert.equal(calls[0].msg, 'Save');
-    assert.equal(calls[1].ctx, 'button');
-    const region = renderPhpRegion([
-      { fn: '__', msg: 'Save', ctx: '' },
-      { fn: '_x', msg: 'Open', ctx: 'button' },
-    ]);
-    assert.match(region, /__\('Save'/);
-    assert.match(region, /_x\('Open', 'button'/);
-  });
-
-  it('--check: depodaki sözlük JS kaynağıyla güncel (yeşil)', () => {
-    const r = spawnSync(process.execPath, ['tools/i18n/gen-js-strings.mjs', '--check'], {
-      encoding: 'utf8',
-      cwd: ROOT,
-    });
-    assert.equal(r.status, 0, r.stderr || r.stdout);
-  });
-});
 
 describe('merge-po', () => {
   it('aynı msgid farklı msgstr = çakışma', () => {
@@ -146,6 +118,6 @@ describe('token-scan', () => {
     const data = JSON.parse(r.stdout);
     assert.ok(data.call_count > 0);
     assert.ok(Array.isArray(data.calls));
-    assert.ok(data.calls.some((c) => c.function === '__' && c.file.includes('class-admin-page-renderer.php')));
+    assert.ok(data.calls.some((c) => c.function === '__' && c.file.includes('class-pages.php')));
   });
 });

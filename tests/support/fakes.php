@@ -2,13 +2,17 @@
 /**
  * Minimal WooCommerce test doubles for unit tests (orders, refunds, order items, meta).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
 
 if (!class_exists('WC_Abstract_Order')) {
 	abstract class WC_Abstract_Order {}
+}
+if (!class_exists('WC_Order_Item_Product')) {
+	/** Order line item base (production code only handles product lines). */
+	class WC_Order_Item_Product {}
 }
 
 /**
@@ -33,7 +37,7 @@ final class WDP_Fake_Meta {
 /**
  * Order line item double.
  */
-final class WDP_Fake_Order_Item {
+final class WDP_Fake_Order_Item extends WC_Order_Item_Product {
 	/** @var int */
 	private $product_id;
 	/** @var int */
@@ -105,10 +109,22 @@ class WDP_Fake_Order extends WC_Abstract_Order {
 	public $currency = 'TRY';
 	/** @var string */
 	public $status = 'processing';
+	/** @var int|null Oluşturma zamanı (Unix); null = tarih yok. */
+	public $created_ts = null;
+	/** @var int|null Ödeme zamanı (Unix); null = ödeme tarihi yok (çevrimdışı yöntem). */
+	public $paid_ts = null;
 
 	public function __construct(int $id, array $items = array()) {
 		$this->id    = $id;
 		$this->items = $items;
+	}
+
+	public function get_date_created() {
+		return null === $this->created_ts ? null : (new DateTimeImmutable('@' . $this->created_ts));
+	}
+
+	public function get_date_paid() {
+		return null === $this->paid_ts ? null : (new DateTimeImmutable('@' . $this->paid_ts));
 	}
 
 	public function get_id(): int {
@@ -327,6 +343,19 @@ final class WDP_Fake_Wpdb {
 
 	public function get_col($query): array {
 		$this->queries[] = $query;
+		if (is_array($query) && strpos($query['sql'], "p.post_type IN ('product', 'product_variation')") !== false && strpos($query['sql'], 'SELECT DISTINCT pm.post_id') !== false) {
+			// "post_id by meta_key on products / variations, any value" scan (12.4 email settings cleanup).
+			list($key, $after, $limit) = $query['args'];
+			$ids = array();
+			foreach (WDP_Test_State::$post_meta as $post_id => $meta) {
+				$type = WDP_Test_State::$post_types[ $post_id ] ?? (isset(WDP_Test_State::$products[ $post_id ]) ? 'product' : '');
+				if ($post_id > (int) $after && array_key_exists($key, $meta) && in_array($type, array( 'product', 'product_variation' ), true)) {
+					$ids[] = (string) $post_id;
+				}
+			}
+			sort($ids, SORT_NUMERIC);
+			return array_slice($ids, 0, (int) $limit);
+		}
 		if (is_array($query) && strpos($query['sql'], "meta_value <> ''") !== false) {
 			// "post_id by meta_key, non-empty value" scan (10.29.0 migration).
 			list($key, $after, $limit) = $query['args'];
@@ -356,6 +385,18 @@ final class WDP_Fake_Wpdb {
 
 	public function get_results($query, $output = 'OBJECT'): array {
 		$this->queries[] = $query;
+		if (is_array($query) && strpos($query['sql'], 'SELECT pm.post_id, pm.meta_value') !== false && isset($query['args'][0])) {
+			// "post_id + meta_value by meta_key on products" scan (12.0.0 carry-over step).
+			$key  = (string) $query['args'][0];
+			$rows = array();
+			foreach (WDP_Test_State::$post_meta as $post_id => $meta) {
+				$type = WDP_Test_State::$post_types[ $post_id ] ?? (isset(WDP_Test_State::$products[ $post_id ]) ? 'product' : '');
+				if ('product' === $type && array_key_exists($key, $meta)) {
+					$rows[] = (object) array( 'post_id' => (string) $post_id, 'meta_value' => (string) $meta[ $key ] );
+				}
+			}
+			return $rows;
+		}
 		return array();
 	}
 

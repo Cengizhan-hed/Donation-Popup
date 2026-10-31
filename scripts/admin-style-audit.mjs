@@ -10,6 +10,7 @@
  */
 import { chromium } from '@playwright/test';
 import { loadE2EEnv } from '../tests/e2e/helpers/env.mjs';
+import { DEFAULT_ENV_ID } from '../tests/e2e/helpers/profile.mjs';
 import { ensureAuth, getAuthFile, getInMemoryAdminCookies } from '../tests/e2e/helpers/auth.mjs';
 import { applyNetworkGuard, guardOptionsFromEnv } from '../tests/e2e/helpers/network-guard.mjs';
 import { withEnvRunLock } from '../tests/e2e/helpers/env-lock.mjs';
@@ -41,7 +42,7 @@ function pluginSlug(p) {
 }
 
 async function main() {
-  const envName = String(arg('--env', 'staging'));
+  const envName = String(arg('--env', DEFAULT_ENV_ID));
   const env = loadE2EEnv({ envId: envName });
   if (env.E2E_PROFILE_ID && isRemoteFrozen()) {
     console.error(FREEZE_MESSAGE);

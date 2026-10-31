@@ -5,7 +5,7 @@ export const DIST_FORBIDDEN_PATTERNS = [
   /(?:^|\/)vendor-dev(?:\/|$)/,
   /(?:^|\/)tools\/bin(?:\/|$)/,
   /(?:^|\/)phpcs\.xml(?:\.dist)?$/,
-  /(?:^|\/)phpstan(?:\.verify)?\.neon$/,
+  /(?:^|\/)phpstan(?:\.dead)?\.neon$/,
   /(?:^|\/)phpstan-baseline\.neon$/,
   /(?:^|\/)composer\.(json|lock|phar)$/,
   /(?:^|\/)composer-setup\.php$/,
@@ -15,7 +15,6 @@ export const DISTIGNORE_REQUIRED = [
   'vendor-dev/',
   'phpcs.xml.dist',
   'phpstan.neon',
-  'phpstan.verify.neon',
   'composer.json',
   'tools/',
 ];

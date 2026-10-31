@@ -1,10 +1,10 @@
 {
-  "comment": "Geliştirme araçları — dağıtım paketine ve hiçbir siteye girmez. SHA resmi kaynaklardan.",
+  "comment": "Geliştirme araçları — dağıtım paketine ve hiçbir siteye girmez. SHA resmi kaynaklardan. composer: önce sistem composer'ı; yoksa build/tools/ yedeği (repoda yok).",
   "composer": {
     "version": "2.10.3",
     "url": "https://getcomposer.org/download/2.10.3/composer.phar",
     "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6",
-    "dest": "tools/bin/composer.phar"
+    "dest": "build/tools/composer.phar"
   },
   "wpCli": {
     "version": "2.12.0",

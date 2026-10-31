@@ -21,9 +21,9 @@
     "country": "GB",
     "nationalExample": "7700900123"
   },
-  "theme": "Blocksy",
-  "pageBuilder": "Elementor",
-  "listPage": "",
+  "theme": "Hello Elementor",
+  "pageBuilder": "Elementor Pro",
+  "listPage": "/appeals/",
   "shopPage": "",
   "cachePurge": "sg-purge",
   "wpCliAuth": true,
@@ -46,7 +46,7 @@
     "loopCards": "li.product, .wdp-donations-item, .wdp-card, .elementor-widget-woocommerce-products li.product",
     "loopTitle": ".woocommerce-loop-product__title, .product-title, h2, h3, .wdp-card-title",
     "animated": "",
-    "header": "header, .ct-header, #header"
+    "header": "header#site-header, header.elementor-location-header, header"
   },
   "products": {
     "custom": {

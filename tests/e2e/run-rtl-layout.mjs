@@ -30,10 +30,11 @@ const __filename = fileURLToPath(import.meta.url);
 const CHECK_MS = 25000;
 const ANA_SHOT_DIR =
   '/Users/cengizhancoban/Desktop/Wordpress Eklentiler/Donation Popup/Donation Popup/build/handoff/I18N-R1-ekran';
-const ADMIN_TABS = ['products', 'placement', 'design-studio'];
+// Yeni tek yönetici menüsünün ekranları (sayfa sluglari).
+const ADMIN_SCREENS = ['donation-panel', 'donation-panel-campaigns', 'donation-panel-forms'];
 
 function extraQuery() {
-  return { hdf_no_side_cart: '1' };
+  return {};
 }
 
 async function gotoPath(page, baseUrl, pathName) {
@@ -217,15 +218,10 @@ async function runLocaleDevice({ resolved, locale, deviceId, port, shotDir, save
     if (!preset.isMobile) {
       await run('admin', async () => {
         await loginAdmin(page, server.url.replace(/\/$/, ''));
-        await gotoPath(page, server.url.replace(/\/$/, ''), '/wp-admin/admin.php?page=wdp-popup-settings');
-        await page.waitForSelector('.wdp-admin-wrap', { timeout: CHECK_MS });
-        const tabNames = { products: 'admin-products', placement: 'admin-placement', 'design-studio': 'admin-design-studio' };
-        for (const tab of ADMIN_TABS) {
-          const link = page.locator(`.wdp-nav-tab-wrapper a.nav-tab[data-tab="${tab}"]`).first();
-          if (await link.count()) {
-            await link.click();
-          }
-          await checkAndShot(page, fileFor(tabNames[tab] || `admin-${tab}`));
+        for (const slug of ADMIN_SCREENS) {
+          await gotoPath(page, server.url.replace(/\/$/, ''), `/wp-admin/admin.php?page=${slug}`);
+          await page.waitForSelector('.dpa', { timeout: CHECK_MS });
+          await checkAndShot(page, fileFor(`admin-${slug}`));
         }
       });
     }

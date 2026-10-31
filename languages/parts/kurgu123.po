@@ -1,0 +1,203 @@
+# Turkish translations — 123-kurgu (ödeme davranışı ürün > tür > genel; compact kart araçları; Rehber).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgid "How donors pay"
+msgstr "Bağışçılar nasıl öder"
+
+msgid "Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with every form style (centered window, side panel, bottom sheet, in-page form and compact card). A product setting wins over its donation type, and a donation type wins over the general setting."
+msgstr "Sepetli: bağış sepete eklenir ve bağışçı ödeme sayfasında öder. Doğrudan: bağışçı formdan doğrudan ödeme sayfasına geçer, sepete hiçbir şey eklenmez. Her form türünde çalışır (ortada pencere, sağ panel, alttan panel, sayfa içi form ve kompakt kart). Ürün ayarı bağış türünün, bağış türü de genel ayarın önüne geçer."
+
+msgid "General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart."
+msgstr "Tüm bağış ürünleri için genel ayar. Bağışçı formdan doğrudan ödemeye geçer; bağışçının mevcut sepeti olduğu gibi kalır. Aşağıdaki bağış türleri ve her ürün bunu değiştirebilir. Siteniz bir vekil sunucu ya da CDN arkasındaysa ziyaretçilerin ayırt edilebilmesi için Araçlar altında güvenilen vekil adreslerini girin."
+
+msgid "Use the general setting"
+msgstr "Genel ayarı kullan"
+
+msgid "Through the cart"
+msgstr "Sepetli"
+
+msgid "Direct (skip the cart)"
+msgstr "Doğrudan (sepeti atla)"
+
+msgid "Products with a fixed price where the donor only picks a quantity."
+msgstr "Bağışçının yalnız adet seçtiği sabit fiyatlı ürünler."
+
+msgid "Products where the donor types the amount."
+msgstr "Tutarı bağışçının yazdığı ürünler."
+
+msgid "Share-based products with shareholder names."
+msgstr "Hissedar adları alınan hisseli ürünler."
+
+msgid "Products with a goal and a progress bar."
+msgstr "Hedefi ve ilerleme çubuğu olan ürünler."
+
+msgid "Products that offer an add-on donation"
+msgstr "Ek bağış sunan ürünler"
+
+msgid "Wins over the product's own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct."
+msgstr "Ürünün kendi bağış türünün önüne geçer. Doğrudan bağış tek kalemli bir sipariştir; sonuç doğrudan olduğunda ek bağış seçeneği bağışçıya gösterilmez."
+
+msgid "Compact card (slider/hero)"
+msgstr "Kompakt kart (slider/hero)"
+
+msgid "A small donation card whose height never changes, made for sliders and hero areas. It is only a look: how the donor pays (through the cart or direct) is set under Cart and checkout. Colors and fonts come from the settings above."
+msgstr "Slider ve hero alanları için yüksekliği hiç değişmeyen küçük bir bağış kartı. Yalnız bir görünümdür: bağışçının nasıl ödeyeceği (sepetli ya da doğrudan) Sepet ve Ödeme ekranında ayarlanır. Renkler ve yazı tipleri yukarıdaki ayarlardan gelir."
+
+msgid "Direct: the donor goes from the form straight to payment and nothing is added to the cart. Works with every form style, including the compact card."
+msgstr "Doğrudan: bağışçı formdan doğrudan ödemeye geçer, sepete hiçbir şey eklenmez. Kompakt kart dahil her form türünde çalışır."
+
+msgid "Donation type or general setting (now: %s)"
+msgstr "Bağış türü ya da genel ayar (şu an: %s)"
+
+msgid "Donation Panel → Cart and checkout → How donors pay"
+msgstr "Bağış Paneli → Sepet ve Ödeme → Bağışçılar nasıl öder"
+
+msgid "Current value: %s"
+msgstr "Geçerli değer: %s"
+
+msgid "Donation type and general settings: %s"
+msgstr "Bağış türü ve genel ayarlar: %s"
+
+msgid "source: this product"
+msgstr "kaynak: bu ürün"
+
+msgid "source: donation type \"%s\""
+msgstr "kaynak: bağış türü \"%s\""
+
+msgid "source: a code filter on this site"
+msgstr "kaynak: bu sitedeki bir kod süzgeci"
+
+msgid "source: general setting"
+msgstr "kaynak: genel ayar"
+
+msgid "The product the card is placed in (no ID)"
+msgstr "Kartın bulunduğu ürün (ID'siz)"
+
+msgid "Shortcode for a product"
+msgstr "Bir ürün için kısa kod"
+
+msgid "Choose a donation product and copy the shortcode into a slide, hero area or any text block. Share-based products always show the full form instead of the card."
+msgstr "Bir bağış ürünü seçin ve kısa kodu bir slayta, hero alanına ya da herhangi bir metin bloğuna kopyalayın. Hisseli ürünlerde kart yerine her zaman tam form görünür."
+
+msgid "This product is share-based: the shortcode shows the full in-page form, because shareholder names do not fit in a fixed-height card."
+msgstr "Bu ürün hisseli: hissedar adları sabit yükseklikli karta sığmadığı için kısa kod tam sayfa içi formu gösterir."
+
+msgid "Desktop (1024 px and wider)"
+msgstr "Masaüstü (1024 px ve üzeri)"
+
+msgid "Tablet (640–1023 px)"
+msgstr "Tablet (640–1023 px)"
+
+msgid "Phone (up to 639 px)"
+msgstr "Telefon (639 px'e kadar)"
+
+msgid "Compact card heights"
+msgstr "Kompakt kart yükseklikleri"
+
+msgid "Screen"
+msgstr "Ekran"
+
+msgid "Without goal"
+msgstr "Hedefsiz"
+
+msgid "With goal"
+msgstr "Hedefli"
+
+msgid "CSS variable"
+msgstr "CSS değişkeni"
+
+msgid "The card is as tall as its tallest step, and that height never changes while the donor moves through the steps. It is the same through the cart and with direct donation. Measured with a default block theme; your theme's font can change it a little."
+msgstr "Kart en uzun adımı kadar yüksektir ve bağışçı adımlar arasında ilerlerken bu yükseklik hiç değişmez. Sepetli ve doğrudan bağışta aynıdır. Varsayılan bir blok temasıyla ölçülmüştür; temanızın yazı tipi biraz değiştirebilir."
+
+msgid "To give every card the same height, for example to match your slide, set the CSS variable on the slide or on a parent element:"
+msgstr "Tüm kartlara aynı yüksekliği vermek için (örneğin slaytınıza uydurmak için) CSS değişkenini slayta ya da bir üst öğeye yazın:"
+
+msgid "Card height"
+msgstr "Kart yüksekliği"
+
+msgid "about %d px"
+msgstr "yaklaşık %d px"
+
+msgid "%1$s (ID %2$d)"
+msgstr "%1$s (ID %2$d)"
+
+msgid "Adding the compact card to a slider"
+msgstr "Kompakt kartı slider'a ekleme"
+
+msgid "1. Open Donation Panel → Forms and appearance → Compact card (slider/hero). Choose the donation product and press Copy."
+msgstr "1. Bağış Paneli → Formlar ve Görünüm → Kompakt kart (slider/hero) ekranını açın. Bağış ürününü seçin ve Kopyala'ya basın."
+
+msgid "2. In your slider or page editor, add a Shortcode widget (or any text block) to the slide and paste the shortcode. No special widget is needed. In the block editor you can also add the \"Donation form\" block and choose Layout: Compact."
+msgstr "2. Slider ya da sayfa düzenleyicinizde slayta bir Kısa kod (Shortcode) bileşeni (ya da herhangi bir metin bloğu) ekleyin ve kısa kodu yapıştırın. Özel bir bileşen gerekmez. Blok düzenleyicide \"Bağış formu\" bloğunu ekleyip Düzen: Kompakt da seçebilirsiniz."
+
+msgid "3. Finding a product ID: go to Products → All products and point at the product name; the ID is shown under it. The shortcode builder also lists every donation product with its ID."
+msgstr "3. Ürün ID'sini bulma: Ürünler → Tüm ürünler'e gidin ve fareyi ürün adının üzerine getirin; ID adın altında görünür. Kısa kod oluşturucu da her bağış ürününü ID'siyle listeler."
+
+msgid "4. Slide height: make the slide at least as tall as the card. The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
+msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın. Kompakt kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Tüm kartlara tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) yazın."
+
+msgid "5. Colors: Forms and appearance → Colors → Choose my own colors. Each color field accepts a hex value or a CSS variable from your theme or page editor, for example var(--brand), so the card follows your site palette."
+msgstr "5. Renkler: Formlar ve Görünüm → Renkler → Kendi renklerimi seçeyim. Her renk alanı bir hex değeri ya da temanızın veya sayfa düzenleyicinizin bir CSS değişkenini (örneğin var(--brand)) kabul eder; böylece kart sitenizin paletini izler."
+
+msgid "6. If the slider moves on while a donor is halfway through, switch on \"Start over when the card is hidden\". The compact card is only a look: how the donor pays is set under Cart and checkout."
+msgstr "6. Bağışçı yarıdayken slider ilerliyorsa \"Kart gizlenince başa dön\" ayarını açın. Kompakt kart yalnız bir görünümdür: bağışçının nasıl ödeyeceği Sepet ve Ödeme ekranında ayarlanır."
+
+msgid "Open the Compact card settings"
+msgstr "Kompakt kart ayarlarını aç"
+
+msgid "Turning on direct donation"
+msgstr "Doğrudan bağışı açma"
+
+msgid "Direct donation is how the donor pays, not how the form looks: nothing is added to the cart and the donor pays on WooCommerce's own payment page for the order. It works with the centered window, side panel, bottom sheet, in-page form and compact card."
+msgstr "Doğrudan bağış formun nasıl göründüğü değil, bağışçının nasıl ödediğidir: sepete hiçbir şey eklenmez ve bağışçı sipariş için WooCommerce'in kendi ödeme sayfasında öder. Ortada pencere, sağ panel, alttan panel, sayfa içi form ve kompakt kartta çalışır."
+
+msgid "For every product: Donation Panel → Cart and checkout → How donors pay → switch on \"Skip the cart (direct donation)\"."
+msgstr "Tüm ürünler için: Bağış Paneli → Sepet ve Ödeme → Bağışçılar nasıl öder → \"Sepeti atla (doğrudan bağış)\" ayarını açın."
+
+msgid "For one donation type: on the same screen choose \"Through the cart\" or \"Direct (skip the cart)\" next to Fixed amount, Custom amount, Share-based, Goal-based campaign or Products that offer an add-on donation. \"Use the general setting\" follows the switch above."
+msgstr "Bir bağış türü için: aynı ekranda Sabit tutar, Bağışçı belirler, Hisseli, Hedefli kampanya ya da Ek bağış sunan ürünler satırında \"Sepetli\" ya da \"Doğrudan (sepeti atla)\" seçin. \"Genel ayarı kullan\" yukarıdaki anahtarı izler."
+
+msgid "For one product: Products → edit the product → Product data → Donation → \"Skip the cart (direct donation)\". The line under it shows the current value and where it comes from."
+msgstr "Tek bir ürün için: Ürünler → ürünü düzenle → Ürün verileri → Bağış → \"Sepeti atla (doğrudan bağış)\". Altındaki satır geçerli değeri ve nereden geldiğini gösterir."
+
+msgid "Order: the product setting wins, then the donation type, then the general setting. A direct donation is a single-line order, so the add-on donation choice is not shown when the result is direct."
+msgstr "Sıra: önce ürün ayarı, sonra bağış türü, sonra genel ayar. Doğrudan bağış tek kalemli bir sipariştir; sonuç doğrudan olduğunda ek bağış seçeneği gösterilmez."
+
+msgid "On the compact card the payment page opens in a secure window. If a payment method cannot work inside the window, the donor taps \"Open the payment page instead\". Unpaid direct donations are cancelled automatically after the WooCommerce stock hold time."
+msgstr "Kompakt kartta ödeme sayfası güvenli bir pencerede açılır. Bir ödeme yöntemi pencere içinde çalışamazsa bağışçı \"Ödeme sayfasını açın\" bağlantısına dokunur. Ödenmeyen doğrudan bağışlar WooCommerce stok tutma süresinden sonra kendiliğinden iptal edilir."
+
+msgid "Open How donors pay"
+msgstr "Bağışçılar nasıl öder ekranını aç"
+
+msgid "Through the cart: form, cart, checkout, thank you. Direct: form, payment page, thank you."
+msgstr "Sepetli: form, sepet, ödeme, teşekkür. Doğrudan: form, ödeme sayfası, teşekkür."
+
+msgid "Form"
+msgstr "Form"
+
+msgid "Payment page"
+msgstr "Ödeme sayfası"
+
+msgid "A slide with a compact donation card placed through a Shortcode widget."
+msgstr "Kısa kod bileşeniyle yerleştirilmiş kompakt bağış kartı olan bir slayt."
+
+msgid "Slide"
+msgstr "Slayt"
+
+msgid "Your headline"
+msgstr "Başlığınız"
+
+msgid "Shortcode widget"
+msgstr "Kısa kod bileşeni"
+
+msgid "Compact: a small card with a fixed height for sliders and hero areas. Same as the shortcode layout=\"compact\". How the donor pays is set under Donation Panel → Cart and checkout."
+msgstr "Kompakt: slider ve hero alanları için sabit yükseklikli küçük kart. Kısa koddaki layout=\"compact\" ile aynıdır. Bağışçının nasıl ödeyeceği Bağış Paneli → Sepet ve Ödeme ekranında ayarlanır."

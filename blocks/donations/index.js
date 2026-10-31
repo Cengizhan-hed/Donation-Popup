@@ -12,7 +12,6 @@
   var SelectControl = wp.components.SelectControl;
   var TextControl = wp.components.TextControl;
   var RangeControl = wp.components.RangeControl;
-  var ToggleControl = wp.components.ToggleControl;
   var Placeholder = wp.components.Placeholder;
   var ServerSideRender = wp.serverSideRender;
   var __ = wp.i18n.__;
@@ -174,6 +173,7 @@
             text(atts, set, "button_text", __("Button text", "woo-donation-popup")),
             yesNo(atts.tabs, function (v) { set({ tabs: v }); }, __("Tabs", "woo-donation-popup")),
             yesNo(atts.tab_all, function (v) { set({ tab_all: v }); }, __('“All” tab', "woo-donation-popup")),
+            text(atts, set, "title", __("List title", "woo-donation-popup")),
             text(atts, set, "tab_all_label", __("All tab label", "woo-donation-popup")),
             yesNo(atts.show_image, function (v) { set({ show_image: v }); }, __("Image", "woo-donation-popup")),
             yesNo(atts.show_excerpt, function (v) { set({ show_excerpt: v }); }, __("Excerpt", "woo-donation-popup")),

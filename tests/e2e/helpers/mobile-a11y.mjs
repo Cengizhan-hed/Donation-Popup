@@ -1,7 +1,11 @@
 /**
  * Mobil + masaüstü davranış denetimleri (eklenti kodu değiştirilmez; hata bulgudur).
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { ROOT } from './env.mjs';
 import { SEL } from './selectors.mjs';
+import { waitLayerSettled } from './settle-layer.mjs';
 import { clickShellTrigger, makeFailure, openShellLocator, waitForShellClosed } from './checks.mjs';
 
 const MIN_TOUCH = 44;
@@ -25,12 +29,14 @@ export async function probeHorizontalOverflow(page) {
  * @param {string} scopeSel
  */
 export async function probeTouchTargets(page, scopeSel) {
-  return page.evaluate(
+  // Açılış ölçek animasyonu sürerken ölçülen boyut küçüktür; önce bitmesini bekle.
+  const settle = await waitLayerSettled(page, scopeSel);
+  const result = await page.evaluate(
     ({ sel, min }) => {
       const root = document.querySelector(sel) || document.body;
       const nodes = Array.from(
         root.querySelectorAll(
-          'button, a[href], [role="button"], .wdp-amount-preset, .wdp-chip, input[type="checkbox"], .wdp-product-quantity-increase, .wdp-product-quantity-decrease, .wdp-share-btn-increase, .wdp-share-btn-decrease, .wdp-modal-close, .wdp-nav-tab, [role="tab"]'
+          'button, a[href], [role="button"], .donation-panel-amount, input[type="checkbox"], [data-dp-qty], [data-dp-close], [role="tab"]'
         )
       );
       function vis(el) {
@@ -53,6 +59,11 @@ export async function probeTouchTargets(page, scopeSel) {
           name: el.getAttribute('name') || el.className || '',
           w: Math.round(r.width),
           h: Math.round(r.height),
+          // Teşhis (yalnız yapı): sınıflar, ilk 160 karakter HTML, eklentiye aitlik, sayfa adresi.
+          classes: String(el.getAttribute('class') || '').split(/\s+/).filter(Boolean).slice(0, 8),
+          html: (el.outerHTML || '').slice(0, 160),
+          inDonationPanel: !!(el.closest && el.closest('.donation-panel, [data-dp-exp]')),
+          url: location.href,
         };
         if (el.matches && el.matches('input[type="checkbox"]')) {
           const lab =
@@ -67,13 +78,69 @@ export async function probeTouchTargets(page, scopeSel) {
             }
           }
         }
-        if (r.width + 1 < min || r.height + 1 < min) bad.push(row);
-        else ok.push(row);
+        if (r.width + 1 < min || r.height + 1 < min) {
+          // Yalnız teşhis (eşik/davranış değişmez); değer/kimlik bilgisi yazılmaz.
+          try {
+            const cs = getComputedStyle(el);
+            const dlg = el.closest('dialog');
+            const openDlg = el.closest('dialog[open]');
+            const exp = el.closest('[data-dp-exp]');
+            const stepper = el.closest('.donation-panel-stepper');
+            const scs = stepper ? getComputedStyle(stepper) : null;
+            const cx = Math.round(r.left + r.width / 2);
+            const cy = Math.round(r.top + r.height / 2);
+            const top = document.elementFromPoint(cx, cy);
+            let layerAnims = -1;
+            const layer = openDlg || exp;
+            if (layer && layer.getAnimations) layerAnims = layer.getAnimations({ subtree: true }).length;
+            const sheets = Array.from(document.querySelectorAll('link[rel~="stylesheet"]'))
+              .filter((l) => /donation-panel|woo-donation-popup|wdp/i.test(l.href))
+              .map((l) => {
+                let loaded;
+                try {
+                  loaded = l.sheet ? (l.sheet.cssRules ? l.sheet.cssRules.length : 0) : 'no-sheet';
+                } catch (e) {
+                  loaded = 'cors';
+                }
+                let p = l.href;
+                try { p = new URL(l.href).pathname; } catch (e) { /* yoksay */ }
+                return { path: p, media: l.media || '', sheet: loaded };
+              });
+            Object.assign(row, {
+              inDialog: !!dlg,
+              dialogOpen: openDlg ? true : dlg ? false : null,
+              kind: exp ? exp.getAttribute('data-dp-kind') : null,
+              product: exp ? exp.getAttribute('data-dp-product') : null,
+              cssW: cs.width,
+              cssH: cs.height,
+              minW: cs.minWidth,
+              padding: cs.padding,
+              display: cs.display,
+              boxSizing: cs.boxSizing,
+              hasStepper: !!stepper,
+              stepperDisplay: scs ? scs.display : null,
+              stepperHeight: scs ? scs.height : null,
+              pluginSheets: sheets,
+              fontsStatus: document.fonts ? document.fonts.status : null,
+              reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+              layerAnimations: layerAnims,
+              topIsSelf: top === el || (top ? el.contains(top) : false),
+            });
+          } catch (e) {
+            row.diagError = String(e && e.message ? e.message : e).slice(0, 80);
+          }
+          bad.push(row);
+        } else ok.push(row);
       }
       return { bad, okCount: ok.length, min };
     },
     { sel: scopeSel, min: MIN_TOUCH }
   );
+  if (settle.timedOut) {
+    for (const row of result.bad) row.note = 'animasyon bitmedi';
+  }
+  result.settle = settle;
+  return result;
 }
 
 /**
@@ -110,7 +177,7 @@ export async function probeScrollLock(page) {
     const cls = `${html.className} ${body.className}`;
     const overflow = `${getComputedStyle(html).overflow} ${getComputedStyle(body).overflow}`;
     return {
-      locked: /wdp-.*open|modal-open|no-scroll|overflow:\s*hidden/i.test(`${cls} ${overflow}`),
+      locked: /donation-panel-lock|modal-open|no-scroll|overflow:\s*hidden/i.test(`${cls} ${overflow}`),
       htmlOverflow: getComputedStyle(html).overflow,
       bodyOverflow: getComputedStyle(body).overflow,
       bodyPosition: getComputedStyle(body).position,
@@ -127,19 +194,16 @@ export async function probeSafeArea(page, inset) {
     const vv = window.visualViewport;
     const vw = vv && vv.width ? vv.width : window.innerWidth;
     const vh = vv && vv.height ? vv.height : window.innerHeight;
-    const root = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+    const root = document.querySelector('[data-dp-overlay].is-open');
     if (!root) return { clipped: [], vw, vh, box, pendingAnim: false };
-    if (root.classList.contains('wdp-side-panel--opening')) {
-      return { clipped: [], vw, vh, box, pendingAnim: true };
-    }
-    const content = root.querySelector('.wdp-modal-content');
+    const content = root.querySelector('[data-dp-surface]');
     const tr = content ? window.getComputedStyle(content).transform : 'none';
     if (tr && tr !== 'none') {
       return { clipped: [], vw, vh, box, pendingAnim: true };
     }
     const els = Array.from(
       root.querySelectorAll(
-        'button.wdp-modal-close, button[name="donation_add_to_cart"], button[name="donation_go_checkout"]'
+        '[data-dp-close], [data-dp-submit]'
       )
     );
     const clipped = [];
@@ -174,7 +238,7 @@ export async function probeKeyboardVisibility(page, field) {
     const vv = window.visualViewport;
     const active = document.activeElement;
     const btn = document.querySelector(
-      '.wdp-modal.show button[name="donation_go_checkout"], .wdp-modal.show button[name="donation_add_to_cart"]'
+      '[data-dp-overlay].is-open [data-dp-submit]'
     );
     function inVv(el) {
       if (!el || !vv) return null;
@@ -196,11 +260,28 @@ export async function probeKeyboardVisibility(page, field) {
  * @param {import('@playwright/test').Page} page
  */
 export async function probeDesktopFocus(page) {
+  // Açılış anı yarışı: odak açılışın hemen ardından başlığa gider; kısa süre bekle (açık panel yoksa hemen döner).
+  try {
+    await page.waitForFunction(
+      () => {
+        const m = document.querySelector('[data-dp-overlay].is-open');
+        return !m || m.contains(document.activeElement);
+      },
+      null,
+      { timeout: 1500, polling: 50 }
+    );
+  } catch {
+    // zaman aşımı: aşağıdaki yoklama gerçek durumu raporlar
+  }
   return page.evaluate(() => {
-    const modal = document.querySelector('.wdp-modal.show');
+    const modal = document.querySelector('[data-dp-overlay].is-open');
     if (!modal) return { open: false };
     const ae = document.activeElement;
     return {
+      dialogOpen: modal.tagName === 'DIALOG' ? modal.open : null,
+      docHasFocus: document.hasFocus(),
+      titleId: modal.querySelector('[data-dp-title]')?.id || null,
+      visibility: getComputedStyle(modal).visibility,
       open: true,
       focusInside: !!(ae && modal.contains(ae)),
       active: ae ? `${ae.tagName}.${ae.className}` : null,
@@ -255,6 +336,13 @@ export async function runMobileA11yChecks({
     const touch = await probeTouchTargets(page, shellSel);
     const tCheck = `a11y-touch-${device.id}`;
     if (device.isMobile && touch.bad.length) {
+      try {
+        const dbgDir = path.join(ROOT, 'build/e2e/debug', String(profile.id || process.env.WDP_E2E_PROFILE_ID || 'local'));
+        fs.mkdirSync(dbgDir, { recursive: true });
+        await page.screenshot({ path: path.join(dbgDir, `${tCheck}.png`), fullPage: true });
+      } catch {
+        // teşhis görüntüsü alınamazsa bulgu yine raporlanır
+      }
       knownFindings.push({
         check: tCheck,
         env: profile.id,
@@ -393,7 +481,7 @@ export async function runMobileA11yChecks({
       if (!fieldVisible) {
         field = page
           .locator(
-            '.wdp-modal.show input:not([type=hidden]):not([type=checkbox]):not([type=radio]), .wdp-donation-form input:not([type=hidden]):not([type=checkbox]):not([type=radio])'
+            '[data-dp-overlay].is-open input:not([type=hidden]):not([type=checkbox]):not([type=radio]), [data-dp-form] input:not([type=hidden]):not([type=checkbox]):not([type=radio])'
           )
           .first();
         fieldVisible = (await field.count()) > 0 && (await field.isVisible().catch(() => false));
@@ -449,7 +537,7 @@ export async function runMobileA11yChecks({
       }
     } else {
       const stretch = await page.evaluate(() => {
-        const modal = document.querySelector('.wdp-modal.show .wdp-modal-content');
+        const modal = document.querySelector('[data-dp-overlay].is-open [data-dp-surface]');
         if (!modal) return { open: false };
         const r = modal.getBoundingClientRect();
         return {

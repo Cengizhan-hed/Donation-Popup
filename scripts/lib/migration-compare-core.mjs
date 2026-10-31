@@ -25,12 +25,30 @@ export const EXPECTED_CHANGE_KEYS = [
 ];
 
 /**
+ * Yalnız 12.0.0 hedef sürümü için beklenen farklar (Release_12_Upgrade bilerek siler / yeniler).
+ * Başka anahtarlar yine KAYBOLDU/DEĞİŞTİ olarak kırmızı kalır.
+ */
+export const EXPECTED_CHANGE_KEYS_12_0_0 = [
+  'donation_panel_settings.experiences.engine',
+  'donation_panel_migrations.version',
+];
+
+/**
+ * @param {string|undefined} targetVersion
+ */
+function appliesTo12(targetVersion) {
+  return targetVersion === undefined || /^12\.0(\.|$)/.test(String(targetVersion));
+}
+
+/**
  * Sürüm / önbellek / log / wdp_migrated_* — çıkış 2 üretmez.
  * @param {string} key
+ * @param {string} [targetVersion]
  */
-export function isExpectedChangeKey(key) {
+export function isExpectedChangeKey(key, targetVersion) {
   const k = String(key || '').replace(/^option:/, '');
   if (EXPECTED_CHANGE_KEYS.includes(k)) return true;
+  if (appliesTo12(targetVersion) && EXPECTED_CHANGE_KEYS_12_0_0.includes(k)) return true;
   if (k.startsWith('wdp_migrated_')) return true;
   return false;
 }
@@ -114,7 +132,7 @@ export function compareSnapshots(before, after, opts = {}) {
     const hasB = Object.prototype.hasOwnProperty.call(b, key);
     const va = hasA ? a[key] : MISSING;
     const vb = hasB ? b[key] : MISSING;
-    const cls = classify(key, va, vb, defaults, fieldDefaults);
+    const cls = classify(key, va, vb, defaults, fieldDefaults, opts.targetVersion);
     rows.push(row(key, cls, hasA ? va : undefined, hasB ? vb : undefined));
   }
 
@@ -151,13 +169,13 @@ function expandRemap(remap, a, b) {
   return out;
 }
 
-function classify(key, va, vb, defaults, fieldDefaults) {
+function classify(key, va, vb, defaults, fieldDefaults, targetVersion) {
   const hasA = va !== MISSING;
   const hasB = vb !== MISSING;
-  if (!hasA && hasB) return isExpectedChangeKey(key) ? 'BEKLENEN DEĞİŞİM' : 'YENİ';
-  if (hasA && !hasB) return isExpectedChangeKey(key) ? 'BEKLENEN DEĞİŞİM' : 'KAYBOLDU';
+  if (!hasA && hasB) return isExpectedChangeKey(key, targetVersion) ? 'BEKLENEN DEĞİŞİM' : 'YENİ';
+  if (hasA && !hasB) return isExpectedChangeKey(key, targetVersion) ? 'BEKLENEN DEĞİŞİM' : 'KAYBOLDU';
   if (canonical(va) === canonical(vb)) return 'KORUNDU';
-  if (isExpectedChangeKey(key)) return 'BEKLENEN DEĞİŞİM';
+  if (isExpectedChangeKey(key, targetVersion)) return 'BEKLENEN DEĞİŞİM';
   if (numericTypeEqual(va, vb)) return 'KORUNDU (tür)';
   const def = lookupDefault(key, defaults, fieldDefaults);
   if (def !== undefined && canonical(vb) === canonical(def) && canonical(va) !== canonical(def)) {

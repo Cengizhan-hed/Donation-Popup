@@ -4,7 +4,8 @@
  */
 import path from 'node:path';
 import { withCacheBust } from './env.mjs';
-import { SEL } from './selectors.mjs';
+import { DP_SEL, SEL } from './selectors.mjs';
+import { advanceToDetails, clickSubmit, ensureDetailsStepForEmptySubmit, formOf, touchPendingSubmitExpectAmountError } from './dp-form.mjs';
 import {
   applyTimeoutsToPage,
   isRemoteProfile,
@@ -129,29 +130,52 @@ async function writeSmokeDebug(page, check, payload) {
 }
 
 function extraQuery(env, profile, extra = {}) {
-  return { hdf_no_side_cart: '1', ...comingSoonQuery(env, profile), ...extra };
+  return { ...comingSoonQuery(env, profile), ...extra };
 }
 
 /**
  * @param {import('@playwright/test').Locator} shell
  */
-async function clickAddOrGo(page, shell, timeout) {
-  const add = shell.locator(SEL.addToCart).first();
-  const go = shell.locator(SEL.goCheckout).first();
-  const gate = shell.locator('.wdp-cta-gate__hit').first();
-  if ((await add.count()) > 0) {
-    await clickAddToCartWithRetry(page, add, { timeout });
-    return;
+export async function clickFirstVisibleTrigger(page, triggerSel, timeout, kind = '') {
+  // Sayfa/oluşturucu hazır olana dek ilk görünür, döngü dışı adayı bekler (anlık kontrol yarış yaratır).
+  const deadline = Date.now() + timeout;
+  let lastState = 'aday yok';
+  for (;;) {
+    const n = await page.locator(triggerSel).count();
+    const states = [];
+    for (let i = 0; i < n; i += 1) {
+      const btn = page.locator(triggerSel).nth(i);
+      const inLoop = await btn.evaluate(
+        (el, excludeSel) => !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
+        LOOP_EXCLUDE_SEL
+      );
+      if (inLoop) {
+        states.push(`#${i}:dongu-ici`);
+        continue;
+      }
+      if (!(await btn.isVisible())) {
+        states.push(`#${i}:gizli`);
+        continue;
+      }
+      try {
+        await clickShellTrigger(btn, timeout);
+      } catch (e) {
+        throw new Error(
+          `kabuk tetikleyicisi tıklama hatası: locator=${triggerSel} aday=#${i}/${n} gorunur=true kind=${kind} — ${String(e && e.message ? e.message : e).split('\n')[0]}`
+        );
+      }
+      return;
+    }
+    lastState = n ? states.join(',') : 'aday yok';
+    if (Date.now() > deadline) break;
+    await page.waitForTimeout(150);
   }
-  if ((await go.count()) > 0) {
-    await go.click({ timeout, noWaitAfter: true });
-    return;
-  }
-  if ((await gate.count()) > 0) {
-    await gate.click({ timeout, force: true, noWaitAfter: true });
-    return;
-  }
-  throw new Error('sepete ekle / ödeme CTA yok');
+  throw new Error(`kabuk tetikleyicisi tıklanamadı: locator=${triggerSel} adaylar=[${lastState}] kind=${kind}`);
+}
+
+export async function clickAddOrGo(page, shell, timeout) {
+  void page;
+  await clickSubmit(shell, timeout);
 }
 
 function attachAddToCartProbe(page) {
@@ -174,13 +198,13 @@ function attachAddToCartProbe(page) {
 
 async function readPageCurrency(page) {
   return page.evaluate(() => {
-    const cur = (window.wdp_ajax && window.wdp_ajax.currency) || {};
+    const form = document.querySelector('[data-dp-form]');
     return {
-      code: String(cur.code || ''),
-      decimals: Number(cur.decimals),
-      thousandSeparator: cur.thousandSeparator,
-      decimalSeparator: cur.decimalSeparator,
-      symbol: cur.symbol,
+      code: '',
+      decimals: form ? Number(form.getAttribute('data-decimals')) : NaN,
+      thousandSeparator: form ? form.getAttribute('data-thousand-sep') : undefined,
+      decimalSeparator: form ? form.getAttribute('data-decimal-sep') : undefined,
+      symbol: '',
     };
   });
 }
@@ -279,14 +303,15 @@ export async function runRemoteSmokeChecks(ctx) {
       waitUntil: 'domcontentloaded',
       timeout: timeouts.navigation,
     });
-    await page.waitForFunction(() => document.readyState === 'complete' || window.wdp_ajax, {
+    await page.waitForFunction(() => document.readyState === 'complete', {
       timeout: timeouts.expect,
     });
     const runtime = await collectPluginRuntime(page);
-    const scriptsOk = !!(runtime.main_bundle || runtime.has_wdp_app || runtime.possibly_combined);
+    // Yeni nesil: form paketi (donation-panel-experiences-js) yüklü VE en az bir kök bağlanmış (data-dp-mounted).
+    const scriptsOk = !!(runtime.main_bundle || runtime.has_wdp_app);
     if (!scriptsOk) {
       throw new Error(
-        `eklenti betiği yok main=${runtime.main_bundle} app=${runtime.has_wdp_app} combined=${runtime.possibly_combined}`
+        `eklenti betiği yok bundle=${runtime.main_bundle} bağlı_kök=${runtime.has_wdp_app}`
       );
     }
     // Tema/sayfa oluşturucu girişi geç çizebilir: örnekle (sabit bekleme değil), süre sınırı profilden.
@@ -314,7 +339,7 @@ export async function runRemoteSmokeChecks(ctx) {
               opacity: st.opacity,
               w: Math.round(r.width),
               h: Math.round(r.height),
-              inLoop: !!el.closest('.wdp-loop-donate,[class*="related"],[class*="upsells"],ul.products'),
+              inLoop: !!el.closest('.wdp-loop-donate,.wdp-form-host,[class*="related"],[class*="upsells"],ul.products'),
               parent: (el.parentElement && el.parentElement.className ? String(el.parentElement.className) : '').slice(0, 60),
             };
           };
@@ -336,26 +361,11 @@ export async function runRemoteSmokeChecks(ctx) {
     const classified = classifyVisiblePluginEntry(ui);
     if (classified.kind === 'panel' || classified.kind === 'popup') {
       const triggerSel = classified.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-      const n = await page.locator(triggerSel).count();
-      let clicked = false;
-      for (let i = 0; i < n; i += 1) {
-        const btn = page.locator(triggerSel).nth(i);
-        const inLoop = await btn.evaluate(
-          (el, excludeSel) =>
-            !!(el.classList.contains('wdp-loop-donate') || (el.closest && el.closest(excludeSel))),
-          LOOP_EXCLUDE_SEL
-        );
-        if (inLoop) continue;
-        if (!(await btn.isVisible())) continue;
-        await clickShellTrigger(btn, timeouts.action);
-        clicked = true;
-        break;
-      }
-      if (!clicked) throw new Error('kabuk tetikleyicisi tıklanamadı');
+      await clickFirstVisibleTrigger(page, triggerSel, timeouts.action, classified.kind);
     }
     const shell =
       classified.kind === 'form'
-        ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classified.kind === 'panel' ? 'panel' : classified.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const overlap = await waitAndAssertShellOverlap(page, timeouts.settle);
@@ -364,11 +374,30 @@ export async function runRemoteSmokeChecks(ctx) {
     }
     reloadGuard.clearHits();
     reloadGuard.arm();
-    const price = shell.locator(SEL.customPrice).first();
-    if ((await price.count()) > 0) await price.fill('');
-    const name = shell.locator(SEL.donorName).first();
-    if ((await name.count()) > 0) await name.fill('');
+    // İlk adım boşken ana düğme: tutar adımı varsa tutar, yoksa bilgi adımı alanları doğrulanır.
+    const price = formOf(shell).locator(SEL.customPrice).first();
+    if ((await price.count()) > 0 && (await price.isVisible())) {
+      await price.fill('');
+      // 12.1: tutar boşken düğme pasif (aria-disabled); tıklama yok. Doğrula, tutar seç, bilgi adımında boş gönder.
+      const submitBtn = formOf(shell).locator(DP_SEL.submit).first();
+      const pending = await submitBtn.getAttribute('aria-disabled');
+      if (pending !== 'true') throw new Error(`tutar boşken düğme pasif değil (aria-disabled=${pending})`);
+      await advanceToDetails(formOf(shell));
+    } else {
+      // Hazır tutar kartlı ürün (serbest tutar alanı yok): pasif düğmeyi doğrula, tutar seçip bilgi adımına geç.
+      await ensureDetailsStepForEmptySubmit(formOf(shell));
+    }
+    const name = formOf(shell).locator(SEL.donorName).first();
+    if ((await name.count()) > 0 && (await name.isVisible())) await name.fill('');
     await clickAddOrGo(page, shell, timeouts.action);
+    await formOf(shell)
+      .locator('[data-dp-error]')
+      .filter({ hasText: /\S/ })
+      .first()
+      .waitFor({ state: 'visible', timeout: timeouts.expect })
+      .catch((e) => {
+        throw new Error('boş gönderimde görünür doğrulama mesajı yok: ' + String(e.message || e).split('\n')[0]);
+      });
     const errs = await visibleValidationErrors(page);
     if (!errs.length) {
       throw new Error('boş gönderimde görünür doğrulama mesajı yok');
@@ -395,11 +424,11 @@ export async function runRemoteSmokeChecks(ctx) {
     const classAdd = classifyVisiblePluginEntry(uiAdd);
     if (classAdd.kind === 'panel' || classAdd.kind === 'popup') {
       const triggerSel = classAdd.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-      await clickShellTrigger(page.locator(triggerSel).first(), timeouts.action);
+      await clickFirstVisibleTrigger(page, triggerSel, timeouts.action, classAdd.kind);
     }
     const shell =
       classAdd.kind === 'form'
-        ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classAdd.kind === 'panel' ? 'panel' : classAdd.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const picked = await resolveDonationFillAmount(shell, profile.currency);
@@ -410,6 +439,8 @@ export async function runRemoteSmokeChecks(ctx) {
     await clickAddOrGo(page, shell, timeouts.action);
     reloadGuard.assertClear('add-to-cart');
     reloadGuard.disarm();
+    // Başarılı eklemede form ödeme sayfasına yönlendirir (REST cart/add yanıtındaki checkout_url).
+    await page.waitForURL(/checkout|odeme|ödeme|order/i, { timeout: timeouts.navigation });
     const store = await cartStoreSnapshot(page, env.E2E_BASE_URL);
     if (!store.items_count) {
       throw new Error(`Store API sepet boş items=${store.items_count}`);
@@ -517,11 +548,11 @@ export async function runRemoteSmokeChecks(ctx) {
     const classAmb = classifyVisiblePluginEntry(uiAmb);
     if (classAmb.kind === 'panel' || classAmb.kind === 'popup') {
       const triggerSel = classAmb.kind === 'panel' ? SEL.sidePanelTrigger : SEL.centeredPopupTrigger;
-      await clickShellTrigger(page.locator(triggerSel).first(), timeouts.action);
+      await clickFirstVisibleTrigger(page, triggerSel, timeouts.action, classAmb.kind);
     }
     const shell =
       classAmb.kind === 'form'
-        ? page.locator(`${SEL.inlineDonationForm}, ${SEL.donationForm}`).first()
+        ? page.locator(SEL.inlineRoot).first()
         : openShellLocator(page, classAmb.kind === 'panel' ? 'panel' : classAmb.kind === 'popup' ? 'popup' : '');
     await shell.waitFor({ state: 'visible', timeout: timeouts.expect });
     const pageCur = await readPageCurrency(page);
@@ -529,18 +560,15 @@ export async function runRemoteSmokeChecks(ctx) {
     if (!(Number.isFinite(decimals) && decimals <= 0)) {
       skipWp('amount-ambiguous', SKIP_REASONS.SETTING_OFF, `decimals=${decimals}`);
     } else {
-      const price = shell.locator(SEL.customPrice).first();
+      const price = formOf(shell).locator(SEL.customPrice).first();
       await price.waitFor({ state: 'visible', timeout: timeouts.expect });
       await price.fill('10,50');
       reloadGuard.clearHits();
       reloadGuard.arm();
       const probe = attachAddToCartProbe(page);
       try {
-        await clickAddOrGo(page, shell, timeouts.action);
-        await page.waitForFunction(() => {
-          const nodes = Array.from(document.querySelectorAll('.wdp-input-error, .wdp-form-error'));
-          return nodes.some((el) => /kuruşlu|tam sayı|biçiminde|Lütfen tutarı/i.test(String(el.textContent || '')));
-        }, { timeout: timeouts.expect });
+        // 12.1: belirsiz tutarda ana düğme pasif; doğrula, force ile dokun, tutar hatası görünür, istek yok.
+        await touchPendingSubmitExpectAmountError(formOf(shell), timeouts.expect);
         if (probe.ajax.length) {
           throw new Error(`10,50 sepete eklendi (${probe.ajax.length} istek)`);
         }

@@ -1,0 +1,26 @@
+# Turkish translations — 121-priv (güvenilen vekil ayarı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgid "Visitor address"
+msgstr "Ziyaretçi adresi"
+
+msgid "Only needed when your site sits behind a proxy or CDN."
+msgstr "Yalnızca siteniz bir vekil ya da CDN arkasındaysa gerekir."
+
+msgid "Trusted proxy addresses"
+msgstr "Güvenilen vekil adresleri"
+
+msgid "Leave empty unless your site runs behind a proxy or CDN. One address or range per line (for example 10.0.0.0/8). Visitor addresses sent by these proxies are then used to tell visitors apart for rate limits. Never list addresses you do not control."
+msgstr "Siteniz bir vekil ya da CDN arkasında değilse boş bırakın. Her satıra bir adres ya da aralık yazın (örneğin 10.0.0.0/8). Bu vekillerin ilettiği ziyaretçi adresleri, hız sınırlarında ziyaretçileri birbirinden ayırmak için kullanılır. Kontrol etmediğiniz adresleri asla yazmayın."
+
+msgid "The donor goes from the form straight to payment. Nothing is added to the cart, so a cart the donor already has stays untouched. You can override this for each product. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart."
+msgstr "Bağışçı formdan doğrudan ödemeye geçer. Sepete hiçbir şey eklenmez; bağışçının mevcut sepeti olduğu gibi kalır. Bunu her ürün için ayrıca değiştirebilirsiniz. Siteniz bir vekil ya da CDN arkasındaysa, ziyaretçilerin birbirinden ayırt edilebilmesi için Araçlar ekranında güvenilen vekil adreslerini girin."

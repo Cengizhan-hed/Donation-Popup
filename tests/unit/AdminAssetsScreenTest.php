@@ -1,12 +1,13 @@
 <?php
 /**
- * Yönetici CSS/JS yalnız eklentinin kendi ekranlarında yüklenir (Y6).
+ * Ürün sekmesi CSS/JS yalnız ürün düzenleme ekranında yüklenir (Y6).
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
 
+use DonationPanel\Admin\Product\Product_Assets;
 use PHPUnit\Framework\TestCase;
 
 if (!function_exists('wp_add_inline_script')) {
@@ -29,14 +30,14 @@ final class AdminAssetsScreenTest extends TestCase {
 		WDP_Test_State::$caps = array('manage_woocommerce', 'manage_options', 'edit_products');
 	}
 
-	/** @return string[] bizim (wdp-) handle'lar */
+	/** @return string[] bizim (donation-panel-) handle'lar */
 	private function ours(): array {
 		$all = array_merge(
 			WDP_Test_State::$options['__enqueued_scripts'] ?? array(),
 			WDP_Test_State::$options['__enqueued_styles'] ?? array()
 		);
 		return array_values(array_filter(array_unique($all), static function ($h) {
-			return strpos((string) $h, 'wdp-') === 0;
+			return strpos((string) $h, 'donation-panel-') === 0;
 		}));
 	}
 
@@ -60,38 +61,31 @@ final class AdminAssetsScreenTest extends TestCase {
 	 * @dataProvider foreign_screens
 	 */
 	public function test_no_wdp_handles_on_foreign_screens(string $hook): void {
-		WDP_Admin_Assets::enqueue($hook);
+		Product_Assets::enqueue($hook);
 		$this->assertSame(array(), $this->ours(), $hook . ' ekranında wdp- varlığı yüklenmemeli');
 	}
 
 	public function test_post_editor_for_non_product_loads_nothing(): void {
 		WDP_Test_State::$options['__screen'] = (object) array('post_type' => 'page');
-		WDP_Admin_Assets::enqueue('post.php');
-		WDP_Admin_Assets::enqueue('post-new.php');
+		Product_Assets::enqueue('post.php');
+		Product_Assets::enqueue('post-new.php');
 		$this->assertSame(array(), $this->ours());
 	}
 
 	public function test_product_editor_loads_only_product_tab_assets(): void {
 		WDP_Test_State::$options['__screen'] = (object) array('post_type' => 'product');
-		WDP_Admin_Assets::enqueue('post.php');
+		Product_Assets::enqueue('post.php');
+		if (!is_readable(WDP_PLUGIN_DIR . Product_Assets::SCRIPT)) {
+			$this->markTestSkipped('assets/build/admin-products derlenmemiş (npm run build).');
+		}
 		$ours = $this->ours();
-		$this->assertContains('wdp-admin-products', $ours);
-		$this->assertNotContains('wdp-admin-js', $ours);
-		$this->assertNotContains('wdp-admin-css', $ours);
+		$this->assertSame(array(Product_Assets::HANDLE), $ours);
 	}
 
 	public function test_product_editor_without_capability_loads_nothing(): void {
 		WDP_Test_State::$caps = array();
 		WDP_Test_State::$options['__screen'] = (object) array('post_type' => 'product');
-		WDP_Admin_Assets::enqueue('post.php');
+		Product_Assets::enqueue('post.php');
 		$this->assertSame(array(), $this->ours());
-	}
-
-	public function test_own_settings_screen_loads_admin_assets(): void {
-		WDP_Admin_Assets::enqueue(WDP_Admin_Assets::PAGE_HOOK);
-		$ours = $this->ours();
-		$this->assertContains('wdp-admin-js', $ours);
-		$this->assertContains('wdp-admin-css', $ours);
-		$this->assertContains('wdp-admin-products', $ours);
 	}
 }

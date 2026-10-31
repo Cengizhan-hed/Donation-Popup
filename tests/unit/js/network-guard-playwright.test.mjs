@@ -317,27 +317,28 @@ describe('network-guard Playwright kanıt', () => {
     }
   });
 
-  it('görünür ürün-bilgisi uyarısı açık kabukta KIRMIZI', async () => {
+  it('görünür genel gönderim hatası açık kabukta KIRMIZI', async () => {
     const browser = await chromium.launch();
     try {
       const context = await browser.newContext();
       const page = await context.newPage();
       await page.setContent(`<!doctype html><html><body>
-        <div class="hdf-donation-modal-wrapper wdp-modal show">
-          <form class="wdp-donation-form-fields">
-            <div class="wdp-form-error" role="alert" style="display:block">Ürün bilgileri alınamadı. Lütfen sayfayı yenileyip tekrar deneyin.</div>
+        <div data-dp-overlay class="donation-panel-overlay is-open">
+          <form data-dp-form>
+            <div data-dp-summary class="is-visible" role="alert">Something went wrong. Please try again.</div>
           </form>
         </div>
       </body></html>`);
       await assert.rejects(
         () => assertNoUnexpectedPluginErrors(page, { scenarioId: 'iphone-panel-custom-open' }),
-        /Ürün bilgileri alınamadı/
+        /Something went wrong/
       );
+      // errors senaryosunda beklenen alan doğrulaması (genel hata değil) serbest
       await page.setContent(`<!doctype html><html><body>
-        <div class="hdf-donation-modal-wrapper wdp-modal show">
-          <form class="wdp-donation-form-fields">
-            <div class="wdp-form-error" role="alert" style="display:block">Lütfen işaretli alanları kontrol edin.</div>
-            <div class="wdp-input-error">Ad gerekli</div>
+        <div data-dp-overlay class="donation-panel-overlay is-open">
+          <form data-dp-form>
+            <div data-dp-summary class="is-visible" role="alert">Please check the highlighted fields.</div>
+            <div data-dp-field class="has-error"><p data-dp-error="donation_full_name">Name is required</p></div>
           </form>
         </div>
       </body></html>`);

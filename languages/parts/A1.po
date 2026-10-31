@@ -154,10 +154,6 @@ msgstr "Hafif"
 msgid "Expressive"
 msgstr "İfadeli"
 
-#: includes/class-admin-design-studio-renderer.php:229
-msgid "What it does: Sets the strength of animations such as open, success, and progress celebration. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on."
-msgstr "Ne işe yarar: Açılış, başarı, progress kutlama gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır."
-
 #: includes/class-admin-design-studio-renderer.php:231
 msgid "Quick amount button style"
 msgstr "Hızlı tutar düğmesi stili"
@@ -264,14 +260,6 @@ msgstr "Adres boş ve WordPress Gizlilik Politikası sayfası da yoksa bağlant�
 #: includes/class-admin-design-studio-renderer.php:288
 msgid "If the URL is empty, the WordPress Privacy Policy page is used."
 msgstr "Adres boşsa WordPress Gizlilik Politikası sayfası kullanılır."
-
-#: includes/class-admin-design-studio-renderer.php:291
-msgid "Default module order"
-msgstr "Varsayılan modül sırası"
-
-#: includes/class-admin-design-studio-renderer.php:293
-msgid "What it does: Order of the 5 heading blocks in the popup header (comma-separated). E.g. media,impact,urgency,social_proof,progress. Unknown IDs are ignored. The form body is fixed: donor → dedication → amount → processing fee. If “Module order” is set on the product card, the product wins. If left empty, the default order is used."
-msgstr "Ne işe yarar: Modal üst bölümündeki 5 başlık bloğunun sırası (virgülle). Örn. media,impact,urgency,social_proof,progress. Bilinmeyen kimlikler yok sayılır. Form gövdesi sabittir: bağışçı → ithaf → tutar → işlem ücreti. Ürün kartındaki “Modül sırası” doluysa ürün önceliklidir. Boş bırakırsanız varsayılan sıra kullanılır."
 
 #: includes/class-admin-design-studio-renderer.php:294
 msgid "Trust badges (JSON, max 3)"
@@ -548,14 +536,6 @@ msgstr "Frontend’de yüzde arkaplansızdır; eski uyumluluk."
 msgid "Percent badge text"
 msgstr "Yüzde Rozeti Metin"
 
-#: includes/class-admin-layout-tabs-renderer.php:148
-msgid "Size and animation"
-msgstr "Boyut ve animasyon"
-
-#: includes/class-admin-layout-tabs-renderer.php:149
-msgid "Bar height and goal celebration."
-msgstr "Çubuk yüksekliği ve hedef kutlaması."
-
 #: includes/class-admin-layout-tabs-renderer.php:152
 msgid "Bar height (px)"
 msgstr "Bar Yüksekliği (px)"
@@ -563,14 +543,6 @@ msgstr "Bar Yüksekliği (px)"
 #: includes/class-admin-layout-tabs-renderer.php:152
 msgid "12–28 px. 16–20 is recommended for a more readable bar."
 msgstr "12–28 px. Daha okunaklı bir çubuk için 16–20 önerilir."
-
-#: includes/class-admin-layout-tabs-renderer.php:153
-msgid "Animation"
-msgstr "Animasyon"
-
-#: includes/class-admin-layout-tabs-renderer.php:155
-msgid "Celebration animation when the goal is reached"
-msgstr "Hedef dolunca kutlama animasyonu"
 
 #: includes/class-admin-layout-tabs-renderer.php:176
 msgid "Popup"
@@ -699,18 +671,6 @@ msgstr "Progress bar önizlemesi"
 #: includes/class-admin-layout-tabs-renderer.php:91
 msgid "Popup size preview"
 msgstr "Modal ölçü önizlemesi"
-
-#: includes/class-admin-product-data-tab.php:1007
-msgid "Move the %s block up"
-msgstr "%s bloğunu yukarı taşı"
-
-#: includes/class-admin-product-data-tab.php:1009
-msgid "Move the %s block down"
-msgstr "%s bloğunu aşağı taşı"
-
-#: includes/class-admin-product-data-tab.php:1014
-msgid "Order of the blocks under the heading; if off, the general order on the Design tab is used. The order of donor and amount fields is fixed."
-msgstr "Başlık altındaki blokların sırası; kapalıysa Tasarım sekmesindeki genel sıra kullanılır. Bağışçı ve tutar alanlarının sırası sabittir."
 
 #: includes/class-admin-product-data-tab.php:1029
 #: includes/class-admin-product-data-tab.php:1038
@@ -855,14 +815,6 @@ msgstr "Bağışçının tek seferde seçebileceği en yüksek hisse adedi (en f
 #: includes/class-admin-product-data-tab.php:634
 msgid "Only orders with confirmed payment (processing/completed) are counted; processing fees and on-hold are not included. Amounts are converted to the store’s main currency. The refresh icon recalculates the total from scratch."
 msgstr "Yalnız ödemesi onaylanan siparişler (processing/completed) sayılır; işlem ücreti ve on-hold dahil değildir. Tutarlar mağaza ana para birimine çevrilir. Yenile simgesi toplamı baştan hesaplar."
-
-#: includes/class-admin-product-data-tab.php:637
-msgid "Celebration animation"
-msgstr "Kutlama animasyonu"
-
-#: includes/class-admin-product-data-tab.php:637
-msgid "Shows a short celebration when the goal is reached."
-msgstr "Hedefe ulaşıldığında kısa kutlama gösterir."
 
 #: includes/class-admin-product-data-tab.php:641
 msgid "When the goal is reached"
@@ -1267,14 +1219,14 @@ msgstr "Satırı sil"
 msgid "Uploaded image (#%d)"
 msgstr "Yüklenen görsel (#%d)"
 
-#: includes/class-admin-product-data-tab.php:995
-msgid "Block order"
-msgstr "Blok sırası"
+#: includes/class-admin-design-studio-renderer.php:232
+msgid "What it does: Sets the strength of animations such as open and success. Subtle = calmer sites; Expressive = livelier transitions. Animations are already reduced for users with “prefers-reduced-motion” on."
+msgstr "Ne işe yarar: Açılış ve başarı gibi animasyonların gücünü ayarlar. Hafif = sakin siteler; İfadeli = daha canlı geçişler. “prefers-reduced-motion” açık kullanıcılarda animasyonlar zaten kısılır."
 
-#: includes/class-admin-product-data-tab.php:997
-msgid "Use a custom order for this product"
-msgstr "Bu ürüne özel sıra kullan"
+#: includes/class-admin-layout-tabs-renderer.php:147
+msgid "Size"
+msgstr "Boyut"
 
-#: includes/class-admin-product-data-tab.php:999
-msgid "Order of campaign blocks"
-msgstr "Kampanya bloklarının sırası"
+#: includes/class-admin-layout-tabs-renderer.php:148
+msgid "Bar height."
+msgstr "Çubuk yüksekliği."

@@ -1,0 +1,36 @@
+/* SİMÜLASYON — eklentinin parçası değildir. Vitrin için tipik temaların global stilini
+ * (yazı ailesi, birincil renk, köşe) WordPress önayar değişkenleriyle taklit eder.
+ * Gerçek tema kurulumu yoktur; eklenti bu değerleri yalnız --wp--preset--* üzerinden okur. */
+:root[data-theme="avada"]      { --wp--preset--color--primary:#65bc7b; --wp--preset--color--contrast:#212934; --wp--preset--color--base:#fff; --wp--custom--radius:6px;  --wp--preset--font-family--body:"Helvetica Neue",Helvetica,Arial,sans-serif; --mk-head:#fff; --mk-head-fg:#212934; --mk-foot:#212934; --mk-hero:linear-gradient(120deg,#e9f5ee,#d3ecdc); }
+:root[data-theme="blocksy"]    { --wp--preset--color--primary:#2872fa; --wp--preset--color--contrast:#192a3d; --wp--preset--color--base:#fff; --wp--custom--radius:12px; --wp--preset--font-family--body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --mk-head:#fff; --mk-head-fg:#192a3d; --mk-foot:#192a3d; --mk-hero:linear-gradient(120deg,#e7efff,#d5e3ff); }
+:root[data-theme="tt25"]       { --wp--preset--color--primary:#111111; --wp--preset--color--contrast:#111111; --wp--preset--color--base:#ffffff; --wp--custom--radius:8px;  --wp--preset--font-family--body:"Avenir Next","Segoe UI",ui-sans-serif,system-ui,sans-serif; --wp--preset--font-family--heading:Georgia,"Times New Roman",serif; --mk-head:#fff; --mk-head-fg:#111; --mk-foot:#111; --mk-hero:linear-gradient(120deg,#fff7c9,#fde9f1); }
+:root[data-theme="storefront"] { --wp--preset--color--primary:#96588a; --wp--preset--color--contrast:#43454b; --wp--preset--color--base:#fff; --wp--custom--radius:4px;  --wp--preset--font-family--body:"Source Sans Pro","HelveticaNeue-Light","Helvetica Neue",Helvetica,Arial,sans-serif; --wp--preset--font-family--heading:"Source Sans Pro","Helvetica Neue",Arial,sans-serif; --mk-head:#2c2d33; --mk-head-fg:#fff; --mk-foot:#2c2d33; --mk-hero:linear-gradient(120deg,#f1e4ef,#e5d0e1); }
+:root[data-theme="neutral"]    { --mk-head:#fff; --mk-head-fg:#1c2330; --mk-foot:#1c2330; --mk-hero:linear-gradient(120deg,#e4f3f1,#cfe8e5); }
+:root[data-dp-scheme="dark"] body, :root[data-dp-scheme="dark"] .mk { --mk-head:#10141a; --mk-head-fg:#eef1f5; --mk-foot:#0b0e12; --mk-hero:linear-gradient(120deg,#1a2430,#162029); }
+
+html { background: var(--wp--preset--color--base, #fff); }
+body { margin: 0; font-family: var(--wp--preset--font-family--body, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif); color: var(--wp--preset--color--contrast, #1c2330); background: var(--wp--preset--color--base, #fff); line-height: 1.55; }
+:root[data-dp-scheme="dark"] body { background: #14181f; color: #eef1f5; }
+.mk * { box-sizing: border-box; }
+.mk-header { display: flex; align-items: center; gap: 12px; padding: 0 16px; min-height: 60px; background: var(--mk-head); color: var(--mk-head-fg); position: sticky; top: 0; z-index: 5; border-bottom: 1px solid rgb(128 128 128 / .18); }
+.mk-logo { font-weight: 800; font-size: 19px; letter-spacing: -.02em; margin-inline-end: auto; display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; font-family: var(--wp--preset--font-family--heading, inherit); }
+.mk-logo i { inline-size: 26px; block-size: 26px; border-radius: 50%; background: var(--wp--preset--color--primary, #0f766e); display: inline-block; }
+.mk-nav { display: none; gap: 22px; font-size: 15px; font-weight: 500; }
+.mk-nav a { color: inherit; text-decoration: none; opacity: .85; }
+.mk-iconbtn { inline-size: 44px; block-size: 44px; border-radius: 50%; border: 0; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; position: relative; }
+.mk-iconbtn svg { inline-size: 22px; block-size: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.mk-iconbtn .n { position: absolute; top: 5px; inset-inline-end: 4px; min-inline-size: 18px; block-size: 18px; border-radius: 9px; background: var(--wp--preset--color--primary, #0f766e); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+.mk-hero { background: var(--mk-hero); padding: 36px 20px 40px; }
+.mk-wrap { max-inline-size: 1120px; margin-inline: auto; padding-inline: 20px; }
+.mk-hero .mk-wrap { padding: 0; }
+.mk h1 { font-family: var(--wp--preset--font-family--heading, inherit); font-size: clamp(28px, 6.4vw, 52px); line-height: 1.08; letter-spacing: -.025em; margin: 0 0 12px; max-inline-size: 18ch; }
+.mk-hero p { margin: 0 0 22px; max-inline-size: 46ch; font-size: 17px; opacity: .85; }
+.mk-cta { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 28px; border-radius: var(--wp--custom--radius, 10px); border: 0; background: var(--wp--preset--color--primary, #0f766e); color: #fff; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
+.mk-sec { padding: 30px 0; }
+.mk-sec h2 { font-family: var(--wp--preset--font-family--heading, inherit); font-size: 24px; margin: 0 0 14px; letter-spacing: -.015em; }
+.mk-cols { display: grid; gap: 22px; }
+.mk-ph { border-radius: var(--wp--custom--radius, 10px); background: rgb(128 128 128 / .12); min-block-size: 140px; }
+.mk-lines i { display: block; block-size: 10px; border-radius: 6px; background: rgb(128 128 128 / .18); margin-block-end: 10px; }
+.mk-foot { background: var(--mk-foot); color: #ffffffb0; padding: 28px 20px; font-size: 14px; margin-top: 30px; }
+.mk-badge-sim { position: fixed; inset-block-start: 6px; inset-inline-start: 6px; z-index: 3; font: 600 10px/1 ui-sans-serif, system-ui; background: #000a; color: #fff; padding: 4px 7px; border-radius: 99px; pointer-events: none; }
+@media (min-width: 900px) { .mk-nav { display: flex; } .mk-hero { padding: 72px 0 80px; } .mk-cols { grid-template-columns: 1.15fr .85fr; gap: 40px; } .mk-header { padding: 0 32px; } }

@@ -3,55 +3,68 @@
  * Plugin Name: Donation Panel for WooCommerce
  * Description: Adds a donation form to WooCommerce products as a popup, side panel or inline form, with fixed, custom, shared and campaign donation types.
  * Author: Cengizhan Çoban
- * Version: 10.35.2
- * Requires at least: 5.0
+ * Version: 12.4.0
+ * Requires at least: 6.3
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  * Tested up to: 7.1
- * WC requires at least: 3.0
+ * WC requires at least: 8.0
  * WC tested up to: 11.2
  * License: GPLv2 or later
  * Text Domain: woo-donation-popup
  * Domain Path: /languages
- * 
- * Dosya: WordPress eklenti giriş dosyası; sabitleri tanımlar ve bootstrap sınıfını başlatır.
  *
- * @package WooCommerce\Donation_Popup
+ * Dosya: WordPress eklenti giriş dosyası; sabitleri tanımlar, ad alanlı sınıf yükleyiciyi kaydeder ve başlatır.
+ *
+ * @package DonationPanel
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define('WDP_PLUGIN_FILE', __FILE__);
-define('WDP_VERSION', '10.35.2');
-define('WDP_PLUGIN_DIR', plugin_dir_path(WDP_PLUGIN_FILE));
-define('WDP_PLUGIN_URL', plugin_dir_url(WDP_PLUGIN_FILE));
-define('WDP_ASSET_VERSION', get_option('wdp_cache_version', WDP_VERSION));
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WDP_* sabitleri dışa açık sözleşmedir (geriye dönük uyum), yeniden adlandırılamaz.
+define( 'WDP_PLUGIN_FILE', __FILE__ );
+define( 'WDP_VERSION', '12.4.0' );
+define( 'WDP_PLUGIN_DIR', plugin_dir_path( WDP_PLUGIN_FILE ) );
+define( 'WDP_PLUGIN_URL', plugin_dir_url( WDP_PLUGIN_FILE ) );
+define( 'WDP_ASSET_VERSION', get_option( 'wdp_cache_version', WDP_VERSION ) );
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
 
-if (!function_exists('wdp_debug_log')) {
+require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
+\DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );
+
+register_activation_hook( __FILE__, array( \DonationPanel\Core\Bootstrap::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( \DonationPanel\Core\Bootstrap::class, 'deactivate' ) );
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- geriye dönük uyumluluk: eski dışa açık işlev adları değişmez (sözleşme: src/Compat/class-public-contract.php).
+
+if ( ! function_exists( 'wdp_render_donation_button' ) ) {
 	/**
-	 * Plugin scoped logger helper.
+	 * Bağış düğmesini (açılır form) çizer.
 	 *
-	 * @param mixed $message Message payload.
-	 * @return void
+	 * @param int    $product_id  Ürün kimliği.
+	 * @param string $button_text Düğme metni.
+	 * @return string
 	 */
-	function wdp_debug_log($message) {
-		if (!defined('WP_DEBUG') || WP_DEBUG !== true) {
-			return;
-		}
-		if (is_array($message) || is_object($message)) {
-			error_log(print_r($message, true)); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
-			return;
-		}
-		error_log((string) $message); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+	function wdp_render_donation_button( $product_id, $button_text = '' ) {
+		return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_button', (int) $product_id, array( 'text' => (string) $button_text ) );
 	}
 }
 
-register_activation_hook(__FILE__, array('Woo_Donation_Popup', 'activate'));
-register_deactivation_hook(__FILE__, array('Woo_Donation_Popup', 'deactivate'));
+if ( ! function_exists( 'wdp_render_donation_form' ) ) {
+	/**
+	 * Sayfa içi bağış formunu çizer.
+	 *
+	 * @param int                  $product_id Ürün kimliği.
+	 * @param mixed $args       Öznitelikler dizisi (`class`, `title`, `show_title`); dizi değilse yok sayılır.
+	 * @return string
+	 */
+	function wdp_render_donation_form( $product_id, $args = array() ) {
+		return \DonationPanel\Compat\Public_Contract::render_for_product( 'wdp_donation_form', (int) $product_id, is_array( $args ) ? $args : array() );
+	}
+}
 
-require_once WDP_PLUGIN_DIR . 'includes/class-woo-donation-popup.php';
-require_once WDP_PLUGIN_DIR . 'includes/bootstrap/class-plugin-bootstrap.php';
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
 
-WDP_Plugin_Bootstrap::run();
+\DonationPanel\Core\Bootstrap::run();

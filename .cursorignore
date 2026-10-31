@@ -9,3 +9,18 @@
 **/id_ed25519*
 tests/e2e/.auth/
 build/e2e/**/*.json.auth
+
+# Disk/token tasarrufu (CLAUDE.md §14)
+node_modules/
+vendor/
+vendor-dev/
+test-results/
+playwright-report/
+blob-report/
+build/
+dev/research/
+build/graph/
+graphify-out/
+dev/design/showcase/
+# Worktree klasörleri proje dışında (../wt-*); ana depo içinde oluşursa:
+wt-*/

@@ -9,7 +9,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadDeployEnvSilent, remote, resolveWpPath, setActiveDeployEnvFile } from '../tests/e2e/helpers/wp-remote.mjs';
-import { TRASH_REPORT_EVAL_FILE } from './lib/ikram-wp-guard.mjs';
+import {
+  TRASH_REPORT_EVAL_FILE,
+  CRON_STATUS_EVAL_FILE,
+  isReadOnlyCronStatusSource,
+} from './lib/ikram-wp-guard.mjs';
 import { validateRemoteSiteUrl, buildGuardedEvalFileCommand, wpPathFlag } from './lib/deploy-guards.mjs';
 import { loadProfile, setActiveProfile } from '../tests/e2e/helpers/profile.mjs';
 
@@ -34,6 +38,16 @@ function runEvalFileReadOnly(env, relFile) {
   console.log(out);
 }
 
+function runCronStatus(env) {
+  const local = path.join(ROOT, CRON_STATUS_EVAL_FILE);
+  if (!fs.existsSync(local)) fail(`Yerel dosya yok: ${CRON_STATUS_EVAL_FILE}`);
+  if (!isReadOnlyCronStatusSource(fs.readFileSync(local, 'utf8'))) {
+    fail('cron-status.php yazma/ağ çağrısı içeriyor; reddedildi.');
+  }
+  runEvalFileReadOnly(env, CRON_STATUS_EVAL_FILE);
+  console.log("not=sunucu cron'u bu araçla okunmaz; hosting panelinden bakın");
+}
+
 function main() {
   const profile = loadProfile('staging');
   setActiveProfile(profile);
@@ -47,8 +61,12 @@ function main() {
   if (!urlGuard.ok) fail(urlGuard.reason);
 
   const argv = process.argv.slice(2).filter((a) => a !== '--');
+  if (argv[0] === 'cron-status') {
+    runCronStatus(env);
+    return;
+  }
   if (argv[0] !== 'trash-report') {
-    fail('Kullanım: npm run staging:wp -- trash-report (yalnız salt okunur).');
+    fail('Kullanım: npm run staging:wp -- trash-report | cron-status (yalnız salt okunur).');
   }
   runEvalFileReadOnly(env, TRASH_REPORT_EVAL_FILE);
 }

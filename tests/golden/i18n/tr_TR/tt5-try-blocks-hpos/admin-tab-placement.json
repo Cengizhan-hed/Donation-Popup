@@ -1,6 +1,6 @@
 {
   "id": "admin-tab-placement",
-  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nMeta Pixel\nKategoriler\nGelişmiş\nÜrün sayfası ve liste\nHangi ürünlerin bağış ürünü sayılacağını ve WooCommerce mağaza / ürün sayfalarında “Bağış Yap” davranışını buradan yönetirsiniz.\nBağış ürünleri\nŞu an #N# ürün bağış ürünü.\nKapsam\nTüm basit ürünler\nSeçili kategoriler (alt kategoriler dahil)\nYalnızca işaretli ürünler\nHangi basit ürünlerin bağış formu kullandığı.\nKategoriler\nUncategorized\nWDP E2E\nKapsam “seçili kategoriler” iken kullanılır. Alt kategoriler otomatik dahildir.\nWooCommerce sayfaları\nWooCommerce sayfalarında “Sepete Ekle” yerine “Bağış Yap”\nAçık\nKapalı\nAçıkken mağaza ve ürün sayfalarındaki sepete ekle alanı bağış butonu veya formuna dönüşür.\nÜrün sayfasında gösterim\nSayfa içi form\nButon + ortada açılan\nButon + sağ panel\nMağaza ve kategori sayfalarında buton\nÜrün sayfasına git\nOrtada açılan\nSağ panel\nFiyat gösterimi\nSabit ve hisseli üründe göster, diğerlerinde gizle\nHer zaman göster\nSepet, ödeme ve e-postalardaki fiyatlar değişmez.\nForm başlığını göster\nEvet\nHayır\nÜrün sayfasında zaten başlık olduğu için varsayılan kapalıdır.\nYapılandırılmış veri (schema)\nProduct işaretlemesi\nOtomatik\nKapalı\nOtomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur.\nKurulum rehberi\nWooCommerce sayfalarını kullanıyorum\nYukarıdaki ayarı Açık bırakın. Başka bir şey yapmanız gerekmez; Mağaza sayfası ve ürün sayfaları otomatik olarak bağış sayfasına dönüşür.\nÜrün sayfam özel bir sayfa oluşturucu şablonu kullanıyor\nŞablonda WooCommerce’in Sepete Ekle elemanı varsa otomatik olarak Bağış Yap’a dönüşür. Yoksa şablona bir kez şu kısa kodu ekleyin: [wdp_donation_button_panel] Kopyala\nSayfa oluşturucu: ürün şablonunu açın, bir Kısa Kod (Shortcode) ya da Kod öğesi ekleyin, yapıştırın ve kaydedin.\nKendi bağış sayfamı yapıyorum\nListe için: [wdp_donations] Kopyala (ya da blok düzenleyicide “Bağış listesi” bloğu). Tek ürün için: [wdp_donation_button_panel slug=\"urun-kisa-adi\"] Kopyala\nForm test sayfasını aç",
+  "text": "DONATİON POPUP\nBağış Popup Ayarları\nÜrün davranışını, form görünümünü ve başarı ekranını tek yerden yönetin — değişiklikler canlı önizlemede anında görünür.\nV10.#AMT#\nKURULUM\nÜrünler\nÜrün sayfası ve liste\nTasarım\nFORMLAR\nModal\nNormal\nHisseli\nProgress\nBaşarı\nEK\nGelişmiş\nÜrün sayfası ve liste\nHangi ürünlerin bağış ürünü sayılacağını ve WooCommerce mağaza / ürün sayfalarında “Bağış Yap” davranışını buradan yönetirsiniz.\nBağış ürünleri\nŞu an #N# ürün bağış ürünü.\nKapsam\nTüm basit ürünler\nSeçili kategoriler (alt kategoriler dahil)\nYalnızca işaretli ürünler\nHangi basit ürünlerin bağış formu kullandığı.\nKategoriler\nUncategorized\nWDP E2E\nKapsam “seçili kategoriler” iken kullanılır. Alt kategoriler otomatik dahildir.\nWooCommerce sayfaları\nWooCommerce sayfalarında “Sepete Ekle” yerine “Bağış Yap”\nAçık\nKapalı\nAçıkken mağaza ve ürün sayfalarındaki sepete ekle alanı bağış butonu veya formuna dönüşür.\nÜrün sayfasında gösterim\nSayfa içi form\nButon + ortada açılan\nButon + sağ panel\nMağaza ve kategori sayfalarında buton\nÜrün sayfasına git\nOrtada açılan\nSağ panel\nFiyat gösterimi\nSabit ve hisseli üründe göster, diğerlerinde gizle\nHer zaman göster\nSepet, ödeme ve e-postalardaki fiyatlar değişmez.\nForm başlığını göster\nEvet\nHayır\nÜrün sayfasında zaten başlık olduğu için varsayılan kapalıdır.\nKurulum rehberi\nWooCommerce sayfalarını kullanıyorum\nYukarıdaki ayarı Açık bırakın. Başka bir şey yapmanız gerekmez; Mağaza sayfası ve ürün sayfaları otomatik olarak bağış sayfasına dönüşür.\nÜrün sayfam özel bir sayfa oluşturucu şablonu kullanıyor\nŞablonda WooCommerce’in Sepete Ekle elemanı varsa otomatik olarak Bağış Yap’a dönüşür. Yoksa şablona bir kez şu kısa kodu ekleyin: [wdp_donation_button_panel] Kopyala\nSayfa oluşturucu: ürün şablonunu açın, bir Kısa Kod (Shortcode) ya da Kod öğesi ekleyin, yapıştırın ve kaydedin.\nKendi bağış sayfamı yapıyorum\nListe için: [wdp_donations] Kopyala (ya da blok düzenleyicide “Bağış listesi” bloğu). Tek ürün için: [wdp_donation_button_panel slug=\"urun-kisa-adi\"] Kopyala\nForm test sayfasını aç",
   "lines": [
     "DONATİON POPUP",
     "Bağış Popup Ayarları",
@@ -17,8 +17,6 @@
     "Progress",
     "Başarı",
     "EK",
-    "Meta Pixel",
-    "Kategoriler",
     "Gelişmiş",
     "Ürün sayfası ve liste",
     "Hangi ürünlerin bağış ürünü sayılacağını ve WooCommerce mağaza / ürün sayfalarında “Bağış Yap” davranışını buradan yönetirsiniz.",
@@ -54,11 +52,6 @@
     "Evet",
     "Hayır",
     "Ürün sayfasında zaten başlık olduğu için varsayılan kapalıdır.",
-    "Yapılandırılmış veri (schema)",
-    "Product işaretlemesi",
-    "Otomatik",
-    "Kapalı",
-    "Otomatik: fiyatı olmayan bağışçı-belirler ve kampanya ürünlerinde Product markup basılmaz. Yoast / SEOPress / AIOSEO için wdp_product_schema filtresi sunulur.",
     "Kurulum rehberi",
     "WooCommerce sayfalarını kullanıyorum",
     "Yukarıdaki ayarı Açık bırakın. Başka bir şey yapmanız gerekmez; Mağaza sayfası ve ürün sayfaları otomatik olarak bağış sayfasına dönüşür.",

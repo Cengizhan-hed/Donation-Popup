@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SCOPE = ['includes', 'templates', 'blocks', 'woo-donation-popup.php', 'uninstall.php'];
+const SCOPE = ['src', 'templates', 'blocks', 'woo-donation-popup.php', 'uninstall.php'];
 const toNew = (s) => s.replace(/sadaka/g, 'addon').replace(/Sadaka/g, 'Addon').replace(/SADAKA/g, 'ADDON');
 
 function walk(p, out = []) {

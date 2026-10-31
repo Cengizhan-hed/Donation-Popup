@@ -1,0 +1,28 @@
+# Turkish translations — int3 (12.0.0 Kampanyalar elle eklenen tutar, bekleyen toplam, liste başlığı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/class-pages.php
+msgid "Total not calculated yet. Recalculate to count the earlier donations."
+msgstr "Toplam henüz hesaplanmadı. Önceki bağışları saymak için yeniden hesaplayın."
+
+#. translators: %s: product name.
+#: src/Admin/class-pages.php
+msgid "Amount added by hand for %s"
+msgstr "%s için elle eklenen tutar"
+
+#: src/Admin/class-admin-assets.php
+msgid "The amount added by hand was saved."
+msgstr "Elle eklenen tutar kaydedildi."
+
+#: src/Admin/class-pages.php
+msgid "Raised = carried-over amount + paid donations since the campaign started + the amount added by hand in this table. Recalculating shows a preview first and changes nothing until you approve it."
+msgstr "Toplanan = devreden tutar + kampanya başladığından beri ödenmiş bağışlar + bu tabloda elle eklenen tutar. Yeniden hesap önce önizleme gösterir; onaylamadan hiçbir şey değişmez."

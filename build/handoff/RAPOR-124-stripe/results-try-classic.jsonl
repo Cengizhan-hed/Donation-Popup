@@ -1,0 +1,75 @@
+{"scenario":"compact-sepetli-yonlendirme","flow":"cart-compact","project":"iphone","orders":0}
+{"scenario":"basarili","flow":"cart","project":"iphone","currency":"TRY","money":"/₺[\\s\\u00a0]?125/","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":125,"mails":2}
+{"guard":true,"test":"cart: başarılı ödeme → durum, kancalar bir kez, toplam bir kez, canlı çubuk, alanlar, e-posta","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-tamam","flow":"cart","project":"iphone","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":140}
+{"guard":true,"test":"cart: 3D Secure tamamlandı → başarı, toplam bir kez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-red","flow":"cart","project":"iphone","statuses":["failed"],"errorShown":true,"raisedDelta":0}
+{"guard":true,"test":"cart: 3D Secure reddedildi → ödenmedi, toplam artmaz, akış kilitlenmez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"red-kart+tekrar","flow":"cart","project":"iphone","status":"processing","extraUnpaidOrders":0,"errorShown":true,"raisedDelta":160}
+{"guard":true,"test":"cart: reddedilen kart → anlaşılır hata, yeniden deneme başarılı, toplam bir kez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"yarida-birakma","flow":"cart","project":"iphone","statuses":["failed"],"pendingLeft":1,"raisedDelta":0}
+{"guard":true,"test":"cart: yarıda bırakma (3DS penceresi kapatılır) → ödenmez, toplam artmaz, yeniden bağış sorunsuz","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"webhook-gecikmeli","flow":"cart","project":"iphone","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":0,"via_webhook":0,"statuses":["pending>processing@cron-webhook"]},"verifyAborted":1,"lockExpiredSimulated":true,"raisedDelta":180}
+{"guard":true,"test":"cart: gecikmeli teyit — istemci doğrulaması kesilir, durumu webhook günceller, toplam bir kez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"basarili","flow":"direct","project":"iphone","currency":"TRY","money":"/₺[\\s\\u00a0]?125/","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@page"]},"raisedDelta":125,"mails":2}
+{"guard":true,"test":"direct: başarılı ödeme → durum, kancalar bir kez, toplam bir kez, canlı çubuk, alanlar, e-posta","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-tamam","flow":"direct","project":"iphone","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":140}
+{"guard":true,"test":"direct: 3D Secure tamamlandı → başarı, toplam bir kez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-red","flow":"direct","project":"iphone","statuses":["failed"],"errorShown":true,"raisedDelta":0}
+{"guard":true,"test":"direct: 3D Secure reddedildi → ödenmedi, toplam artmaz, akış kilitlenmez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"red-kart+tekrar","flow":"direct","project":"iphone","status":"processing","extraUnpaidOrders":0,"errorShown":true,"raisedDelta":160}
+{"guard":true,"test":"direct: reddedilen kart → anlaşılır hata, yeniden deneme başarılı, toplam bir kez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"yarida-birakma","flow":"direct","project":"iphone","statuses":["failed"],"pendingLeft":2,"raisedDelta":0}
+{"guard":true,"test":"direct: yarıda bırakma (3DS penceresi kapatılır) → ödenmez, toplam artmaz, yeniden bağış sorunsuz","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"webhook-gecikmeli","flow":"direct","project":"iphone","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":0,"via_webhook":0,"statuses":["pending>processing@cron-webhook"]},"verifyAborted":1,"lockExpiredSimulated":true,"raisedDelta":180}
+{"guard":true,"test":"direct: gecikmeli teyit — istemci doğrulaması kesilir, durumu webhook günceller, toplam bir kez","project":"iphone","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"compact-sepetli-yonlendirme","flow":"cart-compact","project":"android","orders":0}
+{"scenario":"basarili","flow":"cart","project":"android","currency":"TRY","money":"/₺[\\s\\u00a0]?125/","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":125,"mails":2}
+{"guard":true,"test":"cart: başarılı ödeme → durum, kancalar bir kez, toplam bir kez, canlı çubuk, alanlar, e-posta","project":"android","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"3ds-tamam","flow":"cart","project":"android","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":140}
+{"guard":true,"test":"cart: 3D Secure tamamlandı → başarı, toplam bir kez","project":"android","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"3ds-red","flow":"cart","project":"android","statuses":["failed"],"errorShown":true,"raisedDelta":0}
+{"guard":true,"test":"cart: 3D Secure reddedildi → ödenmedi, toplam artmaz, akış kilitlenmez","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"red-kart+tekrar","flow":"cart","project":"android","status":"processing","extraUnpaidOrders":0,"errorShown":true,"raisedDelta":160}
+{"guard":true,"test":"cart: reddedilen kart → anlaşılır hata, yeniden deneme başarılı, toplam bir kez","project":"android","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"yarida-birakma","flow":"cart","project":"android","statuses":["failed"],"pendingLeft":1,"raisedDelta":0}
+{"guard":true,"test":"cart: yarıda bırakma (3DS penceresi kapatılır) → ödenmez, toplam artmaz, yeniden bağış sorunsuz","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"webhook-gecikmeli","flow":"cart","project":"android","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":0,"via_webhook":0,"statuses":["pending>processing@cron-webhook"]},"verifyAborted":1,"lockExpiredSimulated":true,"raisedDelta":180}
+{"guard":true,"test":"cart: gecikmeli teyit — istemci doğrulaması kesilir, durumu webhook günceller, toplam bir kez","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"basarili","flow":"direct","project":"android","currency":"TRY","money":"/₺[\\s\\u00a0]?125/","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@page"]},"raisedDelta":125,"mails":2}
+{"guard":true,"test":"direct: başarılı ödeme → durum, kancalar bir kez, toplam bir kez, canlı çubuk, alanlar, e-posta","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-tamam","flow":"direct","project":"android","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":140}
+{"guard":true,"test":"direct: 3D Secure tamamlandı → başarı, toplam bir kez","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-red","flow":"direct","project":"android","statuses":["failed"],"errorShown":true,"raisedDelta":0}
+{"guard":true,"test":"direct: 3D Secure reddedildi → ödenmedi, toplam artmaz, akış kilitlenmez","project":"android","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"red-kart+tekrar","flow":"direct","project":"android","status":"processing","extraUnpaidOrders":0,"errorShown":true,"raisedDelta":160}
+{"guard":true,"test":"direct: reddedilen kart → anlaşılır hata, yeniden deneme başarılı, toplam bir kez","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"yarida-birakma","flow":"direct","project":"android","statuses":["failed"],"pendingLeft":2,"raisedDelta":0}
+{"guard":true,"test":"direct: yarıda bırakma (3DS penceresi kapatılır) → ödenmez, toplam artmaz, yeniden bağış sorunsuz","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"webhook-gecikmeli","flow":"direct","project":"android","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":0,"via_webhook":0,"statuses":["pending>processing@cron-webhook"]},"verifyAborted":1,"lockExpiredSimulated":true,"raisedDelta":180}
+{"guard":true,"test":"direct: gecikmeli teyit — istemci doğrulaması kesilir, durumu webhook günceller, toplam bir kez","project":"android","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"compact-sepetli-yonlendirme","flow":"cart-compact","project":"desktop","orders":0}
+{"scenario":"basarili","flow":"cart","project":"desktop","currency":"TRY","money":"/₺[\\s\\u00a0]?125/","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":125,"mails":2}
+{"guard":true,"test":"cart: başarılı ödeme → durum, kancalar bir kez, toplam bir kez, canlı çubuk, alanlar, e-posta","project":"desktop","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"3ds-tamam","flow":"cart","project":"desktop","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":140}
+{"guard":true,"test":"cart: 3D Secure tamamlandı → başarı, toplam bir kez","project":"desktop","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-red","flow":"cart","project":"desktop","statuses":["failed"],"errorShown":true,"raisedDelta":0}
+{"guard":true,"test":"cart: 3D Secure reddedildi → ödenmedi, toplam artmaz, akış kilitlenmez","project":"desktop","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"red-kart+tekrar","flow":"cart","project":"desktop","status":"processing","extraUnpaidOrders":0,"errorShown":true,"raisedDelta":160}
+{"guard":true,"test":"cart: reddedilen kart → anlaşılır hata, yeniden deneme başarılı, toplam bir kez","project":"desktop","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"yarida-birakma","flow":"cart","project":"desktop","statuses":["failed"],"pendingLeft":1,"raisedDelta":0}
+{"guard":true,"test":"cart: yarıda bırakma (3DS penceresi kapatılır) → ödenmez, toplam artmaz, yeniden bağış sorunsuz","project":"desktop","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"webhook-gecikmeli","flow":"cart","project":"desktop","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":0,"via_webhook":0,"statuses":["pending>processing@cron-webhook"]},"verifyAborted":1,"lockExpiredSimulated":true,"raisedDelta":180}
+{"guard":true,"test":"cart: gecikmeli teyit — istemci doğrulaması kesilir, durumu webhook günceller, toplam bir kez","project":"desktop","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"basarili","flow":"direct","project":"desktop","currency":"TRY","money":"/₺[\\s\\u00a0]?125/","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@page"]},"raisedDelta":125,"mails":2}
+{"guard":true,"test":"direct: başarılı ödeme → durum, kancalar bir kez, toplam bir kez, canlı çubuk, alanlar, e-posta","project":"desktop","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-tamam","flow":"direct","project":"desktop","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":1,"via_webhook":0,"statuses":["pending>processing@ajax"]},"raisedDelta":140}
+{"guard":true,"test":"direct: 3D Secure tamamlandı → başarı, toplam bir kez","project":"desktop","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"3ds-red","flow":"direct","project":"desktop","statuses":["failed"],"errorShown":true,"raisedDelta":0}
+{"guard":true,"test":"direct: 3D Secure reddedildi → ödenmedi, toplam artmaz, akış kilitlenmez","project":"desktop","blockedHosts":["r.stripe.com","m.stripe.com","hcaptcha.com"],"foreignBlocked":0}
+{"scenario":"red-kart+tekrar","flow":"direct","project":"desktop","status":"processing","extraUnpaidOrders":0,"errorShown":true,"raisedDelta":160}
+{"guard":true,"test":"direct: reddedilen kart → anlaşılır hata, yeniden deneme başarılı, toplam bir kez","project":"desktop","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"yarida-birakma","flow":"direct","project":"desktop","statuses":["failed"],"pendingLeft":2,"raisedDelta":0}
+{"guard":true,"test":"direct: yarıda bırakma (3DS penceresi kapatılır) → ödenmez, toplam artmaz, yeniden bağış sorunsuz","project":"desktop","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}
+{"scenario":"webhook-gecikmeli","flow":"direct","project":"desktop","status":"processing","hooks":{"payment_complete":1,"to_processing":1,"thankyou":0,"via_webhook":0,"statuses":["pending>processing@cron-webhook"]},"verifyAborted":1,"lockExpiredSimulated":true,"raisedDelta":180}
+{"guard":true,"test":"direct: gecikmeli teyit — istemci doğrulaması kesilir, durumu webhook günceller, toplam bir kez","project":"desktop","blockedHosts":["r.stripe.com","hcaptcha.com","m.stripe.com"],"foreignBlocked":0}

@@ -21,6 +21,8 @@ import {
   shellQuoteWpPath,
   buildGuardedEvalFileCommand,
   IKRAM_ALLOW_REMOVAL_NOTE,
+  MIGRATE_EVAL_PHP,
+  CACHE_BUMP_EVAL_PHP,
 } from './deploy-guards.mjs';
 import { assertRemoteAllowed, spawnGuarded, isRemoteRsync } from './remote-guard.mjs';
 import { rsyncExcludeArgs } from './pack-excludes.mjs';
@@ -29,7 +31,12 @@ import { blockedActivePlugins } from './remote-discover-lib.mjs';
 import { loadProfile, resolveAllowedRemoteTarget, setActiveProfile } from '../../tests/e2e/helpers/profile.mjs';
 import { runSnapshot } from '../migration-snapshot.mjs';
 import { runCompare } from '../migration-compare.mjs';
-import { evaluateCanaryHealth, snapshotCanary } from '../../tests/e2e/helpers/canary.mjs';
+import {
+  evaluateCanaryHealth,
+  snapshotCanary,
+  formatCanaryReportLines,
+  persistAutoAcceptedBaseline,
+} from '../../tests/e2e/helpers/canary.mjs';
 import { loadRegistry } from '../../tests/e2e/helpers/run-registry.mjs';
 import { acquireEnvLock, releaseEnvLock } from '../../tests/e2e/helpers/env-lock.mjs';
 import { loadFixtures } from '../../tests/e2e/helpers/fixtures.mjs';
@@ -136,7 +143,7 @@ export function isRemoteWriteCommand(cmd) {
   if (/\bplugin\s+(install|activate|deactivate|update)\b/.test(s)) return true;
   if (/\boption\s+(update|delete|add|patch)\b/.test(s)) return true;
   if (/ship-restore-options|ship-backup-options/.test(s)) return true;
-  if (/WDP_Migrations::maybe_run/.test(s)) return true;
+  if (/WDP_Migrations::maybe_run|Version_Migrations|\$vm::maybe_run/.test(s)) return true;
   if (/\bsg purge\b|\bcache flush\b/.test(s)) return true;
   if (/file_put_contents|update_option/.test(s)) return true;
   return false;
@@ -387,7 +394,7 @@ export function buildRestoreOptionsCommand(wpPath, optionsJsonPath) {
  */
 export function buildCacheFlushCommand(wpPath) {
   const flag = wpPathFlag(wpPath);
-  return `# wdp-ship:cache-flush\n(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag})`;
+  return `# wdp-ship:cache-flush\n(wp sg purge ${flag} 2>/dev/null || true; wp cache flush ${flag} 2>/dev/null || true; wp eval 'if (function_exists("wp_cache_flush")) { wp_cache_flush(); } ${CACHE_BUMP_EVAL_PHP}' ${flag})`;
 }
 
 /**
@@ -398,7 +405,7 @@ export function buildActivateMigrateCommand(wpPath) {
   return [
     `# wdp-ship:activate-migrate`,
     `wp plugin activate ${PLUGIN_SLUG} ${flag}`,
-    `wp eval 'if (class_exists("WDP_Migrations")) { WDP_Migrations::maybe_run(); }' ${flag}`,
+    `wp eval '${MIGRATE_EVAL_PHP}' ${flag}`,
   ].join('\n');
 }
 
@@ -982,9 +989,14 @@ export async function runShip(opts = {}) {
         envId: profile.id,
       });
   if (!canaryBefore.ok) {
-    fail(`Kanarya KIRMIZI — kurulum yok (${(canaryBefore.diffs || []).length} fark)`);
+    fail(
+      `Kanarya KIRMIZI — kurulum yok (${(canaryBefore.diffs || []).length} fark)\n` +
+        formatCanaryReportLines('önce', canaryBefore).join('\n')
+    );
   }
-  lines.push(`kanarya önce: TEMİZ`);
+  // §25: yönetici içerik düzenlemesi dış değişiklik (otomatik kabul) → rapora + tabana.
+  lines.push(...formatCanaryReportLines('önce', canaryBefore));
+  if (!opts.canaryFn) persistAutoAcceptedBaseline(profile.id, canaryBefore);
 
   let plugins;
   if (opts.pluginsFn) {
@@ -1102,8 +1114,10 @@ export async function runShip(opts = {}) {
     : evaluateCanaryHealth(snapshotCanary(), envName, loadRegistry(profile.id), {
         fixtures: loadFixtures(profile.id),
         envId: profile.id,
+        installPhase: true,
       });
-  lines.push(`kanarya sonra: ${canaryAfter.ok ? 'TEMİZ' : 'KIRMIZI'}`);
+  lines.push(...formatCanaryReportLines('sonra', canaryAfter));
+  if (!opts.canaryFn) persistAutoAcceptedBaseline(profile.id, canaryAfter);
 
   let exitCode = EXIT_OK;
   if (compare?.fail) {

@@ -8,12 +8,12 @@
  * @package WooCommerce\Donation_Popup
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if (!class_exists('WDP_Product_Page_Integration')) {
+if ( ! class_exists( \DonationPanel\Modules\EntryPoints\Auto_Placement::class ) ) {
 	return;
 }
 
-WDP_Product_Page_Integration::render_template_override();
+\DonationPanel\Modules\EntryPoints\Auto_Placement::render_template_override();

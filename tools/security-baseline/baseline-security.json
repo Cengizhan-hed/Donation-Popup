@@ -1,0 +1,11 @@
+{
+ "generated": "2026-10-31",
+ "entries": [
+  {
+   "tool": "semgrep",
+   "rule": "echoed-request",
+   "file": "src/Modules/DonorAccount/class-donor-account-module.php",
+   "fp": "semgrep|echoed-request|src/Modules/DonorAccount/class-donor-account-module.php|7eeab5e23e9a"
+  }
+ ]
+}

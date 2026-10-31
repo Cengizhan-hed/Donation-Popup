@@ -43,19 +43,8 @@ const DISPLAYS = [
   { id: 'panel', mode: 'button_panel', trigger: 'panel' },
   { id: 'inline', mode: 'inline', trigger: '' },
 ];
-const ADMIN_TABS = [
-  'products',
-  'placement',
-  'design-studio',
-  'modal-layout',
-  'normal-form',
-  'shareholder-form',
-  'progress-bar',
-  'success-screen',
-  'meta',
-  'category-colors',
-  'advanced',
-];
+// Yeni tek yönetici menüsünün ekranları (sayfa sluglari).
+const ADMIN_SCREENS = ['donation-panel', 'donation-panel-campaigns', 'donation-panel-forms', 'donation-panel-checkout', 'donation-panel-account', 'donation-panel-privacy', 'donation-panel-tools', 'donation-panel-guide'];
 const CHECK_MS = 25000;
 
 function parseArgs(argv) {
@@ -79,7 +68,7 @@ function parseArgs(argv) {
 }
 
 function extraQuery() {
-  return { hdf_no_side_cart: '1' };
+  return {};
 }
 
 async function gotoPath(page, baseUrl, pathName) {
@@ -152,19 +141,11 @@ async function loginAdmin(page, baseUrl) {
 async function captureAdmin(page, baseUrl, locale, configId, probe) {
   const out = [];
   await loginAdmin(page, baseUrl);
-  await gotoPath(page, baseUrl, '/wp-admin/admin.php?page=wdp-popup-settings');
-  await page.waitForSelector('.wdp-admin-wrap', { timeout: CHECK_MS });
-  for (const tab of ADMIN_TABS) {
-    const link = page.locator(`.wdp-nav-tab-wrapper a.nav-tab[data-tab="${tab}"]`).first();
-    if (await link.count()) {
-      await link.click();
-      const panel = page.locator(`#wdp-${tab}-tab, [aria-labelledby="wdp-tab-${tab}"]`).first();
-      if (await panel.count()) {
-        await panel.waitFor({ state: 'visible', timeout: CHECK_MS });
-      }
-    }
-    const raw = await extractFromSelectors(page, ['.wdp-admin-wrap']);
-    out.push(toPayload(`admin-tab-${tab}`, raw, { locale, config: configId }));
+  for (const slug of ADMIN_SCREENS) {
+    await gotoPath(page, baseUrl, `/wp-admin/admin.php?page=${slug}`);
+    await page.waitForSelector('.dpa', { timeout: CHECK_MS });
+    const raw = await extractFromSelectors(page, ['.dpa']);
+    out.push(toPayload(`admin-screen-${slug}`, raw, { locale, config: configId }));
   }
 
   const products = (probe && probe.products) || {};

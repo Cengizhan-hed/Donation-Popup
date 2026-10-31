@@ -1,0 +1,62 @@
+# Turkish translations for woo-donation-popup (part E8D).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "A pending request to link earlier guest donations to your account."
+msgstr "Önceki misafir bağışlarınızı hesabınıza bağlamak için bekleyen bir istek."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Cookies and tracking"
+msgstr "Çerezler ve izleme"
+
+#: includes/class-privacy.php
+msgid "Donation orders and amounts are kept for accounting; only personal fields entered on the donation form were anonymized."
+msgstr "Bağış siparişleri ve tutarları muhasebe için saklanır; yalnızca bağış formuna yazılan kişisel alanlar anonimleştirildi."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Donations"
+msgstr "Bağışlar"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Donor account link"
+msgstr "Bağışçı hesabı bağlantısı"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Donor account link data"
+msgstr "Bağışçı hesabı bağlantı verisi"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "E-mail to confirm"
+msgstr "Doğrulanacak e-posta"
+
+#: src/Privacy/class-privacy-tools.php
+msgid "If the donor account is enabled and you ask to link earlier guest donations, a short-lived confirmation request is stored with your user profile and is deleted as soon as it is used or expires."
+msgstr "Bağışçı hesabı açıksa ve önceki misafir bağışlarınızı bağlamak isterseniz, kısa ömürlü bir doğrulama isteği kullanıcı profilinizle birlikte saklanır; kullanıldığında ya da süresi dolduğunda hemen silinir."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Link expires"
+msgstr "Bağlantının bitiş zamanı"
+
+#: includes/class-lazy-modal.php
+msgid "Security check failed. Please refresh and try again."
+msgstr "Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyip tekrar deneyin."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "Suggested text. Review it and adapt it to how your site uses the plugin."
+msgstr "Önerilen metin. Gözden geçirin ve sitenizin eklentiyi kullanma biçimine göre uyarlayın."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "The plugin does not set its own cookies and does not use tracking or advertising services. Cart and checkout cookies are set by WooCommerce. Request limits use a one-way hash of the visitor address and are kept for a few minutes."
+msgstr "Eklenti kendi çerezlerini kullanmaz; izleme ya da reklam hizmeti kullanmaz. Sepet ve ödeme çerezlerini WooCommerce ayarlar. İstek sınırları ziyaretçi adresinin tek yönlü karmasını kullanır ve birkaç dakika saklanır."
+
+#: src/Privacy/class-privacy-tools.php
+msgid "When you donate, we store the details you enter on the donation form with the order: your name, e-mail and phone number, an optional dedication or note, the names and contact details of any shareholders you enter, and whether you asked to stay anonymous. This data is kept on the order for as long as the order itself is kept (accounting and legal obligations)."
+msgstr "Bağış yaptığınızda, bağış formuna yazdığınız bilgileri sipariş ile birlikte saklarız: adınız, e-posta ve telefon numaranız, isteğe bağlı ithaf ya da not, yazdığınız hissedarların adları ve iletişim bilgileri ve anonim kalmak isteyip istemediğiniz. Bu veri, sipariş saklandığı sürece (muhasebe ve yasal yükümlülükler) sipariş üzerinde tutulur."

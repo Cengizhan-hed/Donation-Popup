@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * PHPCS çalıştırır; build/lint/phpcs.json|md yazar. Mevcut kodu düzeltmez.
+ * PHPCS çalıştırır; build/lint/phpcs.json|md yazar. Tek kural dosyası phpcs.xml.dist, baseline yok. Kodu düzeltmez.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,7 +12,6 @@ import {
   summaryMarkdown,
   writeLintPair,
 } from './lib/lint-report.mjs';
-import { writePhpcsBaseline } from './lib/lint-baseline.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PHPCS = path.join(ROOT, 'vendor-dev/bin/phpcs');
@@ -25,8 +24,7 @@ function failMissing() {
 
 if (!fs.existsSync(PHPCS)) failMissing();
 
-const extra = process.argv.slice(2).filter((a) => a !== '--write-baseline');
-const writeBaseline = process.argv.includes('--write-baseline');
+const extra = process.argv.slice(2);
 const r = spawnSync(
   'php',
   [PHPCS, '-q', '--report=json', ...extra],
@@ -44,11 +42,6 @@ try {
 const issues = issuesFromPhpcs(parsed, ROOT);
 const summary = summarizeIssues(issues);
 writeLintPair(OUT, 'phpcs', { summary, issues }, summaryMarkdown('PHPCS', summary));
-if (writeBaseline) {
-  writePhpcsBaseline(ROOT, issues);
-  console.log('baseline yazıldı: tools/lint-baseline/baseline-phpcs.json');
-}
-
 console.log(
   `PHPCS ${summary.total} hata (${summary.fixable} phpcbf). Rapor: build/lint/phpcs.md`
 );

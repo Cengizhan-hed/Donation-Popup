@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Yerel WP (build/local-wp) üzerinde WordPress Plugin Check.
- * Eklenti dağıtım ZIP'inden kurulur. Ağ yoksa net hata + atla (çıkış 0).
+ * Eklenti dağıtım ZIP'inden kurulur. ZORUNLU: wp-cli / yerel WP / Plugin Check yoksa ya da çalışmazsa
+ * net hata + kurulum komutu ile ÇIKIŞ 1 (atlama yok).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,11 +24,14 @@ const LOCAL = path.join(ROOT, 'build/local-wp');
 const SIBLING_LOCAL = path.resolve(ROOT, '../Donation Popup/build/local-wp');
 const PLUGIN_SLUG = 'woo-donation-popup';
 
+const INSTALL_HINT = 'Kurulum: node scripts/install-lint-tools.mjs  (wp-cli.phar, sürüm+SHA256 tools/lint-tools.json)';
+
+/** Plugin Check zorunlu: atlama yok, net hata ile çık. */
 function skip(reason) {
-  const payload = { skipped: true, reason, issues: [] };
-  writeLintPair(OUT, 'plugin-check', payload, `# Plugin Check\n\nAtlandı: ${reason}\n`);
-  console.error(`plugin-check: atlandı — ${reason}`);
-  process.exit(0);
+  const payload = { failed: true, reason, issues: [] };
+  writeLintPair(OUT, 'plugin-check', payload, `# Plugin Check\n\nÇALIŞMADI (zorunlu): ${reason}\n`);
+  console.error(`plugin-check: HATA — ${reason}\n${INSTALL_HINT}`);
+  process.exit(1);
 }
 
 function run(bin, args, opts = {}) {
@@ -56,7 +60,7 @@ function copyCache(dest, fallbacks) {
 }
 
 if (!fs.existsSync(WP_CLI)) {
-  skip('tools/bin/wp-cli.phar yok (node scripts/install-lint-tools.mjs)');
+  skip('tools/bin/wp-cli.phar yok');
 }
 
 async function main() {

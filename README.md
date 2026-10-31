@@ -126,28 +126,21 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-order-meta-keys.php` | Sipariş satırı meta anahtarlarının tek kaynağı: sabit `wdp_*` anahtarlar, görünen etiketler, eski (çevrilmiş) anahtar uyumluluğu. |
 | `class-privacy.php` | WordPress kişisel veri dışa aktarma/silme kayıtçıları (bağışçı ve hissedar alanları, `[deleted]` ile anonimleştirme). |
 | `class-templates.php` | Modal, form, buton ve alan HTML çıktısı. |
-| `class-shortcodes.php` | Bağış butonu, panel, form ve `[wdp_donations]` kısa kodları. |
 | `class-donation-scope.php` | Bir ürünün bağış ürünü sayılıp sayılmadığı (kapsam + işaret + tip). |
-| `class-product-resolver.php` | Kısa kod/blok/widget için ürün çözümleyici (id, slug, sku, bağlam). |
 | `class-render-registry.php` | İstek içinde yinelenen form/modal HTML’ini önler. |
-| `class-product-page-integration.php` | WooCommerce şablon override, döngü Bağış Yap, fiyat gizleme, blok uyumu. |
 | `templates/woocommerce/.../simple.php` | Simple ürün sepete ekle şablonunun bağış UI ile değiştirilmesi. |
 | `class-donations-list.php` | `[wdp_donations]` sorgu, kart, sekme ve önbellek. |
 | `class-lazy-modal.php` | Liste/döngü için gecikmeli modal AJAX (`wdp_render_modal`). |
-| `class-schema.php` | WooCommerce / Rank Math Product JSON-LD kuralları. |
-| `class-blocks.php` | Gutenberg bağış formu ve liste blokları. |
-| `class-elementor.php` | Elementor widget uyumluluk katmanı (yalnız eşdeğer kısa kodun çıktısını döndürür; yeni özellik almaz). |
+| `src/Modules/EntryPoints/` | Giriş noktaları modülü: kısa kodlar, bloklar, otomatik yerleşim, yedek düğme, ürün çözücü, döngü/fiyat filtreleri ve Elementor ince katmanı. |
 | `class-form-matrix.php` | Form test sayfası (`?wdp_form_matrix=1`). |
 | `class-placement-settings.php` | `wdp_placement_settings` varsayılanları ve normalizer. |
 | `class-migrations.php` | `wdp_db_version` geçişleri; idempotent adımlar. |
 | `class-render-guard.php` | Render giriş noktalarında çökme koruması. |
 | `class-phone-field.php` | Ülke kodlu telefon alanı verisi ve kuralları. |
-| `class-meta-tracking.php` | Meta Pixel olayları ve teşekkür sayfası scriptleri. |
 | `class-progress-form.php` | Hedefli bağış progress bar form alanı HTML'i. |
 | `class-donation-product-context-service.php` | Üründen normalize form bağlamı üretir. |
 | `class-product-settings-service.php` | Admin ürün meta ayarlarını normalize eder. |
 | `class-donation-type.php` | Bağış tipi ↔ eski meta bayrakları eşlemesi (çıkarım, kayıt, tablo filtresi). |
-| `class-category-title-color-service.php` | Kategori bazlı modal başlık rengi. |
 
 ### `includes/` — Admin (ayarlar sayfası)
 
@@ -167,8 +160,6 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `class-admin-bulk-actions.php` | Bağış ürünü işaretleme toplu işlemleri (ayarlar tablosu + WC ürün listesi). |
 | `class-admin-form-tabs-renderer.php` | Normal/hisseli form ve başarı ekranı sekmeleri. |
 | `class-admin-layout-tabs-renderer.php` | Modal düzeni ve progress bar stil sekmeleri. |
-| `class-admin-category-colors-tab-renderer.php` | Kategori başlık rengi seçim formu. |
-| `class-admin-meta-tracking-tab-renderer.php` | Meta Pixel ayarları sekmesi. |
 
 ### `includes/bootstrap/`
 
@@ -248,7 +239,7 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `assets/css/admin-style.css` | Bağış Popup Ayarları admin sayfası görünümü. |
 | `assets/js/admin-script.js` | Admin sekmeleri, AJAX kaydetme ve bildirimler. |
 | `assets/css/admin/products.css` | Ürünler tablosu ve ürün "Bağış" sekmesi stilleri (`npm run pack` ile küçültülür). |
-| `assets/js/admin/products.js` | Kısa kod kopyalama, toplam yenileme, bağış tipi geçişi, satır ekle/sil ve blok sırası. |
+| `assets/js/admin/products.js` | Kısa kod kopyalama, toplam yenileme, bağış tipi geçişi, satır ekle/sil. |
 
 ### `assets/js/src/core/` — JS çekirdek
 
@@ -302,7 +293,6 @@ Aşağıda projedeki her kaynak dosyanın kısa Türkçe açıklaması yer alır
 | `product.js` | Ürün bilgisi yükleme | `WDPApp.product` |
 | `phone-input.js` | Telefon maskesi ve doğrulama | `WDPApp.phoneInput` |
 | `progress-bar.js` | Progress bar animasyonu | `WDPApp.progressBar` |
-| `meta-tracking.js` | Meta Pixel olayları | `WDPApp.metaTracking` |
 
 ### `assets/js/src/bootstrap/` — Başlatma
 
@@ -362,12 +352,10 @@ Bloklar: Gutenberg **Bağış formu** (`wdp/donation-form`) ve **Bağış listes
 |--------|-----------|----------------|
 | `wdp_min_donation_amount` | `1` | Ürün min. fiyatı boş/0 olsa bile kabul edilen en düşük bağış tutarı (`$min`, `$product_id`). Tutar her durumda 0'dan büyük olmalıdır. |
 | `wdp_progress_paid_statuses` | `['processing','completed']` | Progress bar toplamına sayılan sipariş durumları. |
-| `wdp_meta_pixel_has_consent` | `false` | WP Consent API yoksa pazarlama izni kararı ("Çerez izni gerektir" açıkken). |
 | `wdp_is_donation_product` | kapsam kararı | Ürünün bağış ürünü sayılıp sayılmadığı (`$bool`, `$product`). |
 | `wdp_supported_product_types` | `['simple']` | Bağış formunun desteklediği WC ürün tipleri. |
 | `wdp_resolve_product` | çözümleyici sonucu | Kısa kod/blok ürünü (`$product`, `$atts`, `$context`). |
 | `wdp_builder_preview_product` | son bağış ürünü | Sayfa oluşturucu önizlemesinde örnek ürün. |
-| `wdp_product_schema` | tip+fiyat kararı | Product JSON-LD basılsın mı (`$keep`, `$product`, `$type`). Yoast / SEOPress / AIOSEO bu filtreyi kullanabilir. |
 | `wdp_form_context` | ürün bağlamı | Form bağlamını değiştirir (yalnızca test sayfasında tip simülasyonu için yazılır). |
 | `wdp_donations_query_args` | liste WP_Query args | `[wdp_donations]` sorgu argümanları. |
 | `wdp_donations_card_html` | kart HTML | Liste kartı HTML’i. |
@@ -382,6 +370,21 @@ Eklenti hiçbir tema ya da sayfa oluşturucuyu tanımaz; yalnız WordPress ve Wo
 2. Ürün kısa açıklamalarındaki eski `[wdp_donation_form id="…"]` kodlarını ürün içeriğinden temizleyin (çift form olmasın).
 3. Bağışlar sayfasındaki görsel+başlık+buton yığınını tek `[wdp_donations]` ile değiştirin.
 4. Ürün ID arayan özel snippet’lere artık gerek yoktur; eklenti ürünü sayfa bağlamından çözer.
+
+## Kaldırılan özellikler (Faz 7)
+
+Bu özellikler WordPress, WooCommerce ya da özel eklentiler tarafından zaten daha iyi yapıldığı için çıkarıldı. Eski ayar/meta kayıtları veritabanında olduğu gibi kalır (silinmez); yalnız artık okunmaz.
+
+| Kaldırılan | Yerine |
+|------------|--------|
+| Meta Pixel sekmesi ve olay izleme (ViewContent, AddToCart, InitiateCheckout, Purchase) | **Meta for WooCommerce** eklentisini kullanın |
+| JSON-LD şema (Product işaretlemesi ve bağış listesi `ItemList`) | **Rank Math** (ya da Yoast / SEOPress) eklentisini kullanın |
+| Kategori başlık renkleri sekmesi | Ürünün kendi ana rengi ya da genel marka rengi |
+| "Başarı" sekmesindeki mini sepet arka plan / kenarlık / yarıçap ayarı | Sabit varsayılan görünüm (mağaza teması/Woo mini sepeti ayrı) |
+| İlerleme çubuğu kutlama animasyonu (konfeti) | Yeni sade kutlama (sonraki sürüm); hedefe ulaşınca mesaj/yönlendirme/kapatma davranışı aynen çalışır |
+| "Blok sırası" ayarı (ürün + Tasarım sekmesi) | Sabit akıllı sıra (görsel/medya → etki → aciliyet → sosyal kanıt → ilerleme) |
+
+Kaldırılan filtreler: `wdp_meta_pixel_has_consent`, `wdp_product_schema` (ilgili modüllerle birlikte).
 
 ## Kaldırılan özellik: form içi SSS
 
@@ -418,7 +421,7 @@ Formun içindeki SSS modülü 10.27.0’da tamamen kaldırıldı. SSS’ler ür�
 
 ### 10.32.0 — Bu ürüne özel görünüm + aydınlatma bağlantısı
 
-- Renk önceliği: ürün ana rengi → kategori → genel; “Kategori rengini kullan” kutusu kaldırıldı (meta silinmez).
+- Renk önceliği: ürün ana rengi → genel (kategori rengi ayarı kaldırıldı; eski kayıtlar silinmez).
 - Hex: `#` opsiyonel; geçersizde kayıt hatası; boş = temizle. Türev palet + `--wdp-on-primary` (WCAG kontrast).
 - Köşe 4–32 tek sınır; panel/sheet orantılı. Yoğunluk ürün UI’dan gizlendi; `_theme_preset_id` okunmaz/yazılmaz.
 - Aydınlatma: yalnız kısa bağlantı etiketi; uzun varsayılan metin kaldırıldı (migration `10.32.0`).

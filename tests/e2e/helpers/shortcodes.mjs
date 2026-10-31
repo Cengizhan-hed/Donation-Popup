@@ -63,7 +63,7 @@ async function restoreMeta(productId, snapshot) {
  * @param {string} [hash]
  */
 async function gotoPage(page, env, target, hash) {
-  let url = withCacheBust(env.E2E_BASE_URL, target, { hdf_no_side_cart: '1' });
+  let url = withCacheBust(env.E2E_BASE_URL, target, {});
   if (hash) {
     url += '#' + hash;
   }
@@ -217,7 +217,7 @@ async function runTabsAriaCheck({ page, env, listUrl, failures, stats }) {
   try {
     await gotoPage(page, env, listUrl);
     await page.locator('.wdp-list-wrap').first().waitFor({ state: 'visible', timeout: CHECK_MS });
-    const tab = page.locator('.wdp-list-wrap [role="tab"]').first();
+    const tab = page.locator('.wdp-list-wrap [data-wdp-tab]').first();
     await tab.waitFor({ state: 'visible', timeout: CHECK_MS });
     const controls = await tab.getAttribute('aria-controls');
     if (!controls) {
@@ -227,9 +227,9 @@ async function runTabsAriaCheck({ page, env, listUrl, failures, stats }) {
     if ((await panel.count()) < 1) {
       throw new Error('aria-controls hedefi DOM’da yok: ' + controls);
     }
-    const role = await panel.first().getAttribute('role');
-    if (role !== 'tabpanel') {
-      throw new Error('panel role=tabpanel değil: ' + role);
+    // Yeni liste: sekmeler bağlantı (nav) + aria-current; hedef süzülen liste (ul.wdp-list).
+    if ((await panel.first().evaluate((el) => el.matches('ul.wdp-list'))) !== true) {
+      throw new Error('aria-controls hedefi liste (ul.wdp-list) değil');
     }
     stats.passed += 1;
   } catch (e) {
@@ -254,7 +254,7 @@ async function runBadHashCheck({ page, env, listUrl, pageErrors, failures, stats
     const hash = encodeURIComponent('bagis-foo"] img[src=x onerror=alert(1)]');
     await gotoPage(page, env, listUrl, hash);
     await page.locator('.wdp-list-wrap').first().waitFor({ state: 'visible', timeout: CHECK_MS });
-    const tab = page.locator('.wdp-list-wrap [role="tab"]').first();
+    const tab = page.locator('.wdp-list-wrap [data-wdp-tab]').first();
     if ((await tab.count()) > 0) {
       await tab.click({ timeout: CHECK_MS });
     }
@@ -282,7 +282,7 @@ async function runButtonTextCheck({ page, env, fixedId, failures, stats, product
   try {
     const pathName = productPath || `/product/${fixedId}/`;
     await gotoPage(page, env, pathName);
-    const btn = page.locator('.wdp-donate-button, .wdp-loop-donate, [data-wdp-open]').first();
+    const btn = page.locator('[data-dp-open], .wdp-loop-donate, .wdp-card__cta').first();
     await btn.waitFor({ state: 'visible', timeout: CHECK_MS });
     stats.passed += 1;
   } catch (e) {

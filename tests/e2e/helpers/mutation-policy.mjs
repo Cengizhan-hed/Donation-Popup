@@ -53,7 +53,7 @@ export const MUTATION_SCENARIOS = [
   { id: 'campaign-blocks-overflow-bar', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
   { id: 'campaign-blocks-urgency-expired', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
   { id: 'campaign-blocks-social-donors', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
-  { id: 'campaign-blocks-celebrate-only-transition', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
+  { id: 'campaign-blocks-goal-reached-only-on-transition', kind: KIND_PRODUCT_META, suite: 'campaign-blocks' },
   { id: 'product-theme-primary-and-contrast', kind: KIND_PRODUCT_META, suite: 'product-theme' },
   { id: 'product-theme-fallback-no-product-primary', kind: KIND_PRODUCT_META, suite: 'product-theme' },
   { id: 'product-theme-radius-clamp', kind: KIND_PRODUCT_META, suite: 'product-theme' },
@@ -139,18 +139,14 @@ export async function openMutationProductShell(page, opts) {
   if (!productPath) {
     throw new Error('fixture ürün adresi yok');
   }
-  await page.goto(withCacheBust(baseUrl, productPath, { hdf_no_side_cart: '1' }), {
+  await page.goto(withCacheBust(baseUrl, productPath, {}), {
     waitUntil: 'domcontentloaded',
     timeout,
   });
-  const visibleForm = page.locator(SEL.donationForm).filter({ visible: true }).first();
+  // Satır içi (gömülü) görünüm: form sayfada görünür; kök döndürülür.
+  const visibleForm = page.locator(SEL.inlineDonationForm).filter({ visible: true }).first();
   if ((await visibleForm.count()) > 0) {
-    const wrap = page
-      .locator('.hdf-donation-modal-wrapper, .wdp-donation-form')
-      .filter({ has: page.locator(SEL.donationForm) })
-      .first();
-    if ((await wrap.count()) > 0) return wrap;
-    return visibleForm;
+    return page.locator('[data-dp-exp][data-dp-kind="inline"]').first();
   }
   let trigger = shellTriggerLocator(page, 'panel', { productId });
   if ((await trigger.count()) === 0) {

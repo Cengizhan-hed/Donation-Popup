@@ -1,0 +1,21 @@
+/* Donation Panel — durum yalıtımı. Temanın `button:hover/:focus/:active` (ve benzeri) kuralları (özgüllük ≈ 0,1,1) eklenti
+ * düğmelerinin arka plan/yazı rengini ezmesin: durumdaki renkler bileşenin KENDİ jetonlarından (`--_bg/--_fg`, `--dp-s-bg/--dp-s-fg`)
+ * okunur; bileşenin kendi hover değişimi bu jetonları değiştirir. Özgüllük (0,4,0); `!important` ve global seçici yok. */
+/* Fare/dokunuş durumunda temanın odak halkası çizilmez; klavye halkası (:focus-visible, controls.css) korunur. */
+:root .donation-panel :is(button, [role="radio"], [role="checkbox"], a):is(:hover, :focus, :active):not(:focus-visible) { outline-style: none; }
+/* VARSAYILAN (durumsuz) görünüm: temanın genel `button`/`[type=button]` kuralları (özgüllük 0,0,1–0,1,0) bileşenin kendi
+ * arka plan/yazı/kenarlığını ezemesin; değerler yine bileşenin jetonlarından. Özgüllük (0,4,0); durum kuralları ayrıktır. */
+:root .donation-panel :is(.donation-panel-btn, .donation-panel-iconbtn, .donation-panel-linkbtn, .donation-panel-stepper button) { border: 0; }
+:root .donation-panel .donation-panel-amount { border: var(--dp-s-bw) solid var(--dp-s-bc); }
+:root .donation-panel .donation-panel-btn:not(:is(:hover, :focus, :active)) { background-color: var(--_bg); color: var(--_fg); }
+:root .donation-panel .donation-panel-amount:not(:is(:hover, :focus, :active)) { background-color: var(--dp-s-bg); color: var(--dp-s-fg); }
+:root .donation-panel .donation-panel-iconbtn:not(:is(:hover, :focus, :active)) { background-color: var(--dp-s-bg); color: inherit; }
+:root .donation-panel .donation-panel-linkbtn:not(:is(:hover, :focus, :active)) { background-color: transparent; color: var(--dp-color-primary-strong); }
+:root .donation-panel .donation-panel-stepper button:not(:is(:hover, :focus, :active)) { background-color: transparent; color: var(--dp-color-text); }
+:root .donation-panel .donation-panel-btn:is(:hover, :focus, :active) { background-color: var(--_bg); color: var(--_fg); }
+:root .donation-panel :is(.donation-panel-amount, .donation-panel-iconbtn):is(:hover, :focus, :active) { background-color: var(--dp-s-bg); }
+:root .donation-panel .donation-panel-amount:is(:hover, :focus, :active) { color: var(--dp-s-fg); }
+:root .donation-panel .donation-panel-iconbtn:is(:hover, :focus, :active) { color: inherit; }
+:root .donation-panel .donation-panel-linkbtn:is(:hover, :focus, :active) { background-color: transparent; color: var(--dp-color-primary-strong); }
+:root .donation-panel .donation-panel-stepper button:is(:hover, :focus, :active) { background-color: transparent; color: var(--dp-color-text); }
+:root .donation-panel .donation-panel-stepper button:is(:hover, :active):not([disabled]) { background-color: var(--dp-color-surface-2); }

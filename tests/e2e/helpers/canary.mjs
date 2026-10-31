@@ -156,6 +156,11 @@ export function evaluateCanaryAgainstBaseline(baseline, current, registry, opts 
     canUpdate: cmp.ok,
     status: cmp.ok ? 'TEMİZ' : 'KIRMIZI',
     diffs: cmp.diffs || [],
+    warnings: cmp.warnings || [],
+    external: cmp.external || [],
+    coverage: cmp.coverage || [],
+    install: cmp.install || [],
+    cmp,
   };
 }
 
@@ -273,6 +278,86 @@ export function acceptUserOptionChanges(baseline, current, diffs, acceptKeys) {
   return { ok: true, baseline: { ...baseline, options }, accepted };
 }
 
+/**
+ * Site sahibi kendi eklediği içeriği (ör. elementor_library, attachment) kabul eder.
+ * Yalnız verilen id'lerin `created` ve `modified` farkları ve bunların açıkladığı sayaç farkı
+ * (attachment_count/page_count/product_count) baseline'a işlenir; listedeki id'ler dışındaki
+ * her fark (silme, durum, seçenek, açıklanamayan sayaç) reddedilir.
+ * @param {object} baseline
+ * @param {object} current
+ * @param {Array<object>} diffs
+ * @param {Array<number|string>} acceptIds
+ * @returns {{ ok: boolean, baseline: object, accepted: number[], reason?: string }}
+ */
+export function acceptUserContentChanges(baseline, current, diffs, acceptIds) {
+  const allow = new Set((acceptIds || []).map((n) => Number(n)).filter((n) => n > 0));
+  if (!allow.size) return { ok: false, baseline, accepted: [], reason: 'id yok' };
+  if (!baseline || !Array.isArray(baseline.posts) || !current || !Array.isArray(current.posts)) {
+    return { ok: false, baseline, accepted: [], reason: 'baseline/anlık görüntü eksik' };
+  }
+  const list = Array.isArray(diffs) ? diffs : [];
+  const countKeyByType = { attachment: 'attachment_count', page: 'page_count', product: 'product_count' };
+  const createdDiffs = list.filter((d) => d && d.change === 'created' && allow.has(Number(d.id)));
+  const countDiffs = list.filter((d) => d && d.change === 'count');
+  const modifiedDiffs = list.filter(
+    (d) => d && ['modified', 'meta', 'status'].includes(d.change) && allow.has(Number(d.id))
+  );
+  const deletedDiffs = list.filter((d) => d && d.change === 'deleted' && allow.has(Number(d.id)));
+  const other = list.filter((d) => !createdDiffs.includes(d) && !countDiffs.includes(d) && !modifiedDiffs.includes(d) && !deletedDiffs.includes(d));
+  if (other.length) {
+    return { ok: false, baseline, accepted: [], reason: `izinli id dışı fark: ${other.length}` };
+  }
+  if (!createdDiffs.length && !modifiedDiffs.length && !deletedDiffs.length) {
+    return { ok: false, baseline, accepted: [], reason: 'verilen id için yeni/değişen kayıt farkı yok' };
+  }
+  const baseMap = new Map(baseline.posts.map((p) => [Number(p.id), p]));
+  for (const d of modifiedDiffs) {
+    if (!baseMap.has(Number(d.id))) {
+      return { ok: false, baseline, accepted: [], reason: `id=${d.id} baseline'da yok (modified)` };
+    }
+  }
+  const currentMap = new Map(current.posts.map((p) => [Number(p.id), p]));
+  const newPosts = [];
+  const perCount = {};
+  const delIds = new Set();
+  for (const d of deletedDiffs) {
+    const base = baseMap.get(Number(d.id));
+    if (!base) return { ok: false, baseline, accepted: [], reason: `id=${d.id} baseline'da yok (deleted)` };
+    if (currentMap.has(Number(d.id))) return { ok: false, baseline, accepted: [], reason: `id=${d.id} hâlâ anlık görüntüde (deleted)` };
+    delIds.add(Number(d.id));
+    const ck = countKeyByType[String(base.type)];
+    if (ck) perCount[ck] = (perCount[ck] || 0) - 1;
+  }
+  for (const d of createdDiffs) {
+    const post = currentMap.get(Number(d.id));
+    if (!post) return { ok: false, baseline, accepted: [], reason: `id=${d.id} anlık görüntüde yok` };
+    newPosts.push(post);
+    const ck = countKeyByType[String(post.type)];
+    if (ck) perCount[ck] = (perCount[ck] || 0) + 1;
+  }
+  for (const d of modifiedDiffs) {
+    if (!currentMap.has(Number(d.id))) return { ok: false, baseline, accepted: [], reason: `id=${d.id} anlık görüntüde yok` };
+  }
+  const counts = {};
+  for (const d of countDiffs) {
+    const key = String(d.option);
+    const delta = Number(current[key] ?? 0) - Number(baseline[key] ?? 0);
+    if (!Object.prototype.hasOwnProperty.call(perCount, key) || delta !== perCount[key]) {
+      return { ok: false, baseline, accepted: [], reason: `sayaç farkı açıklanamıyor: ${key}` };
+    }
+    counts[key] = current[key];
+  }
+  const modIds = new Set(modifiedDiffs.map((d) => Number(d.id)));
+  const posts = baseline.posts
+    .filter((p) => !delIds.has(Number(p.id)))
+    .map((p) => (modIds.has(Number(p.id)) ? currentMap.get(Number(p.id)) : p));
+  return {
+    ok: true,
+    baseline: { ...baseline, ...counts, posts: [...posts, ...newPosts] },
+    accepted: [...new Set([...newPosts.map((p) => Number(p.id)), ...modifiedDiffs.map((d) => Number(d.id)), ...delIds])],
+  };
+}
+
 export function formatCanaryStatusLine(beforeOk, afterOk, expectedNew = 0) {
   const b = beforeOk ? 'TEMİZ' : 'KIRMIZI';
   const a = afterOk ? 'TEMİZ' : 'KIRMIZI';
@@ -310,11 +395,81 @@ export function snapshotCanary() {
   return snap;
 }
 
+/** Anlık görüntü şeması: 2 = eklenti/Woo seçenek hash'leri, ürün meta hash'i, eklenti/tema, rol, ortam dosyaları. */
+export const CANARY_SCHEMA = 2;
+
+const PLUGIN_OPTION_RE = /^(wdp_|donation_panel_)/;
+const GUARDED_PREFIX_RE = /^(woocommerce_|wdp_|donation_panel_)/;
+/** Kendi kendine değişen durum anahtarları (sürüm, önbellek, kilit, sayaç, bildirim…): korunmaz. */
+const VOLATILE_TOKENS = new Set([
+  'version', 'cache', 'lock', 'log', 'audit', 'count', 'counter', 'timestamp', 'time', 'last',
+  'notice', 'notices', 'queue', 'transient', 'tracker', 'tracks', 'marketplace', 'onboarding',
+  'task', 'inbox', 'assignment', 'ces', 'milestone', 'migration', 'migrations', 'migrated',
+  'backup', 'stats', 'snooze', 'dismissed', 'install', 'installed', 'admin', 'flag', 'autoload',
+  'error', 'errors', 'dl', 'cleanup', 'usage', 'maxmind', 'tour', 'previous', 'nonce', 'session',
+  'cron', 'progress', 'restored', 'intro', 'signature', 'generating', 'record',
+]);
+
+/** @param {string} key */
+export function isPluginOptionKey(key) {
+  return PLUGIN_OPTION_RE.test(String(key));
+}
+
+/**
+ * woocommerce_/wdp_/donation_panel_ altındaki oynak durum anahtarı mı?
+ * (Sayfa kimlikleri ve wdp_success_numeric_ids gibi açık anahtarlar korunur.)
+ * @param {string} key
+ */
+export function isVolatileOptionKey(key) {
+  const k = String(key);
+  if (!GUARDED_PREFIX_RE.test(k)) return false;
+  if (k === 'wdp_success_numeric_ids' || CORE_OPTION_IDS.includes(k)) return false;
+  return k.split('_').some((t) => VOLATILE_TOKENS.has(t));
+}
+
+function corePageIdSet(...snaps) {
+  const ids = new Set();
+  for (const s of snaps) {
+    for (const key of CORE_OPTION_IDS) {
+      const id = optionPageId(s?.options || {}, key);
+      if (id) ids.add(id);
+    }
+  }
+  return ids;
+}
+
+/** Bağış ürünü: ürün ve `donation` açıkça false değil (eski şemada bilgi yok → bağış sayılır). */
+export function isDonationProductPost(p) {
+  return String(p?.type) === 'product' && p?.donation !== false && String(p?.donation) !== '0';
+}
+
+/** Silinmesi/durumu değişmesi kurulumu durduran kayıt: WooCommerce/ön sayfa, bağış ürünü, işaretli test kaydı. */
+function isCriticalPost(p, corePages) {
+  return corePages.has(Number(p?.id)) || isMarkedTestPost(p) || isDonationProductPost(p);
+}
+
+/**
+ * Karşılaştırma (CLAUDE.md §25 kanarya kapsamı).
+ * - diffs (KIRMIZI): korunan seçenek (Woo/eklenti/sayfa ayarı/eklenti-tema/rol), ürün meta'sı,
+ *   kritik kayıt silme/durum, işaretli ama defter dışı kayıt, kullanıcı sayısı, ortam dosyası silinmesi.
+ * - warnings (UYARI, geçer): sıradan içerik silme ya da çöpe atma.
+ * - external (dış değişiklik, otomatik kabul): yönetici içerik düzenlemesi (yeni/değişik sayfa, yazı,
+ *   şablon, ek, menü; ürün içeriği), içerik sayaçları.
+ * - coverage: eski şema tabanında olmayan yeni kapsam anahtarları (taban güncellenir).
+ * - install (yalnız installPhase): kurulumun değiştirdiği eklenti seçenekleri.
+ */
 export function compareCanary(before, after, opts = {}) {
   const allowedCreated = new Set((opts.allowedCreatedIds || []).map((n) => Number(n)).filter((n) => n > 0));
   const allowedDeleted = new Set((opts.allowedDeletedIds || []).map((n) => Number(n)).filter((n) => n > 0));
   const mutated = new Set((opts.mutatedIds || []).map((n) => Number(n)).filter((n) => n > 0));
+  const installPhase = !!opts.installPhase;
+  const legacy = !(Number(before?.schema) >= CANARY_SCHEMA);
+  const corePages = corePageIdSet(before, after);
   const diffs = [];
+  const warnings = [];
+  const external = [];
+  const coverage = [];
+  const install = [];
   const allowedNewProducts = [...(after.posts || [])].filter(
     (a) =>
       allowedCreated.has(Number(a.id)) &&
@@ -336,35 +491,56 @@ export function compareCanary(before, after, opts = {}) {
     if (b && !a) {
       if (allowedDeleted.has(id)) continue;
       if (allowedCreated.has(id) && String(b.mark || '') && String(b.mark) !== '1') continue;
-      diffs.push({ id, change: 'deleted', type: b.type, status: b.status, titleHint: b.type });
+      const d = { id, change: 'deleted', type: b.type, status: b.status, titleHint: b.type };
+      (isCriticalPost(b, corePages) ? diffs : warnings).push(d);
       continue;
     }
     if (!b && a) {
       if (allowedCreated.has(id)) continue;
-      diffs.push({ id, change: 'created', type: a.type, status: a.status });
+      const d = { id, change: 'created', type: a.type, status: a.status };
+      (isMarkedTestPost(a) ? diffs : external).push(d);
       continue;
     }
     if (b && a) {
       if (String(b.status) !== String(a.status)) {
-        diffs.push({ id, change: 'status', type: a.type, from: b.status, to: a.status });
+        const d = { id, change: 'status', type: a.type, from: b.status, to: a.status };
+        if (isCriticalPost(b, corePages) || isCriticalPost(a, corePages)) diffs.push(d);
+        else if (String(a.status) === 'trash') warnings.push(d);
+        else external.push(d);
       }
-      const ignoreModified = mutated.has(id) || allowedCreated.has(id);
-      if (!ignoreModified && String(b.modified) !== String(a.modified)) {
-        diffs.push({ id, change: 'modified', type: a.type, from: b.modified, to: a.modified });
+      const touched = mutated.has(id) || allowedCreated.has(id);
+      if (!touched && String(b.modified) !== String(a.modified)) {
+        external.push({ id, change: 'modified', type: a.type, from: b.modified, to: a.modified });
+      }
+      if (!touched && b.meta !== undefined && a.meta !== undefined && String(b.meta) !== String(a.meta)) {
+        diffs.push({ id, change: 'meta', type: a.type });
       }
     }
   }
-  const optKeys = new Set([
-    ...Object.keys(before.options || {}),
-    ...Object.keys(after.options || {}),
-  ]);
+  const beforeOpts = before.options || {};
+  const afterOpts = after.options || {};
+  const optKeys = new Set([...Object.keys(beforeOpts), ...Object.keys(afterOpts)]);
   for (const key of optKeys) {
-    if (key.startsWith('wdp_') && key !== 'wdp_success_numeric_ids') continue;
-    const left = String((before.options || {})[key] ?? '');
-    const right = String((after.options || {})[key] ?? '');
-    if (left !== right) {
-      diffs.push({ option: key, change: 'option', from: left, to: right });
+    if (legacy && !Object.prototype.hasOwnProperty.call(beforeOpts, key)) {
+      coverage.push(key);
+      continue;
     }
+    if (isVolatileOptionKey(key)) continue;
+    const left = String(beforeOpts[key] ?? '');
+    const right = String(afterOpts[key] ?? '');
+    if (left !== right) {
+      const d = { option: key, change: 'option', from: left, to: right };
+      (installPhase && isPluginOptionKey(key) ? install : diffs).push(d);
+    }
+  }
+  if (before.env_files && typeof before.env_files === 'object') {
+    for (const [file, existed] of Object.entries(before.env_files)) {
+      if (existed && after.env_files && after.env_files[file] === false) {
+        diffs.push({ file, change: 'env-file-deleted' });
+      }
+    }
+  } else if (after.env_files) {
+    coverage.push('@env_files');
   }
   for (const countKey of ['user_count', 'attachment_count', 'page_count', 'product_count']) {
     const left = Number(before[countKey] ?? 0);
@@ -372,9 +548,93 @@ export function compareCanary(before, after, opts = {}) {
     if (left === right) continue;
     if (countKey === 'product_count' && right - left === allowedNewProducts) continue;
     if (countKey === 'product_count' && left - right === allowedDeletedProducts) continue;
-    diffs.push({ option: countKey, change: 'count', from: String(left), to: String(right) });
+    const d = { option: countKey, change: 'count', from: String(left), to: String(right) };
+    (countKey === 'user_count' ? diffs : external).push(d);
   }
-  return { ok: diffs.length === 0, diffs };
+  return { ok: diffs.length === 0, diffs, warnings, external, coverage, install };
+}
+
+/**
+ * TEMİZ sonuçta otomatik kabul edilen farkları tabana işler (yazmaz; yeni tabanı döndürür).
+ * Defterdeki test kayıtları ve KIRMIZI farklar işlenmez.
+ * @param {object} baseline
+ * @param {object} current
+ * @param {{ ok?: boolean, external?: object[], warnings?: object[], coverage?: string[], install?: object[] }} cmp
+ * @returns {{ changed: boolean, baseline: object }}
+ */
+export function absorbAutoAccepted(baseline, current, cmp) {
+  if (!baseline || !current || !cmp || !cmp.ok) return { changed: false, baseline };
+  const curMap = new Map((current.posts || []).map((p) => [Number(p.id), p]));
+  const postDiffs = [...(cmp.external || []), ...(cmp.warnings || [])].filter(
+    (d) => d && d.id != null && ['created', 'deleted', 'status', 'modified'].includes(d.change)
+  );
+  const del = new Set(postDiffs.filter((d) => d.change === 'deleted').map((d) => Number(d.id)));
+  const repl = new Set(
+    postDiffs.filter((d) => d.change === 'status' || d.change === 'modified').map((d) => Number(d.id))
+  );
+  const created = postDiffs.filter((d) => d.change === 'created').map((d) => curMap.get(Number(d.id))).filter(Boolean);
+  let posts = (baseline.posts || [])
+    .filter((p) => !del.has(Number(p.id)))
+    .map((p) => {
+      const c = curMap.get(Number(p.id));
+      if (!c) return p;
+      let q = repl.has(Number(p.id)) ? { ...p, status: c.status, modified: c.modified } : p;
+      if (q.meta === undefined && c.meta !== undefined) q = { ...q, meta: c.meta };
+      if (q.donation === undefined && c.donation !== undefined) q = { ...q, donation: c.donation };
+      return q;
+    });
+  posts = [...posts, ...created];
+  const options = { ...(baseline.options || {}) };
+  for (const key of cmp.coverage || []) {
+    if (key.startsWith('@')) continue;
+    if (Object.prototype.hasOwnProperty.call(current.options || {}, key)) options[key] = current.options[key];
+  }
+  for (const d of cmp.install || []) {
+    if (d && d.option) options[d.option] = (current.options || {})[d.option];
+  }
+  const next = { ...baseline, posts, options };
+  if ((cmp.coverage || []).includes('@env_files')) next.env_files = current.env_files;
+  if (current.schema !== undefined) next.schema = current.schema;
+  const countDiffs = new Set((cmp.external || []).filter((d) => d && d.change === 'count').map((d) => d.option));
+  if (countDiffs.has('page_count')) next.page_count = posts.filter((p) => String(p.type) === 'page').length;
+  if (countDiffs.has('product_count')) next.product_count = posts.filter((p) => String(p.type) === 'product').length;
+  if (countDiffs.has('attachment_count')) next.attachment_count = current.attachment_count;
+  const changed = JSON.stringify(next) !== JSON.stringify(baseline);
+  return { changed, baseline: changed ? next : baseline };
+}
+
+/**
+ * Otomatik kabul edilen farkları disk tabanına yazar (yalnız sağlık TEMİZ ve taban değiştiyse).
+ * @param {string} envId
+ * @param {{ ok?: boolean, baselineUpdate?: { changed: boolean, baseline: object } }} health
+ * @param {{ file?: string }} [opts]
+ */
+export function persistAutoAcceptedBaseline(envId, health, opts = {}) {
+  if (!health || !health.ok || !health.baselineUpdate || !health.baselineUpdate.changed) {
+    return { written: false, file: null };
+  }
+  const file = opts.file || canaryBaselinePath(envId);
+  writeSnapshot(health.baselineUpdate.baseline, file);
+  return { written: true, file };
+}
+
+/**
+ * Kurulum/rapor satırları: durum + dış değişiklik (otomatik kabul) + uyarılar.
+ * @param {string} phase önce|sonra
+ * @param {object} health
+ * @returns {string[]}
+ */
+export function formatCanaryReportLines(phase, health) {
+  const h = health || {};
+  const lines = [`kanarya ${phase}: ${h.ok ? 'TEMİZ' : 'KIRMIZI'}`];
+  const ext = h.external || [];
+  const warn = (h.warnings || []).filter((d) => d && d.change !== 'core-unset');
+  const inst = h.install || [];
+  if (ext.length) lines.push(`kanarya ${phase}: dış değişiklik (otomatik kabul) ${ext.length}: ${ext.slice(0, 8).map(formatDiffLine).join('; ')}${ext.length > 8 ? ' …' : ''}`);
+  if (warn.length) lines.push(`kanarya ${phase}: UYARI ${warn.length}: ${warn.slice(0, 8).map(formatDiffLine).join('; ')}${warn.length > 8 ? ' …' : ''}`);
+  if (inst.length) lines.push(`kanarya ${phase}: kurulumun değiştirdiği eklenti seçeneği ${inst.length}: ${inst.map((d) => d.option).join(', ')}`);
+  if (!h.ok && (h.diffs || []).length) lines.push(`kanarya ${phase}: KIRMIZI fark ${(h.diffs || []).length}: ${(h.diffs || []).slice(0, 8).map(formatDiffLine).join('; ')}`);
+  return lines;
 }
 
 function formatDiffLine(d) {
@@ -384,6 +644,8 @@ function formatDiffLine(d) {
   if (d.change === 'core-missing') return `çekirdek sayfa yok: ${d.option} id=${d.id}`;
   if (d.change === 'core-unset') return `uyarı: ${d.option} ayarlı değil (id=0)`;
   if (d.change === 'missing-baseline') return 'baseline yok';
+  if (d.change === 'meta') return `ürün meta'sı değişti id=${d.id} type=${d.type}`;
+  if (d.change === 'env-file-deleted') return `ortam dosyası silindi: ${d.file}`;
   if (d.option) return `${d.change === 'count' ? 'sayı' : 'option'} ${d.option}: ${d.from} → ${d.to}`;
   if (d.change === 'deleted') return `silindi id=${d.id} type=${d.type} status=${d.status}`;
   if (d.change === 'created') return `yeni id=${d.id} type=${d.type} status=${d.status}`;
@@ -396,12 +658,15 @@ function formatDiffLine(d) {
 export function formatCanaryDiff(diff) {
   const diffs = diff.diffs || [];
   const warnings = diff.warnings || [];
-  if (diff.ok && warnings.length === 0) return 'kanarya: fark yok';
+  const external = diff.external || [];
+  if (diff.ok && warnings.length === 0 && external.length === 0) return 'kanarya: fark yok';
   const lines = diffs.map(formatDiffLine);
   const warnLines = warnings.map(formatDiffLine);
+  const extLines = external.map(formatDiffLine);
   const parts = [];
   if (!diff.ok && lines.length) parts.push(`kanarya farkları (${lines.length}):\n${lines.join('\n')}`);
   if (warnLines.length) parts.push(`kanarya uyarıları (${warnLines.length}):\n${warnLines.join('\n')}`);
+  if (extLines.length) parts.push(`dış değişiklik (otomatik kabul) (${extLines.length}):\n${extLines.join('\n')}`);
   if (diff.ok) {
     return parts.length ? `kanarya: fark yok\n${parts.join('\n')}` : 'kanarya: fark yok';
   }
@@ -430,6 +695,7 @@ export function compareWithRegistry(before, after, registry, opts = {}) {
     allowedCreatedIds,
     mutatedIds: (r.mutated || []).map((x) => x.id),
     allowedDeletedIds: opts.allowedDeletedIds,
+    installPhase: !!opts.installPhase,
   });
 }
 
@@ -528,10 +794,15 @@ export function evaluateCanaryHealth(snap, envId, registry, opts = {}) {
     registry || { created: [], mutated: [] },
     opts
   );
+  const ok = evald.ok && pre.ok;
   return {
-    ok: evald.ok && pre.ok,
+    ok,
     diffs: [...(evald.diffs || []), ...(pre.diffs || [])],
-    warnings: [...(pre.warnings || [])],
+    warnings: [...(evald.warnings || []), ...(pre.warnings || [])],
+    external: [...(evald.external || [])],
+    install: [...(evald.install || [])],
+    coverage: [...(evald.coverage || [])],
+    baselineUpdate: ok && baseline && evald.cmp ? absorbAutoAccepted(baseline, snap, evald.cmp) : null,
     pre,
     evald,
   };

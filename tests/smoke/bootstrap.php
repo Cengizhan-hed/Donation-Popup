@@ -19,9 +19,8 @@ if (!defined('WDP_PLUGIN_FILE')) {
     define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.35.2');
+	define('WDP_VERSION', '12.0.0');
 }
 
-require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
-require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
-WDP_Autoloader::register();
+require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
+\DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );

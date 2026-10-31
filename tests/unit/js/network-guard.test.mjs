@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import { dirAbsentOrOnlyOsJunk } from '../../../scripts/lib/os-junk.mjs';
 import {
   isTrackerUrl,
   isRemoteOrderRequest,
@@ -376,9 +377,10 @@ describe('uzak POST varsayılan-red', () => {
     assert.equal(key.includes('?'), false);
   });
 
-  it('includes/ nopriv listesi tam ve yönetici uçları uzakta RED', () => {
-    const { nopriv, adminOnly } = listWdpAjaxFromIncludes(path.join(ROOT, 'includes'));
-    assert.deepEqual(nopriv, [...EXPECTED_WDP_NOPRIV_AJAX]);
+  it('12.0.0: eklenti kaynağı (src/) hiç wdp AJAX ucu açmaz; emekli liste donmuş, yönetici uçları uzakta RED', () => {
+    assert.equal(dirAbsentOrOnlyOsJunk(path.join(ROOT, 'includes')), true, 'includes/ klasörü kalmamalı');
+    const { nopriv, adminOnly } = listWdpAjaxFromIncludes(path.join(ROOT, 'src'));
+    assert.deepEqual(nopriv, []);
     for (const n of EXPECTED_WDP_NOPRIV_AJAX) {
       assert.equal(isWdpAjaxAction(n), true, n);
       assert.equal(
@@ -407,8 +409,9 @@ describe('uzak POST varsayılan-red', () => {
       'wdp_export_style_preset',
       'wdp_recalculate_product_total',
     ];
+    // 12.0.0: eski AJAX uçları (ayar kaydetme, toplam yeniden hesaplama) kaldırıldı; koruma listesi yine de reddeder.
+    assert.deepEqual(adminOnly, []);
     for (const n of mustBlock) {
-      assert.ok(adminOnly.includes(n), n);
       assert.equal(
         isRemoteWriteAllowed({
           method: 'POST',
@@ -683,3 +686,47 @@ it('Stripe.js ölçüm işaretçileri (r./q./m.stripe.com) engellenir; js/api.st
   assert.equal(isTrackerUrl('https://js.stripe.com/v3/', { siteHost: 'site.example' }), false);
   assert.equal(isTrackerUrl('https://api.stripe.com/v1/payment_methods', { siteHost: 'site.example' }), false);
 });
+
+describe('network-guard: donation-panel/v1 REST uzakta yazma kuralı (12.0.0)', () => {
+  const base = 'https://site.example/wp-json/donation-panel/v1/';
+  const write = (route, method = 'POST') => isRemoteWriteAllowed({ method, url: base + route, postData: '{}' });
+
+  it('sepete ekleyen uçlar izinli: cart/add, side-cart/suggestion, account/repeat, validate', () => {
+    for (const route of ['cart/add', 'side-cart/suggestion', 'account/repeat', 'validate']) {
+      assert.equal(write(route), true, route);
+    }
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: 'https://site.example/?rest_route=/donation-panel/v1/cart/add', postData: '{}' }), true);
+  });
+
+  it('Woo Store API sepete ekleme izinli, ödeme/sipariş gönderimi engelli ve sipariş sayılır', () => {
+    const store = 'https://site.example/wp-json/wc/store/v1/';
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: store + 'cart/add-item', postData: '{}' }), true);
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: store + 'checkout', postData: '{}' }), false);
+    assert.equal(isRemoteOrderRequest({ method: 'POST', url: store + 'checkout', postData: '{}' }), true);
+    assert.equal(isRemoteOrderRequest({ method: 'POST', url: store + 'cart/add-item', postData: '{}' }), false);
+  });
+
+  it('klasik ödeme gönderimi (?wc-ajax=checkout, woocommerce_checkout) engelli ve sipariş sayılır', () => {
+    const ajax = 'https://site.example/?wc-ajax=checkout';
+    assert.equal(isRemoteWriteAllowed({ method: 'POST', url: ajax, postData: 'billing_email=x' }), false);
+    assert.equal(isRemoteOrderRequest({ method: 'POST', url: ajax, postData: '' }), true);
+    const admin = { method: 'POST', url: 'https://site.example/wp-admin/admin-ajax.php', postData: 'action=woocommerce_checkout' };
+    assert.equal(isRemoteWriteAllowed(admin), false);
+    assert.equal(isRemoteOrderRequest(admin), true);
+  });
+
+  it('ayar, üye/giriş/e-posta yazmaları ve bilinmeyen rotalar engellenir (her yöntem)', () => {
+    for (const route of ['admin/settings', 'admin/import', 'account/login', 'account/register', 'account/reset', 'account/link-guest', 'account/link-guest/confirm', 'yeni/uc', 'cart/add/x', 'checkout']) {
+      assert.equal(write(route), false, route);
+      assert.equal(write(route, 'PUT'), false, `PUT ${route}`);
+      assert.equal(write(route, 'DELETE'), false, `DELETE ${route}`);
+    }
+  });
+
+  it('okuma (GET) serbest', () => {
+    for (const route of ['product/12/form', 'progress/12', 'impact/12', 'donations', 'side-cart', 'ping']) {
+      assert.equal(write(route, 'GET'), true, route);
+    }
+  });
+});
+

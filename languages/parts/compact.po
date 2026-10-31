@@ -1,0 +1,103 @@
+# Turkish translations — 122-compact (compact bağış kartı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+msgid "Quick amounts on the compact card"
+msgstr "Kompakt kartta hızlı tutarlar"
+
+msgid "How many of the product amounts appear as buttons on the compact card (layout=\"compact\"). 0 shows only the amount field."
+msgstr "Ürün tutarlarından kaçının kompakt kartta (layout=\"compact\") düğme olarak görüneceği. 0 seçilirse yalnız tutar alanı görünür."
+
+msgid "Text before the first gift"
+msgstr "İlk bağıştan önceki metin"
+
+msgid "Shown on the campaign bar while nothing has been raised yet. Leave empty for the built-in, translated wording."
+msgstr "Henüz bağış toplanmamışken kampanya çubuğunda görünür. Hazır, çevrilmiş metin için boş bırakın."
+
+msgid "Start over when the card is hidden"
+msgstr "Kart gizlenince başa dön"
+
+msgid "When the card leaves the screen (for example the slider moves to another slide), it goes back to the first step. Typed details are kept."
+msgstr "Kart ekrandan çıkınca (örneğin kaydırıcı başka slayta geçince) ilk adıma döner. Yazılan bilgiler korunur."
+
+msgid "Compact card"
+msgstr "Kompakt kart"
+
+msgid "A small donation card with a fixed height for sliders and hero areas: [wdp_donation_form layout=\"compact\"]. Colors and fonts come from the settings above."
+msgstr "Kaydırıcı ve büyük görsel alanları için yüksekliği sabit küçük bağış kartı: [wdp_donation_form layout=\"compact\"]. Renk ve yazı tipi yukarıdaki ayarlardan gelir."
+
+msgid "Be the first to give"
+msgstr "İlk bağışı siz yapın"
+
+msgctxt "Donation form layout"
+msgid "Full"
+msgstr "Tam"
+
+msgctxt "Donation form layout"
+msgid "Compact"
+msgstr "Kompakt"
+
+msgid "Compact: a small card with a fixed height for sliders and hero areas."
+msgstr "Kompakt: kaydırıcı ve büyük görsel alanları için yüksekliği sabit küçük kart."
+
+msgctxt "Compact donation card: previous step"
+msgid "Back"
+msgstr "Geri"
+
+msgctxt "Compact donation card: amount suggested by the site"
+msgid "Recommended"
+msgstr "Önerilen"
+
+msgctxt "Compact donation card: screen reader announcement"
+msgid "Step %1$d of %2$d: %3$s"
+msgstr "Adım %1$d / %2$d: %3$s"
+
+msgid "Payment"
+msgstr "Ödeme"
+
+msgid "Thank you"
+msgstr "Teşekkürler"
+
+msgid "Thank you! Your donation was received."
+msgstr "Teşekkür ederiz! Bağışınız alındı."
+
+msgid "You will pay in a secure payment window. Your card details never pass through this form."
+msgstr "Ödemeyi güvenli ödeme penceresinde yapacaksınız. Kart bilgileriniz bu formdan geçmez."
+
+msgid "You will complete your donation on the secure checkout page."
+msgstr "Bağışınızı güvenli ödeme sayfasında tamamlayacaksınız."
+
+#. translators: %s: formatted amount.
+msgid "Donate %s securely"
+msgstr "%s güvenle bağışla"
+
+#. translators: %s: formatted amount.
+msgid "Continue to checkout · %s"
+msgstr "Ödemeye geç · %s"
+
+msgid "Donate securely"
+msgstr "Güvenle bağışla"
+
+msgid "Secure payment"
+msgstr "Güvenli ödeme"
+
+msgid "Close payment window"
+msgstr "Ödeme penceresini kapat"
+
+msgid "Opening the secure payment page…"
+msgstr "Güvenli ödeme sayfası açılıyor…"
+
+msgid "Trouble paying here? Open the payment page instead"
+msgstr "Burada ödeyemiyor musunuz? Ödeme sayfasını açın"
+
+#. translators: 1: formatted amount, 2: product name.
+msgid "Your donation of %1$s to %2$s was received."
+msgstr "%2$s için %1$s bağışınız alındı."

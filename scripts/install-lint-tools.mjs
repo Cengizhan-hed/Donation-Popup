@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * composer.phar + wp-cli.phar indir (SHA doğrula) ve vendor-dev kur.
+ * Sistem composer'ı ile vendor-dev kur; wp-cli.phar indir (SHA doğrula).
+ * Sistemde composer yoksa yedek: build/tools/composer.phar (repoya girmez, SHA doğrulanır).
  * Yalnız geliştirme; siteye/pakete gitmez. curl/wget kullanılmaz.
  */
 import crypto from 'node:crypto';
@@ -87,8 +88,14 @@ async function ensurePhar(spec) {
   return dest;
 }
 
-function runComposer(composerPhar, args) {
-  const r = spawnSync('php', [composerPhar, ...args], {
+/** Sistem composer'ı varsa onu kullanır; yoksa null (yedek phar indirilir). */
+function systemComposer() {
+  const r = spawnSync('composer', ['--version'], { encoding: 'utf8' });
+  return r.status === 0 ? ['composer'] : null;
+}
+
+function runComposer(cmd, args) {
+  const r = spawnSync(cmd[0], [...cmd.slice(1), ...args], {
     cwd: ROOT,
     encoding: 'utf8',
     stdio: 'inherit',
@@ -102,7 +109,7 @@ function runComposer(composerPhar, args) {
 const composerOnly = process.argv.includes('--composer-only');
 const skipComposer = process.argv.includes('--skip-composer');
 
-const composerPhar = await ensurePhar(TOOLS.composer);
+const composerCmd = systemComposer() || ['php', await ensurePhar(TOOLS.composer)];
 if (!composerOnly) {
   await ensurePhar(TOOLS.wpCli);
 }
@@ -110,15 +117,15 @@ if (!composerOnly) {
 if (!skipComposer) {
   const lock = path.join(ROOT, 'composer.lock');
   const check = spawnSync(
-    'php',
-    [composerPhar, 'validate', '--no-check-publish', '--no-check-all'],
+    composerCmd[0],
+    [...composerCmd.slice(1), 'validate', '--no-check-publish', '--no-check-all'],
     { cwd: ROOT, encoding: 'utf8', env: { ...process.env, COMPOSER_VENDOR_DIR: 'vendor-dev' } }
   );
   const lockOk = fs.existsSync(lock) && check.status === 0 && !/not up to date/i.test(`${check.stdout}${check.stderr}`);
   const args = lockOk
     ? ['install', '--no-interaction', '--prefer-dist']
     : ['update', '--no-interaction', '--prefer-dist'];
-  runComposer(composerPhar, args);
+  runComposer(composerCmd, args);
 }
 
 console.log('lint araçları hazır (vendor-dev/, tools/bin/)');

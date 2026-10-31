@@ -60,7 +60,7 @@ describe('migration-keys extractor', () => {
   });
 
   it('class-migrations.php BACKUP eşlemesini çıkarır', () => {
-    const php = fs.readFileSync(path.join(ROOT, 'includes/class-migrations.php'), 'utf8');
+    const php = fs.readFileSync(path.join(ROOT, 'src/Core/class-version-migrations.php'), 'utf8');
     const map = extractRemapTable(php);
     assert.equal(map.wdp_settings_backup_10_27, 'wdp_settings_backup_10_27_restored');
   });

@@ -1,0 +1,684 @@
+<?php
+/**
+ * Yönetici ayar alanlarının tek kaynağı: sayfa, bölüm, etiket, açıklama, tip, doğrulama ve eski seçenek eşlemesi.
+ *
+ * Alanlar `donation_panel_settings` (Core ayarı) içine yazılır. `legacy` eşlemesi olan alanlar, form motoru eski
+ * `wdp_*` seçeneklerini okuduğu sürece onlara da yansıtılır (anahtar sözleşmesi korunur; hiçbir eski anahtar silinmez).
+ * Envanter tablosu (`12-adm-ayar-envanteri.md`) bu kayıttan türetilir.
+ *
+ * @package DonationPanel
+ */
+
+namespace DonationPanel\Admin;
+
+use DonationPanel\Domain\Donation_Type;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Field_Registry.
+ */
+final class Field_Registry {
+
+	/**
+	 * Alt sayfa kimlikleri (menü sırası).
+	 *
+	 * @return array<string, string> slug => etiket.
+	 */
+	public static function pages() {
+		return array(
+			Admin_Bootstrap::SLUG_OVERVIEW  => __( 'Overview', 'woo-donation-popup' ),
+			Admin_Bootstrap::SLUG_CAMPAIGNS => __( 'Campaigns', 'woo-donation-popup' ),
+			Admin_Bootstrap::SLUG_FORMS     => __( 'Forms and appearance', 'woo-donation-popup' ),
+			Admin_Bootstrap::SLUG_CHECKOUT  => __( 'Cart and checkout', 'woo-donation-popup' ),
+			Admin_Bootstrap::SLUG_ACCOUNT   => __( 'Donor account', 'woo-donation-popup' ),
+			Admin_Bootstrap::SLUG_PRIVACY   => __( 'Privacy', 'woo-donation-popup' ),
+			Admin_Bootstrap::SLUG_TOOLS     => __( 'Tools', 'woo-donation-popup' ),
+			Admin_Bootstrap::SLUG_GUIDE     => __( 'Guide', 'woo-donation-popup' ),
+		);
+	}
+
+	/**
+	 * Bir sayfanın bölümleri: bölüm kimliği => [ başlık, açıklama ].
+	 *
+	 * @param string $page Sayfa slug'ı.
+	 * @return array<string, array{0: string, 1: string}>
+	 */
+	public static function sections( $page ) {
+		$all = array(
+			Admin_Bootstrap::SLUG_CAMPAIGNS => array(
+				'impact'   => array( __( 'Impact phrases', 'woo-donation-popup' ), __( 'Short equivalents shown next to amounts. Only used when the Impact phrases module is on.', 'woo-donation-popup' ) ),
+				'progress' => array( __( 'Campaign progress bar', 'woo-donation-popup' ), __( 'The bar on campaign products, in every form style and on the compact card. The total only grows with paid orders and goes down after refunds or cancellations. Only used when the Campaign module is on.', 'woo-donation-popup' ) ),
+			),
+			Admin_Bootstrap::SLUG_FORMS     => array(
+				'open'      => array( __( 'How should the form open?', 'woo-donation-popup' ), __( 'Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later.', 'woo-donation-popup' ) ),
+				'colors'    => array( __( 'Colors', 'woo-donation-popup' ), __( 'By default the form follows your theme. Pick your own colors only if you need to.', 'woo-donation-popup' ) ),
+				'compact'   => array( __( 'Compact card (slider/hero)', 'woo-donation-popup' ), __( 'The compact card is made for sliders and hero areas and always sends the donor to the checkout page: it adds the gift to the cart and opens WooCommerce checkout. Direct donation is not used with this layout. Its height never changes. Colors and fonts come from the settings above.', 'woo-donation-popup' ) ),
+				'amounts'   => array( __( 'Amounts', 'woo-donation-popup' ), __( 'Quick amount buttons shown above the free amount field.', 'woo-donation-popup' ) ),
+				'fields'    => array( __( 'Form fields', 'woo-donation-popup' ), __( 'Optional fields the donor can fill in. Whatever donors type is saved on the order exactly as typed.', 'woo-donation-popup' ) ),
+				'shares'    => array( __( 'Share-based donations', 'woo-donation-popup' ), __( 'Wording for products where donors buy shares and enter shareholder names.', 'woo-donation-popup' ) ),
+				'placement' => array( __( 'Product pages and lists', 'woo-donation-popup' ), __( 'Where the donate button appears. Shortcodes and blocks always work anywhere.', 'woo-donation-popup' ) ),
+			),
+			Admin_Bootstrap::SLUG_CHECKOUT  => array(
+				'payment' => array( __( 'How donors pay', 'woo-donation-popup' ), __( 'Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with the centered window, side panel, bottom sheet and in-page form; the compact card always goes through the cart. A product setting wins over its donation type, and a donation type wins over the general setting.', 'woo-donation-popup' ) ),
+				'cart'    => array( __( 'Add-on donation', 'woo-donation-popup' ), __( 'Offer one extra donation product next to the main gift.', 'woo-donation-popup' ) ),
+				'basket'  => array( __( 'Side cart', 'woo-donation-popup' ), __( 'A basket that slides in after a gift is added, so donors can give several gifts and pay once. Only used when the Side cart module above is on. Not shown on the cart and checkout pages, which have their own basket.', 'woo-donation-popup' ) ),
+				'thanks'  => array( __( 'Thank-you screen', 'woo-donation-popup' ), __( 'The wording and the extra touches below are used on the thank-you screen (Thank-you screen module on). The thank-you in e-mails works on its own.', 'woo-donation-popup' ) ),
+				'tax'     => array( __( 'Tax relief declaration', 'woo-donation-popup' ), __( 'One question at checkout. Only used when the Tax relief module is on.', 'woo-donation-popup' ) ),
+			),
+			Admin_Bootstrap::SLUG_TOOLS     => array(
+				'data'    => array( __( 'Data', 'woo-donation-popup' ), __( 'What happens to plugin data when you delete the plugin.', 'woo-donation-popup' ) ),
+				'network' => array( __( 'Visitor address', 'woo-donation-popup' ), __( 'Only needed when your site sits behind a proxy or CDN.', 'woo-donation-popup' ) ),
+			),
+			Admin_Bootstrap::SLUG_PRIVACY   => array(
+				'notice' => array( __( 'Privacy link under the form', 'woo-donation-popup' ), __( 'The plugin does not write privacy text. It only shows a short link to the page you wrote on your site.', 'woo-donation-popup' ) ),
+			),
+		);
+		return isset( $all[ $page ] ) ? $all[ $page ] : array();
+	}
+
+	/**
+	 * Tüm alanlar.
+	 *
+	 * Alan: page, section, label, help, type (switch|text|textarea|select|color|int|presets), default (Core şemasından),
+	 * options (select), legacy [ option, key, kind (raw|flag01|yesno|map), map ], only_when [ alan, değer ].
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function fields() {
+		$f = array();
+
+		$f['impact.map'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'section' => 'impact',
+			'label'   => __( 'Impact phrases', 'woo-donation-popup' ),
+			'help'    => __( 'One per line: amount = phrase. Add "singular|plural" for two forms. Example: 25 = 1 food parcel|food parcels', 'woo-donation-popup' ),
+			'type'    => 'textarea',
+		);
+
+		$f['progress.preview']   = array(
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'section' => 'progress',
+			'label'   => __( 'Show the donor\'s own gift on the bar', 'woo-donation-popup' ),
+			'help'    => __( 'While a donor picks an amount, a lighter striped part shows how far their gift would take the campaign, with a short line that gives the new total. A gift in their cart stays shown as "in your cart". Only that visitor sees it; the real total changes only after payment.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['progress.count']     = array(
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'section' => 'progress',
+			'label'   => __( 'Fill the bar and count up', 'woo-donation-popup' ),
+			'help'    => __( 'When the bar comes into view it fills from zero and the numbers count up. Visitors who ask their device for less motion always see the final values straight away.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['progress.celebrate'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CAMPAIGNS,
+			'section' => 'progress',
+			'label'   => __( 'Small celebration at the goal', 'woo-donation-popup' ),
+			'help'    => __( 'When a campaign has reached its goal, the bar shines once when it comes into view.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+
+		$f['display.mode'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'open',
+			'label'   => __( 'Form style', 'woo-donation-popup' ),
+			'help'    => __( 'Side panel is recommended: it opens from the right on desktop and from the bottom on phones.', 'woo-donation-popup' ),
+			'type'    => 'cards',
+			'options' => array(
+				'panel'  => array( __( 'Side panel', 'woo-donation-popup' ), __( 'Recommended. Opens from the bottom on phones.', 'woo-donation-popup' ) ),
+				'popup'  => array( __( 'Centered window', 'woo-donation-popup' ), __( 'For short forms.', 'woo-donation-popup' ) ),
+				'inline' => array( __( 'In the page', 'woo-donation-popup' ), __( 'The form stays open on the page.', 'woo-donation-popup' ) ),
+			),
+			'legacy'  => array(
+				'option' => 'wdp_placement_settings',
+				'key'    => 'display',
+				'kind'   => 'map',
+				'map'    => array(
+					'panel'  => 'button_panel',
+					'popup'  => 'button_popup',
+					'inline' => 'inline',
+				),
+			),
+		);
+
+		$f['design.colors']      = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'colors',
+			'label'   => __( 'Colors', 'woo-donation-popup' ),
+			'help'    => __( 'Use my theme colors: the form follows your site colors and font automatically.', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => array(
+				'theme'  => __( 'Use my theme colors', 'woo-donation-popup' ),
+				'custom' => __( 'Choose my own colors', 'woo-donation-popup' ),
+			),
+		);
+		$f['design.brand']       = array(
+			'page'          => Admin_Bootstrap::SLUG_FORMS,
+			'section'       => 'colors',
+			'label'         => __( 'Main color', 'woo-donation-popup' ),
+			'help'          => __( 'Headings, selected amounts and progress bars. Used only when you choose your own colors.', 'woo-donation-popup' ) . ' ' . self::color_hint(),
+			'type'          => 'color',
+			'text_contrast' => true,
+			'only_when'     => array( 'design.colors', 'custom' ),
+			'legacy'        => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'brand_color',
+				'kind'   => 'raw',
+			),
+		);
+		$f['design.accent']      = array(
+			'page'      => Admin_Bootstrap::SLUG_FORMS,
+			'section'   => 'colors',
+			'label'     => __( 'Button color', 'woo-donation-popup' ),
+			'help'      => __( 'The main donate button. Choose a color that keeps white text easy to read.', 'woo-donation-popup' ) . ' ' . self::color_hint(),
+			'type'      => 'color',
+			'only_when' => array( 'design.colors', 'custom' ),
+			'legacy'    => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'popup_button_color',
+				'kind'   => 'raw',
+			),
+		);
+		$f['design.button_text'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'colors',
+			'label'   => __( 'Donate button text', 'woo-donation-popup' ),
+			'help'    => __( 'Leave empty to use the built-in, translated wording.', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'popup_button_text',
+				'kind'   => 'raw',
+			),
+		);
+
+		$f['design.button_full_width'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'colors',
+			'label'   => __( 'Full-width donate button', 'woo-donation-popup' ),
+			'help'    => __( 'Makes the shortcode donate button as wide as its container. Handy on phones.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'popup_button_full_width',
+				'kind'   => 'flag01',
+			),
+		);
+		$f['compact.quick_amounts']    = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'compact',
+			'label'   => __( 'Quick amounts on the compact card', 'woo-donation-popup' ),
+			'help'    => __( 'How many of the product amounts appear as buttons on the compact card (layout="compact"). 0 shows only the amount field.', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => array(
+				'0' => '0',
+				'1' => '1',
+				'2' => '2',
+				'3' => '3',
+			),
+		);
+		$f['compact.first_text']       = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'compact',
+			'label'   => __( 'Text before the first gift', 'woo-donation-popup' ),
+			'help'    => __( 'Shown on the campaign bar while nothing has been raised yet. Leave empty for the built-in, translated wording.', 'woo-donation-popup' ),
+			'type'    => 'text',
+		);
+		$f['compact.reset_hidden']     = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'compact',
+			'label'   => __( 'Start over when the card is hidden', 'woo-donation-popup' ),
+			'help'    => __( 'When the card leaves the screen (for example the slider moves to another slide), it goes back to the first step. Typed details are kept.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['form.presets_enabled']     = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'amounts',
+			'label'   => __( 'Quick amount buttons', 'woo-donation-popup' ),
+			'help'    => __( 'Shows ready-made amounts. A product can switch them off for itself.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'enable_amount_presets',
+				'kind'   => 'flag01',
+			),
+		);
+		$f['form.presets']             = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'amounts',
+			'label'   => __( 'Amounts', 'woo-donation-popup' ),
+			'help'    => __( 'Numbers separated by commas, for example 25, 50, 100. At most six; leave empty for the store default.', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'amount_presets',
+				'kind'   => 'raw',
+			),
+		);
+
+		$optional = array(
+			'form.dedication'    => array( 'dedication', 'enable_dedication', __( 'On behalf of / dedication', 'woo-donation-popup' ), __( 'Lets donors give in someone\'s name or memory.', 'woo-donation-popup' ) ),
+			'form.anonymous'     => array( 'anonymous', 'enable_anonymous', __( 'Anonymous option', 'woo-donation-popup' ), __( 'Hides the donor name on public lists. The order keeps the real name.', 'woo-donation-popup' ) ),
+			'form.multi_step'    => array( 'multi_step', 'enable_multi_step', __( 'Two steps', 'woo-donation-popup' ), __( 'Splits the form into amount first, details second.', 'woo-donation-popup' ) ),
+			'form.trust_enabled' => array( 'trust_enabled', 'trust_strip_enabled', __( 'Trust line', 'woo-donation-popup' ), __( 'A short reassurance line under the donate button.', 'woo-donation-popup' ) ),
+		);
+		foreach ( $optional as $id => $def ) {
+			$f[ $id ] = array(
+				'page'    => Admin_Bootstrap::SLUG_FORMS,
+				'section' => 'fields',
+				'label'   => $def[2],
+				'help'    => $def[3],
+				'type'    => 'switch',
+				'legacy'  => array(
+					'option' => 'wdp_button_settings',
+					'key'    => $def[1],
+					'kind'   => 'flag01',
+				),
+			);
+		}
+		$f['form.dedication_label'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'fields',
+			'label'   => __( 'Dedication field hint', 'woo-donation-popup' ),
+			'help'    => __( 'The hint inside the dedication field. Leave empty for the built-in wording.', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'dedication_placeholder',
+				'kind'   => 'raw',
+			),
+		);
+		$f['form.trust_text']       = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'fields',
+			'label'   => __( 'Trust line wording', 'woo-donation-popup' ),
+			'help'    => __( 'Leave empty for the built-in secure payment sentence.', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'trust_strip_text',
+				'kind'   => 'raw',
+			),
+		);
+
+		$f['shares.header_text'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'shares',
+			'label'   => __( 'Shareholder heading', 'woo-donation-popup' ),
+			'help'    => __( 'Title above the shareholder name fields. Leave empty for the built-in wording.', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_shareholder_settings',
+				'key'    => 'shareholder_header_text',
+				'kind'   => 'raw',
+			),
+		);
+		$f['shares.copy_button'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'shares',
+			'label'   => __( 'Copy shareholder button', 'woo-donation-popup' ),
+			'help'    => __( 'Lets donors repeat the first shareholder\'s details quickly.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array(
+				'option' => 'wdp_shareholder_settings',
+				'key'    => 'shareholder_enable_copy_button',
+				'kind'   => 'flag01',
+			),
+		);
+
+		$yesno                      = array( 'kind' => 'yesno' );
+		$f['placement.auto_place']  = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'placement',
+			'label'   => __( 'Replace "Add to cart" with the donate button', 'woo-donation-popup' ),
+			'help'    => __( 'Uses the standard WooCommerce spots on product pages. If your page layout has no such spot, a fallback button is drawn.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array_merge(
+				array(
+					'option' => 'wdp_placement_settings',
+					'key'    => 'auto_place',
+				),
+				$yesno
+			),
+		);
+		$f['placement.position']    = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'placement',
+			'label'   => __( 'Position', 'woo-donation-popup' ),
+			'help'    => __( 'Where on the product page the donate button goes.', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => array(
+				'replace_cart'  => __( 'Where the add-to-cart button was', 'woo-donation-popup' ),
+				'after_excerpt' => __( 'After the short description', 'woo-donation-popup' ),
+				'below_summary' => __( 'Below the product summary', 'woo-donation-popup' ),
+			),
+			'legacy'  => array(
+				'option' => 'wdp_placement_settings',
+				'key'    => 'position',
+				'kind'   => 'raw',
+			),
+		);
+		$f['placement.hide_price']  = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'placement',
+			'label'   => __( 'Hide the product price', 'woo-donation-popup' ),
+			'help'    => __( 'Donation products usually have no fixed price to show.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array_merge(
+				array(
+					'option' => 'wdp_placement_settings',
+					'key'    => 'hide_price',
+				),
+				$yesno
+			),
+		);
+		$f['placement.show_title']  = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'placement',
+			'label'   => __( 'Show a title above the in-page form', 'woo-donation-popup' ),
+			'help'    => __( 'Only for the "In the page" style.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array_merge(
+				array(
+					'option' => 'wdp_placement_settings',
+					'key'    => 'show_form_title',
+				),
+				$yesno
+			),
+		);
+		$f['placement.loop_button'] = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'placement',
+			'label'   => __( 'Button in product lists', 'woo-donation-popup' ),
+			'help'    => __( 'What the button does in shop and category lists.', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => array(
+				'panel' => __( 'Opens the form panel', 'woo-donation-popup' ),
+				'popup' => __( 'Opens a centered window', 'woo-donation-popup' ),
+				'link'  => __( 'Links to the product page', 'woo-donation-popup' ),
+				'off'   => __( 'No button', 'woo-donation-popup' ),
+			),
+			'legacy'  => array(
+				'option' => 'wdp_placement_settings',
+				'key'    => 'loop_button',
+				'kind'   => 'raw',
+			),
+		);
+		$f['placement.scope']       = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'placement',
+			'label'   => __( 'Which products are donation products', 'woo-donation-popup' ),
+			'help'    => __( 'All products, only chosen categories, or only products you mark on the product page.', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => array(
+				'all'        => __( 'All products', 'woo-donation-popup' ),
+				'categories' => __( 'Products in chosen categories', 'woo-donation-popup' ),
+				'marked'     => __( 'Only products I mark', 'woo-donation-popup' ),
+			),
+			'legacy'  => array(
+				'option' => 'wdp_placement_settings',
+				'key'    => 'donation_scope',
+				'kind'   => 'raw',
+			),
+		);
+		$f['placement.categories']  = array(
+			'page'    => Admin_Bootstrap::SLUG_FORMS,
+			'section' => 'placement',
+			'label'   => __( 'Category IDs', 'woo-donation-popup' ),
+			'help'    => __( 'Used with "chosen categories". Category IDs separated by commas (see Products > Categories).', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_placement_settings',
+				'key'    => 'donation_categories',
+				'kind'   => 'idlist',
+			),
+		);
+
+		$f['checkout.addon_product_id'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'cart',
+			'label'   => __( 'Add-on product ID', 'woo-donation-popup' ),
+			'help'    => __( 'The WooCommerce product ID of the extra donation. Leave 0 to offer none. A product can set its own add-on.', 'woo-donation-popup' ),
+			'type'    => 'int',
+			'legacy'  => array(
+				'option' => 'wdp_success_settings',
+				'key'    => 'sadaka_wc_product_id',
+				'kind'   => 'raw',
+			),
+		);
+		$f['checkout.addon_label']      = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'cart',
+			'label'   => __( 'Add-on label', 'woo-donation-popup' ),
+			'help'    => __( 'The wording of the switch donors see. Leave empty for the built-in wording.', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_success_settings',
+				'key'    => 'sadaka_toggle_label',
+				'kind'   => 'raw',
+			),
+		);
+
+		$f['thanks.message']   = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'thanks',
+			'label'   => __( 'Thank-you message', 'woo-donation-popup' ),
+			'help'    => __( 'Shown on the thank-you screen and in the thank-you e-mail after a donation. Leave empty for the built-in wording.', 'woo-donation-popup' ),
+			'type'    => 'textarea',
+		);
+		$f['thanks.email']     = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'thanks',
+			'label'   => __( 'Thank-you in donor e-mails', 'woo-donation-popup' ),
+			'help'    => __( 'Adds a short thank-you above the order table in the "Processing" and "Completed" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Sent only for donations whose payment has been received: it is not added to the "On hold" e-mail (for example while a bank transfer is awaited), and never to e-mails sent to you. Works even when the Thank-you screen module is off. It looks the same in the classic and block e-mail editor and uses the colors from WooCommerce → Settings → Emails.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['thanks.celebrate'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'thanks',
+			'label'   => __( 'Celebration animation', 'woo-donation-popup' ),
+			'help'    => __( 'A short, gentle animation. It switches off by itself for visitors who prefer reduced motion.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['thanks.share']     = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'thanks',
+			'label'   => __( 'Share button', 'woo-donation-popup' ),
+			'help'    => __( 'Lets donors share the campaign after giving.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+
+		$tax = array(
+			'step_label'     => array( __( 'Step title', 'woo-donation-popup' ), __( 'Short label for the step.', 'woo-donation-popup' ), 'text' ),
+			'title'          => array( __( 'Heading', 'woo-donation-popup' ), __( 'The question heading the donor sees.', 'woo-donation-popup' ), 'text' ),
+			'text'           => array( __( 'Explanation', 'woo-donation-popup' ), __( 'A sentence or two explaining the declaration.', 'woo-donation-popup' ), 'textarea' ),
+			'checkbox_label' => array( __( 'Checkbox wording', 'woo-donation-popup' ), __( 'The sentence next to the tick box. It is never ticked in advance.', 'woo-donation-popup' ), 'text' ),
+		);
+		foreach ( $tax as $key => $def ) {
+			$f[ 'tax_relief.' . $key ] = array(
+				'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+				'section' => 'tax',
+				'label'   => $def[0],
+				'help'    => $def[1],
+				'type'    => $def[2],
+			);
+		}
+
+		$f['general.trusted_proxies'] = array(
+			'page'    => Admin_Bootstrap::SLUG_TOOLS,
+			'section' => 'network',
+			'label'   => __( 'Trusted proxy addresses', 'woo-donation-popup' ),
+			'help'    => __( 'Leave empty unless your site runs behind a proxy or CDN. One address or range per line (for example 10.0.0.0/8). Visitor addresses sent by these proxies are then used to tell visitors apart for rate limits. Never list addresses you do not control.', 'woo-donation-popup' ),
+			'type'    => 'textarea',
+		);
+
+		$f['direct.enabled'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'payment',
+			'label'   => __( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
+			'help'    => __( 'General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. Not applied to the compact card: that layout always goes through the cart. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ) . ' ' . __( 'With direct donation the form always asks for the donor\'s email address (required): WooCommerce\'s payment page does not ask for billing details, and payment methods and order emails need it.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+
+		// Bağış türü bazında ödeme davranışı ('' = genel ayarı kullan). Öncelik: ürün > tür > genel (Direct_Settings::decide).
+		$direct_choices = array(
+			''       => __( 'Use the general setting', 'woo-donation-popup' ),
+			'cart'   => __( 'Through the cart', 'woo-donation-popup' ),
+			'direct' => __( 'Direct (skip the cart)', 'woo-donation-popup' ),
+		);
+		$type_defs      = Donation_Type::get_definitions();
+		$type_help      = array(
+			Donation_Type::FIXED    => __( 'Products with a fixed price where the donor only picks a quantity.', 'woo-donation-popup' ),
+			Donation_Type::CUSTOM   => __( 'Products where the donor types the amount.', 'woo-donation-popup' ),
+			Donation_Type::SHARES   => __( 'Share-based products with shareholder names.', 'woo-donation-popup' ),
+			Donation_Type::CAMPAIGN => __( 'Products with a goal and a progress bar.', 'woo-donation-popup' ),
+		);
+		foreach ( $type_help as $type => $help ) {
+			$f[ 'direct.type_' . $type ] = array(
+				'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+				'section' => 'payment',
+				'label'   => isset( $type_defs[ $type ]['label'] ) ? $type_defs[ $type ]['label'] : $type,
+				'help'    => $help . ' ' . __( 'Not applied to the compact card (it always goes through the cart).', 'woo-donation-popup' ),
+				'type'    => 'select',
+				'options' => $direct_choices,
+			);
+		}
+		$f['direct.type_addon'] = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'payment',
+			'label'   => __( 'Products that offer an add-on donation', 'woo-donation-popup' ),
+			'help'    => __( 'Wins over the product\'s own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct. Not applied to the compact card (it always goes through the cart).', 'woo-donation-popup' ),
+			'type'    => 'select',
+			'options' => $direct_choices,
+		);
+
+		$f['side_cart.floating']        = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'basket',
+			'label'   => __( 'Floating basket button', 'woo-donation-popup' ),
+			'help'    => __( 'A round basket button in the bottom corner. It appears only after a gift is added and disappears when the basket is empty. Switch it off if your theme already shows its own cart icon.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['side_cart.position']        = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Button corner', 'woo-donation-popup' ),
+			'help'      => __( 'Which bottom corner the floating basket button sits in. Choose the corner that does not cover your chat or back-to-top button. On right-to-left sites the sides swap.', 'woo-donation-popup' ),
+			'type'      => 'select',
+			'options'   => array(
+				'end'   => __( 'Bottom right', 'woo-donation-popup' ),
+				'start' => __( 'Bottom left', 'woo-donation-popup' ),
+			),
+			'only_when' => array( 'side_cart.floating', 'true' ),
+		);
+		$f['side_cart.suggest']         = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'basket',
+			'label'   => __( 'Suggest an extra gift in the basket', 'woo-donation-popup' ),
+			'help'    => __( 'Shows "Would you like to add to your donation?" with up to three small amounts under the gifts. One tap adds it with the donor details already in the basket. Hidden when that gift is already in the basket.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+		);
+		$f['side_cart.suggest_product'] = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Suggested donation product ID', 'woo-donation-popup' ),
+			'help'      => __( 'The WooCommerce product ID of the gift to suggest (Products → All products, the ID shows when you point at a name). Leave 0 to use the add-on product above. It must be a published donation product.', 'woo-donation-popup' ),
+			'type'      => 'int',
+			'only_when' => array( 'side_cart.suggest', 'true' ),
+		);
+		$f['side_cart.suggest_amounts'] = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Suggested amounts', 'woo-donation-popup' ),
+			'help'      => __( 'Up to three amounts separated by commas, for example 50, 100. Shown in your store currency.', 'woo-donation-popup' ),
+			'type'      => 'text',
+			'only_when' => array( 'side_cart.suggest', 'true' ),
+		);
+		$f['side_cart.suggest_hint']    = array(
+			'page'      => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section'   => 'basket',
+			'label'     => __( 'Short line under the name', 'woo-donation-popup' ),
+			'help'      => __( 'Optional, one short sentence. Leave empty to show only the product name.', 'woo-donation-popup' ),
+			'type'      => 'text',
+			'only_when' => array( 'side_cart.suggest', 'true' ),
+		);
+
+		$f['form.privacy_notice'] = array(
+			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
+			'section' => 'notice',
+			'label'   => __( 'Show a privacy link under the form', 'woo-donation-popup' ),
+			'help'    => __( 'Shown only when the form asks for personal details: email (direct donation only), dedication or shareholder details.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'enable_privacy_notice',
+				'kind'   => 'flag01',
+			),
+		);
+		$f['form.privacy_text']   = array(
+			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
+			'section' => 'notice',
+			'label'   => __( 'Link text', 'woo-donation-popup' ),
+			'help'    => __( 'Leave empty for the built-in wording.', 'woo-donation-popup' ),
+			'type'    => 'text',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'privacy_notice_text',
+				'kind'   => 'raw',
+			),
+		);
+		$f['form.privacy_url']    = array(
+			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
+			'section' => 'notice',
+			'label'   => __( 'Link address', 'woo-donation-popup' ),
+			'help'    => __( 'Leave empty to use the privacy policy page set in WordPress.', 'woo-donation-popup' ),
+			'type'    => 'url',
+			'legacy'  => array(
+				'option' => 'wdp_button_settings',
+				'key'    => 'privacy_notice_url',
+				'kind'   => 'raw',
+			),
+		);
+
+		$f['general.delete_data_on_uninstall'] = array(
+			'page'    => Admin_Bootstrap::SLUG_TOOLS,
+			'section' => 'data',
+			'label'   => __( 'Delete plugin data when the plugin is deleted', 'woo-donation-popup' ),
+			'help'    => __( 'Removes the plugin\'s settings and product options. Orders and order records are never touched. This cannot be undone.', 'woo-donation-popup' ),
+			'type'    => 'switch',
+			'confirm' => __( 'All plugin settings and product options will be deleted when the plugin is deleted. Orders are not affected. This cannot be undone. Have you made a backup?', 'woo-donation-popup' ),
+			'legacy'  => array(
+				'option' => 'wdp_delete_data_on_uninstall',
+				'key'    => '',
+				'kind'   => 'flag01',
+			),
+		);
+
+		return $f;
+	}
+
+	/**
+	 * Bir sayfanın alanları.
+	 *
+	 * @param string $page Sayfa slug'ı.
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function fields_for( $page ) {
+		$out = array();
+		foreach ( self::fields() as $id => $spec ) {
+			if ( $spec['page'] === $page ) {
+				$out[ $id ] = $spec;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Renk alanlarının ortak ipucu: hex ya da CSS değişkeni (tema/sayfa oluşturucu renkleri eklentiye özel kod olmadan bağlanır).
+	 *
+	 * @return string
+	 */
+	private static function color_hint() {
+		return __( 'Hex or CSS variable (e.g. var(--e-global-color-primary)).', 'woo-donation-popup' );
+	}
+}

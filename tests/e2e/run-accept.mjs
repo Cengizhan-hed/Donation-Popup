@@ -62,9 +62,9 @@ if (flaky.length) {
   );
 }
 
-const envId = flags.envId && flags.envId !== 'hedef'
+const envId = flags.envExplicit && flags.envId !== 'hedef'
   ? flags.envId
-  : run.env || run.profileId || 'staging-hedef';
+  : run.env || run.profileId || 'local';
 const deviceId = flags.device || run.device || 'desktop';
 const baselineDir = run.baselineDir
   ? path.resolve(ROOT, run.baselineDir)

@@ -1,0 +1,48 @@
+/* Donation Panel — teşekkür / yan sepet / giriş / Bağışlarım ortak yüzey belirteçleri (onaylı tasarım v1, TASARIM-SPEC.md).
+ * Marka rengi = --dp-color-primary (temadan/ayardan). Eylem rengi = --dp-color-accent (tanımlıysa), yoksa marka. Yazı tipi devralınır.
+ * Yalnız .donation-panel kapsamı; temaya özel seçici yok; mantıksal özellikler (RTL). */
+.donation-panel {
+  --dpx-accent: var(--dp-color-accent, var(--dp-color-primary));
+  --dpx-on-accent: var(--dp-color-on-accent, var(--dp-color-on-primary, #fff));
+  --dpx-warm: color-mix(in oklab, #d8c7a8 22%, var(--dp-color-surface, #fff));
+  --dpx-card: var(--dp-color-surface, #fff);
+  --dpx-line: color-mix(in oklab, var(--dp-color-text, #14213d) 9%, var(--dp-color-surface, #fff));
+  --dpx-line-strong: color-mix(in oklab, var(--dp-color-text, #14213d) 20%, var(--dp-color-surface, #fff));
+  --dpx-chip: color-mix(in oklab, var(--dp-color-text, #14213d) 6%, var(--dp-color-surface, #fff));
+  --dpx-track: color-mix(in oklab, #b89f7a 22%, var(--dp-color-surface, #fff));
+  --dpx-soft: var(--dp-color-primary-soft, #eef3fa);
+  --dpx-muted: var(--dp-color-text-muted, #5b6475);
+  --dpx-ok: var(--dp-color-success, #1e6b45);
+  --dpx-ok-bg: var(--dp-color-success-soft, #e5f3eb);
+  --dpx-wait: var(--dp-color-warning, #8a5a00);
+  --dpx-wait-bg: var(--dp-color-warning-soft, #fff3d6);
+  --dpx-bad: var(--dp-color-danger, #b42318);
+  --dpx-bad-bg: var(--dp-color-danger-soft, #fdeceb);
+  --dpx-r-sheet: var(--dp-radius-sheet, 28px); --dpx-r-card: 20px; --dpx-r-card-sm: var(--dp-radius-card, 16px); --dpx-r-field: var(--dp-radius-field, 14px); --dpx-r-btn: var(--dp-radius-btn, 16px); --dpx-r-btn-sm: 14px;
+  --dpx-h-btn: 56px; --dpx-h-field: 52px; --dpx-h-touch: 44px;
+  --dpx-shadow-card: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px rgb(16 24 40 / .06);
+}
+@supports (color: oklch(from red l c h)) {
+  .donation-panel { --dpx-on-accent: var(--dp-color-on-accent, oklch(from var(--dpx-accent) clamp(0, (0.66 - l) * 1000, 1) 0 0)); }
+}
+/* Ortak düğmeler */
+.dpx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; min-block-size: var(--dpx-h-touch); padding: 0 20px; border: 1.5px solid transparent; border-radius: var(--dpx-r-btn-sm); font: inherit; font-size: .875rem; font-weight: 600; line-height: 1.2; text-decoration: none; cursor: pointer; transition: transform 160ms var(--dp-ease-spring, ease), filter 160ms; }
+.dpx-btn:active { transform: scale(.98); }
+.dpx-btn[disabled], .dpx-btn[aria-disabled="true"] { opacity: .6; cursor: progress; }
+.dpx-btn--primary { min-block-size: var(--dpx-h-btn); border-radius: var(--dpx-r-btn); background: var(--dpx-accent); color: var(--dpx-on-accent); font-size: 1rem; font-weight: 700; }
+.dpx-btn--primary:hover { filter: brightness(1.06); color: var(--dpx-on-accent); }
+.dpx-btn--sm.dpx-btn--primary { min-block-size: var(--dpx-h-touch); border-radius: 12px; font-size: .8125rem; }
+.dpx-btn--outline { min-block-size: 50px; background: var(--dpx-card); border-color: var(--dpx-line-strong); color: var(--dp-color-text); }
+.dpx-btn--sm.dpx-btn--outline { min-block-size: var(--dpx-h-touch); border-radius: 12px; font-size: .8125rem; }
+.dpx-btn--outline:hover { background: var(--dpx-chip); color: var(--dp-color-text); }
+.dpx-btn--link { min-block-size: var(--dpx-h-touch); background: transparent; color: var(--dp-color-text); text-decoration: underline; text-underline-offset: 3px; }
+.dpx-ico { inline-size: 1.25em; block-size: 1.25em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dpx-track { display: flex; block-size: 10px; border-radius: 5px; background: var(--dpx-track); overflow: hidden; }
+.dpx-track > i { display: block; block-size: 100%; }
+.dpx-track__brand { background: var(--dp-color-primary); }
+.dpx-track__accent { background: var(--dpx-accent); }
+/* Tema durum yalıtımı: `.dpx-btn` durum renkleri temanın button/a durum kurallarından değil bileşen jetonlarından (özgüllük 0,3,0). */
+:root .dpx-btn--primary:is(:hover, :focus, :active) { background-color: var(--dpx-accent); color: var(--dpx-on-accent); text-decoration-line: none; }
+:root .dpx-btn--outline:is(:hover, :focus, :active) { background-color: var(--dpx-card); color: var(--dp-color-text); text-decoration-line: none; }
+:root .dpx-btn--outline:hover { background-color: var(--dpx-chip); }
+:root .dpx-btn--link:is(:hover, :focus, :active) { background-color: transparent; border-color: transparent; color: var(--dp-color-text); text-decoration-line: underline; }

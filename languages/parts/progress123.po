@@ -1,0 +1,105 @@
+# Turkish translations — 123-progress (canlı kampanya ilerleme çubuğu).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup 12.3.0\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#. translators: 1: the donor's own gift, 2: campaign total including that gift.
+#: src/Modules/Campaign/class-progress-live.php src/Admin/class-guide.php
+#, php-format
+msgid "With your %1$s it reaches %2$s"
+msgstr "%1$s ile toplam %2$s olur"
+
+#. translators: 1: amount for this campaign in the donor's cart, 2: campaign total including it.
+#: src/Modules/Campaign/class-progress-live.php
+#, php-format
+msgid "%1$s in your cart · reaches %2$s"
+msgstr "Sepetinizde %1$s · toplam %2$s olur"
+
+#. translators: 1: the donor's own gift.
+#: src/Modules/Campaign/class-progress-live.php
+#, php-format
+msgid "Your %1$s completes the goal!"
+msgstr "%1$s ile hedef tamamlanır!"
+
+#: src/Admin/class-field-registry.php src/Admin/class-guide.php
+msgid "Campaign progress bar"
+msgstr "Kampanya ilerleme çubuğu"
+
+#: src/Admin/class-field-registry.php
+msgid "The bar on campaign products, in every form style and on the compact card. The total only grows with paid orders and goes down after refunds or cancellations. Only used when the Campaign module is on."
+msgstr "Hedefli ürünlerdeki çubuk; her form düzeninde ve compact kartta. Toplam yalnız ödenmiş siparişlerle artar, iade ya da iptalde azalır. Yalnız Kampanya modülü açıkken kullanılır."
+
+#: src/Admin/class-field-registry.php
+msgid "Show the donor's own gift on the bar"
+msgstr "Bağışçının kendi katkısını çubukta göster"
+
+#: src/Admin/class-field-registry.php
+msgid "While a donor picks an amount, a lighter striped part shows how far their gift would take the campaign, with a short line that gives the new total. A gift in their cart stays shown as \"in your cart\". Only that visitor sees it; the real total changes only after payment."
+msgstr "Bağışçı tutar seçerken çubukta açık tonlu, çizgili bir bölüm bağışının kampanyayı nereye taşıyacağını gösterir; altında yeni toplamı veren kısa bir satır çıkar. Sepetteki bağış \"sepetinizde\" olarak görünmeye devam eder. Bunu yalnız o ziyaretçi görür; gerçek toplam yalnız ödemeden sonra değişir."
+
+#: src/Admin/class-field-registry.php
+msgid "Fill the bar and count up"
+msgstr "Çubuğu doldur ve rakamları say"
+
+#: src/Admin/class-field-registry.php
+msgid "When the bar comes into view it fills from zero and the numbers count up. Visitors who ask their device for less motion always see the final values straight away."
+msgstr "Çubuk ekrana girince sıfırdan dolar ve rakamlar sayarak artar. Cihazında azaltılmış hareketi seçen ziyaretçiler son değerleri her zaman hemen görür."
+
+#: src/Admin/class-field-registry.php
+msgid "Small celebration at the goal"
+msgstr "Hedefte küçük kutlama"
+
+#: src/Admin/class-field-registry.php
+msgid "When a campaign has reached its goal, the bar shines once when it comes into view."
+msgstr "Kampanya hedefine ulaştığında çubuk ekrana girince bir kez parlar."
+
+#: src/Admin/class-guide.php
+msgid "1. Give the product a goal: Products → edit the product → Product data → Donation → goal amount. From then on the bar appears by itself in the centered window, side panel, bottom sheet, in-page form and on the compact card."
+msgstr "1. Ürüne hedef verin: Ürünler → ürünü düzenle → Ürün verileri → Bağış → hedef tutarı. Bundan sonra çubuk ortalanmış pencerede, sağ panelde, alttan panelde, sayfa içi formda ve compact kartta kendiliğinden görünür."
+
+#: src/Admin/class-guide.php
+msgid "2. To show the bar on its own anywhere (a page, a sidebar, a slider), use the shortcode below. Without an ID it finds the product it is placed in. Add milestones=\"no\" or donors=\"no\" to hide those parts."
+msgstr "2. Çubuğu tek başına herhangi bir yerde (sayfa, kenar çubuğu, kaydırıcı) göstermek için aşağıdaki kısa kodu kullanın. ID verilmezse bulunduğu ürünü kendisi bulur. Bu bölümleri gizlemek için milestones=\"no\" ya da donors=\"no\" ekleyin."
+
+#: src/Admin/class-guide.php
+msgid "3. The real total only grows with paid orders and goes down after refunds or cancellations. Items in a cart never change it."
+msgstr "3. Gerçek toplam yalnız ödenmiş siparişlerle artar, iade ya da iptalde azalır. Sepetteki ürünler onu hiçbir zaman değiştirmez."
+
+#: src/Admin/class-guide.php
+msgid "4. Donor's own gift: when a donor picks or types an amount, a lighter striped part shows how far their gift would take the campaign, together with the new total. After \"Add to cart\" it stays as \"in your cart\"; removing it from the cart makes it disappear. Only that visitor sees it."
+msgstr "4. Bağışçının kendi katkısı: bağışçı tutar seçince ya da yazınca açık tonlu, çizgili bir bölüm bağışının kampanyayı nereye taşıyacağını yeni toplamla birlikte gösterir. \"Sepete ekle\"den sonra \"sepetinizde\" olarak kalır; sepetten çıkarılınca kaybolur. Bunu yalnız o ziyaretçi görür."
+
+#: src/Admin/class-guide.php
+msgid "5. After payment on the compact card the bar fetches the new total once, and the donor's part becomes part of the real bar."
+msgstr "5. Compact kartta ödeme tamamlanınca çubuk yeni toplamı bir kez alır ve bağışçının bölümü gerçek dolumla birleşir."
+
+#: src/Admin/class-guide.php
+msgid "6. Settings: Donation Panel → Campaigns → Campaign progress bar. Switch off the donor's own gift, the fill and count-up animation, or the small celebration at the goal. Visitors who ask their device for less motion always see the final values without animation."
+msgstr "6. Ayarlar: Bağış Paneli → Kampanyalar → Kampanya ilerleme çubuğu. Bağışçının kendi katkısını, dolma ve sayma animasyonunu ya da hedefteki küçük kutlamayı kapatabilirsiniz. Cihazında azaltılmış hareketi seçen ziyaretçiler son değerleri her zaman animasyonsuz görür."
+
+#: src/Admin/class-guide.php
+msgid "7. Milestones on the shortcode bar (optional): a product custom field named _donation_panel_milestones, one per line as percent = label, for example 50 = Halfway. Developers can also use the donation_panel_milestones filter."
+msgstr "7. Kısa kod çubuğunda ara hedefler (isteğe bağlı): _donation_panel_milestones adlı ürün özel alanına her satıra bir tane, yüzde = etiket biçiminde yazın; örneğin 50 = Yarı yol. Geliştiriciler donation_panel_milestones filtresini de kullanabilir."
+
+#: src/Admin/class-guide.php
+msgid "Open the progress bar settings"
+msgstr "İlerleme çubuğu ayarlarını aç"
+
+#: src/Admin/class-guide.php
+msgid "Campaign bar: the solid part is the real total from paid orders; the lighter striped part after it is the donor's own gift, seen only by that donor."
+msgstr "Kampanya çubuğu: dolu bölüm ödenmiş siparişlerden gelen gerçek toplamdır; ardından gelen açık tonlu çizgili bölüm bağışçının kendi katkısıdır ve yalnız o bağışçı görür."
+
+#: src/Admin/class-guide.php
+msgid "Real total (paid orders)"
+msgstr "Gerçek toplam (ödenmiş siparişler)"
+
+#: src/Admin/class-guide.php
+msgid "Donor's own gift"
+msgstr "Bağışçının katkısı"

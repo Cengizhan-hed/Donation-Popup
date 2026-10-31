@@ -1,0 +1,41 @@
+# Turkish translations — colorvar (12.2 renk alanında CSS değişkeni).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/class-field-registry.php
+msgid "Hex or CSS variable (e.g. var(--e-global-color-primary))."
+msgstr "Hex ya da CSS değişkeni (ör. var(--e-global-color-primary))."
+
+#: src/Admin/class-settings-store.php src/Admin/class-admin-assets.php
+msgid "Enter a color like #12305A or a CSS variable like var(--brand)."
+msgstr "#12305A gibi bir renk ya da var(--brand) gibi bir CSS değişkeni girin."
+
+#: src/Admin/class-admin-view.php
+#. translators: %s: color setting name.
+#, php-format
+msgid "%s: color picker"
+msgstr "%s: renk seçici"
+
+#: src/Admin/class-admin-assets.php
+#. translators: %s: resolved color, e.g. #12305a.
+#, php-format
+msgid "On this page the variable resolves to %s. On your site it follows your theme."
+msgstr "Bu sayfada değişken %s olarak çözülüyor. Sitenizde temanızı izler."
+
+#: src/Admin/class-admin-assets.php
+msgid "This variable is not defined on this page. It will be resolved on your site, and the contrast will be checked there."
+msgstr "Bu değişken bu sayfada tanımlı değil. Sitenizde çözülecek ve kontrast orada kontrol edilecek."
+
+#: src/Admin/class-admin-assets.php
+#. translators: %s: contrast ratio, e.g. 3.2.
+#, php-format
+msgid "Low contrast on white (%s:1). Headings and amounts may be hard to read; choose a darker color."
+msgstr "Beyaz zeminde düşük kontrast (%s:1). Başlıklar ve tutarlar zor okunabilir; daha koyu bir renk seçin."

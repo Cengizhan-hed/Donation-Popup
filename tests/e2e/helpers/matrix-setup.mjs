@@ -7,6 +7,9 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawn, spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
+import { withFileLockSync } from './file-lock.mjs';
+import { listenPids, reservePort, stopOwnListener } from './port-reserve.mjs';
+import { killTree, registerServerCleanup } from './server-cleanup.mjs';
 import {
   ensureLocalWp,
   writeWpConfig,
@@ -95,6 +98,7 @@ function installCurrentPlugin(wpDir) {
   }
   const parts = [
     'includes',
+    'src',
     'assets',
     'templates',
     'blocks',
@@ -263,12 +267,20 @@ function seedSiblingSnapshots() {
 
 export function ensureMatrixTemplate() {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
+  return withFileLockSync(path.join(MATRIX_DIR, '_template.lock'), ensureMatrixTemplateLocked, {
+    label: 'matris şablonu kurulumu',
+  });
+}
+
+function ensureMatrixTemplateLocked() {
   seedZipCache();
   seedSiblingSnapshots();
   const wpDir = ensureLocalWp({ root: TEMPLATE_ROOT, quiet: true });
   ensureWooCommerce(wpDir);
   ensureTheme(wpDir, 'twentytwentyfive');
   ensureTheme(wpDir, 'storefront');
+  ensureTheme(wpDir, 'blocksy');
+  ensureTheme(wpDir, 'hello-elementor');
   installCurrentPlugin(wpDir);
   copyRouter(wpDir);
   writeWpConfig(wpDir, { homeUrl: 'http://127.0.0.1:8899' });
@@ -323,53 +335,22 @@ export function prepareConfigSnapshot(resolved) {
   return { snap, meta };
 }
 
-/**
- * @param {number} port
- * @returns {number[]}
- */
-export function listenPids(port) {
-  const r = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], {
-    encoding: 'utf8',
-  });
-  return String(r.stdout || '')
-    .trim()
-    .split(/\s+/)
-    .map((x) => Number(x))
-    .filter((n) => Number.isFinite(n) && n > 1);
-}
+export { listenPids };
 
 /**
- * Portu dinleyen süreçleri kapat; kalıntı kalmayınca döner.
+ * Port boşalana dek bekler; HİÇBİR süreci kapatmaz (başkasının sunucusuna dokunulmaz).
  * @param {number} port
  * @param {number} [timeoutMs]
  */
-export async function freeListenPort(port, timeoutMs = 8000) {
+export async function waitPortFree(port, timeoutMs = 8000) {
   const t0 = Date.now();
-  let pids = listenPids(port);
-  for (const pid of pids) {
-    try {
-      process.kill(pid, 'SIGTERM');
-    } catch (e) {
-      if (e && e.code !== 'ESRCH') throw e;
-    }
-  }
   while (Date.now() - t0 < timeoutMs) {
-    pids = listenPids(port);
-    if (!pids.length) return;
-    if (Date.now() - t0 > 1500) {
-      for (const pid of pids) {
-        try {
-          process.kill(pid, 'SIGKILL');
-        } catch (e) {
-          if (e && e.code !== 'ESRCH') throw e;
-        }
-      }
-    }
+    if (!listenPids(port).length) return;
     await new Promise((r) => setTimeout(r, 40));
   }
-  pids = listenPids(port);
+  const pids = listenPids(port);
   if (pids.length) {
-    throw new Error(`port ${port} hâlâ dinleniyor: ${pids.join(',')}`);
+    throw new Error(`port ${port} hâlâ dinleniyor (PID ${pids.join(',')}); başka koşunun olabilir, kapatılmadı. Boş bir WDP_LOCAL_E2E_PORT seçin.`);
   }
 }
 
@@ -409,6 +390,11 @@ export async function startPhpServer(opts) {
   const port = Number(opts.port);
   const wpDir = opts.wpDir;
   copyRouter(wpDir);
+  // Port rezervasyonu: başka koşuya ait portta başlamaz, başkasının sunucusunu KAPATMAZ.
+  const reservation = reservePort(port);
+  if (!reservation.ok) {
+    throw new Error(`${reservation.reason}. Boş bir port seçin (WDP_LOCAL_E2E_PORT / WDP_MATRIX_BASE_PORT).`);
+  }
   const logFile = path.join(MATRIX_DIR, `php-${port}.log`);
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.writeFileSync(logFile, '', 'utf8');
@@ -419,17 +405,19 @@ export async function startPhpServer(opts) {
   let spawnCount = 0;
 
   async function spawnOnce() {
-    await freeListenPort(port);
+    await waitPortFree(port);
     spawnCount += 1;
     const logFd = fs.openSync(logFile, 'a');
     const phpWorkers = Math.max(1, Number(process.env.WDP_PHP_SERVER_WORKERS || 2) || 2);
     const proc = spawn('php', ['-S', `${host}:${port}`, '-t', wpDir, path.join(wpDir, 'router.php')], {
       cwd: wpDir,
       stdio: ['ignore', logFd, logFd],
+      detached: true, // kendi süreç grubu: işçi süreçleri de tek hamlede kapanır
       env: { ...process.env, PHP_CLI_SERVER_WORKERS: String(phpWorkers) },
     });
     fs.closeSync(logFd);
     child = proc;
+    reservation.setChild(proc.pid ?? null);
     proc.on('exit', (code, sig) => {
       if (stopping) return;
       console.error(`[e2e] PHP ${port} çıktı kod=${code} sig=${sig} — yeniden başlat`);
@@ -443,7 +431,20 @@ export async function startPhpServer(opts) {
     }
   }
 
-  await spawnOnce();
+  const unregister = registerServerCleanup({
+    pid: () => (child && child.exitCode == null ? child.pid : null),
+    release: () => reservation.release(),
+  });
+
+  try {
+    await spawnOnce();
+  } catch (e) {
+    stopping = true;
+    unregister();
+    if (child && child.exitCode == null) await stopOwnListener(port, child.pid).catch(() => {});
+    reservation.release();
+    throw e;
+  }
 
   return {
     get child() {
@@ -455,15 +456,17 @@ export async function startPhpServer(opts) {
     spawnCount: () => spawnCount,
     async stop() {
       stopping = true;
+      unregister();
       const proc = child;
       if (!proc || proc.exitCode != null) {
-        await freeListenPort(port, 3000);
+        reservation.release();
         return;
       }
-      proc.kill('SIGTERM');
+      // Yalnız KENDİ çocuk sürecimiz (ve süreç grubu) kapatılır.
+      killTree(proc.pid, 'SIGTERM');
       await new Promise((resolve) => {
         const t = setTimeout(() => {
-          if (proc.exitCode == null) proc.kill('SIGKILL');
+          if (proc.exitCode == null) killTree(proc.pid, 'SIGKILL');
           resolve();
         }, 3000);
         proc.once('exit', () => {
@@ -471,9 +474,69 @@ export async function startPhpServer(opts) {
           resolve();
         });
       });
-      await freeListenPort(port, 3000);
+      reservation.release();
     },
   };
+}
+
+/** Woo'nun ilk isteklerde kendiliğinden yazdığı seçenekleri tetikleyen ön yüz yolları (yerel). */
+export const WOO_WARMUP_FRONT = ['/', '/?post_type=product', '/cart/', '/checkout/', '/my-account/', '/wp-json/wc/store/v1/cart'];
+/** İlk yönetici yüklemesi (admin_init: e-posta iyileştirmeleri göçü, ödeme sırası, özellik bayrakları) ve ayar ekranı. */
+export const WOO_WARMUP_ADMIN = ['index.php', 'admin.php?page=wc-settings'];
+
+/**
+ * Yalnız YEREL: taze yerel WP'de WooCommerce kendi seçeneklerini ilk ön yüz/yönetici isteklerinde oluşturur
+ * (ör. `woocommerce_checkout_*_field`, `woocommerce_email_*`, `woocommerce_gateway_order`, `woocommerce_share_key`).
+ * Kanarya "önce" görüntüsü bu isteklerden ÖNCE alınırsa koşu sonunda bu anahtarlar eklentiye ait olmayan fark olarak
+ * KIRMIZI çıkar (v122-fouc e2e:full 6 hata). Çözüm: kanarya tabanı, yerel WP hazırlanıp Woo'nun ilk istekleri yapıldıktan
+ * SONRA alınır. Uzak ortamda çağrılmaz; uzak kanarya koruması değişmez.
+ *
+ * @param {string} base `http://127.0.0.1:PORT` ya da `http://localhost:PORT`.
+ * @return {Promise<{front: number, admin: number, login: number}>} İstek sayıları ve giriş durumu.
+ */
+export async function warmUpWooFirstRequests(base) {
+  if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(String(base))) {
+    throw new Error(`warmUpWooFirstRequests yalnız yerel adreste çalışır: ${base}`);
+  }
+  const jar = new Map([['wordpress_test_cookie', 'WP%20Cookie%20check']]);
+  const keep = (r) => {
+    const list = typeof r.headers.getSetCookie === 'function' ? r.headers.getSetCookie() : [];
+    for (const c of list) {
+      const kv = c.split(';')[0];
+      const i = kv.indexOf('=');
+      if (i > 0) jar.set(kv.slice(0, i), kv.slice(i + 1));
+    }
+  };
+  const cookie = () => [...jar].map(([k, v]) => `${k}=${v}`).join('; ');
+  const get = async (url, withCookie) => {
+    const r = await fetch(url, { redirect: 'manual', headers: withCookie ? { cookie: cookie() } : {}, signal: AbortSignal.timeout(120000) });
+    keep(r);
+    await r.arrayBuffer();
+    return r.status;
+  };
+  let front = 0;
+  for (const p of WOO_WARMUP_FRONT) {
+    await get(base + p, false);
+    front += 1;
+  }
+  // Yerel yönetici (matrix-ops ensure-admin: admin/admin; yalnız yerel tek kullanımlık WP).
+  const login = await fetch(`${base}/wp-login.php`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: cookie() },
+    body: 'log=admin&pwd=admin&wp-submit=Log+In&testcookie=1&redirect_to=%2Fwp-admin%2F',
+    signal: AbortSignal.timeout(120000),
+  });
+  keep(login);
+  await login.arrayBuffer();
+  let admin = 0;
+  if (login.status === 302) {
+    for (const p of WOO_WARMUP_ADMIN) {
+      await get(`${base}/wp-admin/${p}`, true);
+      admin += 1;
+    }
+  }
+  return { front, admin, login: login.status };
 }
 
 /**
@@ -526,6 +589,15 @@ export async function prepareLocalFullStack(port = 8899) {
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, JSON.stringify(data, null, 2) + '\n');
   const server = await startPhpServer({ wpDir, port, host: '127.0.0.1' });
+  // Kanarya "önce" görüntüsünden önce Woo'nun ilk istek yazımları biter (yerel yanlış KIRMIZI yok).
+  const warm = await warmUpWooFirstRequests(`http://127.0.0.1:${port}`);
+  // Her cihaz koşusu (checkout-setup) çevrimdışı yöntemleri açar ve `woocommerce_gateway_order`'a yazar; bu yazım
+  // kanarya "önce" görüntüsünden sonra olursa ilk koşuda fark çıkar. Aynı idempotent işlem burada bir kez yapılır,
+  // ardından Woo'nun sıralamayı normalleştirmesi için yönetici ısınması tekrarlanır (sonraki çağrılar değer değiştirmez).
+  const gw = matrixEval(wpDir, ['enable-offline-gateways']);
+  if (gw && gw.ok === false) throw new Error(`local enable-offline-gateways: ${gw.error || ''}`);
+  const warm2 = await warmUpWooFirstRequests(`http://127.0.0.1:${port}`);
+  console.log(`[e2e] Woo ilk istekleri (yerel ısınma): ön yüz ${warm.front}+${warm2.front}, yönetici ${warm.admin}+${warm2.admin} (giriş ${warm.login}); çevrimdışı ödeme yöntemleri önceden açık`);
   return { server, wpDir, fixtures: data };
 }
 
@@ -600,5 +672,44 @@ export function materializeWorker(configId, port, snapshotFile, opts = {}) {
   }
   // Yerel profil dili (varsayılan tr_TR = Hedef eşdeğeri): çeviri paketi yok, yalnız eklenti metinleri; mu-plugin kilidi.
   writeLocaleLock(destWp, opts.locale || process.env.WDP_LOCAL_WP_LOCALE || 'tr_TR');
+  ensureWcPlaceholderUploads(destWp);
   return destWp;
+}
+
+/**
+ * WooCommerce 11 ürün yer tutucu görselini uploads altında üretilmiş dosya olarak bekler; taze (worktree) WP'de bu
+ * dosyalar yok → kırık görsel, sayfa yüksekliği ve ekran farkı. Eklenti dosyasından deterministik kopya (görsel fixture).
+ * @param {string} wpDir
+ */
+function ensureWcPlaceholderUploads(wpDir) {
+  const imgDir = path.join(wpDir, 'wp-content/plugins/woocommerce/assets/images');
+  const src = ['placeholder.webp', 'placeholder.png']
+    .map((n) => path.join(imgDir, n))
+    .find((f) => fs.existsSync(f));
+  if (!src) return;
+  const ext = path.extname(src);
+  const uploads = path.join(wpDir, 'wp-content/uploads');
+  fs.mkdirSync(uploads, { recursive: true });
+  // WC üretilmiş dosyaları kare ve bu boyutlarda: 1200 (orijinal), 1024, 768, 300, 150. PHP GD ile ölçekle (yoksa kopya).
+  const sizes = { '': 1200, '-1024x1024': 1024, '-768x768': 768, '-300x300': 300, '-150x150': 150 };
+  for (const [suffix, px] of Object.entries(sizes)) {
+    const dest = path.join(uploads, `woocommerce-placeholder${suffix}${ext}`);
+    if (fs.existsSync(dest)) continue;
+    const gd = ext === '.webp'
+      ? spawnSync(
+          'php',
+          [
+            '-r',
+            'if(!function_exists("imagecreatefromwebp"))exit(2);$i=imagecreatefromwebp($argv[1]);if(!$i)exit(3);' +
+              '$n=(int)$argv[3];$o=imagecreatetruecolor($n,$n);imagealphablending($o,false);imagesavealpha($o,true);' +
+              'if(!imagecopyresampled($o,$i,0,0,0,0,$n,$n,imagesx($i),imagesy($i)))exit(4);if(!imagewebp($o,$argv[2],82))exit(5);',
+            src,
+            dest,
+            String(px),
+          ],
+          { encoding: 'utf8' }
+        )
+      : { status: 1 };
+    if (gd.status !== 0 || !fs.existsSync(dest)) fs.copyFileSync(src, dest);
+  }
 }

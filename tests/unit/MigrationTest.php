@@ -1,8 +1,8 @@
 <?php
 /**
- * WDP_Migrations: yeni kurulum / güncelleme ayrımı, 10.27.0 veri temizliği ve idempotentlik.
+ * Version_Migrations: yeni kurulum / güncelleme ayrımı, 10.27.0 veri temizliği ve idempotentlik.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -36,25 +36,25 @@ final class MigrationTest extends TestCase {
 	}
 
 	public function test_fresh_install_is_detected_without_old_data(): void {
-		$this->assertTrue(WDP_Migrations::is_fresh_install());
+		$this->assertTrue(\DonationPanel\Core\Version_Migrations::is_fresh_install());
 	}
 
 	public function test_old_options_mean_upgrade(): void {
 		WDP_Test_State::$options['wdp_success_settings'] = array('title' => 'Teşekkürler');
-		$this->assertFalse(WDP_Migrations::is_fresh_install());
+		$this->assertFalse(\DonationPanel\Core\Version_Migrations::is_fresh_install());
 	}
 
 	public function test_previous_version_recorded_before_bootstrap_overwrite_means_upgrade(): void {
-		WDP_Migrations::remember_previous_version('10.26.0');
+		\DonationPanel\Core\Version_Migrations::remember_previous_version('10.26.0');
 		WDP_Test_State::$options['wdp_version'] = WDP_VERSION;
 
-		$this->assertFalse(WDP_Migrations::is_fresh_install());
+		$this->assertFalse(\DonationPanel\Core\Version_Migrations::is_fresh_install());
 	}
 
 	public function test_upgrade_removes_faq_data_and_keeps_user_values(): void {
 		$this->seed_upgrade_site();
 
-		$this->assertTrue(WDP_Migrations::run());
+		$this->assertTrue(\DonationPanel\Core\Version_Migrations::run());
 
 		$this->assertArrayNotHasKey('_enable_faq', WDP_Test_State::$post_meta[10]);
 		$this->assertArrayNotHasKey('_faq_items', WDP_Test_State::$post_meta[10]);
@@ -68,53 +68,53 @@ final class MigrationTest extends TestCase {
 		$this->assertSame('#ff0000', $button['primary_color']);
 		$this->assertArrayNotHasKey('enable_faq', $button);
 
-		$this->assertSame(WDP_VERSION, WDP_Test_State::$options[ WDP_Migrations::OPTION ]);
-		$this->assertArrayNotHasKey(WDP_Migrations::LOCK, WDP_Test_State::$transients);
+		$this->assertSame(WDP_VERSION, WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::OPTION ]);
+		$this->assertArrayNotHasKey(\DonationPanel\Core\Version_Migrations::LOCK, WDP_Test_State::$transients);
 
-		$placement = WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ];
+		$placement = WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ];
 		// 10.27.0 wrote no on upgrades; 10.28.1 forces WooCommerce placement on.
 		$this->assertSame('yes', $placement['auto_place']);
 		$this->assertSame('button_panel', $placement['display']);
 		$this->assertSame('panel', $placement['loop_button']);
-		$this->assertSame('1', WDP_Test_State::$options[ WDP_Migrations::NOTICE_OPTION ]);
+		$this->assertSame('1', WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::NOTICE_OPTION ]);
 	}
 
 	public function test_fresh_install_writes_auto_place_yes(): void {
-		$this->assertTrue(WDP_Migrations::is_fresh_install());
-		WDP_Migrations::run();
-		$placement = WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ];
+		$this->assertTrue(\DonationPanel\Core\Version_Migrations::is_fresh_install());
+		\DonationPanel\Core\Version_Migrations::run();
+		$placement = WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ];
 		$this->assertSame('yes', $placement['auto_place']);
-		$this->assertArrayNotHasKey(WDP_Migrations::NOTICE_OPTION, WDP_Test_State::$options);
+		$this->assertArrayNotHasKey(\DonationPanel\Core\Version_Migrations::NOTICE_OPTION, WDP_Test_State::$options);
 	}
 
 	public function test_running_twice_is_idempotent(): void {
 		$this->seed_upgrade_site();
-		WDP_Migrations::run();
+		\DonationPanel\Core\Version_Migrations::run();
 		$options_after_first = WDP_Test_State::$options;
-		unset($options_after_first[ WDP_Migrations::LOG_OPTION ]);
+		unset($options_after_first[ \DonationPanel\Core\Version_Migrations::LOG_OPTION ]);
 		$meta_after_first = WDP_Test_State::$post_meta;
 
-		WDP_Test_State::$options[ WDP_Migrations::OPTION ] = '10.26.0';
-		WDP_Migrations::run();
+		WDP_Test_State::$options[ \DonationPanel\Core\Version_Migrations::OPTION ] = '10.26.0';
+		\DonationPanel\Core\Version_Migrations::run();
 		$options_after_second = WDP_Test_State::$options;
-		unset($options_after_second[ WDP_Migrations::LOG_OPTION ]);
+		unset($options_after_second[ \DonationPanel\Core\Version_Migrations::LOG_OPTION ]);
 
 		$this->assertSame($meta_after_first, WDP_Test_State::$post_meta);
 		$this->assertSame($options_after_first, $options_after_second);
-		$this->assertFalse(WDP_Migrations::needs_run());
+		$this->assertFalse(\DonationPanel\Core\Version_Migrations::needs_run());
 	}
 
 	public function test_locked_run_is_skipped(): void {
 		$this->seed_upgrade_site();
-		WDP_Test_State::$transients[ WDP_Migrations::LOCK ] = '1';
+		WDP_Test_State::$transients[ \DonationPanel\Core\Version_Migrations::LOCK ] = '1';
 
-		$this->assertFalse(WDP_Migrations::run());
+		$this->assertFalse(\DonationPanel\Core\Version_Migrations::run());
 		$this->assertArrayHasKey('_enable_faq', WDP_Test_State::$post_meta[10]);
 	}
 
 	public function test_strip_ids_from_csv_keeps_unrelated_lists_unchanged(): void {
-		$this->assertSame(' media , impact ', WDP_Migrations::strip_ids_from_csv(' media , impact '));
-		$this->assertSame('media', WDP_Migrations::strip_ids_from_csv('faq,media'));
-		$this->assertSame('', WDP_Migrations::strip_ids_from_csv('faq'));
+		$this->assertSame(' media , impact ', \DonationPanel\Core\Version_Migrations::strip_ids_from_csv(' media , impact '));
+		$this->assertSame('media', \DonationPanel\Core\Version_Migrations::strip_ids_from_csv('faq,media'));
+		$this->assertSame('', \DonationPanel\Core\Version_Migrations::strip_ids_from_csv('faq'));
 	}
 }

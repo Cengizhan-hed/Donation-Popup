@@ -44,7 +44,8 @@ import { CHILD_TIMEOUT_MS, fullChildJobs, outputDeviceId, partitionSpawnWaves } 
 
 function envList(envId) {
   const v = String(envId || '').trim().toLowerCase();
-  if (!v || v === 'all') return ['hedef', 'ikram'];
+  if (!v) return ['local'];
+  if (v === 'all') return ['hedef', 'ikram'];
   return [v];
 }
 
@@ -110,7 +111,11 @@ async function runOne({ envId, deviceId, noSideCart, areas = null, slice = '' })
       shellDiffThreshold: env.E2E_SHELL_DIFF_THRESHOLD,
     }
   );
+  for (const q of result.quarantined || []) {
+    console.log(`karantina: bilgi amaçlı — ${q.env}/${q.device}/${q.check} ${q.status} (kırmızı sayılmaz)${q.detail ? ': ' + q.detail : ''} [${q.ref}]`);
+  }
   const row = {
+    quarantined: result.quarantined || [],
     env: profileId,
     device: outDevice,
     slice: slice || '',

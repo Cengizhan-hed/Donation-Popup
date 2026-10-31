@@ -233,8 +233,8 @@ $probe = array(
 	'wdp_version_present'    => get_option('wdp_version', null) !== null,
 	'is_fresh_install'       => null,
 );
-if (class_exists('WDP_Migrations') && method_exists('WDP_Migrations', 'is_fresh_install')) {
-	$probe['is_fresh_install'] = (bool) WDP_Migrations::is_fresh_install();
+if (class_exists('DonationPanel\\Core\\Version_Migrations') && method_exists('DonationPanel\\Core\\Version_Migrations', 'is_fresh_install')) {
+	$probe['is_fresh_install'] = (bool) \DonationPanel\Core\Version_Migrations::is_fresh_install();
 }
 
 $out = array(

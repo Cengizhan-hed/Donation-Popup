@@ -8,7 +8,7 @@
  *     → hata yakalanana kadar en fazla N tam çift koşu (her biri run1+run2);
  *       ilk alt bağış (addon-*) hatasında durur ve teşhis yollarını yazar.
  *   npm run e2e:stability -- --no-side-cart
- *     → guest URL’lere hdf_no_side_cart=1 (yan sepet snippet kapalı)
+ *     → guest URL’lere (yan sepet bayrağı artık etkisiz)
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -80,7 +80,7 @@ async function main() {
   );
 
   if (noSideCart) {
-    console.log('Seçenek: --no-side-cart (guest URL + hdf_no_side_cart=1)');
+    console.log('Seçenek: --no-side-cart');
   }
 
   for (let round = 1; round <= maxRuns; round++) {

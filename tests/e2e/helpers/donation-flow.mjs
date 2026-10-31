@@ -4,6 +4,7 @@
  * Sipariş tamamlama yalnız yerel; uzakta checkout-view-only.
  */
 import { SEL } from './selectors.mjs';
+import { fillDonationForm, formOf, clickSubmit } from './dp-form.mjs';
 import { withCacheBust } from './env.mjs';
 import {
   emptyCart,
@@ -11,7 +12,6 @@ import {
   clickShellTrigger,
   revealListProductTrigger,
   shellTriggerLocator,
-  clickAddToCartWithRetry,
   makeFailure,
   assertNoUnexpectedPluginErrors,
   cartItemCount,
@@ -55,194 +55,59 @@ function checkMs() {
 
 /**
  * @param {import('@playwright/test').Locator} shell
- * @param {number} index 1-based
- */
-async function revealShareholderRow(shell, index) {
-  const shName = shell.locator(`input[name="shareholder_name_${index}"]`).first();
-  if ((await shName.count()) === 0) return shName;
-  if (await shName.isVisible()) return shName;
-  const header = shell.locator('.wdp-shareholder-header').nth(index - 1);
-  if ((await header.count()) > 0) await header.click({ timeout: checkMs() });
-  return shName;
-}
-
-/**
- * @param {import('@playwright/test').Locator} shell
  * @param {{ kind: 'custom'|'shares'|'campaign', amount: number, fill?: string }} spec
  */
 export async function fillDonationShell(shell, spec) {
-  if (spec.kind === 'shares') {
-    const people = SHAREHOLDERS.slice(0, 2);
-    const increase = shell.locator('.wdp-share-btn-increase').first();
-    await increase.waitFor({ state: 'visible', timeout: checkMs() });
-    const name1 = await revealShareholderRow(shell, 1);
-    await name1.waitFor({ state: 'visible', timeout: checkMs() });
-    if (people.length >= 2) {
-      await increase.click({ timeout: checkMs() });
-      await shell.locator('input[name="shareholder_name_2"]').first().waitFor({
-        state: 'attached',
-        timeout: checkMs(),
-      });
-    }
-    for (let i = 0; i < people.length; i += 1) {
-      const idx = i + 1;
-      const shName = await revealShareholderRow(shell, idx);
-      await shName.waitFor({ state: 'visible', timeout: checkMs() });
-      await shName.fill(people[i].name);
-      const shPhone = shell.locator(`input[name="shareholder_phone_${idx}"]`).first();
-      if ((await shPhone.count()) > 0) await shPhone.fill(people[i].phone);
-    }
-    return;
-  }
-  const amount = shell.locator(SEL.customPrice).first();
-  if (await amount.count()) {
-    await amount.fill(spec.fill != null ? String(spec.fill) : String(spec.amount));
-  }
-  const name = shell.locator(SEL.donorName).first();
-  if (await name.count()) await name.fill(DONOR_NAME);
-  const phoneLoc = shell.locator(SEL.donorPhone).first();
-  if (await phoneLoc.count()) await phoneLoc.fill(DONOR_PHONE);
-  const emailLoc = shell.locator('input[name="donation_email"], input[type="email"]').first();
-  if ((await emailLoc.count()) > 0 && (await emailLoc.isVisible())) {
-    await emailLoc.fill(DONOR_EMAIL);
-  }
-  const ded = shell.locator('input[name="donation_dedication"]').first();
-  if ((await ded.count()) > 0) await ded.fill(DEDICATION);
-  const anon = shell.locator('input[name="donation_anonymous"]').first();
-  if ((await anon.count()) > 0) await anon.check();
+  await fillDonationForm(shell, {
+    kind: spec.kind,
+    fill: spec.fill != null ? String(spec.fill) : String(spec.amount),
+    holders: SHAREHOLDERS.slice(0, 2),
+    donor: { name: DONOR_NAME, phone: DONOR_PHONE, email: DONOR_EMAIL, dedication: DEDICATION, anonymous: true },
+  });
 }
 
 /**
- * Formdaki min / önerilen (eklenti çıktısı). product_info min yazana kadar bekler.
+ * Formdaki en düşük / önerilen tutar (sunucu çıktısı: `data-min`, ondalık/ayırıcılar form özniteliklerinde).
  * @param {import('@playwright/test').Locator} shell
  * @param {object} [currency]
  * @returns {Promise<{ amount: number, fill: string }>}
  */
 export async function resolveDonationFillAmount(shell, currency) {
-  const input = shell.locator(SEL.customPrice).first();
-  if ((await input.count()) === 0) {
-    throw new Error('form-tutar-okunamadi: custom_price yok');
-  }
-  await input.waitFor({ state: 'visible', timeout: checkMs() });
-  const t0 = Date.now();
-  let bounds = { min: '', recommended: '', max: '' };
-  while (Date.now() - t0 < 8000) {
-    const pageState = await shell.evaluate((root) => {
-      const inp = root.querySelector('input[name="custom_price"]');
-      const rec = root.querySelector(
-        '.wdp-amount-preset.is-popular, .wdp-amount-preset[data-recommended="1"]'
-      );
-      const cur = (window.wdp_ajax && window.wdp_ajax.currency) || {};
-      return {
-        min:
-          (inp &&
-            (inp.getAttribute('min') ||
-              inp.getAttribute('data-min') ||
-              inp.dataset.baseMin ||
-              inp.dataset.wdpMin ||
-              '')) ||
-          '',
-        max: (inp && (inp.getAttribute('max') || inp.getAttribute('data-max') || '')) || '',
-        recommended: (rec && (rec.getAttribute('data-amount') || '')) || '',
-        placeholder: (inp && String(inp.placeholder || '').trim()) || '',
-        type: (inp && String(inp.type || inp.getAttribute('type') || '').toLowerCase()) || '',
-        step: (inp && inp.getAttribute('step')) || '',
-        pageCurrency: {
-          decimals: cur.decimals,
-          thousandSeparator: cur.thousandSeparator,
-          decimalSeparator: cur.decimalSeparator,
-        },
-      };
-    });
-    bounds = pageState;
-    const fillCurrency = mergeFillCurrency(currency, pageState.pageCurrency);
-    const picked = pickDonationFillAmount(bounds, fillCurrency);
-    const infoReady = /^min:\s/i.test(bounds.placeholder || '') || !!bounds.recommended;
-    if (infoReady && Number.isFinite(picked.amount) && picked.amount > 0) return picked;
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  throw new Error(
-    `form-tutar-okunamadi: min/önerilen yok min=${bounds.min || '-'} rec=${bounds.recommended || '-'}`
-  );
-}
-
-/**
- * Yerel kanıt: handler yokken erken CTA — sessiz yutma olmamalı (kuyruk → add_to_cart).
- * @param {import('@playwright/test').Page} page
- * @param {import('@playwright/test').Locator} shell
- * @param {Record<string,string>} env
- */
-async function proveEarlyCtaTap(page, shell, env) {
-  const delayMs = 2000;
-  const delayProductInfo = async (route) => {
-    const req = route.request();
-    const post = req.postData() || '';
-    if (/wdp_get_product_info/.test(post)) {
-      await new Promise((r) => setTimeout(r, delayMs));
-    }
-    await route.continue();
-  };
-  await page.route(/admin-ajax\.php/i, delayProductInfo);
-
-  await shell.evaluate(() => {
-    const form =
-      document.querySelector('.wdp-modal.show form') ||
-      document.querySelector('.wdp-donation-form form') ||
-      document.querySelector('form.wdp-donation-form');
-    if (!form) return;
-    if (form._wdpSubmitHandler) {
-      form.removeEventListener('submit', form._wdpSubmitHandler, true);
-      form.removeEventListener('submit', form._wdpSubmitHandler, false);
-      form._wdpSubmitHandler = null;
-    }
-    if (form.dataset) form.dataset.wdpFormReady = '0';
-    form.querySelectorAll(
-      'button[name="donation_go_checkout"], button[name="donation_add_to_cart"]'
-    ).forEach((btn) => {
-      btn.disabled = true;
-      btn.setAttribute('data-wdp-await-js', '1');
-      btn.setAttribute('aria-disabled', 'true');
-      btn.classList.add('wdp-cta-await-js', 'wdp-loading');
-      const gate = btn.closest('.wdp-cta-gate');
-      if (gate) gate.classList.remove('is-ready');
-    });
+  const form = formOf(shell);
+  await form.waitFor({ state: 'visible', timeout: checkMs() });
+  const readBounds = () => form.evaluate((f) => {
+    // Serbest tutar formunda (ör. Zekat) önerilen yoksa ilk hazır tutar geçerli bir tutardır.
+    const rec =
+      f.querySelector('button.donation-panel-amount[aria-checked="true"][data-dp-preset]') ||
+      f.querySelector('button.donation-panel-amount[data-dp-preset]');
+    // Hazır tutar yoksa (sabit birim / adet / hisse formları): birim fiyatı ya da gizli tutar alanı.
+    const hidden = f.querySelector('input[type="hidden"][name="amount"]');
+    const fallback = f.getAttribute('data-unit') || (hidden && hidden.value) || '';
+    const custom = f.querySelector('input.donation-panel-custom__in[name="amount"]');
+    return {
+      min: f.getAttribute('data-min') || '',
+      max: '',
+      recommended: (rec && rec.getAttribute('data-dp-preset')) || fallback,
+      type: custom ? 'text' : '',
+      step: '',
+      pageCurrency: {
+        decimals: Number(f.getAttribute('data-decimals')),
+        thousandSeparator: f.getAttribute('data-thousand-sep') || '',
+        decimalSeparator: f.getAttribute('data-decimal-sep') || '',
+      },
+    };
   });
-
-  const ctaState = await collectCtaReadyState(shell);
-  const probes = attachCheckoutFlowProbes(page);
-  try {
-    const dispatched = await shell.evaluate(() => {
-      const form =
-        document.querySelector('.wdp-modal.show form') ||
-        document.querySelector('.wdp-donation-form form') ||
-        document.querySelector('form.wdp-donation-form');
-      const hit = form && form.querySelector('.wdp-cta-gate__hit');
-      const go = form && form.querySelector('button[name="donation_go_checkout"]');
-      const target = hit || go;
-      if (!target) return false;
-      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-      return true;
-    });
-    if (!dispatched) {
-      const go = shell.locator(SEL.goCheckout).first();
-      await go.click({ timeout: checkMs(), force: true, noWaitAfter: true });
-    }
-    const addHit = await probes.waitForAddToCart(12000);
-    if (!addHit) {
-      const errs = await visibleValidationErrors(page);
-      writeCheckoutFlowDebug('early-cta', { ...ctaState, class: 'early-tap-silent', errors: errs });
-      throw new Error(
-        `erken-dokunuş sessiz yutma: add_to_cart yok form_ready=${ctaState.form_ready} await=${ctaState.await_js} err=${JSON.stringify(errs)}`
-      );
-    }
-    writeCheckoutFlowDebug('early-cta', { ...ctaState, class: 'ok', add_to_cart: addHit });
-  } finally {
-    probes.dispose();
-    await page.unroute(/admin-ajax\.php/i, delayProductInfo).catch((e) => {
-      console.error(`[e2e:catch-fail] early-cta unroute: ${e && e.message ? e.message : e}`);
-    });
+  // Form çizilirken tutar öğeleri henüz yoksa kısa süre yokla (ilk geçerli değerde çık).
+  let bounds = await readBounds();
+  const deadline = Date.now() + Math.min(checkMs(), 5000);
+  while (!(Number.parseFloat(bounds.min) > 0 || Number.parseFloat(bounds.recommended) > 0) && Date.now() < deadline) {
+    await form.page().waitForTimeout(150);
+    bounds = await readBounds();
   }
-  void env;
+  const fillCurrency = mergeFillCurrency(currency, bounds.pageCurrency);
+  const picked = pickDonationFillAmount(bounds, fillCurrency);
+  if (Number.isFinite(picked.amount) && picked.amount > 0) return picked;
+  throw new Error(`form-tutar-okunamadi: min/önerilen yok min=${bounds.min || '-'} rec=${bounds.recommended || '-'}`);
 }
 
 function localStore(profile, amount) {
@@ -317,7 +182,7 @@ export async function runDonationFlowChecks({
     ]).catch((e) => {
       console.error(`[e2e:catch-fail] emptyCart: ${e && e.message ? e.message : e}`);
     });
-    const extra = { hdf_no_side_cart: '1', ...comingSoonQuery(env, profile) };
+    const extra = { ...comingSoonQuery(env, profile) };
     await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
       waitUntil: 'domcontentloaded',
       timeout: checkMs(),
@@ -375,31 +240,11 @@ export async function runDonationFlowChecks({
 
       diag.cta_ready = await collectCtaReadyState(shell);
       diag.plugin = await collectPluginRuntime(page);
-      const add = shell.locator(SEL.addToCart).first();
-      const go = shell.locator(SEL.goCheckout).first();
-      const gate = shell.locator('.wdp-cta-gate__hit').first();
-      const clickLoc = (await go.count()) > 0 ? go : (await gate.count()) > 0 ? gate : add;
+      const clickLoc = formOf(shell).locator(SEL.goCheckout).first();
       diag.click_target = await collectClickTarget(page, clickLoc);
       diag.png_before = await shotDebugPng(page, `checkout-flow-${deviceId}-before`);
       const tClick = Date.now();
-      if ((await go.count()) > 0) {
-        try {
-          await go.click({ timeout: checkMs(), noWaitAfter: true });
-        } catch (clickErr) {
-          const msg = String(clickErr && clickErr.message ? clickErr.message : clickErr);
-          if (/intercepts pointer events|not stable/i.test(msg) && (await gate.count()) > 0) {
-            await gate.click({ timeout: checkMs(), force: true, noWaitAfter: true });
-          } else if (/intercepts pointer events|not stable/i.test(msg)) {
-            await go.click({ timeout: checkMs(), force: true, noWaitAfter: true });
-          } else {
-            throw clickErr;
-          }
-        }
-      } else if ((await gate.count()) > 0) {
-        await gate.click({ timeout: checkMs(), force: true, noWaitAfter: true });
-      } else {
-        await clickAddToCartWithRetry(page, add, { timeout: checkMs() });
-      }
+      await clickSubmit(shell, checkMs());
       reloadGuard.assertClear(job.check);
 
       const addHit = await probes.waitForAddToCart(8000);
@@ -533,7 +378,7 @@ export async function runDonationFlowChecks({
         check: `checkout-flow-order-${deviceId}`,
         reason: SKIP_REASONS.NO_REMOTE_ORDERS,
         evidence: SKIP_EVIDENCE.POLICY,
-        detail: skipOrderReason || url,
+        detail: skipOrderReason || page.url(),
       });
       if (classifySkip(orderSkip) === 'fail') {
         throw new Error(`Altyapı atlaması hata: ${orderSkip.description}`);
@@ -660,57 +505,6 @@ export async function runDonationFlowChecks({
         new Promise((resolve) => setTimeout(resolve, 15000)),
       ]).catch((e) => {
         console.error(`[e2e:catch-fail] emptyCart-finally: ${e && e.message ? e.message : e}`);
-      });
-    }
-  }
-
-  if (!remote && deviceId === 'iphone' && customId && listPath) {
-    const check = `checkout-flow-early-cta-${deviceId}`;
-    const tJob = Date.now();
-    try {
-      await Promise.race([
-        emptyCart(page, env.E2E_BASE_URL),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('emptyCart timeout')), 15000)),
-      ]).catch((e) => {
-        console.error(`[e2e:catch-fail] emptyCart-early-cta: ${e && e.message ? e.message : e}`);
-      });
-      const extra = { hdf_no_side_cart: '1', ...comingSoonQuery(env, profile) };
-      await page.goto(withCacheBust(env.E2E_BASE_URL, listPath, extra), {
-        waitUntil: 'domcontentloaded',
-        timeout: checkMs(),
-      });
-      await revealListProductTrigger(page, customId);
-      let trigger = shellTriggerLocator(page, 'popup', { productId: customId });
-      if ((await trigger.count()) === 0) {
-        trigger = page.locator(
-          `${SEL.centeredPopupTrigger}, ${SEL.sidePanelTrigger}, .wdp-card__cta, .wdp-loop-donate`
-        );
-      }
-      await clickShellTrigger(trigger, checkMs());
-      const shell = openShellLocator(page, '');
-      await shell.waitFor({ state: 'visible', timeout: checkMs() });
-      const pickedEarly = await resolveDonationFillAmount(shell, profile.currency);
-      filledAmount = pickedEarly.amount;
-      filledText = pickedEarly.fill;
-      await fillDonationShell(shell, { kind: 'custom', amount: filledAmount, fill: filledText });
-      await proveEarlyCtaTap(page, shell, env);
-      stats.passed += 1;
-      console.log(`[e2e] ${check}: ${((Date.now() - tJob) / 1000).toFixed(1)}s`);
-    } catch (e) {
-      failures.push(
-        makeFailure({
-          check,
-          description: 'Erken CTA dokunuşu sessiz yutulmamalı (kuyruk veya görünür hata)',
-          error: e,
-        })
-      );
-      stats.failed += 1;
-    } finally {
-      await Promise.race([
-        emptyCart(page, env.E2E_BASE_URL),
-        new Promise((resolve) => setTimeout(resolve, 15000)),
-      ]).catch((e) => {
-        console.error(`[e2e:catch-fail] emptyCart-early-cta-finally: ${e && e.message ? e.message : e}`);
       });
     }
   }

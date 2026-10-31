@@ -1,0 +1,195 @@
+# Turkish translations — 123-color (12.3 renk kaynağı kuralı, yan sepet ayarları, Rehber bölümleri).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Frontend/class-theme-colors.php
+msgid "Your choice"
+msgstr "Sizin seçiminiz"
+
+#: src/Frontend/class-theme-colors.php
+#. translators: %s: color name (slug) in the theme palette, e.g. primary.
+#, php-format
+msgid "Theme palette: %s"
+msgstr "Tema paleti: %s"
+
+#: src/Frontend/class-theme-colors.php
+msgid "Follows the main color"
+msgstr "Ana rengi izler"
+
+#: src/Frontend/class-theme-colors.php
+msgid "Default"
+msgstr "Varsayılan"
+
+#: src/Admin/class-admin-view.php
+msgid "Source: your choice."
+msgstr "Kaynak: sizin seçiminiz."
+
+#: src/Admin/class-admin-view.php
+msgid "Colors in use on your site:"
+msgstr "Sitenizde kullanılan renkler:"
+
+#: src/Admin/class-admin-view.php
+msgid "Colors could not be read from your theme, so please choose them. The theme palette has no color named primary, brand, accent or secondary (some themes and page builders keep colors in their own settings). The panel uses a neutral default until then. Choose \"Choose my own colors\" and set the two colors; a CSS variable from your theme also works."
+msgstr "Renkler temadan okunamadı, lütfen seçin. Tema paletinde primary, brand, accent ya da secondary adlı bir renk yok (bazı temalar ve sayfa oluşturucular renkleri kendi ayarlarında tutar). O zamana kadar panel nötr bir varsayılan renk kullanır. \"Kendi renklerimi seçeyim\" seçeneğini seçip iki rengi belirleyin; temanızdan bir CSS değişkeni de olur."
+
+#: src/Admin/class-admin-view.php
+msgid "Empty: the button follows the main color."
+msgstr "Boş: düğme ana rengi izler."
+
+#: src/Admin/class-admin-view.php
+#. translators: 1: color source, e.g. "Theme palette: primary" or "Default", 2: hex color.
+#, php-format
+msgid "Empty: %1$s (%2$s)."
+msgstr "Boş: %1$s (%2$s)."
+
+#: src/Admin/class-field-registry.php
+msgid "A basket that slides in after a gift is added, so donors can give several gifts and pay once. Only used when the Side cart module above is on. Not shown on the cart and checkout pages, which have their own basket."
+msgstr "Bağış eklenince açılan sepet; bağışçı birkaç bağışı tek seferde öder. Yalnız yukarıdaki Yan sepet modülü açıkken kullanılır. Kendi sepeti olan sepet ve ödeme sayfalarında görünmez."
+
+#: src/Admin/class-field-registry.php
+msgid "Button corner"
+msgstr "Düğme köşesi"
+
+#: src/Admin/class-field-registry.php
+msgid "Which bottom corner the floating basket button sits in. Choose the corner that does not cover your chat or back-to-top button. On right-to-left sites the sides swap."
+msgstr "Yüzen sepet düğmesinin duracağı alt köşe. Sohbet ya da yukarı çık düğmenizi örtmeyen köşeyi seçin. Sağdan sola yazılan sitelerde yönler yer değiştirir."
+
+#: src/Admin/class-field-registry.php src/Admin/class-guide.php
+msgid "Bottom right"
+msgstr "Sağ alt"
+
+#: src/Admin/class-field-registry.php src/Admin/class-guide.php
+msgid "Bottom left"
+msgstr "Sol alt"
+
+#: src/Admin/class-field-registry.php
+msgid "Suggest an extra gift in the basket"
+msgstr "Sepette ek bağış öner"
+
+#: src/Admin/class-field-registry.php
+msgid "Shows \"Would you like to add to your donation?\" with up to three small amounts under the gifts. One tap adds it with the donor details already in the basket. Hidden when that gift is already in the basket."
+msgstr "Bağışların altında en çok üç küçük tutarla \"Bağışınıza eklemek ister misiniz?\" kartını gösterir. Tek dokunuşla, sepetteki bağışçı bilgileriyle eklenir. O bağış zaten sepetteyse görünmez."
+
+#: src/Admin/class-field-registry.php
+msgid "Suggested donation product ID"
+msgstr "Önerilecek bağış ürününün ID'si"
+
+#: src/Admin/class-field-registry.php
+msgid "The WooCommerce product ID of the gift to suggest (Products → All products, the ID shows when you point at a name). Leave 0 to use the add-on product above. It must be a published donation product."
+msgstr "Önerilecek bağışın WooCommerce ürün ID'si (Ürünler → Tüm ürünler; adın üzerine gelince ID görünür). Yukarıdaki ek bağış ürününü kullanmak için 0 bırakın. Yayımlanmış bir bağış ürünü olmalıdır."
+
+#: src/Admin/class-field-registry.php
+msgid "Suggested amounts"
+msgstr "Önerilen tutarlar"
+
+#: src/Admin/class-field-registry.php
+msgid "Up to three amounts separated by commas, for example 50, 100. Shown in your store currency."
+msgstr "Virgülle ayrılmış en çok üç tutar, ör. 50, 100. Mağazanızın para biriminde gösterilir."
+
+#: src/Admin/class-field-registry.php
+msgid "Short line under the name"
+msgstr "Adın altındaki kısa satır"
+
+#: src/Admin/class-field-registry.php
+msgid "Optional, one short sentence. Leave empty to show only the product name."
+msgstr "İsteğe bağlı, tek kısa cümle. Yalnız ürün adını göstermek için boş bırakın."
+
+#: src/Admin/class-settings-store.php
+msgid "Use at most three amounts."
+msgstr "En çok üç tutar kullanın."
+
+#: src/Admin/class-guide.php
+msgid "Setting the colors"
+msgstr "Renkleri ayarlama"
+
+#: src/Admin/class-guide.php
+msgid "1. Open Donation Panel → Forms and appearance → Colors. Under \"Use my theme colors\" you see the two colors in use and where each one comes from: \"Theme palette: primary\", \"Default\" or \"Follows the main color\"."
+msgstr "1. Bağış Paneli → Formlar ve Görünüm → Renkler'i açın. \"Temamın renklerini kullan\" altında kullanılan iki rengi ve her birinin kaynağını görürsünüz: \"Tema paleti: primary\", \"Varsayılan\" ya da \"Ana rengi izler\"."
+
+#: src/Admin/class-guide.php
+msgid "2. Which theme colors are used: only colors the theme names primary, brand, accent, secondary, contrast or foreground (also numbered ones such as accent-3). The main color must be readable on white; the button color must keep its text readable. Nothing is guessed from other colors."
+msgstr "2. Hangi tema renkleri kullanılır: yalnız temanın primary, brand, accent, secondary, contrast ya da foreground adını verdiği renkler (accent-3 gibi numaralılar da). Ana renk beyaz zeminde okunur olmalı; düğme rengi yazısını okunur tutmalı. Başka renklerden tahmin yapılmaz."
+
+#: src/Admin/class-guide.php
+msgid "3. If the theme has no such names you see \"Colors could not be read from your theme\" here and on the Overview. The form then uses a calm neutral ink color until you choose your own."
+msgstr "3. Temada bu adlar yoksa burada ve Genel Bakış'ta \"Renkler temadan okunamadı\" uyarısını görürsünüz. Siz seçene kadar form sakin, nötr bir mürekkep rengi kullanır."
+
+#: src/Admin/class-guide.php
+msgid "4. To choose your own: select \"Choose my own colors\" and fill in Main color and Button color. Each field takes a hex value (#12305A) or a CSS variable from your theme or page editor, for example var(--brand). The line under each field says what is used: \"Source: your choice.\" or, when empty, the color that applies instead."
+msgstr "4. Kendiniz seçmek için: \"Kendi renklerimi seçeyim\"i seçip Ana renk ve Buton rengi alanlarını doldurun. Her alan hex değer (#12305A) ya da temanızın veya sayfa düzenleyicinizin CSS değişkenini (ör. var(--brand)) alır. Her alanın altındaki satır neyin kullanıldığını yazar: \"Kaynak: sizin seçiminiz.\" ya da alan boşsa yerine uygulanan renk."
+
+#: src/Admin/class-guide.php
+msgid "5. Button text turns black or white by itself so it stays readable (contrast at least 4.5:1). Colors you choose are never changed by theme or plugin updates."
+msgstr "5. Düğme yazısı okunur kalsın diye kendiliğinden siyah ya da beyaz olur (kontrast en az 4,5:1). Seçtiğiniz renkler tema ya da eklenti güncellemeleriyle asla değişmez."
+
+#: src/Admin/class-guide.php
+msgid "Open the Colors settings"
+msgstr "Renk ayarlarını aç"
+
+#: src/Admin/class-guide.php
+msgid "1. Turn it on: Donation Panel → Cart and checkout → Modules → Side cart. After a gift is added, a basket slides in (a bottom sheet on phones) with the gifts, the total and \"Complete donation\"."
+msgstr "1. Açın: Bağış Paneli → Sepet ve Ödeme → Modüller → Yan sepet. Bağış eklenince bağışlar, toplam ve \"Bağışı tamamla\" düğmesiyle bir sepet açılır (telefonda alttan panel)."
+
+#: src/Admin/class-guide.php
+msgid "2. Floating basket button: on the same screen under Side cart. It appears only when the basket has a gift. Choose Bottom right or Bottom left so it does not cover your chat or back-to-top button, or switch it off if your theme shows its own cart icon."
+msgstr "2. Yüzen sepet düğmesi: aynı ekranda Yan sepet bölümünde. Yalnız sepette bağış varken görünür. Sohbet ya da yukarı çık düğmenizi örtmesin diye Sağ alt ya da Sol alt seçin; temanız kendi sepet simgesini gösteriyorsa kapatın."
+
+#: src/Admin/class-guide.php
+msgid "3. A basket icon in your header: place the shortcode below in a header widget or menu block. It shows the number of gifts and opens the same basket."
+msgstr "3. Üst bilgide sepet simgesi: aşağıdaki kısa kodu bir üst bilgi bileşenine ya da menü bloğuna koyun. Bağış sayısını gösterir ve aynı sepeti açar."
+
+#: src/Admin/class-guide.php
+msgid "4. Extra gift suggestion: switch on \"Suggest an extra gift in the basket\", enter the product ID (0 uses the add-on product) and up to three amounts such as 50, 100. Donors add it with one tap; their details are taken from the gift already in the basket."
+msgstr "4. Ek bağış önerisi: \"Sepette ek bağış öner\"i açın, ürün ID'sini (0 ek bağış ürününü kullanır) ve 50, 100 gibi en çok üç tutarı girin. Bağışçı tek dokunuşla ekler; bilgileri sepetteki bağıştan alınır."
+
+#: src/Admin/class-guide.php
+msgid "5. The side cart never opens on the cart and checkout pages, and pages without a donation form load none of its files."
+msgstr "5. Yan sepet sepet ve ödeme sayfalarında açılmaz; bağış formu olmayan sayfalar onun hiçbir dosyasını yüklemez."
+
+#: src/Admin/class-guide.php
+msgid "Open the Side cart settings"
+msgstr "Yan sepet ayarlarını aç"
+
+#: src/Admin/class-guide.php
+msgid "Theme palette names lead to the colors used: primary or brand becomes the main color, accent or secondary becomes the button color; without these names a neutral default is used and you are asked to choose."
+msgstr "Tema paleti adları kullanılan renkleri belirler: primary ya da brand ana renk, accent ya da secondary düğme rengi olur; bu adlar yoksa nötr varsayılan kullanılır ve sizden seçmeniz istenir."
+
+#: src/Admin/class-guide.php
+msgid "Theme palette"
+msgstr "Tema paleti"
+
+#: src/Admin/class-guide.php
+msgid "No such names"
+msgstr "Bu adlar yoksa"
+
+#: src/Admin/class-guide.php
+msgid "Neutral default"
+msgstr "Nötr varsayılan"
+
+#: src/Admin/class-guide.php
+msgid "Choose your colors"
+msgstr "Renklerinizi seçin"
+
+#: src/Admin/class-guide.php
+msgid "Your choice wins"
+msgstr "Seçiminiz geçerli"
+
+#: src/Admin/class-guide.php
+msgid "A page with the side cart open on the right: gifts, an extra gift suggestion, the total and the Complete donation button. The floating basket button sits in a bottom corner."
+msgstr "Sağda yan sepeti açık bir sayfa: bağışlar, ek bağış önerisi, toplam ve Bağışı tamamla düğmesi. Yüzen sepet düğmesi bir alt köşede durur."
+
+#: src/Admin/class-guide.php
+msgid "Your page"
+msgstr "Sayfanız"
+
+#: src/Admin/class-guide.php
+msgid "Extra gift suggestion"
+msgstr "Ek bağış önerisi"

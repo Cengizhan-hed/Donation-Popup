@@ -1,24 +1,29 @@
+# Tek PHPStan yapilandirmasi (yalniz gelistirme; pakete girmez). Baseline YOK: hata = kirmizi.
 includes:
     - vendor-dev/szepeviktor/phpstan-wordpress/extension.neon
 
 parameters:
-    level: 5
+    level: 6
     paths:
-        - includes
+        - src
         - templates
         - blocks
         - woo-donation-popup.php
+        - uninstall.php
     excludePaths:
+        # Elementor yalniz etkinse yuklenir; temel sinifi kurulu olmayan ince uyumluluk katmani (PHPCS bunu yine tarar).
+        - src/Modules/EntryPoints/Elementor/*
         - tests
         - build
         - vendor
         - vendor-dev
         - node_modules
-        - tools/bin (?)
     bootstrapFiles:
         - tools/phpstan-bootstrap.php
     scanFiles:
         - vendor-dev/php-stubs/woocommerce-stubs/woocommerce-stubs.php
         - vendor-dev/php-stubs/wp-cli-stubs/wp-cli-stubs.php
     reportUnmatchedIgnoredErrors: false
+    # Kancadan/kullanicidan gelen degerler calisma aninda savunmaci denetlenir (docblock turu kesin sayilmaz).
+    treatPhpDocTypesAsCertain: false
     tmpDir: build/lint/phpstan-tmp

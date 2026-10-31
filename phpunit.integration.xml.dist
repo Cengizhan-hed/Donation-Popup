@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Gerçek WordPress + WooCommerce (SQLite) üzerinde entegrasyon testleri. `npm run test:integration` yerel WP'yi
+	hazırlar (build/integration-wp) ve bunu çalıştırır; doğrudan çalıştırmak için WDP_INTEGRATION_WP_DIR gerekir.
+-->
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+	bootstrap="tests/integration/bootstrap.php"
+	colors="true"
+	cacheResultFile="build/.phpunit.integration.result.cache"
+	failOnRisky="true"
+	failOnWarning="true"
+>
+	<testsuites>
+		<testsuite name="integration">
+			<directory suffix="Test.php">tests/integration</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

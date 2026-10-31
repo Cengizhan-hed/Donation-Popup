@@ -220,21 +220,21 @@ function wdp_mig_import($json_path) {
  */
 function wdp_mig_run($force_run = false) {
 	$out = array(
-		'class'            => class_exists('WDP_Migrations'),
+		'class'            => class_exists('DonationPanel\\Core\\Version_Migrations'),
 		'needs_run'        => null,
 		'is_fresh_install' => null,
 		'ran'              => false,
 		'ok'               => false,
 	);
-	if (!class_exists('WDP_Migrations')) {
+	if (!class_exists('DonationPanel\\Core\\Version_Migrations')) {
 		$out['error'] = 'WDP_Migrations yok';
 		return $out;
 	}
-	$out['needs_run']        = WDP_Migrations::needs_run();
-	$out['is_fresh_install'] = WDP_Migrations::is_fresh_install();
+	$out['needs_run']        = \DonationPanel\Core\Version_Migrations::needs_run();
+	$out['is_fresh_install'] = \DonationPanel\Core\Version_Migrations::is_fresh_install();
 	$basename = defined('WDP_PLUGIN_FILE') ? plugin_basename(WDP_PLUGIN_FILE) : 'woo-donation-popup/woo-donation-popup.php';
-	if (method_exists('WDP_Migrations', 'on_upgrader_complete')) {
-		WDP_Migrations::on_upgrader_complete(
+	if (method_exists('DonationPanel\\Core\\Version_Migrations', 'on_upgrader_complete')) {
+		\DonationPanel\Core\Version_Migrations::on_upgrader_complete(
 			null,
 			array(
 				'action'  => 'update',
@@ -244,15 +244,15 @@ function wdp_mig_run($force_run = false) {
 		);
 		$out['upgrader_fired'] = true;
 	}
-	if ($force_run || WDP_Migrations::needs_run()) {
-		$out['ok']  = (bool) WDP_Migrations::run();
+	if ($force_run || \DonationPanel\Core\Version_Migrations::needs_run()) {
+		$out['ok']  = (bool) \DonationPanel\Core\Version_Migrations::run();
 		$out['ran'] = true;
 	} else {
 		$out['ok'] = true;
 	}
 	$out['db_version_present'] = get_option('wdp_db_version', null) !== null;
-	$out['needs_run_after']    = WDP_Migrations::needs_run();
-	$out['is_fresh_after']     = WDP_Migrations::is_fresh_install();
+	$out['needs_run_after']    = \DonationPanel\Core\Version_Migrations::needs_run();
+	$out['is_fresh_after']     = \DonationPanel\Core\Version_Migrations::is_fresh_install();
 	return $out;
 }
 
@@ -271,9 +271,9 @@ if ($cmd === 'activate') {
 } elseif ($cmd === 'probe') {
 	$result['wdp_version']         = get_option('wdp_version', null);
 	$result['wdp_db_version']      = get_option('wdp_db_version', null);
-	$result['migrations']          = class_exists('WDP_Migrations');
-	$result['is_fresh_install']    = class_exists('WDP_Migrations') ? WDP_Migrations::is_fresh_install() : null;
-	$result['needs_run']           = class_exists('WDP_Migrations') ? WDP_Migrations::needs_run() : null;
+	$result['migrations']          = class_exists('DonationPanel\\Core\\Version_Migrations');
+	$result['is_fresh_install']    = class_exists('DonationPanel\\Core\\Version_Migrations') ? \DonationPanel\Core\Version_Migrations::is_fresh_install() : null;
+	$result['needs_run']           = class_exists('DonationPanel\\Core\\Version_Migrations') ? \DonationPanel\Core\Version_Migrations::needs_run() : null;
 	$result['plugin_active']       = function_exists('is_plugin_active') && is_plugin_active('woo-donation-popup/woo-donation-popup.php');
 	$result['wc_active']           = function_exists('is_plugin_active') && is_plugin_active('woocommerce/woocommerce.php');
 	$result['product_post_type']   = post_type_exists('product');

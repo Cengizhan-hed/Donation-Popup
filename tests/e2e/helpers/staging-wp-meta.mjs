@@ -4,6 +4,7 @@
  * Yazma yalnız fixture ürün + named op. Sayfa oluştur/sil/onar YOK (yerel prepare-full hariç).
  * .env.deploy değerleri asla loglanmaz / yazdırılmaz.
  */
+import { CACHE_BUMP_EVAL_PHP } from '../../../scripts/lib/deploy-guards.mjs';
 import { loadDeployEnvSilent, remote, wpCliPath } from './wp-remote.mjs';
 import { assertProductWritable, safeDeleteMarked } from './safe-remote-write.mjs';
 import {
@@ -115,7 +116,7 @@ export async function setProductMeta(productId, metaKey, value) {
   // product_info / bağış / donor önbelleğini düşür (meta hook kaçarsa diye).
   remote(
     loaded.env,
-    `wp eval 'if (class_exists("WDP_Utils")) { WDP_Utils::invalidate_product_donation_caches(${id}); } if (function_exists("wc_delete_product_transients")) { wc_delete_product_transients(${id}); } clean_post_cache(${id}); wp_cache_delete("wdp_donor_count_${id}", "wdp_donations"); wp_cache_delete("wdp_total_donation_${id}", "wdp_donations");' ${flag} 2>/dev/null || true`
+    `wp eval '$ct="DonationPanel\\\\Domain\\\\Campaign_Totals"; if (class_exists($ct)) { $ct::invalidate_product_donation_caches(${id}); } if (function_exists("wc_delete_product_transients")) { wc_delete_product_transients(${id}); } clean_post_cache(${id}); wp_cache_delete("wdp_donor_count_${id}", "wdp_donations"); wp_cache_delete("wdp_total_donation_${id}", "wdp_donations");' ${flag} 2>/dev/null || true`
   );
 }
 
@@ -241,7 +242,7 @@ export async function bumpListCache() {
   const flag = wpCliPath(loaded.env);
   remote(
     loaded.env,
-    `wp eval 'if (class_exists("WDP_Donations_List")) { WDP_Donations_List::reset_bump_guard(); WDP_Donations_List::bump_cache(); }' ${flag}`
+    `wp eval '${CACHE_BUMP_EVAL_PHP}' ${flag}`
   );
 }
 

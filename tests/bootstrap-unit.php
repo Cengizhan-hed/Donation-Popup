@@ -2,7 +2,7 @@
 /**
  * PHPUnit bootstrap — WordPress stubs + plugin autoloader.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -19,7 +19,7 @@ if (!defined('WDP_PLUGIN_FILE')) {
 	define('WDP_PLUGIN_FILE', $root . '/woo-donation-popup.php');
 }
 if (!defined('WDP_VERSION')) {
-	define('WDP_VERSION', '10.35.2');
+	define('WDP_VERSION', '12.0.0');
 }
 if (!defined('MINUTE_IN_SECONDS')) {
 	define('MINUTE_IN_SECONDS', 60);
@@ -34,7 +34,7 @@ if (!defined('WDP_PLUGIN_URL')) {
 	define('WDP_PLUGIN_URL', 'https://example.test/wp-content/plugins/woo-donation-popup/');
 }
 if (!defined('WDP_ASSET_VERSION')) {
-	define('WDP_ASSET_VERSION', '10.35.2');
+	define('WDP_ASSET_VERSION', '12.0.0');
 }
 if (!defined('WDP_UNIT_TEST')) {
 	define('WDP_UNIT_TEST', true);
@@ -121,6 +121,8 @@ final class WDP_Test_State {
 
 	/** @var array<int, string> post_id => post_type */
 	public static $post_types = array();
+	/** @var array<int, object> wc_get_order() kayıtları. */
+	public static $orders = array();
 
 	/** @var int */
 	public static $unique_id = 0;
@@ -134,7 +136,11 @@ final class WDP_Test_State {
 	/** @var int */
 	public static $json_status = 0;
 
+	/** @var array<string, callable> Registered shortcodes (tag => callback). */
+	public static $shortcodes = array();
+
 	public static function reset(): void {
+		self::$shortcodes    = array();
 		self::$options       = array();
 		self::$post_meta     = array();
 		self::$filters       = array();
@@ -161,13 +167,14 @@ final class WDP_Test_State {
 		self::$price_thousand = '.';
 		self::$price_decimal  = ',';
 		self::$post_types    = array();
+		self::$orders        = array();
 		self::$unique_id     = 0;
 		self::$user_id       = 0;
 		self::$last_json     = null;
 		self::$json_status   = 0;
 		$GLOBALS['wpdb']     = new WDP_Fake_Wpdb();
-		if (class_exists('WDP_Donations_List') && method_exists('WDP_Donations_List', 'reset_for_tests')) {
-			WDP_Donations_List::reset_for_tests();
+		if (class_exists('DonationPanel\\Modules\\EntryPoints\\Donations_List') && method_exists('DonationPanel\\Modules\\EntryPoints\\Donations_List', 'reset_for_tests')) {
+			\DonationPanel\Modules\EntryPoints\Donations_List::reset_for_tests();
 		}
 		unset($GLOBALS['product']);
 		$_SERVER  = array();
@@ -175,23 +182,23 @@ final class WDP_Test_State {
 		$_POST    = array();
 		$_REQUEST = array();
 		$_COOKIE  = array();
-		if (class_exists('WDP_Donation_Scope')) {
-			WDP_Donation_Scope::flush();
+		if (class_exists('DonationPanel\\Domain\\Donation_Scope')) {
+			\DonationPanel\Domain\Donation_Scope::flush();
 		}
-		if (class_exists('WDP_Addon_Product_Visibility')) {
-			WDP_Addon_Product_Visibility::flush();
+		if (class_exists('DonationPanel\\Domain\\Addon_Product_Visibility')) {
+			\DonationPanel\Domain\Addon_Product_Visibility::flush();
 		}
-		if (class_exists('WDP_Placement_Settings')) {
-			WDP_Placement_Settings::flush();
+		if (class_exists('DonationPanel\\Domain\\Placement_Settings')) {
+			\DonationPanel\Domain\Placement_Settings::flush();
 		}
-		if (class_exists('WDP_Render_Registry')) {
-			WDP_Render_Registry::reset();
+		if (class_exists('DonationPanel\\Modules\\EntryPoints\\Render_Registry')) {
+			\DonationPanel\Modules\EntryPoints\Render_Registry::reset();
 		}
-		if (class_exists('WDP_Builder_Detect')) {
-			WDP_Builder_Detect::reset();
+		if (class_exists('\DonationPanel\Modules\EntryPoints\Builder_Detect')) {
+			\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
 		}
-		if (class_exists('WDP_Product_Page_Integration')) {
-			WDP_Product_Page_Integration::reset_request_flags();
+		if (class_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement')) {
+			\DonationPanel\Modules\EntryPoints\Auto_Placement::reset_request_flags();
 		}
 	}
 }
@@ -438,6 +445,12 @@ if (!function_exists('wp_kses')) {
 		return (string) $string;
 	}
 }
+if (!function_exists('wpautop')) {
+	function wpautop($text) {
+		$paragraphs = preg_split('/\n\s*\n/', trim((string) $text));
+		return '<p>' . implode("</p>\n<p>", array_map('trim', (array) $paragraphs)) . "</p>\n";
+	}
+}
 if (!function_exists('wp_kses_post')) {
 	function wp_kses_post($string) {
 		return (string) $string;
@@ -511,6 +524,11 @@ if (!function_exists('apply_filters')) {
 		return $value;
 	}
 }
+if (!function_exists('add_shortcode')) {
+	function add_shortcode($tag, $callback) {
+		WDP_Test_State::$shortcodes[ $tag ] = $callback;
+	}
+}
 if (!function_exists('add_filter')) {
 	function add_filter($hook, $callback, $priority = 10, $accepted_args = 1) {
 		WDP_Test_State::$filters[ $hook ] = $callback;
@@ -523,6 +541,24 @@ if (!function_exists('get_option')) {
 			return WDP_Test_State::$options[ $key ];
 		}
 		return $default;
+	}
+}
+if (!function_exists('wc_get_order')) {
+	function wc_get_order($id = false) {
+		if (isset(WDP_Test_State::$orders[ (int) $id ])) {
+			return WDP_Test_State::$orders[ (int) $id ];
+		}
+		return class_exists('WDP_Privacy_Registry', false) ? (WDP_Privacy_Registry::$orders[ (int) $id ] ?? false) : false;
+	}
+}
+if (!function_exists('add_option')) {
+	function add_option($key, $value = '', $deprecated = '', $autoload = 'yes') {
+		unset($deprecated, $autoload);
+		if (array_key_exists($key, WDP_Test_State::$options)) {
+			return false;
+		}
+		WDP_Test_State::$options[ $key ] = $value;
+		return true;
 	}
 }
 if (!function_exists('update_option')) {
@@ -992,6 +1028,23 @@ if (!function_exists('taxonomy_exists')) {
 if (!function_exists('wp_reset_postdata')) {
 	function wp_reset_postdata() {}
 }
+if (!function_exists('wp_script_is')) {
+	function wp_script_is($handle = '', $status = 'enqueued') {
+		if ('registered' === $status) {
+			foreach (WDP_Test_State::$options['__scripts'] ?? array() as $row) {
+				if ($row['handle'] === (string) $handle) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+}
+if (!function_exists('wp_style_is')) {
+	function wp_style_is($handle = '', $status = 'enqueued') {
+		return false;
+	}
+}
 if (!function_exists('wp_enqueue_style')) {
 	function wp_enqueue_style(...$args) {
 		$handle = isset($args[0]) ? (string) $args[0] : '';
@@ -1057,9 +1110,24 @@ if (!function_exists('wp_create_nonce')) {
 if (!function_exists('wp_script_add_data')) {
 	function wp_script_add_data(...$args) {}
 }
+if (!function_exists('rest_url')) {
+	function rest_url($path = '') {
+		return 'https://example.test/wp-json/' . ltrim((string) $path, '/');
+	}
+}
 if (!function_exists('home_url')) {
 	function home_url($path = '') {
 		return 'https://example.test' . $path;
+	}
+}
+if (!function_exists('site_url')) {
+	function site_url($path = '') {
+		return 'https://example.test' . $path;
+	}
+}
+if (!function_exists('set_url_scheme')) {
+	function set_url_scheme($url, $scheme = null) {
+		return preg_replace('#^[a-z][a-z0-9+.-]*://#i', $scheme . '://', (string) $url);
 	}
 }
 if (!function_exists('wp_parse_url')) {
@@ -1165,8 +1233,8 @@ if (!function_exists('get_terms')) {
 }
 
 require_once __DIR__ . '/support/fakes.php';
+require_once __DIR__ . '/support/os-junk.php';
 $GLOBALS['wpdb'] = new WDP_Fake_Wpdb();
 
-require_once WDP_PLUGIN_DIR . 'includes/class-exceptions.php';
-require_once WDP_PLUGIN_DIR . 'includes/class-autoloader.php';
-WDP_Autoloader::register();
+require_once WDP_PLUGIN_DIR . 'src/Core/class-autoloader.php';
+\DonationPanel\Core\Autoloader::register( WDP_PLUGIN_DIR . 'src' );

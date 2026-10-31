@@ -3,7 +3,7 @@
  * Salt okunur E2E katalog: mağaza / sepet / ödeme / liste + bağış ürünleri.
  * Siteye özel slug yok. Yazma yok. WP-CLI eval-file veya yerel eval-file.php.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
@@ -71,14 +71,14 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 	}
 
 	/**
-	 * WDP_Donation_Type::infer_from_meta — sınıf yoksa aynı öncelik yedek.
+	 * Donation_Type::infer_from_meta — sınıf yoksa aynı öncelik yedek.
 	 *
 	 * @param array<string,string> $meta Meta map.
 	 * @return string
 	 */
 	function wdp_e2e_catalog_infer_type(array $meta) {
-		if (class_exists('WDP_Donation_Type')) {
-			return WDP_Donation_Type::infer_from_meta($meta);
+		if (class_exists('DonationPanel\\Domain\\Donation_Type')) {
+			return \DonationPanel\Domain\Donation_Type::infer_from_meta($meta);
 		}
 		$yes = static function ($key) use ($meta) {
 			return isset($meta[ $key ]) && $meta[ $key ] === 'yes';
@@ -104,8 +104,8 @@ if (!function_exists('wdp_e2e_catalog_plugin_needles')) {
 	 */
 	function wdp_e2e_catalog_detect_type($product_id, array $meta) {
 		$id = (int) $product_id;
-		if ($id > 0 && class_exists('WDP_Donation_Type') && method_exists('WDP_Donation_Type', 'for_product')) {
-			return WDP_Donation_Type::for_product($id);
+		if ($id > 0 && class_exists('DonationPanel\\Domain\\Donation_Type') && method_exists('DonationPanel\\Domain\\Donation_Type', 'for_product')) {
+			return \DonationPanel\Domain\Donation_Type::for_product($id);
 		}
 		return wdp_e2e_catalog_infer_type($meta);
 	}
@@ -201,8 +201,8 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 	 * @return bool
 	 */
 	function wdp_e2e_catalog_is_donation($product) {
-		if (class_exists('WDP_Donation_Scope')) {
-			return (bool) WDP_Donation_Scope::is_donation_product($product);
+		if (class_exists('DonationPanel\\Domain\\Donation_Scope')) {
+			return (bool) \DonationPanel\Domain\Donation_Scope::is_donation_product($product);
 		}
 		return method_exists($product, 'get_meta') && $product->get_meta('_wdp_donation_product') === 'yes';
 	}
@@ -245,11 +245,11 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 	 * @return string inline|button_popup|button_panel|''
 	 */
 	function wdp_e2e_catalog_product_display($product) {
-		if (class_exists('WDP_Product_Page_Integration') && method_exists('WDP_Product_Page_Integration', 'resolve_product_page_display')) {
-			return (string) WDP_Product_Page_Integration::resolve_product_page_display($product);
+		if (class_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement') && method_exists('\DonationPanel\Modules\EntryPoints\Auto_Placement', 'resolve_product_page_display')) {
+			return (string) \DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display($product);
 		}
-		if (class_exists('WDP_Placement_Settings')) {
-			return (string) WDP_Placement_Settings::value('display', 'button_panel');
+		if (class_exists('DonationPanel\\Domain\\Placement_Settings')) {
+			return (string) \DonationPanel\Domain\Placement_Settings::value('display', 'button_panel');
 		}
 		return '';
 	}
@@ -306,7 +306,7 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 			$cached = $out;
 			return $out;
 		}
-		$resolver = class_exists('WDP_Donation_Type') ? 'WDP_Donation_Type::for_product' : 'yedek infer_from_meta';
+		$resolver = class_exists('DonationPanel\\Domain\\Donation_Type') ? 'DonationPanel\\Domain\\Donation_Type::for_product' : 'yedek infer_from_meta';
 		foreach ($ids as $id) {
 			$id = (int) $id;
 			if ($id <= 0) {
@@ -367,8 +367,8 @@ if (!function_exists('wdp_e2e_catalog_type_meta')) {
 		}
 		return array(
 			'explain'        => true,
-			'resolver'       => class_exists('WDP_Donation_Type') ? 'WDP_Donation_Type::for_product' : 'yedek infer_from_meta',
-			'plugin_loaded'  => class_exists('WDP_Donation_Type'),
+			'resolver'       => class_exists('DonationPanel\\Domain\\Donation_Type') ? 'DonationPanel\\Domain\\Donation_Type::for_product' : 'yedek infer_from_meta',
+			'plugin_loaded'  => class_exists('DonationPanel\\Domain\\Donation_Type'),
 			'shop'           => $catalog['shop'],
 			'cart'           => $catalog['cart'],
 			'checkout'       => $catalog['checkout'],
@@ -423,7 +423,8 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 			$checkout = wdp_e2e_catalog_page_entry($id, is_string($url) ? $url : '');
 		}
 
-		$list = null;
+		$list            = null;
+		$list_candidates = array();
 		if (isset($GLOBALS['wpdb']) && is_object($GLOBALS['wpdb'])) {
 			global $wpdb;
 			$likes = array();
@@ -431,11 +432,18 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 				$likes[] = $wpdb->prepare('p.post_content LIKE %s', '%' . $wpdb->esc_like($n) . '%');
 				$likes[] = $wpdb->prepare('pm.meta_value LIKE %s', '%' . $wpdb->esc_like($n) . '%');
 			}
-			$sql     = "SELECT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID WHERE p.post_status = 'publish' AND p.post_type IN ('page','post') AND (" . implode(' OR ', $likes) . ') GROUP BY p.ID ORDER BY p.ID ASC LIMIT 1';
-			$list_id = (int) $wpdb->get_var($sql);
-			if ($list_id > 0 && function_exists('get_permalink')) {
-				$url  = get_permalink($list_id);
-				$list = wdp_e2e_catalog_page_entry($list_id, is_string($url) ? $url : '');
+			$sql     = "SELECT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID WHERE p.post_status = 'publish' AND p.post_type IN ('page','post') AND (" . implode(' OR ', $likes) . ') GROUP BY p.ID ORDER BY p.ID ASC LIMIT 5';
+			foreach ((array) $wpdb->get_col($sql) as $cand_id) {
+				$cand_id = (int) $cand_id;
+				if ($cand_id <= 0 || !function_exists('get_permalink')) {
+					continue;
+				}
+				$url   = get_permalink($cand_id);
+				$entry = wdp_e2e_catalog_page_entry($cand_id, is_string($url) ? $url : '');
+				$list_candidates[] = $entry;
+				if (null === $list) {
+					$list = $entry;
+				}
 			}
 		}
 
@@ -482,6 +490,7 @@ if (!function_exists('wdp_e2e_catalog_resolve')) {
 			'cart'             => $cart,
 			'checkout'         => $checkout,
 			'list'             => $list,
+			'list_candidates'  => $list_candidates,
 			'products'         => $products,
 			'fixture_related'  => $fixture_related,
 		);

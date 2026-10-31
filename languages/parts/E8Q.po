@@ -1,0 +1,55 @@
+# Turkish translations — E8Q (eski/yeni yönetici ekranı geçişi).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/class-ui-switch.php
+msgid "Settings"
+msgstr "Ayarlar"
+
+#: src/Admin/class-ui-switch.php
+msgid "New Donation Panel experience"
+msgstr "Yeni Bağış Paneli deneyimi"
+
+#: src/Admin/class-ui-switch.php
+msgid "The new Donation Panel experience is ready"
+msgstr "Yeni Bağış Paneli deneyimi hazır"
+
+#: src/Admin/class-ui-switch.php
+msgid "Try the new simple admin screen. Your settings and orders are kept, and you can switch back to this classic screen at any time."
+msgstr "Yeni sade yönetici ekranını deneyin. Ayarlarınız ve siparişleriniz korunur; istediğiniz an bu klasik ekrana dönebilirsiniz."
+
+#: src/Admin/class-ui-switch.php
+msgid "Open the new admin screen"
+msgstr "Yeni yönetici ekranını aç"
+
+#: src/Admin/class-ui-switch.php
+msgid "Dismiss"
+msgstr "Kapat"
+
+#: src/Admin/class-ui-switch.php
+msgid "Back to the classic screen"
+msgstr "Klasik ekrana dön"
+
+#: src/Admin/class-ui-switch.php
+msgid "The classic screen keeps all your settings and will be removed in 12.0."
+msgstr "Klasik ekran tüm ayarlarınızı korur ve 12.0 sürümünde kaldırılacaktır."
+
+#: src/Admin/class-settings-page.php
+msgid "Classic form engine (will be removed in 12.0)"
+msgstr "Klasik form motoru (12.0 sürümünde kaldırılacak)"
+
+#: src/Admin/class-settings-page.php
+msgid "Classic screen (will be removed in 12.0)"
+msgstr "Klasik ekran (12.0 sürümünde kaldırılacak)"
+
+#: src/Admin/class-settings-page.php
+msgid "New form engine"
+msgstr "Yeni form motoru"

@@ -516,12 +516,14 @@ describe('kanarya fixture birleşimi', () => {
     assert.equal(cmp.ok, true, JSON.stringify(cmp.diffs));
   });
 
-  it('beklenmeyen sayfa farkı varken fixture TEMİZ sayılmaz', () => {
+  it('beklenmeyen sayfa farkı (WooCommerce ödeme sayfası silindi) varken fixture TEMİZ sayılmaz', () => {
     const baseline = countSnap([
       ...catalogPosts(),
       { id: 50, type: 'page', status: 'publish', modified: 'a', mark: '' },
     ]);
+    baseline.options.woocommerce_checkout_page_id = '50';
     const current = countSnap([...catalogPosts(), ...fixturePosts()]);
+    current.options.woocommerce_checkout_page_id = '50';
     current.page_count = 0;
     const r = evaluateCanaryAgainstBaseline(baseline, current, { created: [], mutated: [] }, {
       fixtures: fixtureFile(),
@@ -577,12 +579,16 @@ describe('repair kanarya + baseline (3W)', () => {
     assert.equal(next.posts.find((p) => p.id === 919).modified, 'new');
   });
 
-  it('işaretsiz ürün farkı → KIRMIZI ve baseline değişmez', () => {
+  it('işaretsiz (bağış) ürün meta farkı → KIRMIZI ve baseline değişmez', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wdp-3w-red-'));
     const file = path.join(dir, 'baseline.json');
-    const before = countSnap([...catalogPosts(), ...fixturePosts({ modified: 'old' })]);
+    const before = countSnap([
+      { id: 1, type: 'product', status: 'publish', modified: 'a', mark: '', meta: 'm1' },
+      ...catalogPosts().slice(1),
+      ...fixturePosts({ modified: 'old' }),
+    ]);
     const after = countSnap([
-      { id: 1, type: 'product', status: 'publish', modified: 'hacked', mark: '' },
+      { id: 1, type: 'product', status: 'publish', modified: 'hacked', mark: '', meta: 'm2' },
       ...catalogPosts().slice(1),
       ...fixturePosts({ modified: 'new' }),
     ]);
@@ -594,7 +600,7 @@ describe('repair kanarya + baseline (3W)', () => {
     };
     const cmp = compareWithRegistry(before, after, registry, { fixtures: fixtureFile() });
     assert.equal(cmp.ok, false);
-    assert.ok(cmp.diffs.some((d) => d.id === 1 && d.change === 'modified'));
+    assert.ok(cmp.diffs.some((d) => d.id === 1 && d.change === 'meta'));
     const upd = updateCanaryBaselineIfClean('local', after, cmp, {
       file,
       markedIds: FIXTURE_IDS,
@@ -636,4 +642,113 @@ it('acceptUserOptionChanges: yalnız adı verilen seçenekler; yabancı fark red
   assert.equal(bad.baseline.options.a, 'no');
 
   assert.equal(acceptUserOptionChanges(baseline, current, [], []).ok, false);
+});
+
+it('acceptUserContentChanges: verilen id kabul; dış fark, boş liste, açıklanamayan sayaç reddedilir', async () => {
+  const { acceptUserContentChanges } = await import('../../e2e/helpers/canary.mjs');
+  const baseline = { posts: [{ id: 1, type: 'page', status: 'publish' }], attachment_count: 4, page_count: 1, options: {} };
+  const current = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish' },
+      { id: 50, type: 'elementor_library', status: 'publish' },
+      { id: 51, type: 'attachment', status: 'inherit' },
+    ],
+    attachment_count: 5,
+    page_count: 1,
+    options: {},
+  };
+  const diffs = [
+    { id: 50, change: 'created', type: 'elementor_library', status: 'publish' },
+    { id: 51, change: 'created', type: 'attachment', status: 'inherit' },
+    { option: 'attachment_count', change: 'count', from: '4', to: '5' },
+  ];
+  const ok = acceptUserContentChanges(baseline, current, diffs, [50, '51']);
+  assert.equal(ok.ok, true);
+  assert.deepEqual(ok.accepted, [50, 51]);
+  assert.equal(ok.baseline.attachment_count, 5);
+  assert.equal(ok.baseline.posts.length, 3);
+  assert.equal(baseline.posts.length, 1, 'girdi değişmez');
+
+  // listede olmayan id'nin yeni kaydı dış fark sayılır
+  assert.equal(acceptUserContentChanges(baseline, current, diffs, [50]).ok, false);
+  // silme gibi başka tür fark
+  const del = [...diffs, { id: 9, change: 'deleted', type: 'page', status: 'publish' }];
+  assert.equal(acceptUserContentChanges(baseline, current, del, [50, 51]).ok, false);
+  // boş liste
+  assert.equal(acceptUserContentChanges(baseline, current, diffs, []).ok, false);
+  // sayaç farkı yeni kayıt sayısıyla açıklanamıyor
+  assert.equal(acceptUserContentChanges(baseline, { ...current, attachment_count: 9 }, diffs, [50, 51]).ok, false);
+  // verilen id için yeni kayıt farkı yok
+  assert.equal(acceptUserContentChanges(baseline, current, [], [50]).ok, false);
+});
+
+it('acceptUserContentChanges: modified kabul, karışık, dış id ve baseline kaydı yok reddi', async () => {
+  const { acceptUserContentChanges } = await import('../../e2e/helpers/canary.mjs');
+  const baseline = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish', modified: 'a' },
+      { id: 2, type: 'page', status: 'publish', modified: 'b' },
+    ],
+    attachment_count: 0, page_count: 2, options: {},
+  };
+  const current = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish', modified: 'a2' },
+      { id: 2, type: 'page', status: 'publish', modified: 'b' },
+      { id: 60, type: 'attachment', status: 'inherit', modified: 'c' },
+    ],
+    attachment_count: 1, page_count: 2, options: {},
+  };
+  const mod = { id: 1, change: 'modified', type: 'page', from: 'a', to: 'a2' };
+  const ok = acceptUserContentChanges(baseline, current, [mod], [1]);
+  assert.equal(ok.ok, true);
+  assert.equal(ok.baseline.posts.find((p) => p.id === 1).modified, 'a2');
+  assert.equal(baseline.posts[0].modified, 'a', 'girdi değişmez');
+
+  const created = { id: 60, change: 'created', type: 'attachment', status: 'inherit' };
+  const cnt = { option: 'attachment_count', change: 'count', from: '0', to: '1' };
+  const mix = acceptUserContentChanges(baseline, current, [mod, created, cnt], [1, 60]);
+  assert.equal(mix.ok, true);
+  assert.deepEqual([...mix.accepted].sort((a, b) => a - b), [1, 60]);
+  assert.equal(mix.baseline.posts.length, 3);
+
+  const out = { id: 2, change: 'modified', type: 'page', from: 'b', to: 'b2' };
+  assert.equal(acceptUserContentChanges(baseline, current, [mod, out], [1]).ok, false);
+  const ghost = { id: 99, change: 'modified', type: 'page', from: 'x', to: 'y' };
+  assert.equal(acceptUserContentChanges(baseline, current, [ghost], [99]).ok, false);
+});
+
+it('acceptUserContentChanges: silinen id sayıyı -1 açıklar; listede yoksa, sayı açıklanamazsa, option farkı reddedilir', async () => {
+  const { acceptUserContentChanges } = await import('../../e2e/helpers/canary.mjs');
+  const baseline = {
+    posts: [{ id: 1, type: 'page', status: 'publish' }, { id: 965, type: 'attachment', status: 'inherit' }],
+    attachment_count: 123, page_count: 1, options: {},
+  };
+  const current = {
+    posts: [
+      { id: 1, type: 'page', status: 'publish' },
+      { id: 1042, type: 'attachment', status: 'inherit' },
+      { id: 1044, type: 'attachment', status: 'inherit' },
+    ],
+    attachment_count: 124, page_count: 1, options: {},
+  };
+  const diffs = [
+    { id: 1042, change: 'created', type: 'attachment', status: 'inherit' },
+    { id: 1044, change: 'created', type: 'attachment', status: 'inherit' },
+    { id: 965, change: 'deleted', type: 'attachment', status: 'inherit' },
+    { option: 'attachment_count', change: 'count', from: '123', to: '124' },
+  ];
+  const ok = acceptUserContentChanges(baseline, current, diffs, [1042, 1044, 965]);
+  assert.equal(ok.ok, true);
+  assert.equal(ok.baseline.attachment_count, 124);
+  assert.equal(ok.baseline.posts.some((p) => p.id === 965), false, 'silinen tabandan çıkar');
+  assert.equal(ok.baseline.posts.length, 3);
+  assert.equal(baseline.posts.length, 2, 'girdi değişmez');
+  // (b) silinen id listede yok
+  assert.equal(acceptUserContentChanges(baseline, current, diffs, [1042, 1044]).ok, false);
+  // (c) sayı açıklanamıyor
+  assert.equal(acceptUserContentChanges(baseline, { ...current, attachment_count: 126 }, diffs, [1042, 1044, 965]).ok, false);
+  // (d) option farkı
+  const opt = [...diffs, { option: 'blogname', change: 'changed', from: 'a', to: 'b' }];
+  assert.equal(acceptUserContentChanges(baseline, current, opt, [1042, 1044, 965]).ok, false);
 });

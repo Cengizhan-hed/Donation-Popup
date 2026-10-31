@@ -1,9 +1,0 @@
-# Ölü kod taraması (shipmonk/dead-code-detector) — yalnız geliştirme; verify'a bağlı DEĞİL, baseline'sız.
-# Not: WordPress kanca geri çağrıları ([ $this, 'ad' ] / 'ad' dizgesi) tanınmaz → "olası" sayın, silmeden elle doğrulayın.
-includes:
-    - phpstan.neon
-    - vendor-dev/shipmonk/dead-code-detector/rules.neon
-
-parameters:
-    reportUnmatchedIgnoredErrors: false
-    tmpDir: build/lint/phpstan-dead-tmp

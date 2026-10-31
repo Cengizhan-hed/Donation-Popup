@@ -1,5 +1,5 @@
 /**
- * Sayfa içi E2E probe — event/fetch/XHR/listener + WDPApp validate izleme.
+ * Sayfa içi E2E probe — event/fetch/XHR/listener izleme.
  * Eklenti davranışını değiştirmez; yalnızca gözlemler.
  */
 
@@ -38,32 +38,24 @@ const INIT_SCRIPT = `(() => {
     return (tag + id + cls + name).slice(0, 160);
   }
   function extractActionFromBody(body) {
+    // Yeni nesil: REST JSON gövdesi (donation-panel/v1/cart/add); addon_ önekli alanlar ayrı toplanır.
     try {
-      if (!body) return { action: '', addon: {} };
-      if (typeof FormData !== 'undefined' && body instanceof FormData) {
-        const addon = {};
-        let action = '';
-        for (const [k, v] of body.entries()) {
-          if (k === 'action') action = String(v);
-          if (String(k).indexOf('sadaka_') === 0) addon[k] = String(v);
-        }
-        return { action, addon };
-      }
-      if (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams) {
-        const addon = {};
-        for (const [k, v] of body.entries()) {
-          if (String(k).indexOf('sadaka_') === 0) addon[k] = String(v);
-        }
-        return { action: body.get('action') || '', addon };
-      }
-      const s = typeof body === 'string' ? body : '';
-      if (!s) return { action: '', addon: {} };
-      const params = new URLSearchParams(s);
       const addon = {};
-      for (const [k, v] of params.entries()) {
-        if (String(k).indexOf('sadaka_') === 0) addon[k] = String(v);
+      if (!body) return { action: '', addon };
+      let obj = null;
+      if (typeof body === 'string') {
+        try {
+          obj = JSON.parse(body);
+        } catch (e) {
+          obj = null;
+        }
       }
-      return { action: params.get('action') || '', addon };
+      if (obj && typeof obj === 'object') {
+        for (const [k, v] of Object.entries(obj)) {
+          if (String(k).indexOf('addon_') === 0) addon[k] = String(v);
+        }
+      }
+      return { action: '', addon };
     } catch (e) {
       return { action: '', addon: {} };
     }
@@ -239,132 +231,6 @@ export async function installPageProbe(target) {
 }
 
 /**
- * WDPApp form validate / addon / submit sarmala (davranış değişmez).
- * @param {import('@playwright/test').Page} page
- */
-export async function wrapWdpValidationHooks(page) {
-  await page
-    .evaluate(() => {
-      try {
-        const WDPApp = window.WDPApp;
-        if (!WDPApp) return;
-        window.__wdpE2EValidation = window.__wdpE2EValidation || [];
-        function log(rec) {
-          rec.t = performance.now();
-          window.__wdpE2EValidation.push(rec);
-          if (window.__wdpE2EValidation.length > 100) window.__wdpE2EValidation.shift();
-        }
-        function wrapFn(obj, key, label) {
-          if (!obj || typeof obj[key] !== 'function' || obj[key].__wdpE2EWrapped) return;
-          const orig = obj[key];
-          const wrapped = function () {
-            const t0 = performance.now();
-            let result;
-            let err = null;
-            try {
-              result = orig.apply(this, arguments);
-            } catch (e) {
-              err = String(e && e.message ? e.message : e);
-              throw e;
-            } finally {
-              const lastVal =
-                (window.WDPApp &&
-                  window.WDPApp.form &&
-                  window.WDPApp.form.lastValidation) ||
-                (window.WDPApp &&
-                  window.WDPApp.formValidate &&
-                  window.WDPApp.formValidate.lastValidation) ||
-                null;
-              log({
-                label,
-                ms: performance.now() - t0,
-                result:
-                  typeof result === 'boolean'
-                    ? result
-                    : result && typeof result === 'object'
-                      ? {
-                          ok: result.ok,
-                          reason: result.reason,
-                          empty: result.empty,
-                          value: result.value,
-                          min: result.min,
-                        }
-                      : String(result),
-                falseRule:
-                  result && typeof result === 'object' && result.ok === false
-                    ? result.reason || 'ok:false'
-                    : result === false
-                      ? 'returned_false'
-                      : null,
-                lastValidation: lastVal,
-                error: err,
-              });
-            }
-            return result;
-          };
-          wrapped.__wdpE2EWrapped = true;
-          obj[key] = wrapped;
-        }
-        // form.js validateForm genelde formValidate.validateForm üzerinden
-        if (WDPApp.formValidate) {
-          wrapFn(WDPApp.formValidate, 'validateForm', 'formValidate.validateForm');
-        }
-        if (WDPApp.form && typeof WDPApp.form.validateForm === 'function') {
-          wrapFn(WDPApp.form, 'validateForm', 'form.validateForm');
-        }
-        if (WDPApp.formAddon) {
-          wrapFn(WDPApp.formAddon, 'validateAddonDonation', 'formAddon.validateAddonDonation');
-        }
-        if (WDPApp.addonRules) {
-          wrapFn(WDPApp.addonRules, 'validateAmount', 'addonRules.validateAmount');
-          wrapFn(WDPApp.addonRules, 'parseAmount', 'addonRules.parseAmount');
-        }
-        // submit handler formu bağlandıktan sonra _wdpSubmitHandler üzerinde
-        // (form açıldıktan sonra yeniden çağrılabilir — bayrak yok)
-        const forms = document.querySelectorAll(
-          'form.wdp-donation-form-fields, form.wdp-donation-form, form.wdp-form'
-        );
-        forms.forEach((form, idx) => {
-          if (form._wdpSubmitHandler && !form._wdpSubmitHandler.__wdpE2EWrapped) {
-            const orig = form._wdpSubmitHandler;
-            const wrapped = function (e) {
-              const t0 = performance.now();
-              let result;
-              try {
-                result = orig.apply(this, arguments);
-              } finally {
-                log({
-                  label: 'form._wdpSubmitHandler',
-                  formIndex: idx,
-                  ms: performance.now() - t0,
-                  result: result,
-                  defaultPrevented: e ? !!e.defaultPrevented : null,
-                });
-              }
-              return result;
-            };
-            wrapped.__wdpE2EWrapped = true;
-            form.removeEventListener('submit', orig, true);
-            form.addEventListener('submit', wrapped, true);
-            form._wdpSubmitHandler = wrapped;
-          }
-        });
-        // Modül sarmalaması bir kez; form handler her çağrıda taranır
-        if (!window.__wdpE2EValWrapped) {
-          window.__wdpE2EValWrapped = true;
-        }
-      } catch (e) {
-        console.error('[e2e:catch-fail] wrapWdpValidationHooks:in-page', e && e.message ? e.message : e);
-        throw e;
-      }
-    })
-    .catch((e) => {
-      console.error('[e2e:catch-fail] wrapWdpValidationHooks:evaluate', e && e.message ? e.message : e);
-      throw e instanceof Error ? e : new Error(String(e));
-    });
-}
-
-/**
  * @param {import('@playwright/test').Page} page
  */
 export async function collectPageProbeLogs(page) {
@@ -391,25 +257,25 @@ export async function collectPageProbeLogs(page) {
 }
 
 /**
- * Alt bağış paneli + buton anlık görüntüsü.
+ * Ek bağış kutusu + ana düğme anlık görüntüsü (yeni nesil form).
  * @param {import('@playwright/test').Page} page
  */
 export async function snapshotAddonAndButton(page) {
   return page
     .evaluate(() => {
-      const wrap = document.querySelector(
-        '.wdp-modal.show [data-wdp-sadaka-donation], [data-wdp-sadaka-donation]'
-      );
-      const panel = wrap ? wrap.querySelector('.wdp-sadaka-donation__panel') : null;
-      const btn = document.querySelector(
-        '.wdp-modal.show button[name="donation_add_to_cart"], button[name="donation_add_to_cart"]'
-      );
+      const open = document.querySelector('[data-dp-overlay].is-open');
+      const scope = open || document;
+      const wrap = scope.querySelector('[data-dp-addon]');
+      const panel = wrap ? wrap.querySelector('[data-dp-addon-box]') : null;
+      const btn = scope.querySelector('[data-dp-submit]');
       function animInfo(el) {
         if (!el) return null;
         let anims = 0;
         try {
           anims = typeof el.getAnimations === 'function' ? el.getAnimations().length : 0;
-        } catch (e) {}
+        } catch {
+          anims = 0; // getAnimations desteklenmiyorsa animasyon sayılmaz
+        }
         const st = window.getComputedStyle(el);
         return {
           animCount: anims,
@@ -438,14 +304,15 @@ export async function snapshotAddonAndButton(page) {
         const r = btn.getBoundingClientRect();
         btnRect = { x: r.x, y: r.y, w: r.width, h: r.height };
       }
+      const toggle = wrap ? wrap.querySelector('input[name="addon_active"]') : null;
       return {
-        wrapOpen: !!(wrap && wrap.classList.contains('is-open')),
+        wrapOpen: !!(toggle && toggle.checked),
         wrapClass: wrap ? String(wrap.className || '') : '',
         panel: animInfo(panel),
         wrapAnim: animInfo(wrap),
         inputs,
         buttonRect: btnRect,
-        buttonDisabled: btn ? !!btn.disabled : null,
+        buttonDisabled: btn ? btn.getAttribute('aria-disabled') === 'true' : null,
       };
     })
     .catch(() => null);

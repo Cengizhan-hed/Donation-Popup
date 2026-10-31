@@ -4,7 +4,9 @@
   "defaultWorkers": 3,
   "themes": {
     "twentytwentyfive": { "slug": "twentytwentyfive", "kind": "block" },
-    "storefront": { "slug": "storefront", "kind": "classic" }
+    "storefront": { "slug": "storefront", "kind": "classic" },
+    "blocksy": { "slug": "blocksy", "kind": "classic" },
+    "hello-elementor": { "slug": "hello-elementor", "kind": "classic" }
   },
   "stores": {
     "try": {
@@ -95,6 +97,34 @@
       "store": "gbp",
       "checkout": "classic",
       "hpos": true
+    },
+    {
+      "id": "bk-gbp-classic-hpos",
+      "theme": "blocksy",
+      "store": "gbp",
+      "checkout": "classic",
+      "hpos": true
+    },
+    {
+      "id": "bk-usd-blocks-nohpos",
+      "theme": "blocksy",
+      "store": "usd",
+      "checkout": "blocks",
+      "hpos": false
+    },
+    {
+      "id": "he-gbp-classic-hpos",
+      "theme": "hello-elementor",
+      "store": "gbp",
+      "checkout": "classic",
+      "hpos": true
+    },
+    {
+      "id": "he-try-blocks-nohpos",
+      "theme": "hello-elementor",
+      "store": "try",
+      "checkout": "blocks",
+      "hpos": false
     }
   ],
   "rtl": {
@@ -116,6 +146,6 @@
     ]
   },
   "entryPoints": {
-    "themes": ["twentytwentyfive", "storefront", "blocksy"]
+    "themes": ["twentytwentyfive", "storefront", "blocksy", "hello-elementor"]
   }
 }

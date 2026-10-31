@@ -1,97 +1,69 @@
 #!/usr/bin/env node
 /**
- * verify kapısı: değişen satırlarda (git diff -U0) baseline dışı yeni hata → kırmızı.
- * Tam tarama yok; hedef +20 sn altı. Araç yoksa atlar (çıkış 0).
+ * verify kapısı: PHPCS değişen satırlarda (git diff -U0), PHPStan TÜM projede (seviye phpstan.neon) → her hata kırmızı (baseline yok).
+ * Araç yoksa ya da çalışmazsa KIRMIZI (çıkış 1); sessiz atlama yok.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { issuesFromPhpcs, issuesFromPhpstan, issueFingerprint } from './lib/lint-report.mjs';
-import {
-  changedPhpLines,
-  loadPhpcsBaseline,
-  baselineFingerprints,
-  newErrorsOnChangedLines,
-  SCOPE_PATHS,
-} from './lib/lint-baseline.mjs';
+import { issuesFromPhpcs, issuesFromPhpstan } from './lib/lint-report.mjs';
+import { changedPhpLines, SCOPE_PATHS } from './lib/lint-baseline.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PHPCS = path.join(ROOT, 'vendor-dev/bin/phpcs');
 const PHPSTAN = path.join(ROOT, 'vendor-dev/bin/phpstan');
 
 if (!fs.existsSync(PHPCS) || !fs.existsSync(PHPSTAN)) {
-  console.log('verify:lint atlandı (vendor-dev yok). Kurulum: node scripts/install-lint-tools.mjs');
-  process.exit(0);
+  console.error('verify:lint KIRMIZI: PHPCS/PHPStan bulunamadı (vendor-dev/bin). Kurulum: node scripts/install-lint-tools.mjs');
+  process.exit(1);
 }
 
 const started = Date.now();
 const diff = changedPhpLines(ROOT);
-if (!diff.files.length) {
-  console.log(`verify:lint temiz (değişen PHP yok, ${Date.now() - started} ms, taban ${diff.base})`);
-  process.exit(0);
-}
 
-const phpcs = spawnSync('php', [PHPCS, '-q', '--report=json', ...diff.files], {
-  cwd: ROOT,
-  encoding: 'utf8',
-  maxBuffer: 16 * 1024 * 1024,
-});
-let phpcsIssues = [];
-try {
-  phpcsIssues = issuesFromPhpcs(JSON.parse(String(phpcs.stdout || '{}') || '{}'), ROOT);
-} catch {
-  if (phpcs.status && phpcs.status !== 1 && phpcs.status !== 2) {
-    console.error('verify:lint PHPCS çalışmadı');
+// Tek kural dosyası (phpcs.xml.dist), baseline YOK: değişen satırdaki her PHPCS hatası kırmızı.
+function runPhpcs(files) {
+  if (!files.length) return [];
+  const args = [PHPCS, '-q', '--report=json', '--standard=phpcs.xml.dist'];
+  const res = spawnSync('php', [...args, ...files], { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  try {
+    return issuesFromPhpcs(JSON.parse(String(res.stdout || '').trim()), ROOT);
+  } catch {
+    console.error(`verify:lint KIRMIZI: PHPCS çalışmadı (çıktı okunamadı, kod ${res.status}): ${String(res.stderr || '').slice(0, 300)}`);
     process.exit(1);
   }
 }
-
-const baseline = baselineFingerprints(loadPhpcsBaseline(ROOT));
-const phpcsGate = newErrorsOnChangedLines(phpcsIssues, diff.lines, baseline);
-
-const stanArgs = [
-  PHPSTAN,
-  'analyse',
-  '-c',
-  'phpstan.verify.neon',
-  '--memory-limit=1G',
-  '--error-format=json',
-  '--no-progress',
-  ...diff.files,
-];
-const stan = spawnSync('php', stanArgs, {
-  cwd: ROOT,
-  encoding: 'utf8',
-  maxBuffer: 16 * 1024 * 1024,
+const phpcsIssues = runPhpcs(diff.files).filter((i) => {
+  const set = diff.lines.get(i.file);
+  return set && set.has(Number(i.line));
 });
-let stanIssues = [];
+
+const stanArgs = [PHPSTAN, 'analyse', '-c', 'phpstan.neon', '--memory-limit=1G', '--error-format=json', '--no-progress'];
+// Tüm proje analiz edilir; her hata (değişen satır olsun olmasın) kırmızı.
+const stan = spawnSync('php', stanArgs, { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
+let stanDoc;
 try {
-  stanIssues = issuesFromPhpstan(JSON.parse(String(stan.stdout || '{}') || '{}'), ROOT);
+  stanDoc = JSON.parse(String(stan.stdout || '').trim());
 } catch {
-  if (stan.status && stan.status !== 1) {
-    console.error('verify:lint PHPStan çalışmadı');
-    process.exit(1);
-  }
+  console.error(`verify:lint KIRMIZI: PHPStan çalışmadı (çıktı okunamadı, kod ${stan.status}): ${String(stan.stderr || '').slice(0, 300)}`);
+  process.exit(1);
+}
+if (!stanDoc || typeof stanDoc.totals !== 'object') {
+  console.error('verify:lint KIRMIZI: PHPStan çıktısı geçersiz (totals yok)');
+  process.exit(1);
+}
+const stanNew = issuesFromPhpstan(stanDoc, ROOT);
+const stanTotal = Number(stanDoc.totals.errors || 0) + Number(stanDoc.totals.file_errors || 0);
+if (!stanNew.length && stanTotal > 0) {
+  stanNew.push({ file: 'phpstan', line: 0, source: 'phpstan', message: `genel hata (errors=${stanDoc.totals.errors}, file_errors=${stanDoc.totals.file_errors})` });
 }
 
-const stanNew = [];
-const stanWarn = [];
-for (const issue of stanIssues) {
-  const set = diff.lines.get(issue.file);
-  if (set && set.has(Number(issue.line))) stanNew.push(issue);
-  else if (set) stanWarn.push(issue);
-}
-
-const red = [...phpcsGate.neu, ...stanNew];
-const warn = [...phpcsGate.existingOnChanged, ...stanWarn];
+const red = [...phpcsIssues, ...stanNew];
 const ms = Date.now() - started;
 
-if (warn.length) {
-  console.log(`verify:lint uyarı: değişen satırda ${warn.length} mevcut (baseline) hata — kırmızı değil`);
-}
 if (red.length) {
-  console.error(`verify:lint KIRMIZI: ${red.length} yeni hata (değişen satır, ${ms} ms)`);
+  console.error(`verify:lint KIRMIZI: ${red.length} hata (${ms} ms)`);
   for (const e of red.slice(0, 20)) {
     console.error(`  ${e.file}:${e.line} ${e.source} ${e.message}`.slice(0, 220));
   }
@@ -99,8 +71,7 @@ if (red.length) {
 }
 
 void SCOPE_PATHS;
-void issueFingerprint;
 console.log(
-  `verify:lint temiz (${diff.files.length} dosya, ${ms} ms, taban ${String(diff.base).slice(0, 8)})`
+  `verify:lint temiz (PHPCS ${diff.files.length} değişen dosya; PHPStan tüm proje 0 hata; ${ms} ms, taban ${String(diff.base).slice(0, 8)})`
 );
 process.exit(0);

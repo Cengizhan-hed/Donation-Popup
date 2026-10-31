@@ -77,7 +77,7 @@ export function formatCatalogExplainMarkdown(data) {
   const lines = [
     `# Katalog explain — ${String(d.profileId || d.envName || '')}`,
     '',
-    `- Çözümleyici: \`${String(d.resolver || 'WDP_Donation_Type::for_product')}\``,
+    `- Çözümleyici: \`${String(d.resolver || 'DonationPanel\\Domain\\Donation_Type::infer_from_meta')}\``,
     `- Eklenti yüklü: ${d.plugin_loaded === false ? 'hayır' : 'evet'}`,
     `- Mağaza: \`${shopPath}\``,
     `- Liste: \`${listPath}\``,
@@ -150,7 +150,7 @@ function flagWhy(type, flags, resolver) {
   for (const k of ['_allow_multiple_shares', '_enable_progress_bar', '_allow_custom_price']) {
     parts.push(`${k}=${flags[k] === 'açık' ? 'açık' : 'kapalı'}`);
   }
-  return `${resolver || 'WDP_Donation_Type::for_product'}; öncelik shares→campaign→custom→fixed; ${parts.join(', ')}; sonuç=${type || ''}`;
+  return `${resolver || 'DonationPanel\\Domain\\Donation_Type::infer_from_meta'}; öncelik shares→campaign→custom→fixed; ${parts.join(', ')}; sonuç=${type || ''}`;
 }
 
 /**

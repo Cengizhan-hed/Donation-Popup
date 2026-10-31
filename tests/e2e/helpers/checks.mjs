@@ -20,6 +20,7 @@ import { writeDebugJson } from './scenario-debug.mjs';
 import { debugDirFor } from './e2e-paths.mjs';
 import { buildCheckoutFlowDiagExtras } from './flow-diag.mjs';
 import { getActiveTimeouts } from './profile.mjs';
+import { dismissKeyboardWithin } from './keyboard-dismiss.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -36,12 +37,12 @@ export function extractPostActionFromRequest(req) {
   return extractAjaxActionFromRequest(req);
 }
 
-/** product.js / modal.js genel hata metinleri — doğrulama mesajı değil. */
+/** Yeni form genel gönderim hatası / hız sınırı iletileri (src/Modules/Experiences) — alan doğrulama mesajı değil. */
 export const UNEXPECTED_PLUGIN_ERROR_RE =
-  /Ürün bilgileri alınamadı|Form tam yüklenemedi|sayfayı yenileyip|ağ hatası|network error|HTTP error|could not be loaded|did not finish loading|refresh the page/i;
+  /Something went wrong|Too many attempts|Bir hata oluştu|Çok fazla deneme|ağ hatası|network error|HTTP error|could not be loaded|refresh the page/i;
 
-/** form/feedback.js .wdp-form-error; utils.js .wdp-toast--error */
-export const PLUGIN_ERROR_BANNER_SEL = `${SEL.formError}, .wdp-toast--error, #wdp-toast-host .wdp-toast--error, [role="alert"].wdp-form-error`;
+/** Yeni form: form düzeyi uyarı kutusu (role=alert, `data-dp-summary`). */
+export const PLUGIN_ERROR_BANNER_SEL = SEL.formError;
 
 /**
  * Açık kabuktaki genel hata kutusu metinleri (alan doğrulaması değil).
@@ -176,6 +177,8 @@ export function assertNoConsoleErrors(errors) {
       return false;
     }
     const t = String(e);
+    // WordPress çekirdeği speculation-rules ön getirme iletisi (http yerel sunucu): eklentiden bağımsız tarayıcı gürültüsü.
+    if (/Prefetch request denied: URL must be secure/i.test(t)) return false;
     const blocked = classifyBlockedConsoleError(t);
     if (blocked === 'blocked-live' || blocked === 'blocked-site' || blocked === 'cancelled-ajax') {
       return false;
@@ -429,43 +432,27 @@ export async function collectWooSessionCookieFlags(page) {
 export async function collectWdpAjaxCheckoutPathname(page) {
   try {
     const raw = await page.evaluate(() => {
-      const w = window.wdp_ajax;
-      return w && w.checkout_url ? String(w.checkout_url) : '';
+      const root = document.querySelector('[data-dp-exp][data-dp-checkout]');
+      return root ? String(root.getAttribute('data-dp-checkout') || '') : '';
     });
     return urlPathnameOnly(raw);
   } catch (e) {
-    console.error(`[e2e:catch-fail] wdp_ajax.checkout_url: ${e && e.message ? e.message : e}`);
+    console.error(`[e2e:catch-fail] data-dp-checkout: ${e && e.message ? e.message : e}`);
     return '';
   }
 }
 
 /**
- * Sepete ekle POST (admin-ajax wdp_ajax_add_to_cart veya wc-ajax add_to_cart).
+ * Sepete ekle POST: yeni nesil REST `donation-panel/v1/cart/add` (rest_route sorgusu kodlanmış olabilir)
+ * ya da WooCommerce standart `wc-ajax=add_to_cart`. (12.0.0: admin-ajax ön yüz uçları kaldırıldı.)
  * @param {import('@playwright/test').Request} req
  */
 export function isDonationAddToCartRequest(req) {
   if (!req || typeof req.method !== 'function' || req.method() !== 'POST') return false;
   const url = req.url();
-  const post = req.postData() || '';
-  const isAdminAjax = /admin-ajax\.php/i.test(url);
-  const isWcAjax = /[?&]wc-ajax=/i.test(url) || /\/wc-ajax\//i.test(url);
-  if (!isAdminAjax && !isWcAjax) return false;
-  if (isAdminAjax) {
-    const action = extractPostActionFromRequest(req);
-    if (action === 'wdp_ajax_add_to_cart') return true;
-    return (
-      post.includes('wdp_ajax_add_to_cart') ||
-      post.includes('action=wdp_ajax_add_to_cart') ||
-      post.includes('donation_add_to_cart')
-    );
-  }
-  try {
-    const u = new URL(url);
-    if (u.searchParams.get('wc-ajax') === 'add_to_cart') return true;
-  } catch {
-    /* pathname */
-  }
-  return /\/wc-ajax\/add_to_cart/i.test(url) || /add_to_cart/i.test(post);
+  if (/donation-panel(?:\/|%2F)v1(?:\/|%2F)cart(?:\/|%2F)add/i.test(url)) return true;
+  if (/[?&]wc-ajax=add_to_cart/i.test(url) || /\/wc-ajax\/add_to_cart/i.test(url)) return true;
+  return false;
 }
 
 /**
@@ -587,7 +574,7 @@ export async function resolveCartPaths(page, baseUrl) {
   };
   try {
     const raw = await page.evaluate(() => {
-      const w = window.wdp_ajax && window.wdp_ajax.cart_url;
+      const w = '';
       const wc = window.wc_add_to_cart_params && window.wc_add_to_cart_params.cart_url;
       return { w: String(w || ''), wc: String(wc || '') };
     });
@@ -613,7 +600,7 @@ export async function gotoWooCart(page, baseUrl) {
   const paths = await resolveCartPaths(page, baseUrl);
   for (const pathName of paths) {
     if (await pageLooksLikeWooCart(page)) break;
-    const cartUrl = withCacheBust(baseUrl, pathName, { hdf_no_side_cart: '1' });
+    const cartUrl = withCacheBust(baseUrl, pathName, {});
     try {
       await page.goto(cartUrl, { waitUntil: 'domcontentloaded', timeout: getActiveTimeouts().navigation });
     } catch (navErr) {
@@ -799,6 +786,8 @@ export async function emptyCartViaPageHtml(page, baseUrl) {
  * @param {string} baseUrl
  */
 export async function emptyCart(page, baseUrl) {
+  // Form başarıyla gönderince sayfa ödemeye yönlenir: yarım kalan gezinme bitmeden bağlam yok olabilir.
+  await page.waitForLoadState('domcontentloaded');
   const tryStore = async () => {
     if (!pageHasSiteOrigin(page.url(), baseUrl)) return false;
     const globals = await readStoreApiNonceGlobals(page);
@@ -1064,11 +1053,12 @@ export function openShellLocator(page, mode = '') {
 export async function waitOpenShellSettled(page, timeout = 8000) {
   try {
     await page.waitForFunction(() => {
-      const el = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+      const el = document.querySelector('[data-dp-overlay].is-open');
       if (!el) return false;
-      if (el.classList.contains('wdp-side-panel--opening')) return false;
-      const box = (el.querySelector('.wdp-modal-content') || el).getBoundingClientRect();
-      return box.width > 80;
+      const surface = el.querySelector('[data-dp-surface]') || el;
+      const box = surface.getBoundingClientRect();
+      if (box.width <= 80) return false;
+      return Number.parseFloat(getComputedStyle(surface).opacity || '1') > 0.99;
     }, { timeout });
     await waitShellAnimationsDone(page, timeout);
     return true;
@@ -1090,32 +1080,31 @@ export async function waitOpenShellSettled(page, timeout = 8000) {
  */
 export async function revealListProductTrigger(page, productId = 0) {
   const allTab = page.locator('[data-wdp-tab="all"]').first();
-  if ((await allTab.count().catch(() => 0)) > 0) {
-    await allTab.click({ timeout: 4000 }).catch(() => {});
+  if ((await allTab.count()) > 0) {
+    await allTab.click({ timeout: 4000 });
   }
   const id = Number(productId) || 0;
   if (id > 0) {
-    await page
-      .evaluate((pid) => {
-        document.querySelectorAll('.wdp-list__item').forEach((item) => {
-          if (item.querySelector('[data-product-id="' + String(pid) + '"]')) {
-            item.classList.remove('is-hidden');
-          }
-        });
-      }, id)
-      .catch(() => {});
+    await page.evaluate((pid) => {
+      document.querySelectorAll('.wdp-list__item').forEach((item) => {
+        if (item.querySelector('[data-wdp-form="' + String(pid) + '"]')) {
+          item.hidden = false;
+        }
+      });
+    }, id);
   }
 }
 
 export function shellTriggerLocator(page, mode, opts = {}) {
   const productId = Number(opts.productId) > 0 ? Number(opts.productId) : 0;
-  const idSel = productId ? `[data-product-id="${productId}"]` : '';
-  const anyId = productId ? `.wdp-open-modal${idSel}, .wdp-card__cta${idSel}, .wdp-loop-donate${idSel}` : '';
-  const preferred =
+  const cardId = productId ? `[data-wdp-form="${productId}"]` : '';
+  const rootId = productId ? `[data-dp-product="${productId}"]` : '';
+  const kindSel =
     mode === 'panel'
-      ? `.wdp-card__cta.wdp-open-side-panel${idSel}, .wdp-loop-donate.wdp-open-side-panel${idSel}, ${SEL.sidePanelTrigger}${idSel}, ${anyId}`
-      : `.wdp-card__cta${idSel}, .wdp-loop-donate${idSel}, ${SEL.centeredPopupTrigger}${idSel}, ${anyId}`;
-  return page.locator(preferred.replace(/,\s*,/g, ',').replace(/,\s*$/, ''));
+      ? `[data-dp-exp][data-dp-kind="side_panel"]${rootId} [data-dp-open]`
+      : `[data-dp-exp]:is([data-dp-kind="popup"], [data-dp-kind="bottom_sheet"])${rootId} [data-dp-open]`;
+  // Liste kartı / döngü düğmesi önce (kendi ürün kimliğiyle), sonra köklerin açma düğmesi.
+  return page.locator(`.wdp-card__cta${cardId}, .wdp-loop-donate${cardId}, ${kindSel}`);
 }
 
 /**
@@ -1150,14 +1139,12 @@ export async function waitForShellClosed(page, timeout = CHECK_MS) {
     SEL.openModalShell,
     { timeout }
   ).catch(() => {
-    throw new Error('Bağış formu kabuğu kapanmadı (.show hâlâ var)');
+    throw new Error('Bağış formu kabuğu kapanmadı (.is-open hâlâ var)');
   });
-  // aria-hidden da true olmalı (assets/js/src/modal.js finalizeModalClose)
-  const stillAriaOpen = await page
-    .locator('.hdf-donation-modal-wrapper.wdp-modal[aria-hidden="false"]')
-    .count();
-  if (stillAriaOpen > 0) {
-    throw new Error('Bağış formu kabuğu kapanmadı (aria-hidden=false)');
+  // Açma düğmesi aria-expanded=false'a dönmeli (assets/src/experiences/layer.mjs close)
+  const stillExpanded = await page.locator('[data-dp-open][aria-expanded="true"]').count();
+  if (stillExpanded > 0) {
+    throw new Error('Bağış formu kabuğu kapanmadı (aria-expanded=true)');
   }
 }
 
@@ -1170,10 +1157,8 @@ export async function visibleValidationErrors(page) {
   const shell = openShellLocator(page);
   const root = (await shell.count()) ? shell : page.locator('body');
   const texts = [];
-  // Banner + satır içi + role=alert (eski .wdp-error sınıfı metinsiz olabilir)
-  const nodes = root.locator(
-    `${SEL.formError}, .wdp-input-error, [role="alert"].wdp-input-error, [role="alert"].wdp-form-error`
-  );
+  // Form düzeyi uyarı + alan hata metinleri (`data-dp-error`)
+  const nodes = root.locator(`${SEL.formError}, [data-dp-error]`);
   const n = await nodes.count();
   for (let i = 0; i < n; i++) {
     const el = nodes.nth(i);
@@ -1186,7 +1171,7 @@ export async function visibleValidationErrors(page) {
 }
 
 /**
- * Sepete ekleme AJAX yanıtını bekle (admin-ajax wdp_ajax_add_to_cart veya wc-ajax).
+ * Sepete ekleme yanıtını bekle (REST donation-panel/v1/cart/add veya wc-ajax).
  * waitForResponse tıklamadan ÖNCE kurulur.
  *
  * @param {import('@playwright/test').Page} page
@@ -1305,15 +1290,9 @@ export async function clickAddToCartWithRetry(page, button, opts = {}) {
   try {
     for (let attempt = 1; attempt <= 2; attempt++) {
       await button.waitFor({ state: 'visible', timeout: CHECK_MS }).catch(() => {});
-      // Form/wizard JS init: data-wdp-ready veya 2 rAF
+      // Form JS bağlandı (data-dp-mounted) + 2 rAF
       await page
         .evaluate(async () => {
-          const ready =
-            document.querySelector('[data-wdp-form-ready], [data-wdp-ready], .wdp-form.is-ready') ||
-            document.querySelector('.wdp-shell form, form.wdp-donation-form');
-          if (ready) {
-            /* form DOM var — rAF ile paint/init bekle */
-          }
           await new Promise((resolve) => {
             requestAnimationFrame(() => requestAnimationFrame(resolve));
           });
@@ -1333,6 +1312,8 @@ export async function clickAddToCartWithRetry(page, button, opts = {}) {
         disabled: await button.isDisabled().catch(() => true),
       };
 
+      // Dokunmatik ekranda yazı alanı odaktayken alt bölüm gizlidir (12.4 klavye sözleşmesi): önce klavye kapanır.
+      await dismissKeyboardWithin(page, CHECK_MS);
       lastAjax = await clickAddToCartAndWait(
         page,
         async () => {

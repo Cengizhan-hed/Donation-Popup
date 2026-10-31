@@ -2,7 +2,7 @@
 /**
  * 10.34.0 — fiyatsız custom/campaign purchasable; kart; varsayılan tutarlar; ücret ondalığı.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -12,11 +12,11 @@ use PHPUnit\Framework\TestCase;
 final class DonationPurchasableTest extends TestCase {
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		WDP_Donation_Scope::flush();
-		WDP_Test_State::$options[ WDP_Placement_Settings::OPTION ] = array(
+		\DonationPanel\Domain\Donation_Scope::flush();
+		WDP_Test_State::$options[ \DonationPanel\Domain\Placement_Settings::OPTION ] = array(
 			'donation_scope' => 'all',
 		);
-		WDP_Placement_Settings::flush();
+		\DonationPanel\Domain\Placement_Settings::flush();
 	}
 
 	private function product(int $id, string $type = 'custom'): WC_Product {
@@ -38,69 +38,44 @@ final class DonationPurchasableTest extends TestCase {
 
 	public function test_empty_price_custom_is_purchasable(): void {
 		$p = $this->product(41, 'custom');
-		$this->assertTrue(WDP_Donation_Purchasable::filter_is_purchasable(false, $p));
+		$this->assertTrue(\DonationPanel\WooCommerce\Donation_Purchasable::filter_is_purchasable(false, $p));
 	}
 
 	public function test_empty_price_campaign_is_purchasable(): void {
 		$p = $this->product(42, 'campaign');
-		$this->assertTrue(WDP_Donation_Purchasable::filter_is_purchasable(false, $p));
+		$this->assertTrue(\DonationPanel\WooCommerce\Donation_Purchasable::filter_is_purchasable(false, $p));
 	}
 
 	public function test_fixed_empty_price_stays_not_purchasable(): void {
 		$p = $this->product(43, 'fixed');
 		$p->purchasable = false;
-		$this->assertFalse(WDP_Donation_Purchasable::filter_is_purchasable(false, $p));
+		$this->assertFalse(\DonationPanel\WooCommerce\Donation_Purchasable::filter_is_purchasable(false, $p));
 	}
 
 	public function test_already_purchasable_unchanged(): void {
 		$p = $this->product(44, 'custom');
-		$this->assertTrue(WDP_Donation_Purchasable::filter_is_purchasable(true, $p));
+		$this->assertTrue(\DonationPanel\WooCommerce\Donation_Purchasable::filter_is_purchasable(true, $p));
 	}
 
 	public function test_default_presets_follow_decimals(): void {
 		WDP_Test_State::$price_decimals = 2;
-		$this->assertSame(array(5, 10, 25, 50, 100), WDP_Form_Modules::default_amount_preset_values());
+		$this->assertEquals(array(5, 10, 25, 50, 100), \DonationPanel\Domain\Amount_Presets::default_values());
 		WDP_Test_State::$price_decimals = 0;
-		$this->assertSame(array(100, 250, 500, 1000, 2500), WDP_Form_Modules::default_amount_preset_values());
+		$this->assertEquals(array(100, 250, 500, 1000, 2500), \DonationPanel\Domain\Amount_Presets::default_values());
 	}
 
 	public function test_cover_fee_rounds_to_price_decimals(): void {
 		WDP_Test_State::$price_decimals = 2;
-		$this->assertSame(13.13, WDP_Cart::apply_cover_fee_to_amount(12.5, 5));
+		$this->assertSame(13.13, \DonationPanel\WooCommerce\Cart_Hooks::apply_cover_fee_to_amount(12.5, 5));
 		WDP_Test_State::$price_decimals = 0;
-		$this->assertSame(13.0, WDP_Cart::apply_cover_fee_to_amount(12.5, 5));
+		$this->assertSame(13.0, \DonationPanel\WooCommerce\Cart_Hooks::apply_cover_fee_to_amount(12.5, 5));
 	}
 
 	public function test_campaign_goal_empty_is_zero_not_default(): void {
 		$p = $this->product(45, 'campaign');
 		WDP_Test_State::$post_meta[45]['_progress_bar_limit'] = '';
 		$p->meta['_progress_bar_limit'] = '';
-		$this->assertSame(0.0, WDP_Campaign_Goal::resolve_goal_amount($p));
-	}
-
-	public function test_js_currency_settings_shape(): void {
-		$c = WDP_Utils::get_js_currency_settings();
-		$this->assertArrayHasKey('code', $c);
-		$this->assertArrayHasKey('symbol', $c);
-		$this->assertArrayHasKey('decimals', $c);
-		$this->assertArrayHasKey('thousandSeparator', $c);
-		$this->assertArrayHasKey('decimalSeparator', $c);
-		$this->assertArrayHasKey('symbolPosition', $c);
-		$this->assertSame('TRY', $c['code']);
-	}
-
-	public function test_card_custom_shows_min_not_fixed_price(): void {
-		$p = $this->product(46, 'custom');
-		$p->price = '40';
-		WDP_Test_State::$post_meta[46]['_min_custom_price'] = '5';
-		$p->meta['_min_custom_price'] = '5';
-		$html = $this->cardHtml($p, array('show_price' => 'yes', 'button' => 'popup'));
-		$this->assertStringContainsString('min.', $html);
-		$this->assertStringNotContainsString('Dilediğin tutar', $html);
-		$this->assertDoesNotMatchRegularExpression('/<article[^>]*>\\s*<a /', $html);
-		$this->assertStringContainsString('<button type="button" class="wdp-card__cta', $html);
-		$this->assertStringContainsString('wdp-card__title"><a href=', $html);
-		$this->assertStringContainsString('data-wdp-lazy="1"', $html);
+		$this->assertSame(0.0, \DonationPanel\Domain\Campaign_Goal::resolve_goal_amount($p));
 	}
 
 	public function test_card_campaign_hides_bar_without_goal(): void {
@@ -118,31 +93,7 @@ final class DonationPurchasableTest extends TestCase {
 		$p->meta['_progress_bar_limit'] = '3000';
 		$html = $this->cardHtml($p, array('show_price' => 'yes', 'show_progress' => 'yes'), array(48 => 0.0));
 		$this->assertStringContainsString('wdp-card__progress', $html);
-		$this->assertStringContainsString('wdp-card__price', $html);
-	}
-
-	public function test_progress_amount_block_has_visible_label(): void {
-		$html = WDP_Form_Fields_Renderer::render_progress_amount_block('5');
-		$this->assertStringContainsString('wdp-custom-price-row__label', $html);
-		$this->assertStringContainsString('Bağış Tutarı', $html);
-		$this->assertStringContainsString('aria-labelledby', $html);
-	}
-
-	public function test_custom_price_row_has_visible_label(): void {
-		$html = WDP_Form_Fields_Renderer::render_custom_price_amount_row('10', '', '₺');
-		$this->assertStringContainsString('wdp-custom-price-row__label', $html);
-		$this->assertStringContainsString('Bağış Tutarı', $html);
-		$this->assertStringContainsString('name="custom_price"', $html);
-	}
-
-	public function test_fixed_price_row_has_no_amount_label(): void {
-		$html = WDP_Form_Fields_Renderer::render_fixed_price_quantity_row('6000');
-		$this->assertStringNotContainsString('wdp-custom-price-row__label', $html);
-		$this->assertStringNotContainsString('Bağış Tutarı', $html);
-		$this->assertStringContainsString('wdp-fixed-price-counter-row', $html);
-		$this->assertStringContainsString('wdp-line-total-display', $html);
-		$this->assertStringContainsString('wdp-quantity-counter', $html);
-		$this->assertStringContainsString('screen-reader-text', $html);
+		$this->assertStringContainsString('wdp-card__stats', $html);
 	}
 
 	public function test_tabs_skip_uncategorized_and_empty_ancestors(): void {
@@ -163,7 +114,7 @@ final class DonationPurchasableTest extends TestCase {
 			'term_order' => 0,
 		);
 		WDP_Test_State::$options['default_product_cat'] = 1;
-		$method = new ReflectionMethod('WDP_Donations_List', 'build_tabs');
+		$method = new ReflectionMethod('DonationPanel\\Modules\\EntryPoints\\Donations_List', 'build_tabs');
 		$method->setAccessible(true);
 		$tabs = $method->invoke(null, array($p));
 		$slugs = array_column($tabs, 'slug');
@@ -176,9 +127,41 @@ final class DonationPurchasableTest extends TestCase {
 	 * @param array      $atts    Atts.
 	 * @param array      $totals  Totals.
 	 */
+	public function test_card_layouts_follow_type(): void {
+		$campaign = $this->product(60, 'campaign');
+		WDP_Test_State::$post_meta[60]['_progress_bar_limit'] = '1000';
+		$campaign->meta['_progress_bar_limit'] = '1000';
+		$html = $this->cardHtml($campaign, array(), array(60 => 250.0));
+		$this->assertStringContainsString('wdp-card--campaign', $html);
+		$this->assertStringContainsString('wdp-card__badge', $html);
+		$this->assertStringContainsString('aria-valuenow="25"', $html);
+
+		$custom = $this->product(61, 'custom');
+		$html   = $this->cardHtml($custom);
+		$this->assertStringContainsString('wdp-card--row', $html);
+		$this->assertStringContainsString('wdp-card__price--any', $html);
+		$this->assertStringNotContainsString('wdp-card__progress', $html);
+	}
+
+	public function test_card_cta_is_real_link_that_opens_form_unless_link_mode(): void {
+		$p    = $this->product(62, 'custom');
+		$html = $this->cardHtml($p, array('button' => 'panel'));
+		$this->assertMatchesRegularExpression('/<a [^>]*href="[^"]*"[^>]*class="wdp-card__cta[^"]*"[^>]*data-wdp-form="62"/', $html);
+		$this->assertStringNotContainsString('<button', $html);
+
+		$html = $this->cardHtml($p, array('button' => 'link'));
+		$this->assertStringNotContainsString('data-wdp-form', $html);
+		$this->assertStringContainsString('wdp-card__cta', $html);
+	}
+
+	public function test_title_attribute_is_sanitized_and_defaults_empty(): void {
+		$this->assertSame('', \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts(array())['title']);
+		$this->assertSame('Give', \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts(array('title' => '<b>Give</b>'))['title']);
+	}
+
 	private function cardHtml($product, array $atts = array(), array $totals = array()): string {
-		$atts = WDP_Donations_List::sanitize_atts($atts);
-		$method = new ReflectionMethod('WDP_Donations_List', 'card_html');
+		$atts = \DonationPanel\Modules\EntryPoints\Donations_List::sanitize_atts($atts);
+		$method = new ReflectionMethod('DonationPanel\\Modules\\EntryPoints\\Donations_List', 'card_html');
 		$method->setAccessible(true);
 		return (string) $method->invoke(null, $product, $atts, $totals, 1);
 	}

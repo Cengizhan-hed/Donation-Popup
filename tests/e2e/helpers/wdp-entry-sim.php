@@ -66,13 +66,13 @@ if (!empty($wdp_sim['debug'])) {
 		'wp_footer',
 		static function () {
 			$p = function_exists('wc_get_product') ? wc_get_product((int) get_queried_object_id()) : null;
-			echo '<!--WDPDBG tov=' . (int) WDP_Product_Page_Integration::template_override_used()
-				. ' hooks=' . (int) WDP_Product_Page_Integration::hooks_added()
+			echo '<!--WDPDBG tov=' . (int) \DonationPanel\Modules\EntryPoints\Auto_Placement::template_override_used()
+				. ' hooks=' . (int) \DonationPanel\Modules\EntryPoints\Auto_Placement::hooks_added()
 				. ' isprod=' . (int) is_product()
 				. ' qid=' . (int) get_queried_object_id()
-				. ' ui=' . (int) WDP_Render_Registry::has_product_ui((int) get_queried_object_id())
-				. ' scope=' . (int) ($p && WDP_Donation_Scope::is_donation_product($p))
-				. ' sap=' . (int) ($p && WDP_Product_Page_Integration::should_auto_place($p))
+				. ' ui=' . (int) \DonationPanel\Modules\EntryPoints\Render_Registry::has_product_ui((int) get_queried_object_id())
+				. ' scope=' . (int) ($p && \DonationPanel\Domain\Donation_Scope::is_donation_product($p))
+				. ' sap=' . (int) ($p && \DonationPanel\Modules\EntryPoints\Auto_Placement::should_auto_place($p))
 				. ' after=' . (int) did_action('woocommerce_after_single_product')
 				. ' -->';
 		},

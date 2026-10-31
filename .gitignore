@@ -38,6 +38,7 @@ assets/js/donation-modal.js
 
 # OS Files
 .DS_Store
+**/.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
@@ -100,3 +101,19 @@ build/
 tools/graphify-venv/
 build/graph/
 graphify-out/
+research/
+dev/research/
+
+# Onbellekler (arac onbellekleri repoda tutulmaz)
+.phpunit.cache/
+.phpunit.result.cache
+.phpcs.cache
+.phpstan.cache
+.eslintcache
+.stylelintcache
+.jscpd/
+/tools/bin/composer.phar
+/build/tools/
+
+# Hookify yerel kural dosyaları (kullanıcıya özel yerel yapılandırma)
+.claude/*.local.md

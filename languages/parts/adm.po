@@ -1,0 +1,929 @@
+# Turkish translations — adm (12.0.0 yeni yönetici: tek menü, sayfalar, sihirbaz).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/
+msgid "Saved"
+msgstr "Kaydedildi"
+
+#: src/Admin/
+msgid "Saving..."
+msgstr "Kaydediliyor..."
+
+#: src/Admin/
+msgid "Settings imported. Reloading..."
+msgstr "Ayarlar içe aktarıldı. Sayfa yenileniyor..."
+
+#: src/Admin/
+msgid "The file does not look like a Donation Panel settings export."
+msgstr "Dosya bir Bağış Paneli ayar dışa aktarımına benzemiyor."
+
+#: src/Admin/
+msgid "Guide"
+msgstr "Rehber"
+
+#: src/Admin/
+msgid "OK:"
+msgstr "Tamam:"
+
+#: src/Admin/
+msgid "Needs attention:"
+msgstr "Dikkat gerekiyor:"
+
+#: src/Admin/
+msgid "Overview"
+msgstr "Genel Bakış"
+
+#: src/Admin/
+msgid "Campaigns"
+msgstr "Kampanyalar"
+
+#: src/Admin/
+msgid "Forms and appearance"
+msgstr "Formlar ve Görünüm"
+
+#: src/Admin/
+msgid "Cart and checkout"
+msgstr "Sepet ve Ödeme"
+
+#: src/Admin/
+msgid "Privacy"
+msgstr "Gizlilik"
+
+#: src/Admin/
+msgid "Tools"
+msgstr "Araçlar"
+
+#: src/Admin/
+msgid "Short equivalents shown next to amounts. Only used when the Impact phrases module is on."
+msgstr "Tutarların yanında gösterilen kısa karşılıklar. Yalnız Etki ifadeleri modülü açıkken kullanılır."
+
+#: src/Admin/
+msgid "How should the form open?"
+msgstr "Form nasıl açılsın?"
+
+#: src/Admin/
+msgid "Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later."
+msgstr "Bağışçı bağış düğmesine dokunduğunda formun nasıl görüneceğini seçin. Telefonlarda form her zaman alttan açılır. Sonradan her ürün için ayrıca değiştirebilirsiniz."
+
+#: src/Admin/
+msgid "Colors"
+msgstr "Renkler"
+
+#: src/Admin/
+msgid "By default the form follows your theme. Pick your own colors only if you need to."
+msgstr "Form varsayılan olarak temanızı izler. Kendi renklerinizi yalnız gerekirse seçin."
+
+#: src/Admin/
+msgid "Quick amount buttons shown above the free amount field."
+msgstr "Serbest tutar alanının üstünde gösterilen hızlı tutar düğmeleri."
+
+#: src/Admin/
+msgid "Optional fields the donor can fill in. Whatever donors type is saved on the order exactly as typed."
+msgstr "Bağışçının doldurabileceği isteğe bağlı alanlar. Bağışçının yazdığı her şey siparişe yazıldığı gibi kaydedilir."
+
+#: src/Admin/
+msgid "Share-based donations"
+msgstr "Hisseli bağışlar"
+
+#: src/Admin/
+msgid "Wording for products where donors buy shares and enter shareholder names."
+msgstr "Bağışçının hisse alıp hissedar adı girdiği ürünler için metinler."
+
+#: src/Admin/
+msgid "Product pages and lists"
+msgstr "Ürün sayfaları ve listeler"
+
+#: src/Admin/
+msgid "Where the donate button appears. Shortcodes and blocks always work anywhere."
+msgstr "Bağış düğmesinin göründüğü yerler. Kısa kodlar ve bloklar her yerde çalışır."
+
+#: src/Admin/
+msgid "Offer one extra donation product next to the main gift."
+msgstr "Ana bağışın yanında bir ek bağış ürünü önerir."
+
+#: src/Admin/
+msgid "Shown after the order. Only used when the Thank-you screen module is on."
+msgstr "Siparişten sonra gösterilir. Yalnız Teşekkür ekranı modülü açıkken kullanılır."
+
+#: src/Admin/
+msgid "One question at checkout. Only used when the Tax relief module is on."
+msgstr "Ödemede tek bir soru. Yalnız Vergi indirimi modülü açıkken kullanılır."
+
+#: src/Admin/
+msgid "Data"
+msgstr "Veri"
+
+#: src/Admin/
+msgid "What happens to plugin data when you delete the plugin."
+msgstr "Eklenti silindiğinde eklenti verilerine ne olacağı."
+
+#: src/Admin/
+msgid "Privacy link under the form"
+msgstr "Formun altında gizlilik bağlantısı"
+
+#: src/Admin/
+msgid "The plugin does not write privacy text. It only shows a short link to the page you wrote on your site."
+msgstr "Eklenti gizlilik metni yazmaz. Yalnız sitenizde yazdığınız sayfaya kısa bir bağlantı gösterir."
+
+#: src/Admin/
+msgid "Form style"
+msgstr "Form biçimi"
+
+#: src/Admin/
+msgid "Side panel is recommended: it opens from the right on desktop and from the bottom on phones."
+msgstr "Sağ panel önerilir: masaüstünde sağdan, telefonda alttan açılır."
+
+#: src/Admin/
+msgid "Recommended. Opens from the bottom on phones."
+msgstr "Önerilen. Telefonda alttan açılır."
+
+#: src/Admin/
+msgid "Centered window"
+msgstr "Ortada pencere"
+
+#: src/Admin/
+msgid "For short forms."
+msgstr "Kısa formlar için."
+
+#: src/Admin/
+msgid "In the page"
+msgstr "Sayfa içinde"
+
+#: src/Admin/
+msgid "The form stays open on the page."
+msgstr "Form sayfada açık durur."
+
+#: src/Admin/
+msgid "Use my theme colors: the form follows your site colors and font automatically."
+msgstr "Temamın renklerini kullan: form sitenizin renk ve yazı tipine kendiliğinden uyar."
+
+#: src/Admin/
+msgid "Use my theme colors"
+msgstr "Temamın renklerini kullan"
+
+#: src/Admin/
+msgid "Choose my own colors"
+msgstr "Kendi renklerimi seçeyim"
+
+#: src/Admin/
+msgid "Main color"
+msgstr "Ana renk"
+
+#: src/Admin/
+msgid "Headings, selected amounts and progress bars. Used only when you choose your own colors."
+msgstr "Başlıklar, seçili tutarlar ve ilerleme çubukları. Yalnız kendi renklerinizi seçtiğinizde kullanılır."
+
+#: src/Admin/
+msgid "The main donate button. Choose a color that keeps white text easy to read."
+msgstr "Ana bağış düğmesi. Beyaz yazının rahat okunacağı bir renk seçin."
+
+#: src/Admin/
+msgid "Donate button text"
+msgstr "Bağış düğmesi metni"
+
+#: src/Admin/
+msgid "Leave empty to use the built-in, translated wording."
+msgstr "Boş bırakırsanız hazır, çevrilmiş metin kullanılır."
+
+#: src/Admin/
+msgid "Shows ready-made amounts. A product can switch them off for itself."
+msgstr "Hazır tutarları gösterir. Bir ürün kendisi için kapatabilir."
+
+#: src/Admin/
+msgid "Numbers separated by commas, for example 25, 50, 100. At most six; leave empty for the store default."
+msgstr "Virgülle ayrılmış sayılar, örneğin 25, 50, 100. En çok altı; mağaza varsayılanı için boş bırakın."
+
+#: src/Admin/
+msgid "Asks for an email address so the donor can get a receipt."
+msgstr "Bağışçı makbuz alabilsin diye e-posta adresi ister."
+
+#: src/Admin/
+msgid "On behalf of / dedication"
+msgstr "Adına / ithaf"
+
+#: src/Admin/
+msgid "Lets donors give in someone's name or memory."
+msgstr "Bağışçıların birinin adına ya da anısına bağış yapmasını sağlar."
+
+#: src/Admin/
+msgid "Anonymous option"
+msgstr "Anonim seçeneği"
+
+#: src/Admin/
+msgid "Hides the donor name on public lists. The order keeps the real name."
+msgstr "Herkese açık listelerde bağışçı adını gizler. Sipariş gerçek adı korur."
+
+#: src/Admin/
+msgid "Two steps"
+msgstr "İki adım"
+
+#: src/Admin/
+msgid "Splits the form into amount first, details second."
+msgstr "Formu önce tutar, sonra bilgiler olarak ikiye böler."
+
+#: src/Admin/
+msgid "Trust line"
+msgstr "Güven satırı"
+
+#: src/Admin/
+msgid "A short reassurance line under the donate button."
+msgstr "Bağış düğmesinin altında kısa bir güven cümlesi."
+
+#: src/Admin/
+msgid "Dedication field hint"
+msgstr "İthaf alanı ipucu"
+
+#: src/Admin/
+msgid "The hint inside the dedication field. Leave empty for the built-in wording."
+msgstr "İthaf alanının içindeki ipucu. Hazır metin için boş bırakın."
+
+#: src/Admin/
+msgid "Trust line wording"
+msgstr "Güven satırı metni"
+
+#: src/Admin/
+msgid "Leave empty for the built-in secure payment sentence."
+msgstr "Hazır güvenli ödeme cümlesi için boş bırakın."
+
+#: src/Admin/
+msgid "Shareholder heading"
+msgstr "Hissedar başlığı"
+
+#: src/Admin/
+msgid "Title above the shareholder name fields. Leave empty for the built-in wording."
+msgstr "Hissedar ad alanlarının üstündeki başlık. Hazır metin için boş bırakın."
+
+#: src/Admin/
+msgid "Copy shareholder button"
+msgstr "Hissedar kopyalama düğmesi"
+
+#: src/Admin/
+msgid "Lets donors repeat the first shareholder's details quickly."
+msgstr "Bağışçıların ilk hissedarın bilgilerini hızlıca tekrarlamasını sağlar."
+
+#: src/Admin/
+msgid "Shareholder email"
+msgstr "Hissedar e-postası"
+
+#: src/Admin/
+msgid "Adds an optional email field for each shareholder."
+msgstr "Her hissedar için isteğe bağlı e-posta alanı ekler."
+
+#: src/Admin/
+msgid "Replace \"Add to cart\" with the donate button"
+msgstr "\"Sepete ekle\" yerine bağış düğmesi göster"
+
+#: src/Admin/
+msgid "Uses the standard WooCommerce spots on product pages. If your page layout has no such spot, a fallback button is drawn."
+msgstr "Ürün sayfalarında WooCommerce'in standart yerlerini kullanır. Sayfa düzeninizde böyle bir yer yoksa yedek düğme çizilir."
+
+#: src/Admin/
+msgid "Position"
+msgstr "Konum"
+
+#: src/Admin/
+msgid "Where on the product page the donate button goes."
+msgstr "Bağış düğmesinin ürün sayfasındaki yeri."
+
+#: src/Admin/
+msgid "Where the add-to-cart button was"
+msgstr "Sepete ekle düğmesinin olduğu yer"
+
+#: src/Admin/
+msgid "After the short description"
+msgstr "Kısa açıklamanın altı"
+
+#: src/Admin/
+msgid "Below the product summary"
+msgstr "Ürün özetinin altı"
+
+#: src/Admin/
+msgid "Hide the product price"
+msgstr "Ürün fiyatını gizle"
+
+#: src/Admin/
+msgid "Donation products usually have no fixed price to show."
+msgstr "Bağış ürünlerinin genelde gösterilecek sabit fiyatı yoktur."
+
+#: src/Admin/
+msgid "Show a title above the in-page form"
+msgstr "Sayfa içi formun üstünde başlık göster"
+
+#: src/Admin/
+msgid "Only for the \"In the page\" style."
+msgstr "Yalnız \"Sayfa içinde\" biçimi için."
+
+#: src/Admin/
+msgid "Button in product lists"
+msgstr "Ürün listelerindeki düğme"
+
+#: src/Admin/
+msgid "What the button does in shop and category lists."
+msgstr "Mağaza ve kategori listelerinde düğmenin ne yaptığı."
+
+#: src/Admin/
+msgid "Opens the form panel"
+msgstr "Form panelini açar"
+
+#: src/Admin/
+msgid "Opens a centered window"
+msgstr "Ortada pencere açar"
+
+#: src/Admin/
+msgid "Links to the product page"
+msgstr "Ürün sayfasına bağlanır"
+
+#: src/Admin/
+msgid "No button"
+msgstr "Düğme yok"
+
+#: src/Admin/
+msgid "Which products are donation products"
+msgstr "Hangi ürünler bağış ürünü"
+
+#: src/Admin/
+msgid "All products, only chosen categories, or only products you mark on the product page."
+msgstr "Tüm ürünler, yalnız seçili kategoriler ya da yalnız ürün sayfasında işaretlediğiniz ürünler."
+
+#: src/Admin/
+msgid "All products"
+msgstr "Tüm ürünler"
+
+#: src/Admin/
+msgid "Products in chosen categories"
+msgstr "Seçili kategorilerdeki ürünler"
+
+#: src/Admin/
+msgid "Only products I mark"
+msgstr "Yalnız işaretlediğim ürünler"
+
+#: src/Admin/
+msgid "Category IDs"
+msgstr "Kategori numaraları"
+
+#: src/Admin/
+msgid "Used with \"chosen categories\". Category IDs separated by commas (see Products > Categories)."
+msgstr "\"Seçili kategoriler\" ile kullanılır. Virgülle ayrılmış kategori numaraları (Ürünler > Kategoriler)."
+
+#: src/Admin/
+msgid "Add-on product ID"
+msgstr "Ek bağış ürünü numarası"
+
+#: src/Admin/
+msgid "The WooCommerce product ID of the extra donation. Leave 0 to offer none. A product can set its own add-on."
+msgstr "Ek bağışın WooCommerce ürün numarası. Hiç önermemek için 0 bırakın. Bir ürün kendi ek bağışını belirleyebilir."
+
+#: src/Admin/
+msgid "Add-on label"
+msgstr "Ek bağış etiketi"
+
+#: src/Admin/
+msgid "The wording of the switch donors see. Leave empty for the built-in wording."
+msgstr "Bağışçının gördüğü anahtarın metni. Hazır metin için boş bırakın."
+
+#: src/Admin/
+msgid "Shown on the thank-you screen after a donation. Leave empty for the built-in wording."
+msgstr "Bağıştan sonra teşekkür ekranında gösterilir. Hazır metin için boş bırakın."
+
+#: src/Admin/
+msgid "Step title"
+msgstr "Adım başlığı"
+
+#: src/Admin/
+msgid "Heading"
+msgstr "Başlık"
+
+#: src/Admin/
+msgid "Explanation"
+msgstr "Açıklama"
+
+#: src/Admin/
+msgid "A sentence or two explaining the declaration."
+msgstr "Beyanı açıklayan bir iki cümle."
+
+#: src/Admin/
+msgid "Checkbox wording"
+msgstr "Onay kutusu metni"
+
+#: src/Admin/
+msgid "Show a privacy link under the form"
+msgstr "Formun altında gizlilik bağlantısı göster"
+
+#: src/Admin/
+msgid "Shown only when the form asks for email, dedication or shareholder details."
+msgstr "Yalnız form e-posta, ithaf ya da hissedar bilgisi istediğinde gösterilir."
+
+#: src/Admin/
+msgid "Link text"
+msgstr "Bağlantı metni"
+
+#: src/Admin/
+msgid "Leave empty for the built-in wording."
+msgstr "Hazır metin için boş bırakın."
+
+#: src/Admin/
+msgid "Link address"
+msgstr "Bağlantı adresi"
+
+#: src/Admin/
+msgid "Leave empty to use the privacy policy page set in WordPress."
+msgstr "WordPress'te atanmış gizlilik politikası sayfasını kullanmak için boş bırakın."
+
+#: src/Admin/
+msgid "Delete plugin data when the plugin is deleted"
+msgstr "Eklenti silindiğinde eklenti verilerini sil"
+
+#: src/Admin/
+msgid "Removes the plugin's settings and product options. Orders and order records are never touched. This cannot be undone."
+msgstr "Eklentinin ayarlarını ve ürün seçeneklerini siler. Siparişlere ve sipariş kayıtlarına asla dokunulmaz. Geri alınamaz."
+
+#: src/Admin/
+msgid "All plugin settings and product options will be deleted when the plugin is deleted. Orders are not affected. This cannot be undone. Have you made a backup?"
+msgstr "Eklenti silindiğinde tüm eklenti ayarları ve ürün seçenekleri silinecek. Siparişler etkilenmez. Geri alınamaz. Yedek aldınız mı?"
+
+#: src/Admin/
+msgid "Shortcodes and block"
+msgstr "Kısa kodlar ve blok"
+
+#: src/Admin/
+msgid "Side panel button: [wdp_donation_button_panel]. Centered window button: [wdp_donation_button]. Form that stays on the page: [wdp_donation_form]. List of donation products: [wdp_donations]."
+msgstr "Sağ panel düğmesi: [wdp_donation_button_panel]. Ortada pencere düğmesi: [wdp_donation_button]. Sayfada açık duran form: [wdp_donation_form]. Bağış ürünleri listesi: [wdp_donations]."
+
+#: src/Admin/
+msgid "Add id=\"123\" to point at a specific product. Without an ID the shortcode finds the product it is placed in. The \"Donation Panel\" block does the same in the block editor."
+msgstr "Belirli bir ürünü göstermek için id=\"123\" ekleyin. Numara verilmezse kısa kod bulunduğu ürünü kendisi bulur. Blok düzenleyicideki \"Bağış Paneli\" bloğu da aynı şekilde çalışır."
+
+#: src/Admin/
+msgid "For developers: filters"
+msgstr "Geliştiriciler için: süzgeçler"
+
+#: src/Admin/
+msgid "donation_panel_convert_amount converts amounts for a multi-currency plugin. donation_panel_amount_presets changes the quick amounts. donation_panel_rest_controllers adds REST controllers. The full list with examples is in docs/HOOKS.md in the plugin folder."
+msgstr "donation_panel_convert_amount çok para birimli eklenti için tutarları dönüştürür. donation_panel_amount_presets hızlı tutarları değiştirir. donation_panel_rest_controllers REST denetleyicileri ekler. Örneklerle tam liste eklenti klasöründeki docs/HOOKS.md dosyasındadır."
+
+#: src/Admin/
+msgid "Back to overview"
+msgstr "Genel Bakış'a dön"
+
+#: src/Admin/
+msgid "Setup is complete"
+msgstr "Kurulum tamam"
+
+#: src/Admin/
+msgid "Everything is in place. You can change any setting later."
+msgstr "Her şey yerinde. Her ayarı sonradan değiştirebilirsiniz."
+
+#: src/Admin/
+msgid "Setup is almost complete"
+msgstr "Kurulum neredeyse tamam"
+
+#: src/Admin/
+msgid "Let's finish setting up"
+msgstr "Kurulumu tamamlayalım"
+
+#: src/Admin/
+msgid "Remaining: %s."
+msgstr "Kalan: %s."
+
+#: src/Admin/
+msgid "Your whole donation experience in one place."
+msgstr "Bağış deneyiminizin tamamı tek yerde."
+
+#: src/Admin/
+msgid "%1$d of %2$d setup steps done"
+msgstr "%2$d kurulum adımından %1$d tanesi tamam"
+
+#: src/Admin/
+msgid "Continue the quick setup"
+msgstr "Hızlı kuruluma devam et"
+
+#: src/Admin/
+msgid "Status"
+msgstr "Durum"
+
+#: src/Admin/
+msgid "Products with a goal. Set a goal on the product's Donation tab."
+msgstr "Hedefi olan ürünler. Hedefi ürünün Bağış sekmesinde belirleyin."
+
+#: src/Admin/
+msgid "(no title)"
+msgstr "(başlıksız)"
+
+#: src/Admin/
+msgid "%d percent of the goal"
+msgstr "Hedefin yüzde %d'i"
+
+#: src/Admin/
+msgid "No campaigns yet. Open a product, choose the Donation tab and set a goal amount."
+msgstr "Henüz kampanya yok. Bir ürünü açın, Bağış sekmesini seçin ve hedef tutarı girin."
+
+#: src/Admin/
+msgid "Add a product"
+msgstr "Ürün ekle"
+
+#: src/Admin/
+msgid "Campaign products"
+msgstr "Kampanya ürünleri"
+
+#: src/Admin/
+msgid "Amount raised includes any amount you added by hand on the product."
+msgstr "Toplanan tutar, üründe elle eklediğiniz tutarı da içerir."
+
+#: src/Admin/
+msgid "Live"
+msgstr "Yayında"
+
+#: src/Admin/
+msgid "Draft"
+msgstr "Taslak"
+
+#: src/Admin/
+msgid "Private"
+msgstr "Özel"
+
+#: src/Admin/
+msgid "Pending review"
+msgstr "İnceleme bekliyor"
+
+#: src/Admin/
+msgid "How the donation form looks and where the donate button appears."
+msgstr "Bağış formunun görünümü ve bağış düğmesinin göründüğü yerler."
+
+#: src/Admin/
+msgid "Fix"
+msgstr "Düzelt"
+
+#: src/Admin/
+msgid "Guest checkout is on"
+msgstr "Misafir ödeme açık"
+
+#: src/Admin/
+msgid "Guest checkout is off: donors must create an account to give"
+msgstr "Misafir ödeme kapalı: bağışçılar bağış yapmak için hesap açmak zorunda"
+
+#: src/Admin/
+msgid "Open WooCommerce settings"
+msgstr "WooCommerce ayarlarını aç"
+
+#: src/Admin/
+msgid "Payment methods, taxes and currency are set in WooCommerce. Donation Panel works with both the block and the classic checkout."
+msgstr "Ödeme yöntemleri, vergiler ve para birimi WooCommerce'te ayarlanır. Bağış Paneli hem blok hem klasik ödeme sayfasıyla çalışır."
+
+#: src/Admin/
+msgid "What donors see after they choose an amount."
+msgstr "Bağışçının tutarı seçtikten sonra gördükleri."
+
+#: src/Admin/
+msgid "Guest checkout is on: donors can give without an account"
+msgstr "Misafir ödeme açık: bağışçılar hesapsız bağış yapabilir"
+
+#: src/Admin/
+msgid "Guest checkout is off: every donor must create an account"
+msgstr "Misafir ödeme kapalı: her bağışçı hesap açmak zorunda"
+
+#: src/Admin/
+msgid "Registration on My Account is on"
+msgstr "Hesabım'da kayıt açık"
+
+#: src/Admin/
+msgid "Registration on My Account is off: donors cannot create an account themselves"
+msgstr "Hesabım'da kayıt kapalı: bağışçılar kendileri hesap açamaz"
+
+#: src/Admin/
+msgid "Sign-in, registration and password reset use WordPress and WooCommerce. The plugin never stores passwords. Account options are set in WooCommerce."
+msgstr "Giriş, kayıt ve şifre sıfırlama WordPress ve WooCommerce ile yapılır. Eklenti şifre saklamaz. Hesap seçenekleri WooCommerce'te ayarlanır."
+
+#: src/Admin/
+msgid "Optional. Off by default; donors can always give as guests."
+msgstr "İsteğe bağlı. Varsayılan kapalı; bağışçılar her zaman misafir olarak bağış yapabilir."
+
+#: src/Admin/
+msgid "Adds a sign-in icon, a sign-in and register panel, and a \"My donations\" tab in My Account with receipts and a quick way to give again."
+msgstr "Giriş simgesi, giriş ve kayıt paneli ile Hesabım'da makbuzlu ve tekrar bağış yapmayı kolaylaştıran \"Bağışlarım\" sekmesi ekler."
+
+#: src/Admin/
+msgid "WooCommerce account settings"
+msgstr "WooCommerce hesap ayarları"
+
+#: src/Admin/
+msgid "Privacy policy page is set in WordPress"
+msgstr "WordPress'te gizlilik politikası sayfası atanmış"
+
+#: src/Admin/
+msgid "Privacy policy page is not set in WordPress"
+msgstr "WordPress'te gizlilik politikası sayfası atanmamış"
+
+#: src/Admin/
+msgid "Set it"
+msgstr "Ata"
+
+#: src/Admin/
+msgid "The plugin sets no cookie of its own"
+msgstr "Eklenti kendi çerezini yerleştirmez"
+
+#: src/Admin/
+msgid "WordPress \"Export personal data\" includes donor details on orders"
+msgstr "WordPress \"Kişisel verileri dışa aktar\" siparişlerdeki bağışçı bilgilerini içerir"
+
+#: src/Admin/
+msgid "Donor details are not part of \"Export personal data\""
+msgstr "Bağışçı bilgileri \"Kişisel verileri dışa aktar\" kapsamında değil"
+
+#: src/Admin/
+msgid "WordPress \"Erase personal data\" covers donor details on orders"
+msgstr "WordPress \"Kişisel verileri sil\" siparişlerdeki bağışçı bilgilerini kapsar"
+
+#: src/Admin/
+msgid "Donor details are not part of \"Erase personal data\""
+msgstr "Bağışçı bilgileri \"Kişisel verileri sil\" kapsamında değil"
+
+#: src/Admin/
+msgid "Export personal data"
+msgstr "Kişisel verileri dışa aktar"
+
+#: src/Admin/
+msgid "Erase personal data"
+msgstr "Kişisel verileri sil"
+
+#: src/Admin/
+msgid "Donor details are handled with the WordPress privacy tools."
+msgstr "Bağışçı bilgileri WordPress gizlilik araçlarıyla yönetilir."
+
+#: src/Admin/
+msgid "WordPress privacy tools"
+msgstr "WordPress gizlilik araçları"
+
+#: src/Admin/
+msgid "Donor name, dedication, phone and email are saved on the order exactly as typed. Write your privacy text on your own site."
+msgstr "Bağışçı adı, ithaf, telefon ve e-posta siparişe yazıldığı gibi kaydedilir. Gizlilik metnini kendi sitenizde yazın."
+
+#: src/Admin/
+msgid "Preview, move your settings, and check that everything is working."
+msgstr "Önizleyin, ayarlarınızı taşıyın ve her şeyin çalıştığını kontrol edin."
+
+#: src/Admin/
+msgid "See every module on your site as visitors would, without changing any setting. Only you can see it, and it never saves anything."
+msgstr "Hiçbir ayarı değiştirmeden her modülü ziyaretçiler gibi sitenizde görün. Yalnız siz görürsünüz ve hiçbir şey kaydedilmez."
+
+#: src/Admin/
+msgid "Open preview"
+msgstr "Önizlemeyi aç"
+
+#: src/Admin/
+msgid "Export downloads your plugin settings as a file. Import reads such a file. Orders, donors and products are not included."
+msgstr "Dışa aktarma eklenti ayarlarınızı dosya olarak indirir. İçe aktarma böyle bir dosyayı okur. Sipariş, bağışçı ve ürünler dahil değildir."
+
+#: src/Admin/
+msgid "Export settings"
+msgstr "Ayarları dışa aktar"
+
+#: src/Admin/
+msgid "Import settings"
+msgstr "Ayarları içe aktar"
+
+#: src/Admin/
+msgid "Export and import"
+msgstr "Dışa ve içe aktarma"
+
+#: src/Admin/
+msgid "Copy for support"
+msgstr "Destek için kopyala"
+
+#: src/Admin/
+msgid "Diagnostics"
+msgstr "Tanılama"
+
+#: src/Admin/
+msgid "No personal or order data is included."
+msgstr "Kişisel veri ya da sipariş verisi içermez."
+
+#: src/Admin/
+msgid "WordPress"
+msgstr "WordPress"
+
+#: src/Admin/
+msgid "WooCommerce"
+msgstr "WooCommerce"
+
+#: src/Admin/
+msgid "PHP"
+msgstr "PHP"
+
+#: src/Admin/
+msgid "Order storage"
+msgstr "Sipariş depolama"
+
+#: src/Admin/
+msgid "Guest checkout"
+msgstr "Misafir ödeme"
+
+#: src/Admin/
+msgid "Modules on"
+msgstr "Açık modüller"
+
+#: src/Admin/
+msgid "REST API address"
+msgstr "REST API adresi"
+
+#: src/Admin/
+msgid "Campaign and progress bars"
+msgstr "Kampanya ve ilerleme çubukları"
+
+#: src/Admin/
+msgid "Goal, amount raised and days left"
+msgstr "Hedef, toplanan tutar ve kalan gün"
+
+#: src/Admin/
+msgid "Shows what an amount will do"
+msgstr "Tutarların ne işe yarayacağını gösterir"
+
+#: src/Admin/
+msgid "Complete several gifts in one go"
+msgstr "Birden fazla bağışı tek seferde tamamlama"
+
+#: src/Admin/
+msgid "Sign in, register and My donations"
+msgstr "Giriş, kayıt ve Bağışlarım paneli"
+
+#: src/Admin/
+msgid "Real donor counts, no personal details"
+msgstr "Gerçek bağışçı sayısı, kişi bilgisi olmadan"
+
+#: src/Admin/
+msgid "A warm confirmation after the order"
+msgstr "Siparişten sonra sıcak bir onay"
+
+#: src/Admin/
+msgid "One question; a yes saves name and address on the order"
+msgstr "Tek soru; evet denirse ad ve adres siparişe kaydedilir"
+
+#: src/Admin/
+msgid "Unknown setting."
+msgstr "Bilinmeyen ayar."
+
+#: src/Admin/
+msgid "Enter a color like #12305A."
+msgstr "#12305A gibi bir renk girin."
+
+#: src/Admin/
+msgid "Choose one of the listed options."
+msgstr "Listedeki seçeneklerden birini seçin."
+
+#: src/Admin/
+msgid "Use plain numbers separated by commas, for example 25, 50, 100."
+msgstr "Virgülle ayrılmış düz sayılar kullanın, örneğin 25, 50, 100."
+
+#: src/Admin/
+msgid "Use at most six amounts."
+msgstr "En çok altı tutar kullanın."
+
+#: src/Admin/
+msgid "Unknown module."
+msgstr "Bilinmeyen modül."
+
+#: src/Admin/
+msgid "Pages"
+msgstr "Sayfalar"
+
+#: src/Admin/
+msgid "Appearance"
+msgstr "Görünüm"
+
+#: src/Admin/
+msgid "Finish"
+msgstr "Bitir"
+
+#: src/Admin/
+msgid "Is your store ready?"
+msgstr "Mağazanız hazır mı?"
+
+#: src/Admin/
+msgid "Donation Panel reads your WooCommerce settings as they are. Nothing is created or changed here."
+msgstr "Bağış Paneli WooCommerce ayarlarınızı olduğu gibi okur. Burada hiçbir şey oluşturulmaz ya da değiştirilmez."
+
+#: src/Admin/
+msgid "How should the donation form open?"
+msgstr "Bağış formu nasıl açılsın?"
+
+#: src/Admin/
+msgid "Choose how the form looks when a donor taps \"Donate\". You can still change it for each product later."
+msgstr "Bağışçı \"Bağış yap\"a dokunduğunda formun nasıl görüneceğini seçin. Sonradan her ürün için ayrıca değiştirebilirsiniz."
+
+#: src/Admin/
+msgid "What should the form ask?"
+msgstr "Form ne sormalı?"
+
+#: src/Admin/
+msgid "Keep it short: fewer fields mean more completed gifts. You can change this any time."
+msgstr "Kısa tutun: daha az alan, daha çok tamamlanan bağış demektir. Bunu istediğiniz zaman değiştirebilirsiniz."
+
+#: src/Admin/
+msgid "Which extras do you want?"
+msgstr "Hangi ekstralar olsun?"
+
+#: src/Admin/
+msgid "Your choices are saved. Place the donate button with the shortcode below, with the block, or let automatic placement do it."
+msgstr "Seçimleriniz kaydedildi. Bağış düğmesini aşağıdaki kısa kodla, blokla yerleştirin ya da otomatik yerleşime bırakın."
+
+#: src/Admin/
+msgid "Donation Panel works on your existing WooCommerce products. Open a product and use its Donation tab to turn it into a donation product."
+msgstr "Bağış Paneli mevcut WooCommerce ürünlerinizle çalışır. Bir ürünü açıp Bağış sekmesinden bağış ürününe çevirin."
+
+#: src/Admin/
+msgid "The form follows your site colors and font automatically"
+msgstr "Form sitenizin renk ve yazı tipine kendiliğinden uyar"
+
+#: src/Admin/
+msgid "Main color and button color"
+msgstr "Ana renk ve düğme rengi"
+
+#: src/Admin/
+msgid "Setup progress"
+msgstr "Kurulum ilerlemesi"
+
+#: src/Admin/
+msgid "LIVE PREVIEW"
+msgstr "CANLI ÖNİZLEME"
+
+#: src/Admin/
+msgid "Checkout page is missing or not published"
+msgstr "Ödeme sayfası yok ya da yayında değil"
+
+#: src/Admin/
+msgid "Checkout page ready (block checkout)"
+msgstr "Ödeme sayfası hazır (blok ödeme)"
+
+#: src/Admin/
+msgid "Checkout page ready (classic checkout)"
+msgstr "Ödeme sayfası hazır (klasik ödeme)"
+
+#: src/Admin/
+msgid "Currency: %s"
+msgstr "Para birimi: %s"
+
+#: src/Admin/
+msgid "Change in WooCommerce"
+msgstr "WooCommerce'te değiştir"
+
+#: src/Admin/
+msgid "%d donation product is live"
+msgid_plural "%d donation products are live"
+msgstr[0] "%d bağış ürünü yayında"
+msgstr[1] "%d bağış ürünü yayında"
+
+#: src/Admin/
+msgid "Privacy policy page is set"
+msgstr "Gizlilik politikası sayfası atanmış"
+
+#: src/Admin/
+msgid "Privacy policy page is not set"
+msgstr "Gizlilik politikası sayfası atanmamış"
+
+#: src/Admin/
+msgid "Guest checkout is on: donors do not need an account"
+msgstr "Misafir ödeme açık: bağışçıların hesap açması gerekmez"
+
+#: src/Admin/
+msgid "Guest checkout is off: donors must create an account to give. Turn on guest checkout in WooCommerce."
+msgstr "Misafir ödeme kapalı: bağışçılar bağış yapmak için hesap açmak zorunda. WooCommerce'te misafir ödemeyi açın."
+
+#: src/Admin/
+msgid "prepare the checkout page"
+msgstr "ödeme sayfasını hazırla"
+
+#: src/Admin/
+msgid "publish a donation product"
+msgstr "bir bağış ürünü yayınla"
+
+#: src/Admin/
+msgid "finish the quick setup"
+msgstr "hızlı kurulumu bitir"
+
+#: src/Admin/
+msgid "link your privacy page"
+msgstr "gizlilik sayfasını bağla"
+
+#: src/Admin/
+msgid "allow guest checkout"
+msgstr "misafir ödemeye izin ver"
+
+#: src/Admin/
+msgid "create your first campaign"
+msgstr "ilk kampanyanı oluştur"
+
+#: src/Admin/
+msgid "Full-width donate button"
+msgstr "Tam genişlikte bağış düğmesi"
+
+#: src/Admin/
+msgid "Makes the shortcode donate button as wide as its container. Handy on phones."
+msgstr "Kısa kodla eklenen bağış düğmesini bulunduğu alan kadar geniş yapar. Telefonda kullanışlıdır."

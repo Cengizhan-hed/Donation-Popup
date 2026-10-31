@@ -1,32 +1,32 @@
 {
   "allow": [
     {
-      "file": "includes/class-migrations.php",
+      "file": "src/Core/class-version-migrations.php",
       "contains": "Kişisel verileriniz",
       "reason": "Eski (çeviri öncesi) kayıtlı varsayılan metni tanıma sabiti — veri, görünür metin değil"
     },
     {
-      "file": "includes/class-order-meta-keys.php",
+      "file": "src/WooCommerce/class-order-meta-keys.php",
       "contains": "Bağışçı",
       "reason": "Eski siparişlerde Türkçe etiket olarak saklanmış meta anahtarlarını sabit anahtara eşleme (geçmiş sipariş verisi)"
     },
     {
-      "file": "includes/class-order-meta-keys.php",
+      "file": "src/WooCommerce/class-order-meta-keys.php",
       "contains": "İthaf",
       "reason": "Eski sipariş meta anahtarı (veri)"
     },
     {
-      "file": "includes/class-order-meta-keys.php",
+      "file": "src/WooCommerce/class-order-meta-keys.php",
       "contains": "İşlem ücreti",
       "reason": "Eski sipariş meta anahtarı (veri)"
     },
     {
-      "file": "includes/class-order-meta-keys.php",
+      "file": "src/WooCommerce/class-order-meta-keys.php",
       "contains": "Hisse Sayısı",
       "reason": "Eski sipariş meta anahtarı (veri)"
     },
     {
-      "file": "includes/class-order-meta-keys.php",
+      "file": "src/WooCommerce/class-order-meta-keys.php",
       "contains": "Hissedar",
       "reason": "Eski sipariş meta anahtarı biçimleri (veri)"
     },
@@ -41,7 +41,7 @@
       "reason": "İngilizce CSS yorumu (yanlış pozitif)"
     },
     {
-      "file": "includes/class-order-meta-keys.php",
+      "file": "src/WooCommerce/class-order-meta-keys.php",
       "contains": "Bağış Notu",
       "reason": "Eski sipariş meta anahtarı (veri)"
     }

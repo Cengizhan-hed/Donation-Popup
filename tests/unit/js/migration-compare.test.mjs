@@ -167,3 +167,28 @@ describe('idempotent ve sızıntı', () => {
     assert.ok(md.includes('option:wdp_button_settings.button_primary_color'));
   });
 });
+
+describe('migration-compare 12.0.0 beklenen farklar', () => {
+  it('engine silinmesi + migrations.version değişimi: fail değil', () => {
+    const a = snap({
+      donation_panel_settings: entry({ experiences: { engine: 'new' }, keep: 'x' }),
+      donation_panel_migrations: entry({ version: '11.0.0' }),
+    });
+    const b = snap({
+      donation_panel_settings: entry({ experiences: {}, keep: 'x' }),
+      donation_panel_migrations: entry({ version: '12.0.0' }),
+    });
+    const r = compareSnapshots(a, b, { targetVersion: '12.0.0' });
+    assert.equal(r.fail, false);
+    assert.equal(r.counts['KAYBOLDU'], 0);
+    assert.equal(r.counts['DEĞİŞTİ'], 0);
+  });
+
+  it('başka anahtar kaybolursa fail', () => {
+    const a = snap({ donation_panel_settings: entry({ keep: 'x', other: 'y' }) });
+    const b = snap({ donation_panel_settings: entry({ keep: 'x' }) });
+    const r = compareSnapshots(a, b, { targetVersion: '12.0.0' });
+    assert.equal(r.fail, true);
+    assert.equal(r.counts['KAYBOLDU'], 1);
+  });
+});

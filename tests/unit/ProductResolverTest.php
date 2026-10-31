@@ -1,8 +1,8 @@
 <?php
 /**
- * WDP_Product_Resolver çözüm sırası ve açık ürün nitelikleri.
+ * \DonationPanel\Modules\EntryPoints\Product_Resolver çözüm sırası ve açık ürün nitelikleri.
  *
- * @package WooCommerce\Donation_Popup
+ * @package DonationPanel
  */
 
 declare(strict_types=1);
@@ -28,25 +28,25 @@ final class ProductResolverTest extends TestCase {
 	}
 
 	public function test_id_wins(): void {
-		$product = WDP_Product_Resolver::resolve(array('id' => 9, 'slug' => 'kurban'));
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array('id' => 9, 'slug' => 'kurban'));
 		$this->assertSame(9, $product->get_id());
 	}
 
 	public function test_slug_then_sku(): void {
-		$product = WDP_Product_Resolver::resolve(array('slug' => 'kurban'));
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array('slug' => 'kurban'));
 		$this->assertSame(5, $product->get_id());
-		$product = WDP_Product_Resolver::resolve(array('sku' => 'SKU-9'));
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array('sku' => 'SKU-9'));
 		$this->assertSame(9, $product->get_id());
 	}
 
 	public function test_block_context_post_id(): void {
-		$product = WDP_Product_Resolver::resolve(array(), array('postId' => 5, 'postType' => 'product'));
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array(), array('postId' => 5, 'postType' => 'product'));
 		$this->assertSame(5, $product->get_id());
 	}
 
 	public function test_global_product_without_overwriting_loop(): void {
 		$GLOBALS['product'] = WDP_Test_State::$products[9];
-		$resolved = WDP_Product_Resolver::resolve(array());
+		$resolved = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array());
 		$this->assertSame(9, $resolved->get_id());
 		$this->assertSame(9, $GLOBALS['product']->get_id());
 	}
@@ -54,15 +54,42 @@ final class ProductResolverTest extends TestCase {
 	public function test_is_product_queried_object(): void {
 		WDP_Test_State::$is_product = true;
 		WDP_Test_State::$queried_id = 5;
-		$product = WDP_Product_Resolver::resolve(array());
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array());
 		$this->assertSame(5, $product->get_id());
 	}
 
 	public function test_explicit_product_flags(): void {
-		$this->assertTrue(WDP_Product_Resolver::has_explicit_product(array('id' => 5)));
-		$this->assertTrue(WDP_Product_Resolver::has_explicit_product(array('slug' => 'kurban')));
-		$this->assertTrue(WDP_Product_Resolver::has_explicit_product(array('sku' => 'SKU-5')));
-		$this->assertFalse(WDP_Product_Resolver::has_explicit_product(array()));
+		$this->assertTrue(\DonationPanel\Modules\EntryPoints\Product_Resolver::has_explicit_product(array('id' => 5)));
+		$this->assertTrue(\DonationPanel\Modules\EntryPoints\Product_Resolver::has_explicit_product(array('slug' => 'kurban')));
+		$this->assertTrue(\DonationPanel\Modules\EntryPoints\Product_Resolver::has_explicit_product(array('sku' => 'SKU-5')));
+		$this->assertFalse(\DonationPanel\Modules\EntryPoints\Product_Resolver::has_explicit_product(array()));
+	}
+
+	public function test_builder_preview_sample_product_without_context(): void {
+		// Ad alanı hatası (class_exists('Builder_Detect')) örnek ürünü hiç çözmüyordu.
+		WDP_Test_State::$caps[] = 'edit_products';
+		$_GET['acme_builder_edit'] = '1';
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		add_filter(
+			'wdp_builder_preview_context_product',
+			static function () {
+				return WDP_Test_State::$products[5];
+			}
+		);
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array());
+		unset($_GET['acme_builder_edit']);
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$this->assertNotNull($product);
+		$this->assertSame(5, $product->get_id());
+	}
+
+	public function test_visitor_gets_no_sample_product(): void {
+		$_GET['acme_builder_edit'] = '1';
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array());
+		unset($_GET['acme_builder_edit']);
+		\DonationPanel\Modules\EntryPoints\Builder_Detect::reset();
+		$this->assertNull($product);
 	}
 
 	public function test_filter_can_override(): void {
@@ -72,7 +99,7 @@ final class ProductResolverTest extends TestCase {
 				return WDP_Test_State::$products[9];
 			}
 		);
-		$product = WDP_Product_Resolver::resolve(array('id' => 5));
+		$product = \DonationPanel\Modules\EntryPoints\Product_Resolver::resolve(array('id' => 5));
 		$this->assertSame(9, $product->get_id());
 	}
 }

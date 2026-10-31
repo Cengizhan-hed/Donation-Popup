@@ -82,7 +82,7 @@ async function main() {
   const areaInfo = flags.all
     ? { areas: null, files: [], unmatched: [], reason: '--all' }
     : resolveQuickAreas(flags.areas);
-  const profileId = env.E2E_PROFILE_ID || env._profile?.id || 'staging-hedef';
+  const profileId = env.E2E_PROFILE_ID || env._profile?.id || 'local';
   const outDir = currentDirFor(profileId, deviceId);
   const baselineDir = baselineDirFor(profileId, deviceId);
 

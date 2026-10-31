@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # WordPress plugin ZIP builder.
-# - Copies working tree (including untracked runtime vendor files) to a temp dir
+# - Copies working tree to a temp dir
 # - Applies exclude rules from .distignore (single source of truth)
 # - Creates build/woo-donation-popup.zip
 set -euo pipefail
@@ -36,6 +36,7 @@ RSYNC_ARGS=(-a)
 DEFAULT_EXCLUDES=(
   "node_modules/"
   ".git/"
+  ".git"
   ".claude/"
   "CLAUDE.md"
   ".cursor/"
@@ -61,73 +62,20 @@ fi
 
 node "$PLUGIN_ROOT/scripts/lib/remote-guard.mjs" --exec --local-pack -- rsync "${RSYNC_ARGS[@]}" "$PLUGIN_ROOT/" "$DEST/"
 
-# Minify admin CSS in the distribution copy only (source stays readable).
-if command -v php >/dev/null 2>&1 && [[ -f "$PLUGIN_ROOT/tools/minify-admin-css.php" ]]; then
-  echo "Minifying admin CSS for distribution..."
-  php "$PLUGIN_ROOT/tools/minify-admin-css.php" "$DEST/assets/css/admin-style.css" "$DEST/assets/css/admin/products.css" "$DEST/assets/css/list.css" || true
-fi
-
-# Production ZIP: bundle frontend CSS into a single file when PHP CLI is available.
-if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-css-bundle.php" ]]; then
-  echo "Building frontend CSS bundle..."
-  (cd "$DEST" && php tools/build-css-bundle.php) || {
-    echo "warning: CSS bundle build failed; ZIP will use layered CSS handles." >&2
-  }
-fi
-
-if command -v php >/dev/null 2>&1 && [[ -f "$DEST/tools/build-js-bundle.php" ]]; then
-  echo "Building frontend JS bundle..."
-  (cd "$DEST" && php tools/build-js-bundle.php) || {
-    echo "warning: JS bundle build failed; ZIP will use modular JS handles." >&2
-  }
-fi
-
-# Prune development-only files from distribution archive.
-rm -rf \
-  "$DEST/tests" \
-  "$DEST/scripts" \
-  "$DEST/docs" \
-  "$DEST/.github" \
-  "$DEST/.claude" \
-  "$DEST/CLAUDE.md" \
-  "$DEST/.cursor" \
-  "$DEST/.vscode"
-rm -rf "$DEST/vendor"
-rm -rf "$DEST/vendor-dev"
-rm -f \
-  "$DEST/package.json" \
-  "$DEST/package-lock.json" \
-  "$DEST/yarn.lock" \
-  "$DEST/pnpm-lock.yaml" \
-  "$DEST/.gitignore" \
-  "$DEST/.distignore" \
-  "$DEST/composer.json" \
-  "$DEST/composer.lock" \
-  "$DEST/composer.phar" \
-  "$DEST/composer-setup.php" \
-  "$DEST/phpunit.xml" \
-  "$DEST/phpunit.xml.dist" \
-  "$DEST/.phpunit.result.cache" \
-  "$DEST/phpcs.xml.dist" \
-  "$DEST/phpstan.neon" \
-  "$DEST/phpstan.verify.neon" \
-  "$DEST/phpstan.dead.neon" \
-  "$DEST/rector.php" \
-  "$DEST/eslint.config.mjs" \
-  "$DEST/.stylelintrc.json" \
-  "$DEST/.jscpd.json" \
-  "$DEST/.lintstagedrc.json"
-
-# Keep only README.md as markdown in distribution root.
-find "$DEST" -type f -name "*.md" ! -name "README.md" -delete
-
-if [[ ! -f "$DEST/assets/css/build/manifest.json" ]]; then
-  echo "note: assets/css/build/manifest.json not present — dev layered CSS will be used at runtime." >&2
-fi
-
-if [[ ! -f "$DEST/assets/js/build/manifest.json" ]]; then
-  echo "note: assets/js/build/manifest.json not present — modular JS will be used at runtime." >&2
-fi
+# Dagitim koku YALNIZ izinli girdiler (ayrintisi: .distignore basligi); digerleri silinir.
+ALLOWED_TOP=(woo-donation-popup.php uninstall.php readme.txt src assets templates blocks languages)
+for entry in "$DEST"/* "$DEST"/.[!.]*; do
+  [[ -e "$entry" ]] || continue
+  name="$(basename "$entry")"
+  keep=0
+  for a in "${ALLOWED_TOP[@]}"; do [[ "$name" == "$a" ]] && keep=1; done
+  [[ $keep -eq 1 ]] || rm -rf "$entry"
+done
+# Calisma zamani disi dosyalar (belge/test/kaynak haritasi) paketten cikar.
+# OS artiklari (.DS_Store, Thumbs.db, ._*) pakete girmez.
+find "$DEST" -type f \( -name ".DS_Store" -o -name "Thumbs.db" -o -name "._*" \) -delete
+find "$DEST" -type f \( -name "*.md" -o -name "*.map" -o -name "*.test.*" \) -delete
+find "$DEST" -type d \( -name tests -o -name __tests__ \) -prune -exec rm -rf {} +
 
 cd "$TMP"
 rm -f "$OUT_ZIP"

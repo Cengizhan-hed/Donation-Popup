@@ -1,0 +1,55 @@
+/* Donation Panel — form öğesi yalıtımı. Tema/oluşturucu stillerinin (input, button, select, textarea) eklenti
+ * öğelerine sızmasını önler: `!important` ya da global sıfırlama YOK; `:root .donation-panel` ile yeterli özgüllük (0,3,0) ve
+ * `all: revert` (tarayıcı varsayılanına dön, sonra eklenti değerleri). Tek çerçeve, tutarlı yükseklik (50-52 px),
+ * görünür odak halkası. Yalnız `.donation-panel` kapsamı; temaya özel seçici yok. Mantıksal özellikler (RTL). */
+.donation-panel :where(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input) {
+  --_h: 52px; --_fs: 16px; --_bd: var(--dp-color-border-strong, #8a93a3); --_r: var(--dp-radius-field, 14px);
+  --_bg: var(--dp-color-surface, #fff); --_ring: var(--dp-color-primary-ring, rgb(15 118 110 / .4));
+  --_focus: var(--dp-color-primary-strong, #0b5f58); --_bad: var(--dp-color-danger, #b42318);
+}
+.donation-panel .donation-panel-ac__input { --_h: var(--dpx-h-field, 52px); --_fs: 16px; --_bd: var(--dpx-line-strong, #8a93a3); --_r: var(--dpx-r-field, 14px); --_bg: var(--dpx-card, #fff); --_bad: var(--dpx-bad, #b42318); }
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input) {
+  all: revert;
+  display: block; box-sizing: border-box; inline-size: 100%; max-inline-size: 100%; min-block-size: var(--_h); margin: 0; padding: 0 14px;
+  border: 1.5px solid var(--_bd); border-radius: var(--_r); background: var(--_bg); color: var(--dp-color-text, inherit);
+  font: inherit; font-size: var(--_fs); line-height: 1.4; box-shadow: none; outline: 2px solid transparent; outline-offset: 0;
+  -webkit-appearance: none; appearance: none; transition: border-color 160ms ease-out, outline-color 160ms ease-out;
+}
+/* Odak (12.3): fare/dokunuşta yalnız kenarlık marka rengine döner (1.5 px, yumuşak geçiş; kalın halka yok). Belirgin halka
+   yalnız klavyeyle gelinen odakta (`data-dp-kbd`, focus-modality.mjs): 2 px, 2 px aralıklı, marka renginin yarı saydam tonu. */
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input):is(:focus, :focus-visible) {
+  border-color: var(--_focus); box-shadow: none; outline: 2px solid transparent; outline-offset: 2px;
+}
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input):focus-visible[data-dp-kbd] {
+  outline-color: var(--dp-color-focus-ring, currentColor);
+}
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input)::placeholder { color: var(--dp-color-text-faint, #6b7280); opacity: 1; }
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-ac__input):is([aria-invalid="true"], .has-error *) { border-color: var(--_bad); }
+:root .donation-panel .donation-panel-field.has-error :is(.donation-panel-input, .donation-panel-textarea) { border-color: var(--_bad); background: var(--dp-color-danger-soft, #fdeceb); }
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input):disabled { opacity: .6; cursor: not-allowed; }
+:root .donation-panel .donation-panel-textarea { padding-block: 12px; min-block-size: 92px; resize: vertical; }
+:root .donation-panel .donation-panel-select { padding-inline-end: 36px; }
+:root .donation-panel .donation-panel-ac__pass .donation-panel-ac__input { padding-inline-end: 52px; }
+
+/* Çerçeveyi saran öğeler (tutar, telefon): içteki alan çıplak; çerçeveyi ve odak halkasını kap taşır (tek çerçeve). */
+:root .donation-panel :is(.donation-panel-custom__in, .donation-panel-phone__input) {
+  all: revert;
+  display: block; box-sizing: border-box; flex: 1; min-inline-size: 0; margin: 0; border: 0; border-radius: 0; background: transparent;
+  color: var(--dp-color-text, inherit); font: inherit; font-size: 16px; line-height: 1.4; box-shadow: none; outline: 0;
+  -webkit-appearance: none; appearance: none;
+}
+:root .donation-panel .donation-panel-custom__in { padding: 0; min-block-size: 48px; }
+:root .donation-panel .donation-panel-phone__input { padding: 0 14px; min-block-size: 50px; }
+:root .donation-panel :is(.donation-panel-custom__in, .donation-panel-phone__input):is(:focus, :focus-visible) { box-shadow: none; outline: 0; }
+/* Saran kap (tutar/telefon): fare/dokunuşta kenarlık rengi; klavyede kap çevresinde 2 px aralıklı halka. */
+:root .donation-panel :is(.donation-panel-custom, .donation-panel-phone):has(:focus-visible[data-dp-kbd]) { outline: 2px solid var(--dp-color-focus-ring, currentColor); outline-offset: 2px; }
+:root .donation-panel :is(.donation-panel-custom__in, .donation-panel-phone__input)::placeholder { color: var(--dp-color-text-muted, #5b6475); opacity: 1; }
+/* Odaktaki alan klavye/alt bölüm payıyla görünür kaydırılır (`all: revert` bunu sıfırladığı için sonra verilir). */
+:root .donation-panel :is(.donation-panel-input, .donation-panel-textarea, .donation-panel-select, .donation-panel-ac__input, .donation-panel-custom__in, .donation-panel-phone__input) { scroll-margin-block: 24px; }
+:root .donation-panel .donation-panel-phone__select { all: revert; position: absolute; inset: 0; inline-size: 100%; block-size: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; font-size: 16px; -webkit-appearance: none; appearance: none; }
+
+/* Düğmeler: temanın düğme sızıntılarını (kenar boşluğu, büyük harf, harf aralığı, gölge) keser; değerleri sınıflar verir. */
+:root .donation-panel button { margin: 0; text-transform: none; letter-spacing: normal; text-shadow: none; text-decoration-thickness: auto; -webkit-appearance: none; appearance: none; font-family: inherit; box-sizing: border-box; }
+/* Görünür odak halkası (klavye; düğmede tarayıcı :focus-visible'ı yalnız klavyede eşleştirir): 2 px, aralıklı, yarı saydam marka */
+:root .donation-panel :is(a, button, summary, [tabindex]:not([tabindex="-1"])):focus-visible { outline: 2px solid var(--dp-color-focus-ring, currentColor); outline-offset: 2px; }
+:root .donation-panel :is(.donation-panel-amount, .donation-panel-check, .donation-panel-switch):focus-visible { outline-offset: 0; }

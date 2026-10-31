@@ -1,6 +1,6 @@
 /**
  * Ürün sayfası birincil WDP UI (döngü/ilgili kartlar hariç) + görünüm modu.
- * Eklenti: WDP_Product_Page_Integration::resolve_product_page_display.
+ * Eklenti: \DonationPanel\Modules\EntryPoints\Auto_Placement::resolve_product_page_display.
  *
  * Genel kural: sayfada görünür tam olarak BİR eklenti giriş noktası
  * (gömülü form veya eklenti düğmesi — eklenti sınıf/data öznitelikleri;
@@ -12,12 +12,11 @@ export const DISPLAY_MODES = Object.freeze(['inline', 'button_popup', 'button_pa
 
 /** Woo çekirdek: ilgili / upsell / mağaza döngüsü — tema seçicisi yok. */
 export const LOOP_EXCLUDE_SEL =
-  '.related, .upsells, ul.products, .wdp-list, .wdp-donations, .fusion-post-cards, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection, .wdp-loop-donate';
+  '.related, .upsells, ul.products, .wdp-list, .wdp-donations, .wp-block-woocommerce-related-products, .wp-block-woocommerce-product-collection, .wdp-loop-donate, .wdp-form-host';
 
 /** Yerel Woo sepete ekle (eklenti formu değil). */
-export const NATIVE_CART_FORM_SEL = 'form.cart:not(.wdp-form):not(.wdp-donation-form-fields)';
-export const NATIVE_ATC_BTN_SEL =
-  '.single_add_to_cart_button:not(.wdp-donate-button):not(.wdp-open-modal):not(.wdp-loop-donate)';
+export const NATIVE_CART_FORM_SEL = 'form.cart:not([data-dp-form])';
+export const NATIVE_ATC_BTN_SEL = '.single_add_to_cart_button:not([data-dp-open]):not(.wdp-loop-donate)';
 export const STICKY_ATC_SEL = '[class*="sticky-add-to-cart"], [class*="sticky"][class*="add-to-cart"]';
 
 /**
@@ -231,8 +230,14 @@ export async function collectVisiblePluginEntry(page) {
       const inline = pick(inlineSel);
       const panel = pick(panelSel);
       const popup = pick(popupSel);
+      // Görünüm kipi: kökün `data-dp-kind` değerinden (inline | side_panel | popup | bottom_sheet).
+      const kindOf = (el) => {
+        const root = el.closest('[data-dp-exp]');
+        return root ? String(root.getAttribute('data-dp-kind') || '') : '';
+      };
+      const toDisplay = { inline: 'inline', side_panel: 'button_panel', popup: 'button_popup', bottom_sheet: 'button_popup' };
       const displayAttr =
-        [...panel, ...popup, ...inline].map((el) => el.getAttribute('data-wdp-display')).find(Boolean) || '';
+        [...panel, ...popup, ...inline].map((el) => toDisplay[kindOf(el)] || '').find(Boolean) || '';
       return {
         inlineVisible: inline.filter(vis).length,
         panelVisible: panel.filter(vis).length,

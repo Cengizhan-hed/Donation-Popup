@@ -327,7 +327,7 @@ $main  = $root . '/woo-donation-popup.php';
 if (is_file($main)) {
 	$files[] = $main;
 }
-foreach (array('includes', 'templates', 'blocks') as $dir) {
+foreach (array('src', 'templates', 'blocks') as $dir) {
 	$files = array_merge($files, wdp_i18n_walk($root . '/' . $dir, '.php'));
 }
 

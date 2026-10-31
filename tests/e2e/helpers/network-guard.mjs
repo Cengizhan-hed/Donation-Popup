@@ -509,12 +509,12 @@ export function readRequestBody(request) {
 }
 
 /**
- * includes/ (özyinelemeli) `wp_ajax_nopriv_wdp_*` ve yalnız `wp_ajax_wdp_*`.
+ * Eklenti kaynağı src/ (özyinelemeli) `wp_ajax_nopriv_wdp_*` ve yalnız `wp_ajax_wdp_*` (12.0.0: includes/ yok).
  * @param {string} [includesDir]
  * @returns {{ nopriv: string[], adminOnly: string[] }}
  */
 export function listWdpAjaxFromIncludes(includesDir) {
-  const dir = includesDir || path.join(ROOT, 'includes');
+  const dir = includesDir || path.join(ROOT, 'src');
   const nopriv = new Set();
   const priv = new Set();
   function walk(d) {
@@ -552,7 +552,11 @@ export function listWdpAjaxFromIncludes(includesDir) {
   };
 }
 
-export const ALLOWED_WDP_NOPRIV_AJAX = new Set(listWdpAjaxFromIncludes().nopriv);
+/**
+ * 12.0.0: ön yüz AJAX uçları kaldırıldı (includes/ artık `wp_ajax_nopriv_wdp_*` içermez). Liste donmuş sözleşme olarak kalır
+ * (emekli adlar; sunucuda uç yok, izin vermek zararsız); yeni ziyaretçi uçları REST `donation-panel/v1` altındadır.
+ */
+export const ALLOWED_WDP_NOPRIV_AJAX = new Set(EXPECTED_WDP_NOPRIV_AJAX);
 
 /**
  * Profil `remoteReadOnlyPostActions` — yalnız eklenebilir; kod kuralı değişmez.
@@ -736,6 +740,50 @@ export function isRemoteOrderRequest(req) {
   return false;
 }
 
+/** Eklentinin ziyaretçi/yönetici REST alanı (12.0.0). */
+export const DONATION_PANEL_REST_NAMESPACE = 'donation-panel/v1';
+
+/**
+ * Uzakta İZİNLİ `donation-panel/v1` yazma rotaları (tam eşleşme). CLAUDE.md §2: uzakta SİPARİŞ yok, sepete ekleme serbest.
+ * - `validate`            : yalnız doğrulama (veri yazmaz)
+ * - `cart/add`            : bağış ürününü sepete ekler (sipariş değil)
+ * - `side-cart/suggestion`: yan sepet önerisini sepete ekler
+ * - `account/repeat`      : önceki bağışı sepete ekler (sipariş değil)
+ * Bu listede olmayan her yazma yöntemi (ayar, üye/giriş, e-posta, bilinmeyen yeni rota) uzakta engellenir.
+ */
+export const DONATION_PANEL_REST_ALLOWED_WRITE_ROUTES = Object.freeze(['validate', 'cart/add', 'side-cart/suggestion', 'account/repeat']);
+
+/**
+ * `donation-panel/v1` altındaki yolun alt rotası (örn. `cart/add`); eklenti alanı değilse ''.
+ * Hem `/wp-json/donation-panel/v1/...` hem `?rest_route=/donation-panel/v1/...` biçimi.
+ *
+ * @param {string} pathname
+ * @param {URLSearchParams} [search]
+ * @returns {string}
+ */
+export function donationPanelRestRoute(pathname, search) {
+  const fromPath = String(pathname || '').match(/\/wp-json\/donation-panel\/v1\/?(.*)$/i);
+  if (fromPath) return String(fromPath[1] || '').replace(/^\/+|\/+$/g, '') || '/';
+  const q = String(search?.get?.('rest_route') || '');
+  const fromQuery = q.match(/^\/?donation-panel\/v1\/?(.*)$/i);
+  if (fromQuery) return String(fromQuery[1] || '').replace(/^\/+|\/+$/g, '') || '/';
+  return '';
+}
+
+/**
+ * Yazma yöntemli donation-panel/v1 isteği uzakta izinli mi (yalnız sepete ekleyen/doğrulayan uçlar)?
+ * Sipariş oluşturan hiçbir uç izinli değildir; sipariş yolları ayrıca isRemoteOrderRequest ile kesilir.
+ *
+ * @param {string} pathname
+ * @param {URLSearchParams} [search]
+ * @returns {boolean}
+ */
+export function isDonationPanelRestWriteAllowed(pathname, search) {
+  const route = donationPanelRestRoute(pathname, search);
+  if (route === '') return false;
+  return DONATION_PANEL_REST_ALLOWED_WRITE_ROUTES.includes(route);
+}
+
 /**
  * Uzak profilde site alanına giden yazma: yalnız izin listesi.
  * apply_coupon ve update_order_review yok (ödeme sayfasında da).
@@ -757,6 +805,12 @@ export function isRemoteWriteAllowed(req) {
   const postData = bodyToString(req?.postData);
   const headers = req?.headers || {};
   const storePath = pathname.replace(/^\/wp-json/, '');
+
+  // 12.0.0: donation-panel/v1 yazmaları: yalnız sepete ekleyen/doğrulayan rotalar (DONATION_PANEL_REST_ALLOWED_WRITE_ROUTES);
+  // ayar, üye/giriş, e-posta ve bilinmeyen rotalar engelli. Sipariş oluşturan uç eklentide yoktur.
+  if (donationPanelRestRoute(pathname, search) !== '') {
+    return isDonationPanelRestWriteAllowed(pathname, search);
+  }
 
   const ajax = wcAjaxName(pathname, search);
   if (ajax) {
@@ -1328,4 +1382,49 @@ export function installBrowserGuard(browser, env, extra = {}) {
 export async function createGuardedContext(browser, contextOpts, env, extra = {}) {
   installBrowserGuard(browser, env, extra);
   return browser.newContext(contextOpts);
+}
+
+/**
+ * 12.4 Stripe (YALNIZ yerel): üçüncü taraf yasağı sürerken yalnız Stripe'ın kendi alan adlarına izin.
+ * stripe.com (js/api/hooks), stripe.network (Stripe.js iç çerçeveleri), stripecdn.com (Stripe varlıkları) — hepsi Stripe'a ait.
+ * Ölçüm alt alanları (r./q./m.stripe.com) TRACKER_HOST_SUFFIXES ile yine kesilir.
+ */
+export const STRIPE_LOCAL_ALLOWED_SUFFIXES = Object.freeze(['stripe.com', 'stripe.network', 'stripecdn.com']);
+
+/**
+ * Yerel koşuda: birinci taraf + izinli sonekler geçer, izleyiciler ve diğer TÜM üçüncü taraflar kesilir.
+ * Yerel olmayan taban adreste HATA (izin yalnız `--env local` ve ilgili spec için).
+ * @param {import('@playwright/test').BrowserContext} context
+ * @param {{ siteHost: string, allowSuffixes?: readonly string[] }} opts
+ * @return {Promise<{ blocked: string[], allowed: Record<string, number> }>} Canlı sayaçlar (yalnız host adları).
+ */
+export async function applyLocalThirdPartyAllowlist(context, opts) {
+  const siteHost = String(opts?.siteHost || '').toLowerCase();
+  if (!isIpOrLocalhost(siteHost)) {
+    throw new Error(`üçüncü taraf izin listesi yalnız yerel WP'de: ${siteHost || '(boş)'}`);
+  }
+  const suffixes = Array.isArray(opts?.allowSuffixes) ? opts.allowSuffixes : STRIPE_LOCAL_ALLOWED_SUFFIXES;
+  const stats = { blocked: [], allowed: {} };
+  await context.route('**/*', async (route) => {
+    const url = route.request().url();
+    const parts = parseUrlParts(url);
+    const host = parts ? String(parts.hostname || '').toLowerCase() : '';
+    if (!parts || /^(data|blob|about):/i.test(url) || host === siteHost) {
+      await route.fallback();
+      return;
+    }
+    if (isTrackerUrl(url, { siteHost })) {
+      stats.blocked.push(host);
+      await route.abort('blockedbyclient');
+      return;
+    }
+    if (suffixes.some((s) => hostMatchesSuffix(host, s))) {
+      stats.allowed[host] = (stats.allowed[host] || 0) + 1;
+      await route.fallback();
+      return;
+    }
+    stats.blocked.push(host);
+    await route.abort('blockedbyclient');
+  });
+  return stats;
 }

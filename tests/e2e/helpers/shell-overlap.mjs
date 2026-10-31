@@ -8,7 +8,8 @@ export const PANEL_CTA_BOTTOM_CODE = 'PANEL-CTA-BOTTOM';
 /** Yan panelde alt eylem çubuğu ile panel içeriği alt kenarı arasında izin verilen en çok boşluk (px). */
 export const MAX_PANEL_CTA_BOTTOM_GAP = 48;
 
-const OPEN_SHELL_SEL = '.hdf-donation-modal-wrapper.wdp-modal.show';
+// Yeni nesil katman: açık overlay + içindeki yüzey (assets/src/experiences/layer.mjs).
+const OPEN_SHELL_SEL = '[data-dp-overlay].is-open';
 
 /**
  * Tarayıcıda örnekle (page.evaluate’e doğrudan verilir; kapanış yok).
@@ -24,11 +25,11 @@ export function collectShellOverlapSample() {
       return false;
     }
   };
-  const shell = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+  const shell = document.querySelector('[data-dp-overlay].is-open');
   if (!shell) {
     return { found: false, opacities: [], contentOpacity: 0, hits: [], animRunning: 0, parentIsBody: false };
   }
-  const content = shell.querySelector('.wdp-modal-content') || shell;
+  const content = shell.querySelector('[data-dp-surface]') || shell;
   /** @type {Array<{ tag: string, className: string, opacity: number }>} */
   const opacities = [];
   let node = /** @type {HTMLElement | null} */ (shell);
@@ -103,8 +104,9 @@ export function collectShellOverlapSample() {
 
   /* Yan panel: alt eylem çubuğu (kısa içerikte de) panelin dibine sabit. */
   let panelCta = null;
-  if (shell.classList.contains('wdp-side-panel')) {
-    const footer = shell.querySelector('.wdp-side-panel-footer-zone');
+  const kindRoot = shell.closest('[data-dp-exp]');
+  if (kindRoot && kindRoot.getAttribute('data-dp-kind') === 'side_panel') {
+    const footer = shell.querySelector('.donation-panel-actionbar');
     if (footer) {
       const fr = footer.getBoundingClientRect();
       if (fr.height > 0) {
@@ -143,10 +145,9 @@ export function shellOpaqueNow(minOp) {
       return false;
     }
   };
-  const shell = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+  const shell = document.querySelector('[data-dp-overlay].is-open');
   if (!shell) return false;
-  if (shell.classList.contains('wdp-side-panel--opening')) return false;
-  const content = shell.querySelector('.wdp-modal-content') || shell;
+  const content = shell.querySelector('[data-dp-surface]') || shell;
   const nodes = [shell, content];
   for (const el of nodes) {
     const st = window.getComputedStyle(el);
@@ -239,9 +240,9 @@ export async function waitShellAnimationsDone(page, timeout = 8000) {
         return false;
       }
     };
-    const shell = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.show');
+    const shell = document.querySelector('[data-dp-overlay].is-open');
     if (!shell) return;
-    const content = shell.querySelector('.wdp-modal-content') || shell;
+    const content = shell.querySelector('[data-dp-surface]') || shell;
     const pending = [];
     for (const el of [shell, content]) {
       if (!el || typeof el.getAnimations !== 'function') continue;
@@ -320,11 +321,11 @@ export async function probeShellOverlapBeforeAfter(page, timeout = 8000) {
  * Kısa içerikli sitelerde (az alan) de çubuk dibe sabit kalmalı.
  */
 export function measurePanelCtaWhenShort() {
-  const shell = document.querySelector('.hdf-donation-modal-wrapper.wdp-modal.wdp-side-panel.show');
+  const shell = document.querySelector('[data-dp-exp][data-dp-kind="side_panel"] [data-dp-overlay].is-open');
   if (!shell) return { skipped: 'panel yok' };
-  const main = shell.querySelector('.wdp-side-panel-main:not(.wdp-side-panel-main--shares)');
-  const footer = shell.querySelector('.wdp-side-panel-footer-zone');
-  const content = shell.querySelector('.wdp-modal-content') || shell;
+  const main = shell.querySelector('[data-dp-step]:not([hidden])');
+  const footer = shell.querySelector('.donation-panel-actionbar');
+  const content = shell.querySelector('[data-dp-surface]') || shell;
   if (!main || !footer) return { skipped: 'gövde/alt çubuk yok' };
   const kids = Array.from(main.children);
   const saved = kids.map((k) => k.style.display);
@@ -354,6 +355,15 @@ export function measurePanelCtaWhenShort() {
  * @param {import('@playwright/test').Page} page
  */
 export async function assertPanelCtaPinnedWhenShort(page) {
+  // Klavye açıkken alt bölüm bilerek akışa girer; sabit-dip ölçümü klavye kapalı durumda yapılır.
+  await page.evaluate(() => {
+    const a = document.activeElement;
+    if (a && typeof a.blur === 'function' && a.matches('input, textarea, select')) a.blur();
+  });
+  await page.waitForFunction(() => {
+    const bar = document.querySelector('[data-dp-exp][data-dp-kind="side_panel"] .donation-panel-actionbar');
+    return !bar || bar.parentElement.tagName === 'FORM';
+  }, null, { timeout: 3000 });
   const r = await page.evaluate(measurePanelCtaWhenShort);
   if (r.skipped) return { skipped: true, reason: r.skipped };
   if (r.gapToPanelBottom > MAX_PANEL_CTA_BOTTOM_GAP) {

@@ -1,5 +1,5 @@
 {
-  "translation-revision-date": "2026-10-24T13:31:01.750Z",
+  "translation-revision-date": "2026-10-31T11:36:41.162Z",
   "generator": "WDP make-json",
   "source": "blocks/donation-form/index.js",
   "domain": "messages",
@@ -30,6 +30,18 @@
       ],
       "Side panel": [
         "Sağ panel"
+      ],
+      "Layout": [
+        "Düzen"
+      ],
+      "Compact: a small card with a fixed height for sliders and hero areas.": [
+        "Kompakt: kaydırıcı ve büyük görsel alanları için yüksekliği sabit küçük kart."
+      ],
+      "Donation form layout\u0004Full": [
+        "Tam"
+      ],
+      "Donation form layout\u0004Compact": [
+        "Kompakt"
       ],
       "Show heading": [
         "Başlığı göster"

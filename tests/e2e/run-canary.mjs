@@ -7,6 +7,8 @@
  *   npm run e2e:canary -- --env staging --update-baseline
  *   npm run e2e:canary -- --env ikram --accept-user-option woocommerce_cod_settings_enabled,…
  *     (site sahibi ayarı değiştirdi; yalnız adı verilen anahtarlar baseline'a işlenir, başka fark varsa red)
+ *   npm run e2e:canary -- --env ikram --accept-user-content 123,124
+ *     (site sahibi yazı/ek ekledi; yalnız verilen id'lerin yeni kayıt + sayaç farkı işlenir, başka fark varsa red)
  *
  * Kayıt defteri dışındaki fark: KIRMIZI + build/e2e/CANARY-ALERT.txt
  * --update-baseline yalnız TEMİZ iken (fark yok veya yalnız defterde).
@@ -27,7 +29,9 @@ import {
   formatCanaryDiff,
   evaluateCanaryHealth,
   acceptUserOptionChanges,
+  acceptUserContentChanges,
   readBaseline,
+  persistAutoAcceptedBaseline,
 } from './helpers/canary.mjs';
 
 function fail(msg, code = 1) {
@@ -44,15 +48,20 @@ export function parseCanaryArgs(argv = process.argv.slice(2)) {
   let updateBaseline = false;
   /** @type {string[]} */
   let acceptOptions = [];
+  /** @type {number[]} */
+  let acceptContent = [];
+  const toIds = (v) => String(v || '').split(',').map((k) => Number(k.trim())).filter((n) => n > 0);
   for (let i = 0; i < a.length; i++) {
     const x = a[i];
     if (x === '--env') envRaw = String(a[++i] || envRaw);
     else if (x.startsWith('--env=')) envRaw = x.slice('--env='.length);
     else if (x === '--update-baseline') updateBaseline = true;
     else if (x === '--accept-user-option') acceptOptions = String(a[++i] || '').split(',').map((k) => k.trim()).filter(Boolean);
+    else if (x === '--accept-user-content') acceptContent = toIds(a[++i]);
+    else if (x.startsWith('--accept-user-content=')) acceptContent = toIds(x.slice('--accept-user-content='.length));
     else if (x.startsWith('--accept-user-option=')) acceptOptions = x.slice('--accept-user-option='.length).split(',').map((k) => k.trim()).filter(Boolean);
   }
-  return { envName: resolveProfileId(envRaw) || 'local', updateBaseline, acceptOptions };
+  return { envName: resolveProfileId(envRaw) || 'local', updateBaseline, acceptOptions, acceptContent };
 }
 
 /**
@@ -99,10 +108,28 @@ export function runCanary(opts) {
     return runCanary({ ...opts, acceptOptions: [], baseline: acc.baseline });
   }
 
+  if (!ok && Array.isArray(opts.acceptContent) && opts.acceptContent.length) {
+    const base = opts.baseline || readBaseline(profile.id);
+    const acc = acceptUserContentChanges(base, current, diffs, opts.acceptContent);
+    if (!acc.ok) {
+      throw new Error(`--accept-user-content reddedildi: ${acc.reason}`);
+    }
+    const file = canaryBaselinePath(envName);
+    writeSnapshot(acc.baseline, file);
+    console.log(`baseline güncellendi (kullanıcı içeriği): id ${acc.accepted.join(', ')}`);
+    return runCanary({ ...opts, acceptContent: [], baseline: acc.baseline });
+  }
+
+  const external = health.external || [];
   if (!ok) {
     writeCanaryAlert(alertDiff, `e2e:canary --env ${envName}`);
-  } else if (warnings.length) {
-    console.warn(formatCanaryDiff({ ok: true, diffs: [], warnings }));
+  } else if (warnings.length || external.length) {
+    console.warn(formatCanaryDiff({ ok: true, diffs: [], warnings, external }));
+  }
+  // Dış değişiklik (otomatik kabul): taban yalnız diskteki tabanla karşılaştırıldıysa güncellenir.
+  if (ok && !opts.updateBaseline && opts.baseline === undefined) {
+    const w = persistAutoAcceptedBaseline(envName, health);
+    if (w.written) console.log(`baseline güncellendi (dış değişiklik, otomatik kabul): ${w.file}`);
   }
 
   if (opts.updateBaseline) {
@@ -120,7 +147,7 @@ export function runCanary(opts) {
   if (!ok) {
     console.error(formatCanaryDiff(alertDiff));
   }
-  return { status, ok, diffs, warnings, evald, pre, current };
+  return { status, ok, diffs, warnings, external, evald, pre, current };
 }
 
 async function main() {
