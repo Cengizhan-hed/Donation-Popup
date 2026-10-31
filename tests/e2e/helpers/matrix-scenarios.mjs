@@ -6,7 +6,7 @@ import { expect } from '@playwright/test';
 import path from 'node:path';
 import { SEL, DP_SEL } from './selectors.mjs';
 import { waitLayerSettled } from './settle-layer.mjs';
-import { isStepShown, setChecked } from './dp-form.mjs';
+import { isStepShown, setChecked, tapAction } from './dp-form.mjs';
 import { formatMoney, formatMinPlaceholder, formatFillAmount } from './currency.mjs';
 import { withCacheBust } from './env.mjs';
 import {
@@ -246,7 +246,7 @@ async function advanceToDetails(form) {
     await details.waitFor({ state: 'visible', timeout: CHECK_MS });
     return;
   }
-  await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS });
+  await tapAction(form.locator(DP_SEL.submit).first(), { timeout: CHECK_MS });
   await details.waitFor({ state: 'visible', timeout: CHECK_MS });
 }
 
@@ -315,7 +315,7 @@ async function checkValidationErrors(page, root, store, label) {
     if ((await preset.count()) > 0) await preset.click({ timeout: CHECK_MS });
   }
   await advanceToDetails(form);
-  await form.locator(DP_SEL.submit).first().click({ timeout: CHECK_MS });
+  await tapAction(form.locator(DP_SEL.submit).first(), { timeout: CHECK_MS });
   const required = await form.evaluate((f) => {
     const step = f.querySelector('[data-dp-step="details"]') || f;
     return Array.from(step.querySelectorAll('input[required]:not(:disabled), textarea[required]:not(:disabled)'))
@@ -395,7 +395,7 @@ async function goCheckoutFromForm(page, scope, label = 'product-cart') {
     const ajax = await clickAddToCartAndWait(
       page,
       async () => {
-        await go.click({ timeout: CHECK_MS, noWaitAfter: true });
+        await tapAction(go, { timeout: CHECK_MS, noWaitAfter: true });
       },
       { timeout: CART_MS }
     );

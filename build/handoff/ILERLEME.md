@@ -4,3 +4,4 @@
 - 2026-10-31 13:20 124-stripe2: BİTTİ — blok 36/36, GBP 36/36, EUR 12/12, sızıntı 0; eklenti hatası yok; port 9074 çakışması (email4-base) notu RAPOR'da
 - 2026-10-31: stripe2 birleşti; email4 çakışma çözümü sürüyor (kurgu-matrix); compact2 ve cron-status çalışıyor.
 - ports birleşti; cron-status iki sitede tam: Ikram DISABLE_WP_CRON tanımsız, gecikmiş 0, crontab=no; staging30 DISABLE_WP_CRON=true, 72 gecikmiş, crontab=no (kullanıcı SiteGround Cron Jobs'a bakacak)
+- 15:59 124-fixfull: kök neden 1 (klavye sözleşmesi→tapAction/dismissKeyboard) + 2 (telefon gruplama, rakam karşılaştırma) test yardımcılarında; iphone koşusu

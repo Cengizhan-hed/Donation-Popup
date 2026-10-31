@@ -20,6 +20,7 @@ import { writeDebugJson } from './scenario-debug.mjs';
 import { debugDirFor } from './e2e-paths.mjs';
 import { buildCheckoutFlowDiagExtras } from './flow-diag.mjs';
 import { getActiveTimeouts } from './profile.mjs';
+import { dismissKeyboardWithin } from './keyboard-dismiss.mjs';
 
 /** Kontrol başına en fazla bekleme (ms). Bulunamayan öğe hemen hata yazar. */
 export const CHECK_MS = 5000;
@@ -1311,6 +1312,8 @@ export async function clickAddToCartWithRetry(page, button, opts = {}) {
         disabled: await button.isDisabled().catch(() => true),
       };
 
+      // Dokunmatik ekranda yazı alanı odaktayken alt bölüm gizlidir (12.4 klavye sözleşmesi): önce klavye kapanır.
+      await dismissKeyboardWithin(page, CHECK_MS);
       lastAjax = await clickAddToCartAndWait(
         page,
         async () => {

@@ -7,6 +7,7 @@
  */
 import { DP_SEL, SEL } from './selectors.mjs';
 import { CHECK_MS } from './checks.mjs';
+import { dismissKeyboardWithin } from './keyboard-dismiss.mjs';
 import { DONOR_NAME, DONOR_EMAIL, DONOR_PHONE, DEDICATION, SHAREHOLDERS } from './place-order.mjs';
 
 /**
@@ -25,6 +26,26 @@ export function formOf(shell) {
  */
 export async function isStepShown(step) {
   return (await step.count()) > 0 && (await step.first().evaluate((el) => !el.hidden));
+}
+
+/**
+ * Ekran klavyesini kapatır ve alt bölümün geri gelmesini bekler (ayrıntı: keyboard-dismiss.mjs).
+ * @param {import('@playwright/test').Locator|import('@playwright/test').Page} scope
+ * @param {number} [timeout]
+ */
+export async function dismissKeyboard(scope, timeout = CHECK_MS) {
+  await dismissKeyboardWithin(scope, timeout);
+}
+
+/**
+ * Alt bölümdeki bir eylem düğmesine (Devam / Bağış yap / Sepete ekle) gerçek bağışçı gibi dokunur: önce klavye kapanır.
+ * @param {import('@playwright/test').Locator} button
+ * @param {{ timeout?: number, noWaitAfter?: boolean, force?: boolean }} [opts]
+ */
+export async function tapAction(button, opts = {}) {
+  const timeout = opts.timeout ?? CHECK_MS;
+  await dismissKeyboard(button, timeout);
+  await button.click({ ...opts, timeout });
 }
 
 /**
@@ -119,7 +140,7 @@ export async function touchPendingSubmitExpectAmountError(form, timeout = CHECK_
   await submit.waitFor({ state: 'visible', timeout });
   const pending = await submit.getAttribute('aria-disabled');
   if (pending !== 'true') throw new Error(`geçersiz tutarda ana düğme pasif olmalıydı (aria-disabled=${pending})`);
-  await submit.click({ timeout, noWaitAfter: true, force: true });
+  await tapAction(submit, { timeout, noWaitAfter: true, force: true });
   const err = form.locator(DP_SEL.error('amount')).filter({ visible: true }).first();
   await err.waitFor({ state: 'visible', timeout });
   const text = String((await err.textContent()) || '').trim();
@@ -151,7 +172,7 @@ export async function advanceToDetails(form, timeout = CHECK_MS) {
   ) {
     throw new Error('vergi indirimi adımı bilgi adımından sonra; ilerlemek formu gönderir');
   }
-  await submitBtn.click({ timeout });
+  await tapAction(submitBtn, { timeout });
   try {
     // Araya isteğe bağlı adım (vergi indirimi / Gift Aid) girebilir: kutu işaretlenmeden "Devam" ile geçilir.
     const taxStep = form.locator('[data-dp-step="tax_relief"]').first();
@@ -162,7 +183,7 @@ export async function advanceToDetails(form, timeout = CHECK_MS) {
         // formu gönderir (bilgi adımına geri dönülemez) → açık hata.
         const taxBeforeDetails = await taxStep.evaluate((t, d) => !!d && !!(t.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING), await details.elementHandle());
         if (!taxBeforeDetails) throw new Error('vergi indirimi adımı bilgi adımından sonra; ilerlemek formu gönderir');
-        await submitBtn.click({ timeout });
+        await tapAction(submitBtn, { timeout });
       } else {
         await form.page().waitForTimeout(100);
       }
@@ -281,7 +302,7 @@ export async function fillDonationForm(shell, spec) {
 export async function clickSubmit(shell, timeout = CHECK_MS) {
   const form = formOf(shell);
   await advanceToFinalStep(form, timeout);
-  await form.locator(DP_SEL.submit).first().click({ timeout, noWaitAfter: true });
+  await tapAction(form.locator(DP_SEL.submit).first(), { timeout, noWaitAfter: true });
 }
 
 /**
@@ -305,7 +326,7 @@ export async function advanceToFinalStep(form, timeout = CHECK_MS) {
   for (let i = 0; i < 5; i += 1) {
     const before = await signature();
     if (before.last) return;
-    await form.locator(DP_SEL.submit).first().click({ timeout, noWaitAfter: true });
+    await tapAction(form.locator(DP_SEL.submit).first(), { timeout, noWaitAfter: true });
     const deadline = Date.now() + 4000;
     let after = before;
     while (Date.now() < deadline) {
