@@ -64,9 +64,10 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
         window.addEventListener('touchstart', (e) => { window.__dpTouch = [e.touches[0].clientX, e.touches[0].clientY]; }, { capture: true, passive: true });
       });
       let calib = { t: null, dpr: 1 };
-      for (let k = 0; k < 5 && !calib.t; k += 1) {
+      await page.bringToFront(); // kalibrasyon dokunuşu sayfa ön planda değilse (geçiş/yavaş çizim) kaybolur
+      for (let k = 0; k < 12 && !calib.t; k += 1) {
         adb(['shell', 'input', 'tap', '540', '1200'], serial);
-        await page.waitForTimeout(900);
+        await page.waitForTimeout(k < 3 ? 900 : 1500);
         calib = await page.evaluate(() => ({ t: window.__dpTouch, dpr: window.devicePixelRatio }));
       }
       expect(calib.t, 'dokunuş kalibrasyonu').not.toBeNull();
@@ -141,6 +142,8 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
       await page.evaluate(() => {
         const root = document.querySelector('[data-dp-exp]');
         window.__dpKbLog = [];
+        window.__dpFocusAt = null;
+        document.addEventListener('focusin', () => { if (window.__dpFocusAt === null) { window.__dpFocusAt = Math.round(performance.now()); } }, true);
         new MutationObserver(() => window.__dpKbLog.push([Math.round(performance.now()), root.hasAttribute('data-dp-kb')])).observe(root, { attributes: true, attributeFilter: ['data-dp-kb'] });
       });
       const ime = adb(['shell', 'settings', 'get', 'secure', 'default_input_method'], serial).out.trim();
@@ -152,7 +155,7 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
           tapAt = await page.evaluate(() => Math.round(performance.now()));
         }
         await tap(fields[i]);
-        await page.waitForTimeout(i === 0 ? 2500 : 1500);
+        await page.waitForTimeout(i === 0 ? 4500 : 1500); // ilk alan: yavaş klavye açılışı ölçümü için uzun pencere
         adb(['shell', 'input', 'text', 'Ab'], serial);
         await page.waitForTimeout(400);
         const m = await fields[i].evaluate((el) => {
@@ -185,10 +188,12 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
       const vvLog = await page.evaluate(() => window.__dpVv);
       const distinct = (pick) => new Set(frames.map((f) => JSON.stringify(pick(f)))).size;
       // Klavye açılış ölçümü (yedek zamanlayıcı süresinin gerekçesi): ilk alana dokunuştan ilk ve son görünüm küçülmesine (ms).
-      const opening = vvLog.filter((v) => v[0] >= tapAt && v[0] <= tapAt + 2500 && v[2] < env.vv);
-      const kbOpen = opening.length ? { firstMs: opening[0][0] - tapAt, settledMs: opening[opening.length - 1][0] - tapAt, steps: opening.length } : null;
+      const focusAt = await page.evaluate(() => window.__dpFocusAt);
+      const t0 = focusAt === null ? tapAt : focusAt; // odak (focusin) anı: dokunuş + kaydırma beklemesinden bağımsız
+      const opening = vvLog.filter((v) => v[0] >= t0 && v[0] <= t0 + 4500 && v[2] < env.vv);
+      const kbOpen = opening.length ? { firstMs: opening[0][0] - t0, settledMs: opening[opening.length - 1][0] - t0, steps: opening.length } : null;
       const trace = {
-        env, ime, kbOpen, kbLogFields, frames: frames.length, vvResizes: vvLog.length, perField, closedVv, imeAfter,
+        env, ime, kbOpen, focusAt, kbLogFields, frames: frames.length, vvResizes: vvLog.length, perField, closedVv, imeAfter,
         barRects: distinct((f) => f.bar), btnRects: distinct((f) => f.btn), bodyWidths: distinct((f) => f.bodyW),
         surfaceWidths: distinct((f) => f.surfW), bodySbar: distinct((f) => f.sbar), docSbar: distinct((f) => f.docSbar), docY: distinct((f) => f.docY),
       };

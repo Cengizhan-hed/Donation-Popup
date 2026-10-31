@@ -216,7 +216,7 @@ test.describe('Ekran klavyesi gelmeyen dokunmatik cihaz (fiziksel klavyeli table
       // Yazılmadıkça bekleme penceresinde (klavye henüz gelebilir) mevcut davranış: gizli.
       expect(await page.locator('[data-dp-exp]').getAttribute('data-dp-kb'), '600 ms, yazma yok: hâlâ gizli').toBe('1');
     }
-    await expect(page.locator('[data-dp-exp]')).not.toHaveAttribute('data-dp-kb', '1', { timeout: 4000 });
+    await expect(page.locator('[data-dp-exp]')).not.toHaveAttribute('data-dp-kb', '1', { timeout: 7000 });
     await expect.poll(() => barTappable(page).then((x) => x.ok), { timeout: 2000 }).toBe(true);
     // Alan değişimi ve yazma: bölüm görünür kalır (katman ömrü boyunca fiziksel klavye bilgisi).
     await fields[1].tap();
@@ -250,21 +250,22 @@ test.describe('Ekran klavyesi gelmeyen dokunmatik cihaz (fiziksel klavyeli table
     expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeLessThan(800);
   });
 
-  test('yazılmayan + klavye açılmayan: yedek zamanlayıcıyla (~2 sn) tek seferde görünür ve dokunulabilir', async ({ page }) => {
+  test('yazılmayan + klavye açılmayan: yedek zamanlayıcıyla (~4 sn) tek seferde görünür ve dokunulabilir', async ({ page }) => {
     await installAndroidKeyboardSim(page, { mode: 'none' });
     const fields = await openDetails(page);
     test.skip(fields.length < 2, 'bilgiler adımında en az 2 metin alanı yok');
     const log = await noKeyboardFlow(page, fields, { typeFirst: false });
     console.log(`KBD-NOKB ${JSON.stringify(log)}`);
-    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeGreaterThanOrEqual(1950);
-    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeLessThanOrEqual(2800);
+    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeGreaterThanOrEqual(3950);
+    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeLessThanOrEqual(4800);
   });
 
   for (const slow of [
     { name: 'tek adımda 1 sn gecikmeli klavye', opts: { mode: 'visual', delay: 1000 } },
     { name: 'yavaş animasyonlu klavye (0,5→1,7 sn, 7 adım)', opts: { mode: 'visual', delay: 500, steps: 7, stepMs: 200 } },
     { name: 'resizes-content, 1 sn gecikmeli', opts: { mode: 'content', delay: 1000 } },
-    { name: 'çok yavaş: 1,8 sn gecikmeli (yedek süreye yakın)', opts: { mode: 'visual', delay: 1800 } },
+    { name: 'çok yavaş: 1,8 sn gecikmeli', opts: { mode: 'visual', delay: 1800 } },
+    { name: 'soğuk açılış: 3,2 sn gecikmeli (gerçek emülatörde ölçülen en yavaş 3,0 sn)', opts: { mode: 'visual', delay: 3200 } },
   ]) {
     test(`yavaş klavye: ${slow.name} — düğme hiç erken görünmez, durum tek değer`, async ({ page }) => {
       await installAndroidKeyboardSim(page, slow.opts);
@@ -273,10 +274,10 @@ test.describe('Ekran klavyesi gelmeyen dokunmatik cihaz (fiziksel klavyeli table
       await watchKbAttr(page);
       await startFrames(page);
       await fields[0].tap();
-      // Gizleme geçişi (opacity .12 s) bittikten sonra 3,5 sn boyunca 100 ms aralıkla: bölüm hiç görünür/dokunulabilir olmamalı.
+      // Gizleme geçişi (opacity .12 s) bittikten sonra 4,5 sn boyunca 100 ms aralıkla: bölüm hiç görünür/dokunulabilir olmamalı.
       await page.waitForTimeout(200);
       const visibleAt = [];
-      for (let i = 0; i < 35; i += 1) {
+      for (let i = 0; i < 45; i += 1) {
         await page.waitForTimeout(100);
         const s = await barTappable(page);
         if (s.ok || s.opacity !== '0') {

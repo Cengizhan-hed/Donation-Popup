@@ -36,8 +36,8 @@ test('keyboardPresence: klavye ölçüldüyse var; görünüm yakında yeniden b
   assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: Infinity }), 'absent');
   assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS - 1 }), 'wait');
   assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS }), 'absent');
-  // Yavaş klavye koruması: yedek bekleme 1,5–2 sn aralığında.
-  assert.ok(NO_KEYBOARD_MS >= 1500 && NO_KEYBOARD_MS <= 2000);
+  // Yavaş klavye koruması: gerçek emülatörde en yavaş soğuk açılış 3,0 sn ölçüldü; yedek bekleme bunun üstünde, 4 sn.
+  assert.ok(NO_KEYBOARD_MS >= 3500 && NO_KEYBOARD_MS <= 4000);
 });
 
 test('typedWithoutKeyboard: görünüm küçülmeden yazma = fiziksel klavye; küçüldüyse ya da API sanal klavye bildirirse değil', async () => {

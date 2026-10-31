@@ -66,10 +66,12 @@ export function nextKeyboardUp(wasUp, shrink) {
  *  3) Yedek zamanlayıcı, yalnız hiç yazılmadan beklenen durum için: odaktan NO_KEYBOARD_MS sonra görünüm küçülmemiş ve
  *     VIEWPORT_STABLE_MS boyunca sakinse (açılış animasyonu sürmüyorsa) ekran klavyesi yok sayılır. Oturumda bir kez
  *     sanal klavye görüldüyse (görünüm küçüldü ya da geometrychange) zamanlayıcı o oturumda kullanılmaz.
- * NO_KEYBOARD_MS = 2000: önerilen 1,5–2 sn aralığının üst sınırı. Gerçek emülatör ölçümü bu oturumda yapılamadı
- * (RAPOR-124-fixfull); yavaş Android klavyesinde düğmenin erken görünmemesi için üst sınır seçildi.
+ * NO_KEYBOARD_MS = 4000: gerçek emülatör ölçümüne göre (RAPOR-124-androidrun; Android 15, Chromium 159, Gboard ve
+ * AnySoftKeyboard, odaktan ilk görünüm küçülmesine) ısınmış klavye 0,4–1,5 sn, SOĞUK ilk açılış 2,0–3,0 sn sürdü;
+ * 2 sn'lik değerde soğuk açılışta düğme erken göründü ve klavye gelince yeniden gizlendi (titreme). 4 sn, en yavaş
+ * ölçümün (3,0 sn) ~1,3 katıdır. Fiziksel klavyede yazma işareti (1) beklemeden devreye girer; bu süre yalnız hiç yazılmayan durumdadır.
  */
-export const NO_KEYBOARD_MS = 2000;
+export const NO_KEYBOARD_MS = 4000;
 
 /**
  * Yazma olayı fiziksel klavyeden mi: görünüm kapanma eşiğinin (KEYBOARD_GONE_PX) altında küçülmüş ve (varsa)
