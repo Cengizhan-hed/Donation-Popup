@@ -125,10 +125,12 @@ Eklenti Stripe'a özel kod içermez; ödeme geçidi WooCommerce'in resmi Stripe 
 - [ ] Doğrulama: Stripe panelinde uç noktanın "Gönderilen olaylar" listesinde HTTP 200 görün; küçük gerçek bağışta (yalnız siz) sipariş "İşleniyor" olur, kampanya toplamı bir kez artar.
 
 ### S3. WP-Cron (kartlı ödemede webhook teyidi gecikebilir)
-- Stripe 11.x kartlı ödemede webhook işlemesini ~2 dk erteler ve siparişe ~5 dk ödeme kilidi koyar; bu işler WP-Cron ile yürür. WP-Cron çalışmazsa sipariş geç/hiç "İşleniyor"a geçmeyebilir.
-- Kontrol (yalnız okuma, `npm run staging:wp -- cron-status` / `npm run ikram:wp -- cron-status` ile test sitelerinde yapıldı; CANLIDA hosting panelinden/ssh ile sizin kontrolünüz): `DISABLE_WP_CRON` sabiti, gecikmiş zamanlanmış olay sayısı, sunucu cron'u.
-- **Test sitesi sonuçları (2026-10-31):** Ikram: DISABLE_WP_CRON tanımsız (WP-Cron ziyaretle çalışır), 26 olay, 1 gecikmiş (1 sn) → sağlıklı. staging30: DISABLE_WP_CRON=true, 75 olaydan 72'si gecikmiş, en eski ≈ 8,9 gün → sunucu cron'u çalışmıyor görünüyor (staging kullanım dışı olabilir; canlıda aynı ayar varsa SORUN).
-- [ ] CANLI: `DISABLE_WP_CRON` true ise hosting panelinde gerçek cron işi şart (örn. dakikada bir `wp cron event run --due-now` ya da `php wp-cron.php`/`curl https://SİTE/wp-cron.php`); false/tanımsız ise ziyaretçi trafiği tetikler. WooCommerce › Durum › Zamanlanmış eylemler'de "Gecikmiş" olay birikmemeli.
+- Stripe 11.x kartlı ödemede webhook işlemesini ~2 dk erteler ve siparişe ~5 dk ödeme kilidi koyar; bu işler WP-Cron / Action Scheduler ile yürür. Cron çalışmazsa sipariş geç ya da hiç "İşleniyor"a geçmeyebilir.
+- **Canlı hedefdernegi.org (kullanıcı kontrolü, 2026-10-31, yalnız bakıldı):** WP-Cron ÇALIŞIYOR. WooCommerce › Durum › Sistem durumu "Günlük Cron ✔ (sonraki zamanlama yarın)"; Action Scheduler'da 11.912 tamamlanmış iş (en yenisi o gün 13:36), bekleyen 33 işin hepsi gelecekte (gecikmiş yok). SiteGround › Cron Jobs'ta hedefdernegi.org için tanımlı cron işi yok ve gerek de yok (WP-Cron ziyaretle çalışıyor).
+- **Ikram (test sitesi, 2026-10-31, salt-okur `npm run ikram:wp -- cron-status`):** DISABLE_WP_CRON tanımsız (ziyaretle çalışır), 26 olay, gecikmiş 0 → sağlıklı. Ikram canlıya alınınca aynı kontrol tekrarlanır.
+- **staging30 (bilinçli):** DISABLE_WP_CRON=true KORUNUR (canlı verinin kopyasında e-posta/SMS/CRM yan etkisini önler). staging30'da cron AÇILMAZ, sunucu cron'u EKLENMEZ; gecikmiş olaylar (75'ten 72'si) TETİKLENMEZ ve ÇALIŞTIRILMAZ. Stripe test koşuları yerelde yapıldı; staging30'da webhook/cron beklenmemeli.
+- [ ] **Canlıya almadan hemen önce** (ve Ikram canlıya alınınca) aynı iki ekranla tekrar kontrol: (1) WooCommerce › Durum › Sistem durumu › "Günlük Cron" ✔; (2) WooCommerce › Durum › Zamanlanmış eylemler (Action Scheduler) › Gecikmiş bekleyen iş yok.
+- [ ] Canlıda `DISABLE_WP_CRON` ileride true yapılırsa hosting panelinde gerçek cron işi şart (örn. dakikada bir `wp cron event run --due-now`).
 - [ ] Doğrulama: küçük gerçek bağıştan sonra sipariş ≤ ~7 dk içinde "İşleniyor" olmalı.
 
 ## B. Ikram Aid yayına alma listesi
