@@ -59,6 +59,10 @@ async function storeApiCart(page) {
 for (const kind of ['inline', 'popup', 'side_panel', 'bottom_sheet']) {
   test(`sepetli, ${kind}: formda e-posta alanı yok`, async ({ page }) => {
     await page.goto(`/?dp_exp_test=${kind}&dp_product=${PRODUCT}`);
+    if (kind !== 'inline') {
+      await page.locator('[data-dp-open]').click();
+      await expect(page.locator('[data-dp-overlay]')).toHaveClass(/is-open/);
+    }
     await expect(page.locator('[data-dp-form]').first()).toBeAttached({ timeout: 20000 });
     expect(await page.locator('input[name="donation_email"]').count()).toBe(0);
     expect(await page.locator('[data-dp-field="donation_email"]').count()).toBe(0);

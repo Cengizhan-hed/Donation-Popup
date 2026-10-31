@@ -102,10 +102,16 @@ async function formFlow(page, layout, behavior) {
   await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
   await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
   await page.locator('input[name="donation_phone"]').fill(DONOR.phone);
-  // 12.4: doğrudan akışta e-posta zorunlu (order-pay fatura sormaz); sepetli akışta alan ürün ayarına bağlı.
+  // 12.4: doğrudan akışta e-posta zorunlu (order-pay fatura sormaz); sepetli akışta formda e-posta alanı yok.
   const email = page.locator('input[name="donation_email"]');
-  if (behavior === 'direct') await expect(email).toHaveAttribute('required', '');
-  if (await email.count()) await email.fill('kurgu@wdp-e2e.test');
+  if (behavior === 'direct') {
+    await expect(email).toHaveAttribute('required', '');
+    await email.fill('kurgu@wdp-e2e.test');
+  } else {
+    await expect(email).toHaveCount(0);
+  }
+  // Sepetli akışta telefon son alandır: odak çıkışında beliren cep uyarısı düğmeyi kaydırır; önce odağı bırak.
+  await page.locator('input[name="donation_phone"]').blur();
   await page.locator('[data-dp-submit]').click();
   await page.waitForURL(behavior === 'direct' ? /order-pay/ : CHECKOUT_URL, { timeout: 30000 });
 }

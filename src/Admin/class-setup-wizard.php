@@ -117,7 +117,7 @@ final class Setup_Wizard {
 				return $html;
 			case 3:
 				$html = '';
-				foreach ( array( 'form.presets_enabled', 'form.presets','form.dedication', 'form.anonymous' ) as $id ) {
+				foreach ( array( 'form.presets_enabled', 'form.presets', 'form.dedication', 'form.anonymous' ) as $id ) {
 					$html .= Admin_View::field( $id, $fields[ $id ], $this->store->get( $id ) );
 				}
 				return $html;

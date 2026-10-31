@@ -124,7 +124,7 @@ final class Form_Context {
 			'privacy_label'  => '',
 			'phone'          => self::phone(),
 			'fields'         => $shares ? array() : self::fields( $legacy ),
-			'shareholder'    => $shares ? self::shareholder_fields( $legacy ) : array(),
+			'shareholder'    => $shares ? self::shareholder_fields() : array(),
 			'direct'         => false,
 		);
 
@@ -328,11 +328,10 @@ final class Form_Context {
 	/**
 	 * Hissedar başına alanlar (ad ve telefon zorunlu; not isteğe bağlı; e-posta sorulmaz).
 	 *
-	 * @param array<string, mixed> $legacy Eski bağlam.
 	 * @return array<int, array<string, mixed>>
 	 */
-	private static function shareholder_fields( array $legacy ) {
-		$fields = array(
+	private static function shareholder_fields() {
+		$fields   = array(
 			array(
 				'key'          => 'name',
 				'type'         => 'text',
