@@ -187,8 +187,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 				<div class="donation-panel-compact__foot">
 				<?php $donation_panel_status( 1, $donation_panel_trust_text ); ?>
 				<?php // İlk durum sunucuda çizilir (betik yüklenince metin/genişlik değişmesin: CLS 0): tutar seçilmemişken pasif "Tutar seçin". ?>
-				<?php $donation_panel_pending = true; ?>
-				<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta<?php echo $donation_panel_pending ? ' is-pending' : ''; ?>" type="submit" aria-disabled="<?php echo $donation_panel_pending ? 'true' : 'false'; ?>" data-dp-cnext><span data-dp-cnext-label><?php echo $donation_panel_pending ? esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
+				<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta is-pending" type="submit" aria-disabled="true" data-dp-cnext><span data-dp-cnext-label><?php echo esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ); ?></span></button>
 				</div>
 			</section>
 			<?php endif; ?>
