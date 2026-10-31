@@ -201,48 +201,70 @@ test.describe('Ekran klavyesi gelmeyen dokunmatik cihaz (fiziksel klavyeli table
     test.skip(info.project.name === 'desktop', 'dokunmatik olmayan masaüstü projesinde alt bölüm hiç gizlenmez');
   });
 
-  test('klavye gelmezse alt bölüm ~1,2 sn sonra tek seferde görünür ve dokunulabilir; alan değişiminde yeniden gizlenmez', async ({ page }) => {
-    await installAndroidKeyboardSim(page, { mode: 'none' });
-    const fields = await openDetails(page);
-    test.skip(fields.length < 2, 'bilgiler adımında en az 2 metin alanı yok');
+  /**
+   * Klavyesiz cihaz akışı: alan 0'a dokun, (isteğe bağlı) hemen yaz; bölümün görünmesini bekle; alan 1'e geç ve yaz
+   * (bölüm görünür kalır); düğmeye dokun. Dönüş: kb durum izi (dokunuştan önce), kare izi.
+   */
+  async function noKeyboardFlow(page, fields, { typeFirst }) {
     await watchKbAttr(page);
     await startFrames(page);
     await fields[0].tap();
-    await page.waitForTimeout(600);
-    // Bekleme penceresinde (klavye henüz gelebilir) mevcut davranış: gizli.
-    expect(await page.locator('[data-dp-exp]').getAttribute('data-dp-kb'), '600 ms: hâlâ gizli').toBe('1');
-    await expect(page.locator('[data-dp-exp]')).not.toHaveAttribute('data-dp-kb', '1', { timeout: 3000 });
+    if (typeFirst) {
+      await fields[0].pressSequentially('Ab', { delay: 30 });
+    } else {
+      await page.waitForTimeout(600);
+      // Yazılmadıkça bekleme penceresinde (klavye henüz gelebilir) mevcut davranış: gizli.
+      expect(await page.locator('[data-dp-exp]').getAttribute('data-dp-kb'), '600 ms, yazma yok: hâlâ gizli').toBe('1');
+    }
+    await expect(page.locator('[data-dp-exp]')).not.toHaveAttribute('data-dp-kb', '1', { timeout: 4000 });
     await expect.poll(() => barTappable(page).then((x) => x.ok), { timeout: 2000 }).toBe(true);
-    // Alan değişimi ve yazma: bölüm görünür kalır (katman ömrü boyunca klavyesiz cihaz bilgisi).
+    // Alan değişimi ve yazma: bölüm görünür kalır (katman ömrü boyunca fiziksel klavye bilgisi).
     await fields[1].tap();
-    await fields[1].pressSequentially('Ab', { delay: 30 });
-    await page.waitForTimeout(1600);
+    await fields[1].pressSequentially('Cd', { delay: 30 });
+    await page.waitForTimeout(2500);
     expect((await barTappable(page)).ok, 'ikinci alanda dokunulabilir').toBe(true);
+    const log = (await page.evaluate(() => window.__dpKbLog)).slice();
+    const frames = await stopFrames(page);
     // Düğmeye gerçekten dokunulur (dokunuş düğmeye ulaşır).
     await page.evaluate(() => {
       window.__dpBtnClicks = 0;
       document.querySelector('.donation-panel-actionbar [data-dp-submit]').addEventListener('click', () => { window.__dpBtnClicks += 1; }, { capture: true, once: true });
     });
-    const frames = await stopFrames(page);
     await page.locator('.donation-panel-actionbar [data-dp-submit]').tap();
     expect(await page.evaluate(() => window.__dpBtnClicks), 'dokunuş düğmeye ulaştı').toBe(1);
-    const log = await page.evaluate(() => window.__dpKbLog);
-    console.log(`KBD-NOKB ${JSON.stringify(log)} kare=${frames.length} barRects=${distinct(frames, (f) => f.bar)}`);
-    // Dokunuştan önce tam iki durum değişimi: odakta gizle, ~1,2 sn sonra göster (ikinci alanda tekrar yok).
-    const beforeTap = log.filter((x) => x.t <= log[1].t);
-    expect(beforeTap.map((x) => x.kb), JSON.stringify(log)).toEqual([true, false]);
-    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeGreaterThanOrEqual(1150);
-    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeLessThanOrEqual(2000);
-    // Yalnız opacity: alt bölüm/düğme konum, genişlik, yükseklik tek değer.
+    // Tam iki durum değişimi (odakta gizle → göster); ikinci alanda tekrar gizleme yok. Yalnız opacity: kutular tek değer.
+    expect(log.map((x) => x.kb), JSON.stringify(log)).toEqual([true, false]);
     expect(frames.length, 'yeterli kare').toBeGreaterThan(60);
     expect(distinct(frames, (f) => f.bar), 'alt bölüm kutusu').toBe(1);
     expect(distinct(frames, (f) => f.btn), 'düğme kutusu').toBe(1);
+    return log;
+  }
+
+  test('fiziksel klavye (yazma var, görünür alan sabit): alt bölüm ilk tuşta görünür ve dokunulabilir', async ({ page }) => {
+    await installAndroidKeyboardSim(page, { mode: 'none' });
+    const fields = await openDetails(page);
+    test.skip(fields.length < 2, 'bilgiler adımında en az 2 metin alanı yok');
+    const log = await noKeyboardFlow(page, fields, { typeFirst: true });
+    console.log(`KBD-PHYS ${JSON.stringify(log)}`);
+    // Zamanlayıcı beklenmez: görünme, yazmayla (yedek süreden çok önce).
+    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeLessThan(800);
+  });
+
+  test('yazılmayan + klavye açılmayan: yedek zamanlayıcıyla (~2 sn) tek seferde görünür ve dokunulabilir', async ({ page }) => {
+    await installAndroidKeyboardSim(page, { mode: 'none' });
+    const fields = await openDetails(page);
+    test.skip(fields.length < 2, 'bilgiler adımında en az 2 metin alanı yok');
+    const log = await noKeyboardFlow(page, fields, { typeFirst: false });
+    console.log(`KBD-NOKB ${JSON.stringify(log)}`);
+    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeGreaterThanOrEqual(1950);
+    expect(log[1].t - log[0].t, `görünme gecikmesi ${JSON.stringify(log)}`).toBeLessThanOrEqual(2800);
   });
 
   for (const slow of [
     { name: 'tek adımda 1 sn gecikmeli klavye', opts: { mode: 'visual', delay: 1000 } },
     { name: 'yavaş animasyonlu klavye (0,5→1,7 sn, 7 adım)', opts: { mode: 'visual', delay: 500, steps: 7, stepMs: 200 } },
     { name: 'resizes-content, 1 sn gecikmeli', opts: { mode: 'content', delay: 1000 } },
+    { name: 'çok yavaş: 1,8 sn gecikmeli (yedek süreye yakın)', opts: { mode: 'visual', delay: 1800 } },
   ]) {
     test(`yavaş klavye: ${slow.name} — düğme hiç erken görünmez, durum tek değer`, async ({ page }) => {
       await installAndroidKeyboardSim(page, slow.opts);
@@ -262,6 +284,13 @@ test.describe('Ekran klavyesi gelmeyen dokunmatik cihaz (fiziksel klavyeli table
         }
       }
       expect(await page.evaluate(() => window.__dpKbSim.keyboardUp), 'klavye açıldı').toBe(true);
+      // Klavye açıldıktan sonra yazma (gerçek kullanıcı): sanal klavyede bölüm gizli kalır.
+      await fields[0].pressSequentially('Ab', { delay: 30 });
+      await page.waitForTimeout(300);
+      const afterType = await barTappable(page);
+      if (afterType.ok || afterType.opacity !== '0') {
+        visibleAt.push({ i: 'yazma', ...afterType });
+      }
       const log = await page.evaluate(() => window.__dpKbLog);
       const frames = await stopFrames(page);
       console.log(`KBD-SLOW ${slow.name} ${JSON.stringify(log)} görünür=${visibleAt.length}`);

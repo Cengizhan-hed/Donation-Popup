@@ -57,16 +57,30 @@ export function nextKeyboardUp(wasUp, shrink) {
 }
 
 /**
- * Dokunmatik ekranda odaktan sonra ekran klavyesinin gelmesi için beklenen en uzun süre (ms). Bu sürede görsel görünüm
- * (visualViewport) açılma eşiği kadar küçülmezse cihazda ekran klavyesi yok sayılır (fiziksel klavyeli tablet,
- * Chromebook tablet kipi): alt bölüm gösterilir. Yavaş klavyeli cihazlar için iki koruma: (1) 1200 ms, klavye açılış
- * animasyonlarının (iOS ~250–350 ms, Android ~300–600 ms) iki katından uzun; (2) karar ancak görsel görünüm
- * VIEWPORT_STABLE_MS boyunca yeniden boyutlanmadıysa verilir (açılış animasyonu sürerken karar ertelenir).
- * Sinyal: yalnız visualViewport `resize` (tüm güncel tarayıcılar; MDN "VisualViewport: resize event").
- * `navigator.virtualKeyboard` yalnız Chromium'da ve `overlaysContent = true` iken olay verir; bu kip görünüm küçülmesini
- * kapatıp mevcut yerleşimi değiştirdiği için kullanılmaz.
+ * Fiziksel klavye algısı (dokunmatik ekran; ör. klavyeli tablet, Chromebook tablet kipi) — üç işaret, öncelik sırasıyla:
+ *  1) Birincil, kanıta dayalı: alan odaktayken bağışçı yazıyor (`input`/`keydown`) ama görsel görünüm (visualViewport)
+ *     küçülmemiş (typedWithoutKeyboard). Sanal klavyede yazma ancak klavye göründükten, yani görünüm küçüldükten sonra olur.
+ *  2) Destek: `navigator.virtualKeyboard` varsa `geometrychange` yalnız DİNLENİR (MDN: klavye gösterilip gizlenince
+ *     ateşlenir; deneysel, yalnız güvenli bağlamda). Yüksekliği > 0 bildirirse sanal klavye görülmüş sayılır.
+ *     `overlaysContent` DEĞİŞTİRİLMEZ (görünüm küçülmesini kapatıp yerleşimi bozar).
+ *  3) Yedek zamanlayıcı, yalnız hiç yazılmadan beklenen durum için: odaktan NO_KEYBOARD_MS sonra görünüm küçülmemiş ve
+ *     VIEWPORT_STABLE_MS boyunca sakinse (açılış animasyonu sürmüyorsa) ekran klavyesi yok sayılır. Oturumda bir kez
+ *     sanal klavye görüldüyse (görünüm küçüldü ya da geometrychange) zamanlayıcı o oturumda kullanılmaz.
+ * NO_KEYBOARD_MS = 2000: önerilen 1,5–2 sn aralığının üst sınırı. Gerçek emülatör ölçümü bu oturumda yapılamadı
+ * (RAPOR-124-fixfull); yavaş Android klavyesinde düğmenin erken görünmemesi için üst sınır seçildi.
  */
-export const NO_KEYBOARD_MS = 1200;
+export const NO_KEYBOARD_MS = 2000;
+
+/**
+ * Yazma olayı fiziksel klavyeden mi: görünüm kapanma eşiğinin (KEYBOARD_GONE_PX) altında küçülmüş ve (varsa)
+ * VirtualKeyboard API sanal klavye bildirmiyor.
+ *
+ * @param {{shrink: number, vkHeight?: number}} input shrink: keyboardShrink sonucu; vkHeight: navigator.virtualKeyboard.boundingRect.height.
+ * @return {boolean} Fiziksel klavye.
+ */
+export function typedWithoutKeyboard({ shrink, vkHeight = 0 }) {
+  return Number(shrink) < KEYBOARD_GONE_PX && !(Number(vkHeight) > 0);
+}
 
 /** Karar için görsel görünümün sakin kalması gereken süre (ms); bu süre içinde `resize` geldiyse açılış sürüyor sayılır. */
 export const VIEWPORT_STABLE_MS = 400;

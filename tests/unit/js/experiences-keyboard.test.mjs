@@ -36,8 +36,17 @@ test('keyboardPresence: klavye ölçüldüyse var; görünüm yakında yeniden b
   assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: Infinity }), 'absent');
   assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS - 1 }), 'wait');
   assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS }), 'absent');
-  // Yavaş klavye koruması: bekleme süresi tipik açılış animasyonunun (≤600 ms) iki katından az olamaz.
-  assert.ok(NO_KEYBOARD_MS >= 1200);
+  // Yavaş klavye koruması: yedek bekleme 1,5–2 sn aralığında.
+  assert.ok(NO_KEYBOARD_MS >= 1500 && NO_KEYBOARD_MS <= 2000);
+});
+
+test('typedWithoutKeyboard: görünüm küçülmeden yazma = fiziksel klavye; küçüldüyse ya da API sanal klavye bildirirse değil', async () => {
+  const { typedWithoutKeyboard, KEYBOARD_GONE_PX } = await import('../../../assets/src/experiences/keyboard.mjs');
+  assert.equal(typedWithoutKeyboard({ shrink: 0 }), true);
+  assert.equal(typedWithoutKeyboard({ shrink: KEYBOARD_GONE_PX - 1 }), true); // iPad kısayol çubuğu gibi küçük şerit
+  assert.equal(typedWithoutKeyboard({ shrink: KEYBOARD_GONE_PX }), false);
+  assert.equal(typedWithoutKeyboard({ shrink: 300 }), false);
+  assert.equal(typedWithoutKeyboard({ shrink: 0, vkHeight: 280 }), false);
 });
 
 test('keyboardDismissed yalnız açıktan kapanışta true', () => {
