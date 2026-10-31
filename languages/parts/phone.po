@@ -1,0 +1,42 @@
+# Turkish translations — 124-phone (telefon alanı: ülke bazlı uzunluk, biçimleme, uyarılar, Rehber).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/Experiences/class-field-validator.php
+#: templates/donation-panel/experiences/form.php
+#: templates/donation-panel/experiences/compact.php
+msgid "This phone number looks incomplete or too long. Please check the digits."
+msgstr "Bu telefon numarası eksik ya da fazla görünüyor. Lütfen haneleri kontrol edin."
+
+#: templates/donation-panel/experiences/form.php
+#: templates/donation-panel/experiences/compact.php
+msgid "This does not look like a mobile number. You can still continue."
+msgstr "Bu numara cep telefonu gibi görünmüyor. Yine de devam edebilirsiniz."
+
+#: src/Admin/class-guide.php
+msgid "Phone number field"
+msgstr "Telefon numarası alanı"
+
+#: src/Admin/class-guide.php
+msgid "1. Where it is: the phone number is part of the donor details step of the donation form and of the compact card. There is nothing to set: the check works for every country and language, on phones and computers."
+msgstr "1. Nerede: telefon numarası, bağış formunun ve kompakt kartın bağışçı bilgileri adımındadır. Ayarlanacak bir şey yok: denetim her ülke ve dil için, telefonda ve bilgisayarda çalışır."
+
+#: src/Admin/class-guide.php
+msgid "2. What donors see: the country code list starts with your WooCommerce store country. While typing, the number is spaced the way that country writes it (for Turkey: 530 307 15 93) and no extra digits can be typed. A leading 0, 00 or country code (+90, +44) that is typed or pasted is removed by itself and the country code list follows it."
+msgstr "2. Bağışçı ne görür: ülke kodu listesi WooCommerce mağaza ülkenizle başlar. Yazarken numara o ülkenin yazış biçimiyle boşluklanır (Türkiye için: 530 307 15 93) ve fazla hane girilemez. Başa yazılan ya da yapıştırılan 0, 00 veya ülke kodu (+90, +44) kendiliğinden ayıklanır; ülke kodu listesi buna göre değişir."
+
+#: src/Admin/class-guide.php
+msgid "3. Wrong numbers: if the number is too short, a clear line appears under the field when the donor leaves it, and the Continue button stays dimmed until the number is complete. A number that does not look like a mobile number (Turkey: not starting with 5, United Kingdom: not starting with 7) only shows a hint and never blocks the gift."
+msgstr "3. Hatalı numara: numara eksikse bağışçı alandan çıkınca altında açık bir uyarı görünür ve numara tamamlanana kadar Devam düğmesi soluk kalır. Cep telefonuna benzemeyen numara (Türkiye: 5 ile başlamıyorsa, Birleşik Krallık: 7 ile başlamıyorsa) yalnız ipucu gösterir, bağışı asla engellemez."
+
+#: src/Admin/class-guide.php
+msgid "4. What is saved: the donor details on the order keep the number exactly as typed with its country code. The WooCommerce billing phone receives the same number in international format (for example +905303071593), which payment, SMS and shipping tools expect. The server checks the number again with the same rules."
+msgstr "4. Ne kaydedilir: siparişteki bağışçı bilgileri numarayı ülke koduyla, yazıldığı gibi saklar. WooCommerce fatura telefonu aynı numarayı uluslararası biçimde (örneğin +905303071593) alır; ödeme, SMS ve kargo araçları bunu bekler. Sunucu numarayı aynı kurallarla yeniden denetler."
