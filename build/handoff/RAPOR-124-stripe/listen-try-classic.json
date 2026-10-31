@@ -1,12 +1,12 @@
 {
   "events": {
-    "charge.succeeded": 33,
-    "payment_intent.succeeded": 33,
-    "payment_intent.requires_action": 39,
+    "charge.succeeded": 24,
+    "payment_intent.succeeded": 24,
+    "payment_intent.requires_action": 36,
     "payment_intent.payment_failed": 18,
     "charge.failed": 6
   },
   "responses": {
-    "200": 129
+    "200": 108
   }
 }
