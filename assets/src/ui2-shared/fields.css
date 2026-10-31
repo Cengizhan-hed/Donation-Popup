@@ -26,6 +26,15 @@
 .donation-panel-phone__chev { inline-size: 12px; block-size: 12px; color: var(--dp-color-text-muted); stroke-width: 2.4; }
 .donation-panel-phone__code:has(.donation-panel-phone__select:focus-visible) { box-shadow: inset 0 0 0 2px var(--dp-color-primary-strong); }
 .donation-panel-phone__note { font-size: var(--dp-fs-sm); }
+/* Telefon ipucu/uyarısı: yer önceden ayrılı (3 satır, geniş ekranda 2); belirip kaybolurken alttaki düğme/alanlar kaymaz (CLS 0).
+   İpucu ve hata aynı hücrede üst üste durur (karşılıklı dışlayıcı); görünmezken yalnız görünürlük kapalı. */
+.donation-panel-field:has(.donation-panel-phone) > .donation-panel-error,
+.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note { display: flex; align-items: flex-start; margin: 0; font-size: 1rem; line-height: 1.35; min-block-size: calc(3 * 1.35em); visibility: hidden; }
+.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note { display: block; }
+.donation-panel-field:has(.donation-panel-phone).has-error > .donation-panel-error,
+.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note:not([hidden]) { visibility: visible; }
+.donation-panel-field:has(.donation-panel-phone__note) > :is(.donation-panel-error, .donation-panel-phone__note) { grid-area: 3 / 1; }
+@media (min-width: 520px) { .donation-panel-field:has(.donation-panel-phone) > :is(.donation-panel-error, .donation-panel-phone__note) { min-block-size: calc(2 * 1.35em); } }
 
 .donation-panel .donation-panel-check.donation-panel-check--plain, .donation-panel .donation-panel-check.donation-panel-check--plain:has(input:checked) { padding: 0; border: 0; min-block-size: 0; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.45; color: color-mix(in oklab, var(--dp-bridge-text) 78%, var(--dp-color-surface)); background: transparent; }
 .donation-panel-check--plain .donation-panel-check__t { font-size: 13px; }

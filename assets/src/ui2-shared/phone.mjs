@@ -98,6 +98,7 @@ export function bindPhone(box, ctx) {
     onInput: () => {
       if (note) {
         note.hidden = true;
+        note.textContent = '';
       }
       ctx.say(input, '');
       gate();
