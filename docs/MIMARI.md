@@ -1035,3 +1035,6 @@ WooCommerce 8.0–8.4 `AddToCartForm` `preg_replace` ile formdaki tüm `<button 
 
 ## 12.3 düzeltme: kart formları bellekte, tembel betikler
 Liste/mağaza/döngü kartlarının formları ilk etkileşimde ya da yüklemeden 1 sn sonra boşta, tek toplu REST isteğiyle alınır ve bellekte (Blob) tutulur; dokunuşta ağ yok, HTTP önbelleğine bağlı değil (toplu yanıt no-store). Sonradan gelen/yeniden çizilen kartlar MutationObserver + boşta yeniden taranır. Bu sayfalarda form betiği (experiences) sayfa yüklemesinde yok; REST yanıtındaki doğrulanmış `assets.experiences` adresinden yüklenir. Yan sepet: ilk yükte yalnız küçük başlatıcı; çekmece (`side-cart-drawer`) GET side-cart yanıtındaki `drawer` adresinden ilk gerektiğinde. `Prefetch_Links` kaldırıldı.
+
+## 12.4: kart formları sayfa HTML'inde gömülü
+`Card_Forms` + `Form_Pack`: sayfa sonunda `script[type=application/json][data-dp-forms]` (ortak şablon + ürün başına fark; JS çözücü `assets/src/list/pack.mjs`). Toplu `no-store` ön alma kaldırıldı; kart sayfasında dokunuşa kadar REST 0. Liste paketi liste transient'inde, döngü için ürün başına parça transient'i (tek sorgu). Paket yalnız yayında ve şifresiz ürünleri içerir (yetki bağımsız); önbellek anahtarı ürün+kap türü+sürüm. Nonce gömülmez (gönderimde alınır). Pakette olmayan kart dokunma niyetinde tek `GET experience/{id}`.

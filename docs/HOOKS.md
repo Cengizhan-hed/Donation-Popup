@@ -211,3 +211,5 @@ Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (v
 - `donation_panel_experience_assets` — kampanyalı ürün form yanıtına eklenecek paket adresleri (yalnız eklenti kendi kayıtlı, sürümlü adresini ekler; istemci aynı köken ve yolu doğrular).
 
 - 12.3 düzeltme: `donation_panel_prefetch_forms` toplu uçta aynen; `donation_panel_experience_assets` experiences modülünce de kullanılır (anahtar `experiences`); REST `GET side-cart` yanıtına `drawer` alanı eklendi.
+
+- 12.4: `donation_panel_prefetch_forms` (bool $enabled, int $product_id, string $kind): kartın formu sayfaya gömülsün mü (varsayılan true); false → o kart niyette tek `GET experience/{id}`. Toplu ön alma isteği yok. Transient önekleri `wdp_cf_*` (Uninstall'a eklenecek).
