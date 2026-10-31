@@ -16,7 +16,10 @@ import { SECRET_RE } from './helpers/stripe-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const argv = process.argv.slice(2);
-const base = argv.includes('--base') ? argv[argv.indexOf('--base') + 1] : 'ikram-ortam';
+// Varsayılan: dalın ayrıldığı nokta (yalnız bu dalın değişiklikleri).
+const base = argv.includes('--base')
+  ? argv[argv.indexOf('--base') + 1]
+  : spawnSync('git', ['merge-base', 'HEAD', 'ikram-ortam'], { cwd: ROOT, encoding: 'utf8' }).stdout.trim() || 'ikram-ortam';
 
 /** @param {string} text @return {number} */
 const count = (text) => (String(text).match(SECRET_RE) || []).length;
