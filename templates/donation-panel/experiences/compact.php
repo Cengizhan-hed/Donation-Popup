@@ -62,7 +62,7 @@ if ( ! empty( $donation_panel_view['tax_relief'] ) && class_exists( '\DonationPa
  * @param bool $back    Geri düğmesi.
  * @param bool $amount  Seçilen tutar.
  */
-$donation_panel_top = static function ( $index, $back, $amount ) use ( $donation_panel_key, $donation_panel_title, $donation_panel_back, $donation_panel_steps ) {
+$donation_panel_top = static function ( $index, $back, $amount ) use ( $donation_panel_key, $donation_panel_title, $donation_panel_back, $donation_panel_steps, $donation_panel_fixed ) {
 	?>
 	<div class="donation-panel-compact__top">
 		<?php if ( $back ) : ?>
@@ -72,8 +72,10 @@ $donation_panel_top = static function ( $index, $back, $amount ) use ( $donation
 		<?php if ( $amount ) : ?>
 			<span class="donation-panel-compact__amt donation-panel-num" data-dp-camount></span>
 		<?php endif; ?>
-		<?php if ( $index <= $donation_panel_steps ) : ?>
-			<span class="donation-panel-compact__count donation-panel-num" aria-hidden="true"><?php echo esc_html( $index . '/' . $donation_panel_steps ); ?></span>
+		<?php // Sabit fiyatta ödeme adımı 2. sayılır (tek ekran + ödeme); tek adımda sayaç çizilmez. ?>
+		<?php $donation_panel_shown = ( $donation_panel_fixed && 3 === $index ) ? 2 : $index; ?>
+		<?php if ( $donation_panel_steps > 1 && $donation_panel_shown <= $donation_panel_steps ) : ?>
+			<span class="donation-panel-compact__count donation-panel-num" aria-hidden="true"><?php echo esc_html( $donation_panel_shown . '/' . $donation_panel_steps ); ?></span>
 		<?php endif; ?>
 	</div>
 	<?php
@@ -138,6 +140,8 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 		<p class="donation-panel-sr" aria-live="polite" data-dp-live></p>
 		<div class="donation-panel-compact__stack">
 
+			<?php // Sabit fiyatlı ürün: ayrı tutar adımı yok; fiyat, adet ve bilgiler tek ekranda (aşağıdaki "details" bölümü o ekrandır). ?>
+			<?php if ( ! $donation_panel_fixed ) : ?>
 			<section class="donation-panel-compact__step is-on" data-dp-cstep="amount" data-step-name="<?php esc_attr_e( 'Amount', 'woo-donation-popup' ); ?>" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-t1">
 				<?php $donation_panel_top( 1, false, false ); ?>
 				<?php $donation_panel_campaign(); ?>
@@ -145,24 +149,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 					<p class="donation-panel-compact__impact"><?php echo esc_html( (string) $donation_panel_view['impact'] ); ?></p>
 				<?php endif; ?>
 				<?php // Esnek bölge sınıfı sunucuda (:has() seçicisi yok: stil yeniden hesabı ucuz). ?>
-				<div class="donation-panel-compact__main donation-panel-compact__main--<?php echo $donation_panel_fixed ? 'fixed' : 'amounts'; ?>">
-				<?php if ( $donation_panel_fixed ) : ?>
-					<div class="donation-panel-compact__fixed">
-						<span class="donation-panel-compact__price">
-							<b class="donation-panel-num" data-dp-cunit><?php echo esc_html( $donation_panel_symbol . $donation_panel_format( $donation_panel_unit ) ); ?></b>
-							<small><?php esc_html_e( 'Price', 'woo-donation-popup' ); ?></small>
-						</span>
-						<?php if ( ! empty( $donation_panel_qty['enabled'] ) ) : ?>
-							<div class="donation-panel-stepper" role="group" aria-label="<?php esc_attr_e( 'Quantity', 'woo-donation-popup' ); ?>">
-								<button type="button" data-dp-cqty="-1" aria-label="<?php esc_attr_e( 'Decrease', 'woo-donation-popup' ); ?>" disabled><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
-								<output class="donation-panel-num" data-dp-cqty-out aria-live="polite">1</output>
-								<button type="button" data-dp-cqty="1" aria-label="<?php esc_attr_e( 'Increase', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-							</div>
-						<?php endif; ?>
-						<input type="hidden" name="quantity" value="1" data-dp-cqty-in />
-						<input type="hidden" name="amount" value="<?php echo esc_attr( (string) $donation_panel_unit ); ?>" />
-					</div>
-				<?php else : ?>
+				<div class="donation-panel-compact__main donation-panel-compact__main--amounts">
 					<fieldset class="donation-panel-compact__amounts">
 						<legend class="donation-panel-sr"><?php esc_html_e( 'Donation amount', 'woo-donation-popup' ); ?></legend>
 						<?php if ( $donation_panel_view['quick'] ) : ?>
@@ -187,27 +174,55 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 							</label>
 						<?php endif; ?>
 					</fieldset>
-				<?php endif; ?>
 				</div>
 				<?php
 				// Toplam satırı: sabit fiyatta adet × fiyat ("Toplam"), serbest tutarda seçilen tutar ("Bağışınız" · etki ifadesi —
 				// Etki ifadeleri modülü açıksa). Sütunlar içerikten bağımsız genişlikte: metin değişince kutular kaymaz (CLS 0).
 				?>
 				<p class="donation-panel-compact__total" data-dp-csum>
-					<span class="donation-panel-compact__totall"><?php echo $donation_panel_fixed ? esc_html__( 'Total', 'woo-donation-popup' ) : esc_html_x( 'Your donation', 'Compact donation card: chosen amount row', 'woo-donation-popup' ); ?></span>
+					<span class="donation-panel-compact__totall"><?php echo esc_html_x( 'Your donation', 'Compact donation card: chosen amount row', 'woo-donation-popup' ); ?></span>
 					<span class="donation-panel-compact__effect" data-dp-ceffect aria-live="polite"></span>
-					<b class="donation-panel-num" data-dp-ctotal><?php echo $donation_panel_fixed ? esc_html( $donation_panel_symbol . $donation_panel_format( $donation_panel_unit ) ) : '—'; ?></b>
+					<b class="donation-panel-num" data-dp-ctotal>—</b>
 				</p>
 				<div class="donation-panel-compact__foot">
 				<?php $donation_panel_status( 1, $donation_panel_trust_text ); ?>
 				<?php // İlk durum sunucuda çizilir (betik yüklenince metin/genişlik değişmesin: CLS 0): tutar seçilmemişken pasif "Tutar seçin". ?>
-				<?php $donation_panel_pending = ! $donation_panel_fixed; ?>
-				<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta<?php echo $donation_panel_pending ? ' is-pending' : ''; ?>" type="submit" aria-disabled="<?php echo $donation_panel_pending ? 'true' : 'false'; ?>" data-dp-cnext><span data-dp-cnext-label><?php echo $donation_panel_pending ? esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ) : esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
+				<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta is-pending" type="submit" aria-disabled="true" data-dp-cnext><span data-dp-cnext-label><?php echo esc_html_x( 'Choose an amount', 'Donation form: disabled button while no amount is chosen', 'woo-donation-popup' ); ?></span></button>
 				</div>
 			</section>
+			<?php endif; ?>
 
-			<section class="donation-panel-compact__step" data-dp-cstep="details" data-step-name="<?php esc_attr_e( 'Your details', 'woo-donation-popup' ); ?>" aria-labelledby="<?php echo esc_attr( $donation_panel_key ); ?>-t2" inert aria-hidden="true">
-				<?php $donation_panel_top( 2, true, true ); ?>
+			<?php // Sabit fiyatta bu bölüm TEK ekrandır ("amount" adı, ilk ekran): fiyat × adet = toplam tek ince satırda, hemen altında bilgiler. ?>
+			<section class="donation-panel-compact__step<?php echo $donation_panel_fixed ? ' is-on donation-panel-compact__step--one' : ''; ?>" data-dp-cstep="<?php echo $donation_panel_fixed ? 'amount' : 'details'; ?>" data-step-name="<?php echo $donation_panel_fixed ? esc_attr_x( 'Donation and details', 'Compact donation card: single-screen step name (fixed price product)', 'woo-donation-popup' ) : esc_attr__( 'Your details', 'woo-donation-popup' ); ?>" aria-labelledby="<?php echo esc_attr( $donation_panel_key . ( $donation_panel_fixed ? '-t1' : '-t2' ) ); ?>"<?php echo $donation_panel_fixed ? '' : ' inert aria-hidden="true"'; ?>>
+				<?php $donation_panel_top( $donation_panel_fixed ? 1 : 2, ! $donation_panel_fixed, ! $donation_panel_fixed ); ?>
+				<?php if ( $donation_panel_fixed ) : ?>
+					<?php // Sabit fiyatlı ürün kampanya çubuğu taşımaz (hedefli ürün "kampanya" türüdür: tutar adımlı karttır). ?>
+					<?php // Fiyat × adet = toplam: tek ince satır (≥48 px dokunma hedefi); adet kapalıysa "Fiyat … toplam". Sütunlar içerikten bağımsız (CLS 0). ?>
+					<div class="donation-panel-compact__fixed">
+						<?php if ( ! empty( $donation_panel_qty['enabled'] ) ) : ?>
+							<span class="donation-panel-sr"><?php esc_html_e( 'Price', 'woo-donation-popup' ); ?></span>
+							<b class="donation-panel-num donation-panel-compact__unit" data-dp-cunit><?php echo esc_html( $donation_panel_symbol . $donation_panel_format( $donation_panel_unit ) ); ?></b>
+							<span class="donation-panel-compact__times" aria-hidden="true">×</span>
+							<div class="donation-panel-stepper" role="group" aria-label="<?php esc_attr_e( 'Quantity', 'woo-donation-popup' ); ?>">
+								<button type="button" data-dp-cqty="-1" aria-label="<?php esc_attr_e( 'Decrease', 'woo-donation-popup' ); ?>" disabled><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+								<output class="donation-panel-num" data-dp-cqty-out aria-live="polite">1</output>
+								<button type="button" data-dp-cqty="1" aria-label="<?php esc_attr_e( 'Increase', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+							</div>
+							<span class="donation-panel-sr"><?php esc_html_e( 'Total', 'woo-donation-popup' ); ?></span>
+						<?php else : ?>
+							<span class="donation-panel-compact__priceword"><?php esc_html_e( 'Price', 'woo-donation-popup' ); ?></span>
+						<?php endif; ?>
+						<b class="donation-panel-num donation-panel-compact__sum1" data-dp-ctotal><?php echo esc_html( $donation_panel_symbol . $donation_panel_format( $donation_panel_unit ) ); ?></b>
+						<input type="hidden" name="quantity" value="1" data-dp-cqty-in />
+						<input type="hidden" name="amount" value="<?php echo esc_attr( (string) $donation_panel_unit ); ?>" />
+					</div>
+					<?php // Tek ince ek satır (384 px'e sığması için en çok biri): etki ifadesi > ürün kısa açıklaması; vergi beyanı varsa ikisi de çizilmez. ?>
+					<?php if ( ! $donation_panel_tax && $donation_panel_tiers ) : ?>
+						<p class="donation-panel-compact__impact" style="--_lc:1" data-dp-ceffect aria-live="polite"></p>
+					<?php elseif ( ! $donation_panel_tax && '' !== (string) $donation_panel_view['impact'] ) : ?>
+						<p class="donation-panel-compact__impact" style="--_lc:1"><?php echo esc_html( (string) $donation_panel_view['impact'] ); ?></p>
+					<?php endif; ?>
+				<?php endif; ?>
 				<?php // Alanlar tek çerçeveli grupta: etiket solda, alan sağda (≥48 px satır); telefon ülke kodu aynı satırda. ?>
 				<div class="donation-panel-compact__group" style="--_n:<?php echo esc_attr( (string) max( 1, count( (array) $donation_panel_view['fields'] ) ) ); ?>">
 					<?php foreach ( (array) $donation_panel_view['fields'] as $donation_panel_field ) : ?>
@@ -265,7 +280,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 					<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta" type="submit"><span><?php echo esc_html_x( 'Continue', 'Donation form: next step button', 'woo-donation-popup' ); ?></span></button>
 				<?php else : ?>
 					<?php // Sepetli akışın son adımı: sepete ekler ve ödeme sayfasına geçer (ara "ödeme sayfasında tamamlayacaksınız" adımı yok). ?>
-					<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta" type="submit" data-dp-cpay data-label="<?php /* translators: %s: formatted amount. */ esc_attr_e( 'Continue to checkout · %s', 'woo-donation-popup' ); ?>"><span data-dp-cpay-label><?php esc_html_e( 'Continue to checkout', 'woo-donation-popup' ); ?></span></button>
+					<button class="donation-panel-btn donation-panel-btn--accent donation-panel-compact__cta" type="submit" data-dp-cpay data-label="<?php /* translators: %s: formatted amount. */ esc_attr_e( 'Continue to checkout · %s', 'woo-donation-popup' ); ?>"><span data-dp-cpay-label><?php /* translators: %s: formatted amount. */ echo $donation_panel_fixed ? esc_html( sprintf( __( 'Continue to checkout · %s', 'woo-donation-popup' ), $donation_panel_symbol . $donation_panel_format( $donation_panel_unit ) ) ) : esc_html__( 'Continue to checkout', 'woo-donation-popup' ); ?></span></button>
 				<?php endif; ?>
 				</div>
 				<?php if ( $donation_panel_tax ) : ?>

@@ -252,7 +252,8 @@ final class Compact_Card {
 			'reset_hidden' => ! empty( $settings['reset_hidden'] ),
 			'trust'        => ! isset( $settings['trust'] ) || ! empty( $settings['trust'] ),
 			// Adım göstergesi gerçek sayıyı gösterir: sepetli 2 (tutar, bilgiler), doğrudan 3 (tutar, bilgiler, ödeme).
-			'steps'        => ! empty( $model['direct'] ) ? 3 : 2,
+			// Sabit fiyatta tutar adımı yok (fiyat × adet + bilgiler tek ekran): sepetli 1, doğrudan 2 (ekran, ödeme).
+			'steps'        => ( ! empty( $model['direct'] ) ? 3 : 2 ) - ( $fixed ? 1 : 0 ),
 			// Seçilen tutarın etki ifadesi (Etki ifadeleri modülü; yöneticinin yazdığı kademeler). Yoksa satır çizilmez.
 			'impact_tiers' => self::impact_tiers( $model ),
 		);

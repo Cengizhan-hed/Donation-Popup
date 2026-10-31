@@ -8,7 +8,8 @@ import { addToCart, phoneValue } from '../experiences/form.mjs';
 import { phoneBad, phoneBind } from '../ui2-shared/phone-lazy.mjs';
 import { formatTotal } from '../experiences/store.mjs';
 import { createLayer } from '../experiences/layer.mjs';
-import { ISOLATED_EVENTS, STEPS, announcement, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel, moveStep } from './logic.mjs';
+import { REVEAL_GAP_PX, TEXT_FIELD } from '../experiences/keyboard.mjs';
+import { ISOLATED_EVENTS, STEPS, announcement, backStep, countedStep, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel } from './logic.mjs';
 
 /**
  * Kart olaylarını kaydırıcılardan yalıtır (kütüphaneye özel kod yok): olaylar kart kökünde durur; yatay tekerlek sayfayı/
@@ -33,6 +34,32 @@ function isolate(root) {
 }
 
 /**
+ * Dokunmatik cihazda ekran klavyesi açılınca odaktaki alanın satırı klavyenin üstünde en az 12 px boşluk bırakır (sayfa
+ * kaydırılır; kart içinde ölçüm/yerleşim değişikliği yok).
+ *
+ * @param {HTMLFormElement} form Kart formu.
+ */
+function bindKeyboardGap(form) {
+  const vv = window.visualViewport;
+  if (!vv || !window.matchMedia('(pointer: coarse)').matches) {
+    return;
+  }
+  const reveal = () => {
+    const field = document.activeElement;
+    if (!(field instanceof Element) || !form.contains(field) || !field.matches(TEXT_FIELD)) {
+      return;
+    }
+    const row = field.closest('.donation-panel-compact__field') || field;
+    const over = row.getBoundingClientRect().bottom - (vv.offsetTop + vv.height - REVEAL_GAP_PX);
+    if (over > 0) {
+      window.scrollBy(0, over);
+    }
+  };
+  form.addEventListener('focusin', () => window.setTimeout(reveal, 320));
+  vv.addEventListener('resize', reveal);
+}
+
+/**
  * Formun veri öznitelikleri (Woo ayırıcıları, tür, akış).
  *
  * @param {DOMStringMap} ds Form `dataset`.
@@ -49,7 +76,7 @@ function readConfig(ds) {
   return {
     fixed: ds.kind === 'fixed',
     direct: ds.direct === '1',
-    total: Number(ds.steps) || (ds.direct === '1' ? 3 : 2),
+    total: Number(ds.steps) || (ds.direct === '1' ? 3 : 2) - (ds.kind === 'fixed' ? 1 : 0),
     decimals,
     currency: { decimals, thousandSeparator: ds.thousandSep ?? ',', decimalSeparator: ds.decimalSep ?? '.' },
     locale: document.documentElement.lang || undefined,
@@ -95,6 +122,8 @@ export function createCompact(root) {
   const { fixed, direct, total, decimals, currency, locale, symbol, unit, qtyMax, tiers } = readConfig(ds);
   // Sepetli akışta ödeme/teşekkür adımı çizilmez (null).
   const sections = STEPS.map((id) => form.querySelector(`[data-dp-cstep="${id}"]`));
+  // Bilgi alanlarının bulunduğu adım: serbest tutarda "bilgiler" (1); sabit fiyatta tek ekran (0, ayrı tutar adımı yok).
+  const detailsAt = fixed ? 0 : 1;
   const effect = form.querySelector('[data-dp-ceffect]');
   const totalOut = form.querySelector('[data-dp-ctotal]');
   const amountNodes = Array.from(form.querySelectorAll('[data-dp-camount], [data-dp-crecap-amount]'));
@@ -223,7 +252,7 @@ export function createCompact(root) {
    * @param {boolean} focus Odak taşınsın mı (false: sessiz; ilk çizim ve görünmezken sıfırlama).
    */
   const show = (index, focus = true) => {
-    if (index !== 1) {
+    if (index !== detailsAt) {
       // Beyan katmanı açıksa kapanır (show yalnız kurulumdan sonra çağrılır).
       closeSheet();
     }
@@ -256,7 +285,7 @@ export function createCompact(root) {
       }
     }
     if (live && section && focus) {
-      live.textContent = announcement(ds.msgStep || '', index, section.dataset.stepName || '', total);
+      live.textContent = announcement(ds.msgStep || '', countedStep(fixed, index), section.dataset.stepName || '', total);
     }
   };
 
@@ -321,11 +350,12 @@ export function createCompact(root) {
       }
     });
   });
-  const detailsInputs = () => Array.from(sections[1] ? sections[1].querySelectorAll('input[name]') : []);
+  // Gizli alanlar (sabit fiyatın tutar/adedi) bilgi değildir.
+  const detailsInputs = () => Array.from(sections[detailsAt] ? sections[detailsAt].querySelectorAll('input[name]:not([type="hidden"])') : []);
   detailsInputs().forEach((input) => {
     input.addEventListener('input', () => {
       if (input.getAttribute('aria-invalid') === 'true') {
-        setError(1, '');
+        setError(detailsAt, '');
       }
     });
   });
@@ -340,13 +370,13 @@ export function createCompact(root) {
     say: (input, message, bad) => {
       if (message || phoneMessageOn) {
         phoneMessageOn = !!message;
-        setError(1, message, bad ? [input] : []);
+        setError(detailsAt, message, bad ? [input] : []);
       }
     },
   });
 
   const validateDetails = () => {
-    const off = phoneBad(sections[1]);
+    const off = phoneBad(sections[detailsAt]);
     const bad = detailsInputs().filter((input) => {
       if (input.type === 'checkbox' || input.disabled) {
         return false;
@@ -362,7 +392,7 @@ export function createCompact(root) {
     }
     const first = bad[0];
     const message = first.value.trim() === '' ? first.dataset.requiredMsg || ds.msgInvalid : first.dataset.msgShort || ds.msgEmail || ds.msgInvalid;
-    setError(1, message || '', bad);
+    setError(detailsAt, message || '', bad);
     first.focus();
     return false;
   };
@@ -407,8 +437,8 @@ export function createCompact(root) {
       return;
     }
     const fields = names.map((name) => form.querySelector(`[name="${name}"]`)).filter(Boolean);
-    show(1);
-    setError(1, errors[names[0]] || ds.msgInvalid || '', fields);
+    show(detailsAt);
+    setError(detailsAt, errors[names[0]] || ds.msgInvalid || '', fields);
   };
 
   // ---- Ödeme adımı ----
@@ -617,7 +647,7 @@ export function createCompact(root) {
   form.querySelectorAll('[data-dp-cback]').forEach((button) => {
     button.addEventListener('click', () => {
       setError(state.step, '');
-      show(moveStep(state.step, -1));
+      show(backStep(fixed, state.step));
     });
   });
   const again = form.querySelector('[data-dp-cagain]');
@@ -627,7 +657,8 @@ export function createCompact(root) {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (state.step === 0) {
+    // Sabit fiyatta tutar adımı yok: ilk ekran doğrudan bilgiler adımıdır.
+    if (state.step === 0 && !fixed) {
       const { error } = amount();
       if (error) {
         setError(0, amountMessage(error), amountIn ? [amountIn] : []);
@@ -642,11 +673,11 @@ export function createCompact(root) {
       show(1);
       return;
     }
-    if (state.step === 1) {
+    if (state.step === detailsAt) {
       if (!validateDetails()) {
         return;
       }
-      setError(1, '');
+      setError(detailsAt, '');
       if (!direct) {
         // Sepetli akışın son adımı: sepete ekler, ödeme sayfasına geçer.
         pay();
@@ -671,6 +702,10 @@ export function createCompact(root) {
       new CustomEvent('donation-panel:progress-refresh', { bubbles: true, detail: { productId: Number(root.dataset.dpProduct), amount: paidAmount } })
     );
   }
+
+  // ---- Ekran klavyesi (124-kbd): odaktaki alanın (satırı) alt kenarı ile klavyenin üst kenarı arasında ≥12 px boşluk. Kart
+  // sayfada akışta durur, sabit alt çubuğu yoktur (gizlenecek bölüm yok; yükseklik/yerleşim değişmez); yalnız sayfa kaydırılır. ----
+  bindKeyboardGap(form);
 
   // ---- Kaydırıcı uyumu ----
   isolate(root);

@@ -85,7 +85,8 @@ async function chooseAmount(page) {
 }
 
 async function fillDetails(page) {
-  const details = step(page, 'details');
+  // Sabit fiyatta bilgiler tek ekranda ("amount").
+  const details = (await step(page, 'details').count()) ? step(page, 'details') : step(page, 'amount');
   await details.locator('input[name="donation_full_name"]').fill(DONOR.name);
   const email = details.locator('input[name="donation_email"]');
   if (await email.count()) {
@@ -116,15 +117,19 @@ test.describe('compact görüntüler', () => {
           await shot(page, `${key}-1-tutar`);
           await chooseAmount(page);
           await shot(page, `${key}-1-tutar-secili`);
-          await step(page, 'amount').locator('[data-dp-cnext]').click();
-          await expect(step(page, 'details')).toHaveClass(/is-on/);
+          // Sabit fiyat: tutar adımı yok, tek ekran.
+          const form = label === 'sabit' ? step(page, 'amount') : step(page, 'details');
+          if (label !== 'sabit') {
+            await step(page, 'amount').locator('[data-dp-cnext]').click();
+          }
+          await expect(form).toHaveClass(/is-on/);
           await shot(page, `${key}-2-bilgiler`);
-          await step(page, 'details').locator('button[type="submit"]').click();
+          await form.locator('button[type="submit"]').click();
           await shot(page, `${key}-2-bilgiler-hata`);
           await fillDetails(page);
           // Sepetli akışta ikinci adım son adımdır (ödeme düğmesi bu adımda): ileri gidilmez (sepete ekleme yok).
           if (await page.locator(`${CARD} [data-dp-cstep="pay"]`).count()) {
-            await step(page, 'details').locator('button[type="submit"]').click();
+            await form.locator('button[type="submit"]').click();
             await expect(step(page, 'pay')).toHaveClass(/is-on/);
             await shot(page, `${key}-3-odeme`);
           } else {
@@ -145,6 +150,35 @@ test.describe('compact görüntüler', () => {
       if (await more.count()) {
         await more.click();
         await shot(page, `${width}-beyan-2-ayrinti`);
+      }
+      // Sabit fiyat + vergi indirimi beyanı + etki ifadesi (tek ekranın en kalabalık hali; kampanyasız).
+      // Kombinasyon tablosu: beyan × etki × güven satırı × akış (adet seçici ve 3 alan sim ürününde zaten açık). Hepsi aynı olmalı.
+      if (IDS.fixed) {
+        for (const tax of [0, 1]) {
+          for (const impact of [0, 1]) {
+            for (const trust of [1, 0]) {
+              for (const direct of [false, true]) {
+                const q = `${tax ? '&dp_ctax=1' : ''}${impact ? '&dp_cimpact=1' : ''}${trust ? '' : '&dp_ctrust=0'}`;
+                await open(page, baseURL, IDS.fixed, direct, q);
+                const key = `${width}-sabit-b${tax}e${impact}g${trust}-${direct ? 'd' : 's'}`;
+                out[key] = await height(page);
+                // Doğal (kutu yüksekliği 1 px'e indirilince) içerik yüksekliği: 384 px'e göre güvenli pay.
+                out[`${key}-dogal`] = await page.locator(CARD).first().evaluate((el) => {
+                  el.style.setProperty('--dp-compact-h', '1px');
+                  const natural = el.getBoundingClientRect().height;
+                  el.style.removeProperty('--dp-compact-h');
+                  return natural;
+                });
+                if (tax && impact && trust && direct) {
+                  await shot(page, `${width}-sabit-beyan-1`);
+                  await fillDetails(page);
+                  await step(page, 'amount').locator('button[type="submit"]').click();
+                  out[`${key}-odeme`] = await height(page);
+                }
+              }
+            }
+          }
+        }
       }
     }
     fs.writeFileSync(path.join(SHOTS, 'yukseklik.json'), `${JSON.stringify(out, null, 2)}\n`);
