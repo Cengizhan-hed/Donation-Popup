@@ -256,10 +256,6 @@ class Settings {
 					'type'    => 'string',
 					'default' => '',
 				),
-				'donor_email'      => array(
-					'type'    => 'bool',
-					'default' => false,
-				),
 				'dedication'       => array(
 					'type'    => 'bool',
 					'default' => false,
@@ -303,10 +299,6 @@ class Settings {
 					'default' => '',
 				),
 				'copy_button' => array(
-					'type'    => 'bool',
-					'default' => false,
-				),
-				'email'       => array(
 					'type'    => 'bool',
 					'default' => false,
 				),

@@ -157,6 +157,10 @@ add_action(
 		$kind = sanitize_key((string) $_GET['dp_exp_test']); // phpcs:ignore
 		$id   = isset($_GET['dp_product']) ? (int) $_GET['dp_product'] : 0; // phpcs:ignore
 		nocache_headers();
+		// 12.4 email5: `dp_no_login_class=1` temanın `logged-in` gövde sınıfını basmadığı durumu taklit eder (body_class süzgeci).
+		if (isset($_GET['dp_no_login_class'])) { // phpcs:ignore
+			add_filter('body_class', static function ($classes) { return array_values(array_diff((array) $classes, array('logged-in'))); });
+		}
 		echo '<!doctype html><html ' . get_language_attributes() . '><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Experiences e2e</title>';
 		wp_head();
 		// 12.3 hareket testi: `dp_sb=1` klasik (yer kaplayan) kaydırma çubuğu (Chromium), `dp_long=1` uzun sayfa (çubuk görünür).

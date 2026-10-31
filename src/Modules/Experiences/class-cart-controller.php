@@ -168,7 +168,19 @@ class Cart_Controller extends Rest_Controller {
 			return $throttled;
 		}
 		$this->adopt_cookie_user();
-		return $this->no_store( rest_ensure_response( array( 'nonce' => wp_create_nonce( 'wp_rest' ) ) ) );
+		// Yalnız boolean `logged_in`: istemci girişli bağışçıda e-posta alanını gizler (e-posta/kullanıcı verisi istemciye gitmez).
+		$response = $this->no_store(
+			rest_ensure_response(
+				array(
+					'nonce'     => wp_create_nonce( 'wp_rest' ),
+					'logged_in' => get_current_user_id() > 0,
+				)
+			)
+		);
+		if ( is_object( $response ) && method_exists( $response, 'header' ) ) {
+			$response->header( 'Vary', 'Cookie' );
+		}
+		return $response;
 	}
 
 	/**

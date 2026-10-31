@@ -13,9 +13,9 @@ const DONOR = { name: 'Çağlar Şükrü Öztürk', phone: '+44 7700 900123', em
  * @param {import('@playwright/test').Page} page Sayfa.
  * @param {string} baseURL Taban adres.
  */
-async function openForm(page, baseURL) {
+async function openForm(page, baseURL, extra = '') {
   await page.context().addCookies([{ name: 'dp_direct', value: '1', url: baseURL }]);
-  await page.goto(`/?dp_exp_test=inline&dp_product=${PRODUCT}`);
+  await page.goto(`/?dp_exp_test=inline&dp_product=${PRODUCT}${extra}`);
   await expect(page.locator('[data-dp-form]')).toBeVisible({ timeout: 20000 });
   await expect(page.locator('[data-dp-form]')).toHaveAttribute('data-direct', '1');
 }
@@ -158,16 +158,47 @@ test('girişli, doğrudan: e-posta alanı gösterilmez; sipariş hesap e-postas�
     { name: auth.logged_in_name, value: auth.logged_in, url: baseURL },
     { name: auth.auth_name, value: auth.auth, url: baseURL },
   ]);
-  await openForm(page, baseURL);
+  // Temanın `logged-in` gövde sınıfını basmadığı sayfa: karar yalnız REST yanıtındaki `logged_in` boolean'ından gelir.
+  await openForm(page, baseURL, '&dp_no_login_class=1');
+  await expect(page.locator('body')).not.toHaveClass(/logged-in/);
+  const nonceBodies = [];
+  let nonceCalls = 0;
+  page.on('response', async (r) => {
+    if (r.url().includes('/donation-panel/v1/nonce')) {
+      nonceCalls += 1;
+      nonceBodies.push({ cache: r.headers()['cache-control'] || '', vary: r.headers().vary || '', body: await r.json() });
+    }
+  });
   await fillWithoutEmail(page);
   await expect(page.locator('[data-dp-field="donation_email"]')).toBeHidden();
   await expect(page.locator('input[name="donation_email"]')).toBeDisabled();
+  await expect(page.locator('input[name="donation_email"]')).not.toHaveAttribute('required', /.*/);
   await page.locator('[data-dp-submit]').click();
   await page.waitForURL(/order-pay/, { timeout: 30000 });
   const order = orderEmails(page.url());
   expect(order.ok).toBe(true);
   expect(order.billing).toBe('wdp-e2e-prefill@wdp-e2e.test');
   expect(order.item).toBe('wdp-e2e-prefill@wdp-e2e.test');
+  // Ek istek yok: nonce zaten gönderimde alınırdı; ilk etkileşimde bir kez alınır ve gönderimde yeniden kullanılır.
+  expect(nonceCalls).toBe(1);
+  expect(Object.keys(nonceBodies[0].body).sort()).toEqual(['logged_in', 'nonce']);
+  expect(nonceBodies[0].body.logged_in).toBe(true);
+  expect(nonceBodies[0].cache).toMatch(/no-store/);
+  expect(nonceBodies[0].vary.toLowerCase()).toContain('cookie');
+});
+
+test('misafir, gövde sınıfı süzgeçli sayfa: alan görünür ve zorunlu, yanıtta logged_in=false', async ({ page, baseURL }) => {
+  await openForm(page, baseURL, '&dp_no_login_class=1');
+  const bodies = [];
+  page.on('response', async (r) => {
+    if (r.url().includes('/donation-panel/v1/nonce')) bodies.push(await r.json());
+  });
+  await fillWithoutEmail(page);
+  await expect.poll(() => bodies.length).toBe(1);
+  expect(bodies[0].logged_in).toBe(false);
+  await expect(page.locator('[data-dp-field="donation_email"]')).toBeVisible();
+  await expect(page.locator('input[name="donation_email"]')).toBeEnabled();
+  await expect(page.locator('input[name="donation_email"]')).toHaveAttribute('required', '');
 });
 
 test('misafir, doğrudan: yazılan e-posta siparişe eksiksiz yazılır', async ({ page, baseURL }) => {

@@ -343,6 +343,19 @@ final class WDP_Fake_Wpdb {
 
 	public function get_col($query): array {
 		$this->queries[] = $query;
+		if (is_array($query) && strpos($query['sql'], "p.post_type IN ('product', 'product_variation')") !== false && strpos($query['sql'], 'SELECT DISTINCT pm.post_id') !== false) {
+			// "post_id by meta_key on products / variations, any value" scan (12.4 email settings cleanup).
+			list($key, $after, $limit) = $query['args'];
+			$ids = array();
+			foreach (WDP_Test_State::$post_meta as $post_id => $meta) {
+				$type = WDP_Test_State::$post_types[ $post_id ] ?? (isset(WDP_Test_State::$products[ $post_id ]) ? 'product' : '');
+				if ($post_id > (int) $after && array_key_exists($key, $meta) && in_array($type, array( 'product', 'product_variation' ), true)) {
+					$ids[] = (string) $post_id;
+				}
+			}
+			sort($ids, SORT_NUMERIC);
+			return array_slice($ids, 0, (int) $limit);
+		}
 		if (is_array($query) && strpos($query['sql'], "meta_value <> ''") !== false) {
 			// "post_id by meta_key, non-empty value" scan (10.29.0 migration).
 			list($key, $after, $limit) = $query['args'];
