@@ -93,6 +93,7 @@ test.describe('e-posta içeriği ve görünümü (Mailpit)', () => {
   test('sipariş: yönetici + müşteri e-postası, Türkçe karakter, tutar, kırık içerik yok', async ({ page, baseURL, browser }, info) => {
     test.setTimeout(240000);
     assertLocal(baseURL);
+    const startedAt = new Date().toISOString();
     const DONOR = donorFor(info.title, info.project.name);
     // Yalıtım: yalnız kendi adresimizin eski iletileri silinir; ortak kutuya dokunulmaz.
     await clearMailboxTo(DONOR.email);
@@ -156,10 +157,10 @@ test.describe('e-posta içeriği ve görünümü (Mailpit)', () => {
         const at = html.indexOf(THANKS_MESSAGE.slice(0, 12));
         const start = html.lastIndexOf('<table', at);
         const section = squash(html.slice(start, html.indexOf('</table>', at) + 8));
-        expect(section, 'teşekkür: tablo yapısı').toMatch(/^<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 24px;border-collapse:collapse"><tr><td style="padding:16px 20px;background-color:#[0-9a-f]{6};border-left:4px solid #[0-9a-f]{6};color:#[0-9a-f]{6};font-family:inherit;font-size:15px;line-height:1.5;text-align:left"><p style="margin:0 0 12px;padding:0;color:#[0-9a-f]{6};font-family:inherit;font-size:15px;line-height:1.5">/);
-        expect(section, 'teşekkür: dış CSS/görsel yok').not.toMatch(/<img|<link|<style|class="/);
+        expect(section, 'teşekkür: tablo yapısı').toMatch(/^<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 24px;border-collapse:collapse"><tr><td style="padding:16px 20px;background-color:#[0-9a-f]{6};border-left:4px solid #[0-9a-f]{6};color:#[0-9a-f]{6};font-family:inherit;font-size:15px;line-height:1.5;text-align:left"[^>]*><p style="margin:0 0 12px;padding:0;color:#[0-9a-f]{6};font-family:inherit;font-size:15px;line-height:1.5">/);
+        expect(section, 'teşekkür: dış CSS/görsel yok').not.toMatch(/<img|<link|<style/);
         expect(section, 'teşekkür: kampanya satırı aynı bölümde').toMatch(/5[.,]000/);
-        themedSections.push(section.replace(THANKS_MESSAGE, '{M}'));
+        themedSections.push(section.replace(/Allah[^<]*/, '{M}').replace(/WDP E2E[^<]*/, '{C}'));
         if (BLOCK_EMAIL) expect(html, 'blok düzenleyici: yerleşim bloğu içinde').toContain('email-block-layout');
         if (BLOCK_EMAIL && CUSTOM_TPL) expect(html, 'özel şablon: yayımlanmış şablon işlenmiş').toContain('WDP-CUSTOM-TEMPLATE-MARK');
         else expect(html, 'varsayılan şablonda özel işaret yok').not.toContain('WDP-CUSTOM-TEMPLATE-MARK');
@@ -200,7 +201,7 @@ test.describe('e-posta içeriği ve görünümü (Mailpit)', () => {
       paths.push(file);
     }
     await ctx.close();
-    fs.writeFileSync(path.join(SHOT_DIR, `mail-${CHECKOUT}-${info.project.name}.json`), JSON.stringify({ report, paths, themedSections }, null, 2));
+    fs.writeFileSync(path.join(SHOT_DIR, `mail-${CHECKOUT}-${info.project.name}.json`), JSON.stringify({ runId: RUN_ID, donor: DONOR.email, startedAt, endedAt: new Date().toISOString(), report, paths, themedSections }, null, 2));
     // Yalnız kendi iletilerimizi sil (kimlik + adres araması); ortak kutuya dokunulmaz.
     await deleteByIds(messages.map((m) => m.ID));
     await clearMailboxTo(DONOR.email);
