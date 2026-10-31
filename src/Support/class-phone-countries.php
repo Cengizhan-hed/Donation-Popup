@@ -581,6 +581,11 @@ class Phone_Countries {
 				}
 				$dial = preg_replace( '/\D+/', '', (string) $calling );
 			}
+			// Kural tablosundaki arama kodu önceliklidir (WooCommerce bazı bölgeler için "+358-18" gibi alan kodlu değer verir).
+			$rule = Phone_Rules::rule( $iso );
+			if ( $rule ) {
+				$dial = $rule['dial'];
+			}
 			if ( '' === $dial ) {
 				continue;
 			}
