@@ -91,7 +91,7 @@ final class AdminTest extends TestCase {
 			}
 		}
 		$required = array(
-			'wdp_button_settings'          => array( 'popup_button_text', 'popup_button_full_width', 'enable_amount_presets', 'amount_presets', 'enable_dedication', 'enable_anonymous', 'dedication_placeholder', 'enable_donor_email', 'enable_multi_step', 'brand_color' ),
+			'wdp_button_settings'          => array( 'popup_button_text', 'popup_button_full_width', 'enable_amount_presets', 'amount_presets', 'enable_dedication', 'enable_anonymous', 'dedication_placeholder','enable_multi_step', 'brand_color' ),
 			'wdp_success_settings'         => array( 'sadaka_wc_product_id', 'sadaka_toggle_label' ),
 			'wdp_placement_settings'       => array( 'auto_place', 'position', 'display', 'hide_price', 'show_form_title', 'loop_button', 'donation_scope', 'donation_categories' ),
 			'wdp_delete_data_on_uninstall' => array( '' ),

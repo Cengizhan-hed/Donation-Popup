@@ -62,7 +62,7 @@ final class ProductSettingsSaveTest extends TestCase {
 				'enable_anonymous'  => '',
 			)
 		)['meta'];
-		$this->assertSame('yes', $meta['_enable_email']);
+		$this->assertArrayNotHasKey('_enable_email', $meta);
 		$this->assertSame('no', $meta['_enable_dedication']);
 		$this->assertSame('', $meta['_enable_anonymous']);
 

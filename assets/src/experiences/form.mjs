@@ -148,6 +148,24 @@ function bindToggles(form) {
 }
 
 /**
+ * Girişli bağışçıda doğrudan akışın e-posta alanı gizlenir ve devre dışı kalır (sunucu hesap e-postasını kullanır).
+ *
+ * @param {HTMLElement} form   Form.
+ * @param {boolean}     direct Doğrudan (sepetsiz) bağış.
+ */
+function hideAccountEmail(form, direct) {
+  if (!direct || !document.body.classList.contains('logged-in')) {
+    return;
+  }
+  const input = form.querySelector('input[name="donation_email"]');
+  const wrap = input && input.closest('[data-dp-field]');
+  if (input && wrap) {
+    input.disabled = true;
+    wrap.hidden = true;
+  }
+}
+
+/**
  * @param {HTMLElement} root Kök (.donation-panel-exp).
  * @param {{ onDone?: Function }} [hooks] Olaylar.
  * @return {{getState: Function}} Denetleyici.
@@ -183,6 +201,9 @@ export function createForm(root, hooks = {}) {
   const addCart = form.querySelector('[data-dp-addcart]');
   // Doğrudan (sepetsiz) bağış: gönderim siparişe gider (`POST direct`), sepet düğmesi yok, ödeme order-pay sayfasında.
   const direct = form.dataset.direct === '1';
+  // Girişli bağışçıda e-posta sorulmaz: sunucu hesap e-postasını kullanır (sayfa HTML'i kullanıcıya özel olamaz; WordPress'in
+  // standart `logged-in` gövde sınıfı okunur, yoksa alan görünür ve zorunlu kalır).
+  hideAccountEmail(form, direct);
   const trust = form.querySelector('[data-dp-trust]');
   const legal = form.querySelector('[data-dp-legal]');
   const recapAmount = form.querySelector('[data-dp-recap-amount]');

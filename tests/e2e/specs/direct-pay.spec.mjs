@@ -4,6 +4,7 @@
  * Çalıştırma: `npm run e2e:queue -- npm run e2e:experiences -- --spec direct-pay --env local`.
  */
 import { test, expect } from '@playwright/test';
+import { parseLocalEvalJson, runLocalEvalFile } from '../helpers/local-wp-eval.mjs';
 
 const PRODUCT = process.env.WDP_EXP_PRODUCT_ID || '0';
 const DONOR = { name: 'Çağlar Şükrü Öztürk', phone: '+44 7700 900123', email: 'dogrudan@wdp-e2e.test' };
@@ -94,4 +95,87 @@ test('ağ hatası sonrası yeniden deneme: aynı içerik aynı siparişi bulur (
   expect(calls).toBe(2);
   expect(reused).toEqual([false, true]);
   expect(redirects[1]).toBe(redirects[0]);
+});
+
+// --- 12.4 email4: e-posta kuralı (doğrudan: misafirde zorunlu, girişlide sorulmaz; sepetli: formda yok) ---
+const WP_DIR = process.env.WDP_LOCAL_WP_DIR || '';
+
+/**
+ * @param {import('@playwright/test').Page} page Sayfa.
+ */
+async function fillWithoutEmail(page) {
+  await page.locator('input[name="amount"]').fill('60');
+  await page.locator('[data-dp-submit]').click();
+  await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
+  await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
+  await page.locator('input[name="donation_phone"]').fill(DONOR.phone);
+}
+
+/**
+ * @param {string} url Sipariş ödeme adresi.
+ * @return {{ok: boolean, billing: string, item: string}} Siparişin e-postaları.
+ */
+function orderEmails(url) {
+  const orderId = Number((url.match(/order-pay\/(\d+)/) || [])[1] || 0);
+  expect(orderId).toBeGreaterThan(0);
+  return parseLocalEvalJson(runLocalEvalFile('tests/e2e/helpers/wdp-order-email.php', [String(orderId)], { env: { WDP_LOCAL_WP_DIR: WP_DIR } }));
+}
+
+test('misafir, doğrudan: e-posta boşken ilerleme engellenir, hata görünür, istek gitmez', async ({ page, baseURL }) => {
+  await openForm(page, baseURL);
+  await fillWithoutEmail(page);
+  let posts = 0;
+  page.on('request', (r) => {
+    if (r.url().includes('/donation-panel/v1/direct')) posts += 1;
+  });
+  await page.locator('[data-dp-submit]').click();
+  const error = page.locator('[data-dp-error="donation_email"]');
+  await expect(error).toBeVisible();
+  await expect(error).not.toHaveText('');
+  await expect(page).not.toHaveURL(/order-pay/);
+  expect(posts).toBe(0);
+});
+
+test('sunucu da reddeder: e-postasız ve biçimi bozuk doğrudan istek 4xx, sipariş açılmaz', async ({ page, baseURL }) => {
+  await openForm(page, baseURL);
+  const base = { product_id: Number(PRODUCT), amount: '60', donation_full_name: DONOR.name, donation_phone: DONOR.phone };
+  for (const email of ['', 'bozuk-adres', '<b>x</b>@ornek.org']) {
+    const response = await page.request.post('/?rest_route=/donation-panel/v1/direct', {
+      headers: { 'Content-Type': 'application/json' },
+      data: { ...base, donation_email: email },
+    });
+    expect(response.status(), `e-posta "${email}"`).toBeGreaterThanOrEqual(400);
+    expect(response.status()).toBeLessThan(500);
+  }
+});
+
+test('girişli, doğrudan: e-posta alanı gösterilmez; sipariş hesap e-postasıyla açılır', async ({ page, context, baseURL }) => {
+  const auth = parseLocalEvalJson(
+    runLocalEvalFile('tests/e2e/helpers/wdp-checkout-prefill-user.php', [JSON.stringify({ first_name: 'Hesap' })], { env: { WDP_LOCAL_WP_DIR: WP_DIR } })
+  );
+  expect(auth.ok).toBe(true);
+  await context.addCookies([
+    { name: auth.logged_in_name, value: auth.logged_in, url: baseURL },
+    { name: auth.auth_name, value: auth.auth, url: baseURL },
+  ]);
+  await openForm(page, baseURL);
+  await fillWithoutEmail(page);
+  await expect(page.locator('[data-dp-field="donation_email"]')).toBeHidden();
+  await expect(page.locator('input[name="donation_email"]')).toBeDisabled();
+  await page.locator('[data-dp-submit]').click();
+  await page.waitForURL(/order-pay/, { timeout: 30000 });
+  const order = orderEmails(page.url());
+  expect(order.ok).toBe(true);
+  expect(order.billing).toBe('wdp-e2e-prefill@wdp-e2e.test');
+  expect(order.item).toBe('wdp-e2e-prefill@wdp-e2e.test');
+});
+
+test('misafir, doğrudan: yazılan e-posta siparişe eksiksiz yazılır', async ({ page, baseURL }) => {
+  await openForm(page, baseURL);
+  await fill(page);
+  await page.locator('[data-dp-submit]').click();
+  await page.waitForURL(/order-pay/, { timeout: 30000 });
+  const order = orderEmails(page.url());
+  expect(order.billing).toBe(DONOR.email);
+  expect(order.item).toBe(DONOR.email);
 });
