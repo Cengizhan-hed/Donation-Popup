@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 08:44:30+0000\n"
-"PO-Revision-Date: 2026-10-31 08:44:30+0000\n"
+"POT-Creation-Date: 2026-10-31 08:56:56+0000\n"
+"PO-Revision-Date: 2026-10-31 08:56:56+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -2411,6 +2411,10 @@ msgstr "E-posta"
 msgid "Email (optional)"
 msgstr "E-posta (isteğe bağlı)"
 
+#: src/Modules/Experiences/class-form-context.php
+msgid "Email *"
+msgstr "E-posta *"
+
 #: includes/class-admin-design-studio-renderer.php:261
 #: includes/class-admin-product-data-tab.php:703
 msgid "Email field"
@@ -2435,6 +2439,10 @@ msgstr "E-posta, ithaf ve anonim bağış"
 #: includes/class-admin-product-data-tab.php:696
 msgid "Email, dedication, anonymous donation, and note"
 msgstr "E-posta, ithaf, anonim bağış ve not"
+
+#: src/Admin/class-guide.php
+msgid "Email: with direct donation the form always shows a required email field after the phone number, even when the email field is switched off for the product. The payment page does not ask for billing details, and card payments and order emails need the address. Through the cart nothing changes."
+msgstr "E-posta: doğrudan bağışta form, üründe e-posta alanı kapalı olsa bile telefon numarasından sonra zorunlu bir e-posta alanı gösterir. Ödeme sayfası fatura bilgisi istemez; kartla ödeme ve sipariş e-postaları bu adrese ihtiyaç duyar. Sepetli akışta hiçbir şey değişmez."
 
 #: includes/class-admin-layout-tabs-renderer.php:139
 msgid "Empty bar"
@@ -4654,6 +4662,10 @@ msgstr "telefon numaranızı eksiksiz giriniz"
 #: includes/traits/trait-wdp-assets-registry.php:363
 msgid "Please enter your complete phone number."
 msgstr "Telefon numaranızı eksiksiz giriniz."
+
+#: src/Modules/Experiences/class-form-context.php
+msgid "Please enter your email address."
+msgstr "Lütfen e-posta adresinizi yazın."
 
 #: includes/class-cart.php:241 includes/traits/trait-wdp-ajax-cart-add.php:134
 msgid "Please enter your full name."
@@ -7229,6 +7241,10 @@ msgstr "Pencere genişliği ve padding “Modal & Form Görünümü” sekmesind
 
 msgid "Wins over the product's own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct."
 msgstr "Ürünün kendi bağış türünün önüne geçer. Doğrudan bağış tek kalemli bir sipariştir; sonuç doğrudan olduğunda ek bağış seçeneği bağışçıya gösterilmez."
+
+#: src/Admin/class-field-registry.php
+msgid "With direct donation the form always asks for the donor's email address (required): WooCommerce's payment page does not ask for billing details, and payment methods and order emails need it."
+msgstr "Doğrudan bağışta form bağışçının e-posta adresini her zaman sorar (zorunlu): WooCommerce ödeme sayfası fatura bilgisi istemez; ödeme yöntemleri ve sipariş e-postaları bu adrese ihtiyaç duyar."
 
 msgid "With goal"
 msgstr "Hedefli"
