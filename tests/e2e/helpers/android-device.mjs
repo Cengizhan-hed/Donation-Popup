@@ -37,7 +37,27 @@ export async function connectAndroid() {
 /** Test edilen tarayıcı paketi (varsayılan Google Chrome; Chromium anlık görüntüsü için org.chromium.chrome). */
 export const CHROME_PKG = process.env.WDP_ANDROID_CHROME_PKG || 'com.android.chrome';
 
-const FIRST_RUN_BUTTONS = ['Use without an account', 'Stay signed out', 'No thanks', 'Got it', 'No, thanks', 'Skip'];
+const FIRST_RUN_BUTTONS = ['Use without an account', 'Stay signed out', 'No thanks', 'Got it', 'No, thanks', 'Skip', 'Wait', 'Close app'];
+
+/**
+ * Ekran düzenini (uiautomator) okur; geçiş anında "null root node" hatası verebilir, bu yüzden birkaç kez dener.
+ *
+ * @param {string} serial Cihaz.
+ * @return {string} XML ya da boş.
+ */
+function dumpUi(serial) {
+  for (let k = 0; k < 4; k += 1) {
+    const d = adb(['shell', 'uiautomator', 'dump', '/sdcard/wdp-ui.xml'], serial);
+    if (d.ok && !/null root node|ERROR/.test(d.out)) {
+      const xml = adb(['shell', 'cat', '/sdcard/wdp-ui.xml'], serial).out;
+      if (xml.includes('<hierarchy')) {
+        return xml;
+      }
+    }
+    spawnSync('sleep', ['1']);
+  }
+  return '';
+}
 
 /**
  * Chrome ilk açılış karşılama/bildirim ekranlarını adb + uiautomator ile atlar (bayrak dosyası kullanıcı derlemesinde
@@ -47,10 +67,10 @@ const FIRST_RUN_BUTTONS = ['Use without an account', 'Stay signed out', 'No than
  */
 export function dismissChromeFirstRun(serial) {
   adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'about:blank', CHROME_PKG], serial);
-  for (let i = 0; i < 8; i += 1) {
+  let clean = 0;
+  for (let i = 0; i < 14 && clean < 2; i += 1) {
     spawnSync('sleep', ['2']);
-    adb(['shell', 'uiautomator', 'dump', '/sdcard/wdp-ui.xml'], serial);
-    const xml = adb(['shell', 'cat', '/sdcard/wdp-ui.xml'], serial).out;
+    const xml = dumpUi(serial);
     let hit = null;
     for (const label of FIRST_RUN_BUTTONS) {
       const m = xml.match(new RegExp(`text="${label}"[^>]*bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`));
@@ -59,10 +79,12 @@ export function dismissChromeFirstRun(serial) {
         break;
       }
     }
-    if (!hit) {
-      break;
+    if (hit) {
+      clean = 0;
+      adb(['shell', 'input', 'tap', String(hit[0]), String(hit[1])], serial);
+    } else if (xml) {
+      clean += 1; // boş okuma (geçiş anı, "null root node") çıkış sayılmaz; art arda 2 temiz okuma gerekir
     }
-    adb(['shell', 'input', 'tap', String(hit[0]), String(hit[1])], serial);
   }
   adb(['shell', 'rm', '-f', '/sdcard/wdp-ui.xml'], serial);
   adb(['shell', 'am', 'force-stop', CHROME_PKG], serial);
