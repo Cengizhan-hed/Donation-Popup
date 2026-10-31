@@ -19,6 +19,8 @@ use DonationPanel\Domain\Campaign_Goal;
 use DonationPanel\Http\Client_Ip;
 use DonationPanel\Domain\Progress_Currency;
 use DonationPanel\Modules\Experiences\Field_Validator;
+use DonationPanel\Support\Phone_Countries;
+use DonationPanel\Support\Phone_Rules;
 use DonationPanel\WooCommerce\Cart_Data;
 use DonationPanel\WooCommerce\Cart_Hooks;
 
@@ -666,7 +668,8 @@ final class Direct_Order_Factory {
 			$order->set_billing_email( $email );
 		}
 		if ( ! empty( $data['phone'] ) ) {
-			$order->set_billing_phone( (string) $data['phone'] );
+			// WooCommerce'e E.164 (+905301234567) gider; bağışçının yazdığı ham değer kalem meta'sında (wdp_donor_phone) aynen durur.
+			$order->set_billing_phone( Phone_Rules::to_e164( (string) $data['phone'], Phone_Countries::get_default_country_iso() ) );
 		}
 	}
 

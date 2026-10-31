@@ -10,6 +10,8 @@
 namespace DonationPanel\Modules\Experiences;
 
 use DonationPanel\Domain\Amount_Limits;
+use DonationPanel\Support\Phone_Countries;
+use DonationPanel\Support\Phone_Rules;
 use DonationPanel\Support\Price;
 use DonationPanel\WooCommerce\Cart_Hooks;
 
@@ -260,8 +262,14 @@ final class Field_Validator {
 		if ( 'email' === $type && ! is_email( $value ) ) {
 			return __( 'Please enter a valid email address.', 'woo-donation-popup' );
 		}
-		if ( 'tel' === $type && ( preg_match( '/[^0-9+\s\-()]/', $value ) || strlen( preg_replace( '/\D/', '', $value ) ) < 6 ) ) {
-			return __( 'Please check the phone number.', 'woo-donation-popup' );
+		if ( 'tel' === $type ) {
+			if ( preg_match( '/[^0-9+\s\-()]/', $value ) ) {
+				return __( 'Please check the phone number.', 'woo-donation-popup' );
+			}
+			// Ülke bazlı ulusal numara uzunluğu (JS ile aynı kural: Phone_Rules). Mobil önek yalnız istemci uyarısıdır.
+			if ( '' !== Phone_Rules::error( $value, Phone_Countries::get_default_country_iso() ) ) {
+				return __( 'This phone number looks incomplete or too long. Please check the digits.', 'woo-donation-popup' );
+			}
 		}
 		return '';
 	}
