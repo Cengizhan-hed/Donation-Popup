@@ -299,13 +299,8 @@ class Donations_List {
 			$html  = $built['html'];
 			$kind  = self::layer_kind( $atts );
 			if ( '' !== $kind && ! empty( $built['ids'] ) ) {
-				if ( $use_cache ) {
-					$forms = Card_Forms::build( $built['ids'], $kind );
-				} else {
-					foreach ( $built['ids'] as $id ) {
-						Card_Forms::add( $id, $kind ); // Rastgele sıralı liste önbelleğe girmez: formlar sayfa sonunda.
-					}
-				}
+				// Ürünler bu çizimde zaten yüklü; paket liste önbelleğine girer (rastgele sıralı liste önbelleğe girmez).
+				$forms = Card_Forms::build( Card_Forms::allowed( $built['ids'], $kind ), $kind );
 			}
 			if ( $use_cache ) {
 				set_transient(

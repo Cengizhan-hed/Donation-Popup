@@ -121,7 +121,7 @@ class Card_Forms {
 		);
 		foreach ( $ids as $product_id ) {
 			$product_id = (int) $product_id;
-			if ( $product_id < 1 || $pack->has( $product_id ) ) {
+			if ( $product_id < 1 || $pack->has( $product_id ) || ! self::public_product( $product_id ) ) {
 				continue;
 			}
 			$model = Form_Controller::model_for_id( $product_id );
@@ -174,8 +174,21 @@ class Card_Forms {
 			if ( empty( $ids ) ) {
 				continue;
 			}
-			$payload = self::build( $ids, $kind, self::PAGE_BUDGET - self::$bytes );
-			if ( null !== $payload ) {
+			// Döngü kartları: paket ürün kümesi + kap türü + liste önbellek sürümüyle (ürün/ayar/bağış değişince tazelenir)
+			// önbellekte; isabette tek sorgu (WP değer+süreyi birlikte okur), çizim yok.
+			sort( $ids );
+			$key     = Donations_List::cache_key(
+				array(
+					'card_forms' => $ids,
+					'kind'       => $kind,
+				)
+			);
+			$payload = get_transient( $key );
+			if ( ! is_array( $payload ) ) {
+				$payload = self::build( $ids, $kind );
+				set_transient( $key, null === $payload ? array( 'empty' => true ) : $payload, DAY_IN_SECONDS );
+			}
+			if ( ! empty( $payload['pack'] ) ) {
 				$out .= self::script( $payload );
 			}
 		}
@@ -230,6 +243,25 @@ class Card_Forms {
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * Anonim ziyaretçinin göreceği ürün mü: yayında ve şifresiz. Yetkiden BAĞIMSIZ (paket önbelleğe girip herkese
+	 * gömülür; yöneticinin çizdiği sayfa gizli/özel/taslak/şifreli ürünü pakete sokmaz — `is_hidden_product`'taki
+	 * `current_user_can` atlaması burada yok).
+	 *
+	 * @param int $product_id Ürün.
+	 * @return bool
+	 */
+	public static function public_product( $product_id ) {
+		$product = function_exists( 'wc_get_product' ) ? wc_get_product( (int) $product_id ) : null;
+		if ( ! is_object( $product ) ) {
+			return false;
+		}
+		if ( ! method_exists( $product, 'get_status' ) || 'publish' !== $product->get_status() ) {
+			return false;
+		}
+		return ! ( method_exists( $product, 'get_post_password' ) && '' !== (string) $product->get_post_password() );
 	}
 
 	/**
