@@ -97,7 +97,10 @@ async function formFlow(page, layout, behavior) {
   } else {
     await expect(form).not.toHaveAttribute('data-direct', /.*/);
   }
+  // 12.4 klavye sözleşmesi: dokunmatik cihazda yazı alanı odaktayken sabit alt bölüm (düğme) gizlidir; bağışçı klavyeyi
+  // kapatınca (odak çıkınca) düğme geri gelir. Test aynı adımı yapar (alan odaktan çıkar), sonra düğmeye dokunur.
   await page.locator('input[name="amount"]').fill('60');
+  await page.locator('input[name="amount"]').blur();
   await page.locator('[data-dp-submit]').click();
   await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
   await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
@@ -107,10 +110,11 @@ async function formFlow(page, layout, behavior) {
   if (behavior === 'direct') {
     await expect(email).toHaveAttribute('required', '');
     await email.fill('kurgu@wdp-e2e.test');
+    await email.blur();
   } else {
     await expect(email).toHaveCount(0);
   }
-  // Sepetli akışta telefon son alandır: odak çıkışında beliren cep uyarısı düğmeyi kaydırır; önce odağı bırak.
+  // Telefon son alan olabilir: odak çıkışında beliren cep uyarısı düğmeyi kaydırır; önce odağı bırak.
   await page.locator('input[name="donation_phone"]').blur();
   await page.locator('[data-dp-submit]').click();
   await page.waitForURL(behavior === 'direct' ? /order-pay/ : CHECKOUT_URL, { timeout: 30000 });
@@ -214,7 +218,8 @@ test.describe('compact kart yükseklikleri', () => {
     for (const [key, width] of Object.entries(widths)) {
       await page.setViewportSize({ width, height: 900 });
       out[key] = [];
-      for (const [col, id] of [[0, IDS.custom], [1, IDS.campaign]]) {
+      // Sütun 2: sabit fiyatlı ürün (tek ekran); serbest tutarlı ürünle AYNI yükseklikte olmalı.
+      for (const [col, id] of [[0, IDS.custom], [1, IDS.campaign], [2, IDS.fixed]].filter(([, value]) => value)) {
         const measured = {};
         for (const behavior of BEHAVIORS) {
           await page.context().clearCookies();
@@ -227,6 +232,20 @@ test.describe('compact kart yükseklikleri', () => {
         }
         expect(Math.abs(measured.cart - measured.direct), `${key}/${col}: ${JSON.stringify(measured)}`).toBeLessThanOrEqual(0.5);
         out[key][col] = Math.round(measured.cart);
+        if (col === 2) {
+          // En kalabalık tek ekran (beyan + etki ayarı + adet + 3 alan + güven satırı) da aynı yükseklikte kalır.
+          for (const behavior of BEHAVIORS) {
+            await page.context().clearCookies();
+            await setBehavior(page, baseURL, behavior);
+            await page.goto(`/?dp_compact=plain&dp_ids=${id}&dp_ctax=1&dp_cimpact=1`);
+            const worst = page.locator(`${CARD}[data-dp-ready="1"]`).first();
+            await expect(worst).toBeVisible({ timeout: 20000 });
+            await page.evaluate(() => document.fonts.ready);
+            const h = await worst.evaluate((el) => el.getBoundingClientRect().height);
+            expect(Math.abs(h - out[key][0]), `${key}/${behavior}: sabit+beyan+etki ${h} ≠ ${out[key][0]}`).toBeLessThanOrEqual(0.5);
+          }
+          expect(Math.abs(measured.cart - out[key][0]), `${key}: sabit fiyat ${measured.cart} ≠ serbest tutar ${out[key][0]}`).toBeLessThanOrEqual(0.5);
+        }
         if (heights[key] && heights[key][col] > 0) {
           expect(Math.abs(measured.cart - heights[key][col]), `${key}/${col}: ölçülen ${measured.cart}, tablo ${heights[key][col]}`).toBeLessThanOrEqual(tolerance);
         }

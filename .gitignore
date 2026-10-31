@@ -114,3 +114,6 @@ dev/research/
 .jscpd/
 /tools/bin/composer.phar
 /build/tools/
+
+# Hookify yerel kural dosyaları (kullanıcıya özel yerel yapılandırma)
+.claude/*.local.md

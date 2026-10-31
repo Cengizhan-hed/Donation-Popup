@@ -1,0 +1,32 @@
+# Turkish translations — 124-compact1 (sabit fiyatlı ürün tek ekran).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: templates/donation-panel/experiences/compact.php
+msgctxt "Compact donation card: single-screen step name (fixed price product)"
+msgid "Donation and details"
+msgstr "Bağış ve bilgileriniz"
+
+#: src/Admin/class-compact-tools.php
+msgid "Steps: through the cart the card has 2 steps (amount, then your details with \"Continue to checkout\"); with direct donation it has 3 (amount, details, payment). A fixed-price product has no amount step: price × quantity = total sits on one thin line with the name and phone fields right below it, so it has 1 step through the cart and 2 with direct donation (details, payment). The height is the same with or without a goal, an impact phrase or the tax relief declaration, and a fixed-price product is as tall as the others."
+msgstr "Adımlar: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç\" düğmeli bilgileriniz); doğrudan bağışta 3 adımdır (tutar, bilgiler, ödeme). Sabit fiyatlı üründe tutar adımı yoktur: fiyat × adet = toplam tek ince satırdadır, ad ve telefon alanları hemen altındadır; bu yüzden sepetli akışta 1, doğrudan bağışta 2 adımdır (bilgiler, ödeme). Yükseklik; hedef, etki ifadesi veya vergi indirimi beyanı olsa da olmasa da aynıdır ve sabit fiyatlı ürün diğerleriyle aynı yüksekliktedir."
+
+#: src/Admin/class-compact-tools.php
+msgid "So that a fixed-price card fits the same height, its single screen shows at most one extra line under the price row: the impact phrase, or else the product short description. When the tax relief declaration is switched on, the declaration takes that place (title and \"Details\" on one thin line) and the extra line is left out. A fixed-price product never shows a goal bar: a product with a goal is a goal-based product and has the amount step."
+msgstr "Sabit fiyatlı kartın aynı yüksekliğe sığması için tek ekranda fiyat satırının altında en çok bir ek satır görünür: etki ifadesi, yoksa ürün kısa açıklaması. Vergi indirimi beyanı açıksa o yeri beyan alır (başlık ve \"Ayrıntılar\" tek ince satırda) ve ek satır çizilmez. Sabit fiyatlı ürün hedef çubuğu göstermez: hedefli ürün, hedefli bağış türüdür ve tutar adımı vardır."
+
+#: src/Admin/class-guide.php
+msgid "7. What the donor sees: through the cart the card has 2 steps (amount, then details with \"Continue to checkout · amount\"); with direct donation it has 3 (amount, details, payment) and a thank-you. The step counter shows the real number (it is hidden when there is only one step). A fixed-price or quantity product has no amount step: price × quantity = total sits on one thin line, with the name, phone (and email, if you ask for it) fields right below it, the Gift Aid line if it is on, the lock line and the main button; through the cart that is a single screen with \"Continue to checkout · amount\", with direct donation it is a single screen plus payment. A small lock line (\"Secure payment\") sits above the button; you can switch it off under Compact card. With the Impact phrases module the chosen amount's impact appears next to the amount; with the Tax relief module the declaration shows its title and a short line, and \"Details\" opens the full text inside the card."
+msgstr "7. Bağışçının gördüğü: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç · tutar\" düğmeli bilgiler); doğrudan bağışta 3 adım (tutar, bilgiler, ödeme) ve teşekkür vardır. Adım sayacı gerçek sayıyı gösterir (tek adım varsa gizlenir). Sabit fiyatlı veya adetli üründe tutar adımı yoktur: fiyat × adet = toplam tek ince satırdadır; ad, telefon (ve istediyseniz e-posta) alanları, açıksa Gift Aid satırı, güven satırı ve ana düğme hemen altındadır; sepetli akışta bu tek ekrandır (\"Ödemeye geç · tutar\"), doğrudan bağışta tek ekran artı ödemedir. Düğmenin üstünde küçük bir kilit satırı (\"Güvenli ödeme\") durur; Compact kart altında kapatabilirsiniz. Etki ifadeleri modülüyle seçilen tutarın etkisi tutarın yanında görünür; Vergi indirimi modülüyle beyan başlığını ve kısa bir satırı gösterir, \"Ayrıntılar\" tam metni kartın içinde açar."
+
+#: src/Admin/class-guide.php
+msgid "8. Exact slide height (Elementor and other sliders): the card is 384 px tall on desktop, tablet and phone, for every product type and in both flows (measured from 320 to 1440 px). The fullest card, a fixed-price product with quantity, three fields and the tax relief declaration, needs 378 px. Give the slide at least 400 px (card plus a 16 px safety margin for your theme font); a taller slide only adds space around the card. Text in the card never wraps to extra lines, so the height does not change with the screen width."
+msgstr "8. Kesin slayt yüksekliği (Elementor ve diğer slaytlar): kart masaüstü, tablet ve telefonda, her ürün türünde ve iki akışta da 384 px yüksekliktedir (320–1440 px arası ölçüldü). En dolu kart (adetli sabit fiyatlı ürün, üç alan ve vergi indirimi beyanı) 378 px gerektirir. Slayta en az 400 px verin (kart + tema yazı tipi için 16 px güvenli pay); daha yüksek slayt yalnız kartın çevresine boşluk ekler. Kartın içindeki metinler fazladan satıra kırılmaz, bu yüzden yükseklik ekran genişliğiyle değişmez."
