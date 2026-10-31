@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 07:24:29+0000\n"
-"PO-Revision-Date: 2026-10-31 07:24:29+0000\n"
+"POT-Creation-Date: 2026-10-31 08:44:30+0000\n"
+"PO-Revision-Date: 2026-10-31 08:44:30+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -381,6 +381,10 @@ msgid "6. Settings: Donation Panel → Campaigns → Campaign progress bar. Swit
 msgstr "6. Ayarlar: Bağış Paneli → Kampanyalar → Kampanya ilerleme çubuğu. Bağışçının kendi katkısını, dolma ve sayma animasyonunu ya da hedefteki küçük kutlamayı kapatabilirsiniz. Cihazında azaltılmış hareketi seçen ziyaretçiler son değerleri her zaman animasyonsuz görür."
 
 #: src/Admin/class-guide.php
+msgid "6. WooCommerce block e-mail editor: if you turn on WooCommerce's block-based e-mail editor (WooCommerce → Settings → Advanced → Features), everything above keeps working, also in an e-mail template you customized and published in that editor: the thank-you, translated labels, hidden phone number and hidden internal data all appear in the e-mails. The thank-you looks the same in the classic and the block e-mail editor: a small box with its own styling that works in e-mail apps, using the text and accent colors from WooCommerce → Settings → Emails. It is placed with the order content, just above the order table."
+msgstr "6. WooCommerce blok e-posta düzenleyicisi: WooCommerce'in blok tabanlı e-posta düzenleyicisini açarsanız (WooCommerce → Ayarlar → Gelişmiş → Özellikler) yukarıdakilerin hepsi çalışmaya devam eder; o düzenleyicide özelleştirip yayımladığınız e-posta şablonunda da: teşekkür, çevrilmiş etiketler, gizlenen telefon ve gizlenen dahili veriler e-postalarda aynen uygulanır. Teşekkür, klasik ve blok e-posta düzenleyicisinde aynı görünür: e-posta uygulamalarında çalışan, kendi stiline sahip küçük bir kutu; renkleri WooCommerce → Ayarlar → E-postalar'daki metin ve vurgu renginden alır. Sipariş içeriğiyle birlikte, sipariş tablosunun hemen üstüne yerleşir."
+
+#: src/Admin/class-guide.php
 msgid "6. WooCommerce block e-mail editor: if you turn on WooCommerce's block-based e-mail editor (WooCommerce → Settings → Advanced → Features), everything above keeps working: the thank-you, translated labels, hidden phone number and hidden internal data all appear in the e-mails. The thank-you is shown as a plain paragraph at the top of the order content (the editor sets its look), without extra styling from this plugin."
 msgstr "6. WooCommerce blok e-posta düzenleyicisi: WooCommerce'in blok tabanlı e-posta düzenleyicisini açarsanız (WooCommerce → Ayarlar → Gelişmiş → Özellikler) yukarıdakilerin hepsi çalışmaya devam eder: teşekkür, çevrilmiş etiketler, gizlenen telefon ve gizlenen dahili veriler e-postalarda aynen uygulanır. Teşekkür, sipariş içeriğinin en üstünde düz bir paragraf olarak görünür (görünümünü düzenleyici belirler); bu eklenti ek stil eklemez."
 
@@ -637,6 +641,10 @@ msgstr "Bağışçıya giden \"İşleniyor\" ve \"Tamamlandı\" e-postalarında 
 #: src/Admin/class-field-registry.php
 msgid "Adds a short thank-you above the order table in the \"Processing\" and \"Completed\" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Sent only for donations whose payment has been received: it is not added to the \"On hold\" e-mail (for example while a bank transfer is awaited), and never to e-mails sent to you. Works even when the Thank-you screen module is off."
 msgstr "Bağışçıya giden \"İşleniyor\" ve \"Tamamlandı\" e-postalarında sipariş tablosunun üstüne kısa bir teşekkür ekler. Yukarıdaki teşekkür metnini kullanır; kampanyada toplanan ve hedef tutarı gösteren tek bir satır eklenir. Yalnız ödemesi alınmış bağışlarda gönderilir: \"Beklemede\" e-postasına (örneğin havale beklenirken) eklenmez, size giden e-postalara da hiçbir zaman eklenmez. Teşekkür ekranı modülü kapalıyken de çalışır."
+
+#: src/Admin/class-field-registry.php
+msgid "Adds a short thank-you above the order table in the \"Processing\" and \"Completed\" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Sent only for donations whose payment has been received: it is not added to the \"On hold\" e-mail (for example while a bank transfer is awaited), and never to e-mails sent to you. Works even when the Thank-you screen module is off. It looks the same in the classic and block e-mail editor and uses the colors from WooCommerce → Settings → Emails."
+msgstr "Bağışçıya giden \"İşleniyor\" ve \"Tamamlandı\" e-postalarında sipariş tablosunun üstüne kısa bir teşekkür ekler. Yukarıdaki teşekkür metnini kullanır; kampanyada toplanan ve hedef tutarı gösteren tek bir satır eklenir. Yalnız ödemesi alınmış bağışlarda gönderilir: \"Beklemede\" e-postasına (örneğin havale beklenirken) eklenmez, size giden e-postalara da hiçbir zaman eklenmez. Teşekkür ekranı modülü kapalıyken de çalışır. Klasik ve blok e-posta düzenleyicisinde aynı görünür ve WooCommerce → Ayarlar → E-postalar'daki renkleri kullanır."
 
 #: src/Admin/
 msgid "Adds a sign-in icon, a sign-in and register panel, and a \"My donations\" tab in My Account with receipts and a quick way to give again."
