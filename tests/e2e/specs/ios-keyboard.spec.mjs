@@ -186,8 +186,7 @@ for (const size of SIZES) {
       });
       const distinct = (pick) => new Set(frames.map((f) => JSON.stringify(pick(f)))).size;
       const trace = { frames: frames.length, barRects: distinct((f) => f.bar), btnRects: distinct((f) => f.btn), bodyWidths: distinct((f) => f.bodyW), surfaceWidths: distinct((f) => f.surfW) };
-      console.log(`KBD-IZ ${size.name} ${JSON.stringify(trace)}`);
-      expect(frames.length, 'yeterli kare örneklendi').toBeGreaterThan(20);
+      console.log(`KBD-IZ ${size.name} ${JSON.stringify(trace)} ${JSON.stringify([...new Set(frames.map((f) => JSON.stringify(f.bar)))])}`);      expect(frames.length, 'yeterli kare örneklendi').toBeGreaterThan(20);
       expect(trace.barRects, `alt bölüm konum/genişlik ${JSON.stringify(trace)}`).toBe(1);
       expect(trace.btnRects, `düğme konum/genişlik ${JSON.stringify(trace)}`).toBe(1);
       expect(trace.bodyWidths, `gövde genişliği ${JSON.stringify(trace)}`).toBe(1);
