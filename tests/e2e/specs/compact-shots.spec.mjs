@@ -152,10 +152,26 @@ test.describe('compact görüntüler', () => {
         await shot(page, `${width}-beyan-2-ayrinti`);
       }
       // Sabit fiyat + vergi indirimi beyanı + etki ifadesi (tek ekranın en kalabalık hali; kampanyasız).
+      // Kombinasyon tablosu: beyan × etki × güven satırı × akış (adet seçici ve 3 alan sim ürününde zaten açık). Hepsi aynı olmalı.
       if (IDS.fixed) {
-        await open(page, baseURL, IDS.fixed, true, '&dp_ctax=1&dp_cimpact=1');
-        out[`${width}-sabit-beyan`] = await height(page);
-        await shot(page, `${width}-sabit-beyan-1`);
+        for (const tax of [0, 1]) {
+          for (const impact of [0, 1]) {
+            for (const trust of [1, 0]) {
+              for (const direct of [false, true]) {
+                const q = `${tax ? '&dp_ctax=1' : ''}${impact ? '&dp_cimpact=1' : ''}${trust ? '' : '&dp_ctrust=0'}`;
+                await open(page, baseURL, IDS.fixed, direct, q);
+                const key = `${width}-sabit-b${tax}e${impact}g${trust}-${direct ? 'd' : 's'}`;
+                out[key] = await height(page);
+                if (tax && impact && trust && direct) {
+                  await shot(page, `${width}-sabit-beyan-1`);
+                  await fillDetails(page);
+                  await step(page, 'amount').locator('button[type="submit"]').click();
+                  out[`${key}-odeme`] = await height(page);
+                }
+              }
+            }
+          }
+        }
       }
     }
     fs.writeFileSync(path.join(SHOTS, 'yukseklik.json'), `${JSON.stringify(out, null, 2)}\n`);

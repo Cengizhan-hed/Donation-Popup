@@ -219,6 +219,17 @@ test.describe('compact kart yükseklikleri', () => {
         expect(Math.abs(measured.cart - measured.direct), `${key}/${col}: ${JSON.stringify(measured)}`).toBeLessThanOrEqual(0.5);
         out[key][col] = Math.round(measured.cart);
         if (col === 2) {
+          // En kalabalık tek ekran (beyan + etki ayarı + adet + 3 alan + güven satırı) da aynı yükseklikte kalır.
+          for (const behavior of BEHAVIORS) {
+            await page.context().clearCookies();
+            await setBehavior(page, baseURL, behavior);
+            await page.goto(`/?dp_compact=plain&dp_ids=${id}&dp_ctax=1&dp_cimpact=1`);
+            const worst = page.locator(`${CARD}[data-dp-ready="1"]`).first();
+            await expect(worst).toBeVisible({ timeout: 20000 });
+            await page.evaluate(() => document.fonts.ready);
+            const h = await worst.evaluate((el) => el.getBoundingClientRect().height);
+            expect(Math.abs(h - out[key][0]), `${key}/${behavior}: sabit+beyan+etki ${h} ≠ ${out[key][0]}`).toBeLessThanOrEqual(0.5);
+          }
           expect(Math.abs(measured.cart - out[key][0]), `${key}: sabit fiyat ${measured.cart} ≠ serbest tutar ${out[key][0]}`).toBeLessThanOrEqual(0.5);
         }
         if (heights[key] && heights[key][col] > 0) {

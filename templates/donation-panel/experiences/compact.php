@@ -197,10 +197,7 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 			<section class="donation-panel-compact__step<?php echo $donation_panel_fixed ? ' is-on donation-panel-compact__step--one' : ''; ?>" data-dp-cstep="<?php echo $donation_panel_fixed ? 'amount' : 'details'; ?>" data-step-name="<?php echo $donation_panel_fixed ? esc_attr_x( 'Donation and details', 'Compact donation card: single-screen step name (fixed price product)', 'woo-donation-popup' ) : esc_attr__( 'Your details', 'woo-donation-popup' ); ?>" aria-labelledby="<?php echo esc_attr( $donation_panel_key . ( $donation_panel_fixed ? '-t1' : '-t2' ) ); ?>"<?php echo $donation_panel_fixed ? '' : ' inert aria-hidden="true"'; ?>>
 				<?php $donation_panel_top( $donation_panel_fixed ? 1 : 2, ! $donation_panel_fixed, ! $donation_panel_fixed ); ?>
 				<?php if ( $donation_panel_fixed ) : ?>
-					<?php $donation_panel_campaign(); ?>
-					<?php if ( ! $donation_panel_camp && '' !== (string) $donation_panel_view['impact'] ) : ?>
-						<p class="donation-panel-compact__impact"><?php echo esc_html( (string) $donation_panel_view['impact'] ); ?></p>
-					<?php endif; ?>
+					<?php // Sabit fiyatlı ürün kampanya çubuğu taşımaz (hedefli ürün "kampanya" türüdür: tutar adımlı karttır). ?>
 					<?php // Fiyat × adet = toplam: tek ince satır (≥48 px dokunma hedefi); adet kapalıysa "Fiyat … toplam". Sütunlar içerikten bağımsız (CLS 0). ?>
 					<div class="donation-panel-compact__fixed">
 						<?php if ( ! empty( $donation_panel_qty['enabled'] ) ) : ?>
@@ -212,7 +209,6 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 								<output class="donation-panel-num" data-dp-cqty-out aria-live="polite">1</output>
 								<button type="button" data-dp-cqty="1" aria-label="<?php esc_attr_e( 'Increase', 'woo-donation-popup' ); ?>"><svg class="donation-panel-ico" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 							</div>
-							<span class="donation-panel-compact__times" aria-hidden="true">=</span>
 							<span class="donation-panel-sr"><?php esc_html_e( 'Total', 'woo-donation-popup' ); ?></span>
 						<?php else : ?>
 							<span class="donation-panel-compact__priceword"><?php esc_html_e( 'Price', 'woo-donation-popup' ); ?></span>
@@ -221,8 +217,11 @@ $donation_panel_campaign = static function () use ( $donation_panel_camp, $donat
 						<input type="hidden" name="quantity" value="1" data-dp-cqty-in />
 						<input type="hidden" name="amount" value="<?php echo esc_attr( (string) $donation_panel_unit ); ?>" />
 					</div>
-					<?php if ( $donation_panel_tiers ) : ?>
-						<p class="donation-panel-compact__effect donation-panel-compact__effect--line" data-dp-ceffect aria-live="polite"></p>
+					<?php // Tek ince ek satır (384 px'e sığması için en çok biri): etki ifadesi > ürün kısa açıklaması; vergi beyanı varsa ikisi de çizilmez. ?>
+					<?php if ( ! $donation_panel_tax && $donation_panel_tiers ) : ?>
+						<p class="donation-panel-compact__impact" style="--_lc:1" data-dp-ceffect aria-live="polite"></p>
+					<?php elseif ( ! $donation_panel_tax && '' !== (string) $donation_panel_view['impact'] ) : ?>
+						<p class="donation-panel-compact__impact" style="--_lc:1"><?php echo esc_html( (string) $donation_panel_view['impact'] ); ?></p>
 					<?php endif; ?>
 				<?php endif; ?>
 				<?php // Alanlar tek çerçeveli grupta: etiket solda, alan sağda (≥48 px satır); telefon ülke kodu aynı satırda. ?>

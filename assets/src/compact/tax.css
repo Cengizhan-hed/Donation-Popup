@@ -34,6 +34,11 @@
 .donation-panel .donation-panel-compact__sheett { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--dp-color-text); }
 :root .donation-panel .donation-panel-compact__sheetx { flex: none; inline-size: 100%; min-block-size: 44px; margin-block-start: auto; }
 
+/* Tek ekran (sabit fiyat): beyan tek ince satır (başlık + "Ayrıntılar"; kısa metin gizli, tam metin katmanda). */
+.donation-panel-compact__step--one .donation-panel-compact__tax { min-block-size: 44px; }
+.donation-panel-compact__step--one .donation-panel-compact__taxs { display: none; }
+:root .donation-panel .donation-panel-compact__step--one .donation-panel-check.donation-panel-compact__taxcheck { min-block-size: 44px; }
+
 @media (prefers-reduced-motion: reduce) {
   .donation-panel-compact__sheet { transition: none; }
 }

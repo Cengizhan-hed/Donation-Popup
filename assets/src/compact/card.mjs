@@ -8,6 +8,7 @@ import { addToCart, phoneValue } from '../experiences/form.mjs';
 import { phoneBad, phoneBind } from '../ui2-shared/phone-lazy.mjs';
 import { formatTotal } from '../experiences/store.mjs';
 import { createLayer } from '../experiences/layer.mjs';
+import { REVEAL_GAP_PX, TEXT_FIELD } from '../experiences/keyboard.mjs';
 import { ISOLATED_EVENTS, STEPS, announcement, backStep, countedStep, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel } from './logic.mjs';
 
 /**
@@ -674,6 +675,25 @@ export function createCompact(root) {
     root.dispatchEvent(
       new CustomEvent('donation-panel:progress-refresh', { bubbles: true, detail: { productId: Number(root.dataset.dpProduct), amount: paidAmount } })
     );
+  }
+
+  // ---- Ekran klavyesi (124-kbd): odaktaki alanın (satırı) alt kenarı ile klavyenin üst kenarı arasında ≥12 px boşluk. Kart
+  // sayfada akışta durur, sabit alt çubuğu yoktur (gizlenecek bölüm yok; yükseklik/yerleşim değişmez); yalnız sayfa kaydırılır. ----
+  const vv = window.visualViewport;
+  const reveal = () => {
+    const field = document.activeElement;
+    if (!vv || !(field instanceof Element) || !form.contains(field) || !field.matches(TEXT_FIELD)) {
+      return;
+    }
+    const row = field.closest('.donation-panel-compact__field') || field;
+    const over = row.getBoundingClientRect().bottom - (vv.offsetTop + vv.height - REVEAL_GAP_PX);
+    if (over > 0) {
+      window.scrollBy(0, over);
+    }
+  };
+  if (vv && window.matchMedia('(pointer: coarse)').matches) {
+    form.addEventListener('focusin', () => window.setTimeout(reveal, 320));
+    vv.addEventListener('resize', reveal);
   }
 
   // ---- Kaydırıcı uyumu ----

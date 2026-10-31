@@ -152,15 +152,18 @@
 .donation-panel-compact .donation-panel-custom:has([aria-invalid="true"]) { border-style: solid; border-color: var(--dp-color-danger); }
 
 /* Sabit fiyat (tek ekran): fiyat × adet = toplam TEK ince satırda (≥48 px dokunma hedefi); altında bilgiler gelir. */
-.donation-panel-compact__fixed { display: flex; align-items: center; gap: 6px; flex: none; min-block-size: 52px; padding: 0 14px; border-radius: var(--dp-radius-field); background: var(--dp-color-surface-2); font-size: 20px; font-weight: 800; }
+.donation-panel-compact__fixed { display: flex; align-items: center; gap: 4px; flex: none; min-block-size: 48px; padding: 0 10px 0 14px; border-radius: var(--dp-radius-field); background: var(--dp-color-surface-2); font-size: 18px; font-weight: 800; }
 .donation-panel-compact__times, .donation-panel-compact__priceword { color: var(--dp-color-text-muted); font-size: 15px; font-weight: 650; }
 .donation-panel-compact__sum1 { flex: 1; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: end; }
-.donation-panel-compact__fixed .donation-panel-stepper { block-size: 52px; }
+.donation-panel-compact__fixed .donation-panel-stepper { block-size: 48px; border: 0; box-shadow: inset 0 0 0 1.5px var(--dp-color-border); }
 .donation-panel-compact__fixed .donation-panel-stepper button { inline-size: 48px; block-size: 48px; }
-.donation-panel-compact__fixed output { min-inline-size: 28px; }
-.donation-panel .donation-panel-compact__effect--line { margin: 0; }
-.donation-panel-compact__effect--line:not(:empty)::before { content: none; }
-
+.donation-panel-compact__fixed output { min-inline-size: 22px; }
+/* Tek ekran sıkı düzen: en kalabalık hal (adet + 3 alan + beyan + güven satırı) kartın sabit yüksekliğine sığar. */
+.donation-panel-compact__step--one { gap: 4px; padding-block: 4px 10px; }
+.donation-panel-compact__step--one .donation-panel-compact__top { min-block-size: 36px; }
+.donation-panel-compact__step--one .donation-panel-compact__field { padding-block: 3px 2px; }
+.donation-panel-compact__step--one .donation-panel-compact__group { grid-auto-rows: minmax(48px, 1fr); }
+.donation-panel-compact .donation-panel-compact__step--one .donation-panel-compact__cta { min-block-size: 48px; }
 /* Toplam satırı: etiket | etki ifadesi (esnek, ellipsis) | tutar. Sütunlar içerikten bağımsız: metin değişince kutu kaymaz. */
 .donation-panel .donation-panel-compact__total { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 8px; min-block-size: 32px; margin: 0; padding-block-start: 8px; border-block-start: 1px dashed var(--dp-color-border); font-size: 14px; line-height: 24px; color: var(--dp-color-text-muted); }
 .donation-panel-compact__total b { color: var(--dp-color-text); font-size: 18px; font-weight: 800; text-align: end; }

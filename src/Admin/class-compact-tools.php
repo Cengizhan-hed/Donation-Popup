@@ -33,12 +33,6 @@ final class Compact_Tools {
 		'mobile'  => array( 384, 384 ),
 	);
 
-	/**
-	 * Sabit fiyatlı ürün + vergi indirimi beyanı + etki ifadesi (tek ekranın en kalabalık hali, kampanyasız): sığmadığı için
-	 * kart 384 px'ten uzar (12.4 ölçümü, TT5, tüm genişlikler 451 px). Beyansız sabit fiyat 384 px'tir (diğerleriyle aynı).
-	 */
-	const FIXED_DECLARATION_HEIGHT = 451;
-
 	/** Ölçüm toleransı (px). */
 	const HEIGHT_TOLERANCE = 32;
 
@@ -118,11 +112,7 @@ final class Compact_Tools {
 			. '<th scope="col">' . esc_html__( 'CSS variable', 'woo-donation-popup' ) . '</th></tr></thead><tbody>' . $rows . '</tbody></table></div>';
 		$help  = '<p class="dpa-row__help">' . esc_html__( 'The card is as tall as its tallest step, and that height never changes while the donor moves through the steps. It is the same through the cart and with direct donation. Measured with a default block theme; your theme\'s font can change it a little.', 'woo-donation-popup' ) . '</p>'
 			. '<p class="dpa-row__help">' . esc_html__( 'Steps: through the cart the card has 2 steps (amount, then your details with "Continue to checkout"); with direct donation it has 3 (amount, details, payment). A fixed-price product has no amount step: price × quantity = total sits on one thin line with the name and phone fields right below it, so it has 1 step through the cart and 2 with direct donation (details, payment). The height is the same with or without a goal, an impact phrase or the tax relief declaration, and a fixed-price product is as tall as the others.', 'woo-donation-popup' ) . '</p>'
-			. '<p class="dpa-row__help">' . sprintf(
-				/* translators: %d: card height in pixels. */
-				esc_html__( 'Exception: a fixed-price product that also shows the tax relief declaration (or an impact phrase) has more on its single screen and is about %d px tall. Make the slide that tall, or set the CSS variable below.', 'woo-donation-popup' ),
-				self::FIXED_DECLARATION_HEIGHT
-			) . '</p>'
+			. '<p class="dpa-row__help">' . esc_html__( 'So that a fixed-price card fits the same height, its single screen shows at most one extra line under the price row: the impact phrase, or else the product short description. When the tax relief declaration is switched on, the declaration takes that place (title and "Details" on one thin line) and the extra line is left out. A fixed-price product never shows a goal bar: a product with a goal is a goal-based product and has the amount step.', 'woo-donation-popup' ) . '</p>'
 			. '<p class="dpa-row__help">' . esc_html__( 'To give every card the same height, for example to match your slide, set the CSS variable on the slide or on a parent element:', 'woo-donation-popup' ) . '</p>';
 		return '<h3 class="dpa-subtitle">' . esc_html__( 'Card height', 'woo-donation-popup' ) . '</h3>' . $help
 			. Admin_View::code( '.my-slide { --dp-compact-h: 560px; --dp-compact-h-sm: 600px; }' ) . $table;
