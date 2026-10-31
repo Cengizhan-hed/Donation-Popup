@@ -7,6 +7,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawn, spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
+import { withFileLockSync } from './file-lock.mjs';
 import {
   ensureLocalWp,
   writeWpConfig,
@@ -264,6 +265,12 @@ function seedSiblingSnapshots() {
 
 export function ensureMatrixTemplate() {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
+  return withFileLockSync(path.join(MATRIX_DIR, '_template.lock'), ensureMatrixTemplateLocked, {
+    label: 'matris şablonu kurulumu',
+  });
+}
+
+function ensureMatrixTemplateLocked() {
   seedZipCache();
   seedSiblingSnapshots();
   const wpDir = ensureLocalWp({ root: TEMPLATE_ROOT, quiet: true });
