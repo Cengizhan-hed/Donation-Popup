@@ -37,6 +37,25 @@ final class Email_Settings_Cleanup {
 	const MAX_PASSES = 100;
 
 	/**
+	 * Ayar yazımında eşzamanlı değişiklik görülürse en çok yeniden deneme.
+	 */
+	const MAX_RETRIES = 3;
+
+	/**
+	 * Yazmadan hemen önce çağrılır (yalnız testlerde eşzamanlı kaydı benzetmek için).
+	 *
+	 * @var callable|null
+	 */
+	private $before_write;
+
+	/**
+	 * @param callable|null $before_write Test kancası.
+	 */
+	public function __construct( $before_write = null ) {
+		$this->before_write = $before_write;
+	}
+
+	/**
 	 * Adımı çalıştırır.
 	 *
 	 * @throws \RuntimeException Ürün meta temizliği tur sınırında bitmediyse (adım tamamlanmış sayılmaz, sonraki istekte sürer).
@@ -56,22 +75,35 @@ final class Email_Settings_Cleanup {
 	 * @return int Silinen anahtar sayısı.
 	 */
 	private function clean_settings() {
-		$stored = get_option( Settings::OPTION_NAME, null );
-		if ( ! is_array( $stored ) ) {
-			return 0;
-		}
+		// D2: oku → değiştir → yazmadan hemen önce yeniden oku; arada değiştiyse taze değerden yeniden hesapla (eşzamanlı
+		// yönetici kaydı ezilmez; en çok MAX_RETRIES kez dener, sonra son taze değerden yazar).
 		$count = 0;
-		foreach ( array(
-			'form'   => 'donor_email',
-			'shares' => 'email',
-		) as $group => $key ) {
-			if ( isset( $stored[ $group ] ) && is_array( $stored[ $group ] ) && array_key_exists( $key, $stored[ $group ] ) ) {
-				unset( $stored[ $group ][ $key ] );
-				++$count;
+		for ( $try = 0; $try <= self::MAX_RETRIES; $try++ ) {
+			$stored = get_option( Settings::OPTION_NAME, null );
+			if ( ! is_array( $stored ) ) {
+				return 0;
 			}
-		}
-		if ( $count > 0 ) {
-			update_option( Settings::OPTION_NAME, $stored, true );
+			$clean = $stored;
+			$count = 0;
+			foreach ( array(
+				'form'   => 'donor_email',
+				'shares' => 'email',
+			) as $group => $key ) {
+				if ( isset( $clean[ $group ] ) && is_array( $clean[ $group ] ) && array_key_exists( $key, $clean[ $group ] ) ) {
+					unset( $clean[ $group ][ $key ] );
+					++$count;
+				}
+			}
+			if ( 0 === $count ) {
+				return 0;
+			}
+			if ( is_callable( $this->before_write ) ) {
+				call_user_func( $this->before_write );
+			}
+			if ( get_option( Settings::OPTION_NAME, null ) === $stored || self::MAX_RETRIES === $try ) {
+				update_option( Settings::OPTION_NAME, $clean, true );
+				return $count;
+			}
 		}
 		return $count;
 	}
@@ -95,6 +127,25 @@ final class Email_Settings_Cleanup {
 			}
 		}
 		return $count;
+	}
+
+	/**
+	 * Ürün eklentinin kendi (önekli ya da bilinen) başka bir ürün meta anahtarını taşıyor mu?
+	 *
+	 * @param int $post_id Ürün/varyasyon.
+	 * @return bool
+	 */
+	private function has_own_meta( $post_id ) {
+		$meta = get_post_meta( $post_id );
+		if ( ! is_array( $meta ) ) {
+			return false;
+		}
+		foreach ( array_keys( $meta ) as $key ) {
+			if ( self::META_KEY !== $key && ( 0 === strpos( (string) $key, '_wdp_' ) || in_array( $key, Uninstall::product_meta_keys(), true ) ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -124,6 +175,11 @@ final class Email_Settings_Cleanup {
 			$ids = array_map( 'absint', (array) $ids );
 			foreach ( $ids as $post_id ) {
 				$after = max( $after, $post_id );
+				// D1: `_enable_email` önek taşımayan genel bir ad; başka eklentinin meta'sına dokunmamak için yalnız eklentinin
+				// kendi başka bir ürün meta anahtarını taşıyan (eklentinin kaydettiği) ürünlerde silinir. Diğerlerinde okuma zaten yok sayılıyor.
+				if ( ! $this->has_own_meta( $post_id ) ) {
+					continue;
+				}
 				delete_post_meta( $post_id, self::META_KEY );
 				++$cleaned;
 			}

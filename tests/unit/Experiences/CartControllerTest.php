@@ -154,7 +154,7 @@ final class CartControllerTest extends TestCase {
 	public function test_nonce_is_rate_limited(): void {
 		$controller = $this->controller( '203.0.113.78' );
 		$last       = null;
-		for ( $i = 0; $i < 31; $i++ ) {
+		for ( $i = 0; $i < Cart_Controller::NONCE_LIMIT + 1; $i++ ) {
 			$last = $controller->nonce();
 		}
 		$this->assertInstanceOf( WP_Error::class, $last );

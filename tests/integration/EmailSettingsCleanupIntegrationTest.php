@@ -61,7 +61,7 @@ final class EmailSettingsCleanupIntegrationTest extends WDP_Integration_Test_Cas
 				'_enable_other_plugin_feature' => 'keep',
 			)
 		);
-		$other   = $this->create_product( '30', array( '_enable_email' => '' ) );
+		$other   = $this->create_product( '30', array( '_enable_email' => '', '_enable_wizard' => 'yes' ) );
 		$pid     = $product->get_id();
 
 		$first = ( new Email_Settings_Cleanup() )->run();

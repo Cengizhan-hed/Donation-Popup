@@ -49,8 +49,45 @@ final class EmailSettingsCleanupTest extends TestCase {
 			'_wdp_donor_count'   => '5',
 			'_other_plugin_key'  => 'keep',
 		);
-		WDP_Test_State::$post_meta[11] = array( '_enable_email' => '' );
+		WDP_Test_State::$post_meta[11] = array(
+			'_enable_email'    => '',
+			'_enable_wizard'   => 'yes',
+		);
 		WDP_Test_State::$post_meta[12] = array( '_enable_email' => 'yes' ); // ürün değil: dokunulmaz.
+	}
+
+	public function test_other_plugins_enable_email_meta_is_left_alone(): void {
+		// D1: eklentinin kendi başka meta'sını taşımayan ürünün `_enable_email`'i başka eklentiye ait sayılır.
+		WDP_Test_State::$products[20]   = new WC_Product( 20 );
+		WDP_Test_State::$post_types[20] = 'product';
+		WDP_Test_State::$post_meta[20]  = array(
+			'_enable_email'     => 'yes',
+			'_other_plugin_key' => 'keep',
+		);
+		$summary = ( new Email_Settings_Cleanup() )->run();
+		$this->assertSame( 'yes', WDP_Test_State::$post_meta[20]['_enable_email'] );
+		$this->assertSame( 0, $summary['product_meta'] );
+	}
+
+	public function test_concurrent_settings_save_is_merged_not_overwritten(): void {
+		// D2: yazmadan hemen önce yönetici ayarı kaydeder; temizlik taze değerden yeniden hesaplar.
+		$this->seed();
+		$fired = false;
+		( new Email_Settings_Cleanup(
+			static function () use ( &$fired ) {
+				if ( $fired ) {
+					return;
+				}
+				$fired                                                   = true;
+				WDP_Test_State::$options[ Settings::OPTION_NAME ]['form']['dedication'] = false;
+				WDP_Test_State::$options[ Settings::OPTION_NAME ]['general']['new_admin_key'] = 'kept';
+			}
+		) )->run();
+		$stored = WDP_Test_State::$options[ Settings::OPTION_NAME ];
+		$this->assertFalse( $stored['form']['dedication'], 'eşzamanlı değişiklik ezilmedi' );
+		$this->assertSame( 'kept', $stored['general']['new_admin_key'] );
+		$this->assertArrayNotHasKey( 'donor_email', $stored['form'] );
+		$this->assertArrayNotHasKey( 'email', $stored['shares'] );
 	}
 
 	public function test_removes_only_the_removed_email_keys(): void {

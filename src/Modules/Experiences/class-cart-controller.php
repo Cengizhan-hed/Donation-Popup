@@ -26,6 +26,16 @@ defined( 'ABSPATH' ) || exit;
 class Cart_Controller extends Rest_Controller {
 
 	/**
+	 * `/nonce` hız sınırı kovası: bağış kovalarından (cart-add 20/dk, direct 30/dk) ayrı ve daha geniş. Her anonim bağışçı
+	 * ilk gönderimde bu uca gider; ortak ağda (cami/okul/operatör NAT) bağışçılar birbirini engellemesin. Kötüye kullanım
+	 * koruması: aynı-köken denetimi + IP/belirteç başına dakikada sınır + güvenilmez IP'de site tavanı.
+	 */
+	const NONCE_BUCKET = 'rest_nonce';
+
+	/** Dakika başına istek (bkz. NONCE_BUCKET). */
+	const NONCE_LIMIT = 120;
+
+	/**
 	 * Sepet köprüsü.
 	 *
 	 * @var Cart
@@ -163,7 +173,7 @@ class Cart_Controller extends Rest_Controller {
 			}
 		}
 		$this->remember_client( $request );
-		$throttled = $this->throttle( 'experiences_nonce', 30, 60, true );
+		$throttled = $this->throttle( self::NONCE_BUCKET, self::NONCE_LIMIT, 60, true );
 		if ( is_wp_error( $throttled ) ) {
 			return $throttled;
 		}
