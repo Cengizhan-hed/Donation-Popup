@@ -28,6 +28,7 @@ Kullanıcıyla **Türkçe** konuş. Ayrıntı/geçmiş: docs/KURALLAR-DETAY.md (
 - **Bekleme:** beklerken turu "bitince devam ederim" diyerek bitirme gerekmiyorsa ajan bildirimi yeterli; uzun işler arka planda, ≤5 dk yoklama. Tur yalnız AŞAMA ÖZETİ verirken ya da limit dolunca biter.
 - **İnceleme:** önce RAPOR-<kod>.md, sonra yalnız değişen satırlar. Kanıt sayılarla; "çalışıyor" tahmini kabul edilmez. Playwright ≤1 süreç (`e2e:queue`, worker 1); video kapalı; eski test çıktıları koşu öncesi silinir.
 - **Test eşiği:** test ürünün yetersiz davranışı yüzünden kırılıyorsa eşik gevşetilmez, ürün düzeltilir; eşik yalnız ölçüm hatası kanıtlanırsa ve gerekçesi rapora yazılarak değiştirilir.
+- **Süreç durdurma:** ajanlar yalnız kendi başlattıkları süreçleri durdurur (PID/süreç grubu kaydı); `pkill -f`, `killall` ve ad eşleşmeli toplu öldürme yasak (Hookify kuralı `hookify.block-broad-kill.local.md`).
 - **E2E/accept:** `e2e:accept` yalnız ekranlar incelendi + beklenen değişiklik + işlevsel hata 0. Testte `.catch(() => {})` yasak. Eşik: sayfa ≤%0.5, kabuk ≤%0.1.
 - **Merge kriteri:** `verify` + yerel tam paket + uzak kısa kontrol (`e2e:remote-smoke`) iki ortamda yeşil + hız karşılaştırması (§5). Uzak tam paket yalnız faz sonu, bilgi amaçlı.
 - **Kurulum:** staging30 ve Ikram'a eklentiyi Claude kurar/test eder (`ship:staging`, `ship:ikram`). Ikram gerçek yayına girince kurallar yeniden belirlenir. Eklentinin KENDİ ayarları test için değiştirilebilir (önceki değer rapora); Woo/tema/site ayarlarına dokunulmaz.

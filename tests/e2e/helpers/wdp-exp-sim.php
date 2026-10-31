@@ -158,7 +158,7 @@ add_action(
 		if (isset($_GET['dp_sb'])) { // phpcs:ignore
 			echo '<style>::-webkit-scrollbar{width:15px;height:15px}::-webkit-scrollbar-thumb{background:#888}::-webkit-scrollbar-track{background:#eee}</style>';
 		}
-		echo '</head><body><main style="padding:16px"><h1>Test</h1><p>Sayfa metni.</p>';
+		echo '</head><body class="' . esc_attr( implode( ' ', get_body_class() ) ) . '"><main style="padding:16px"><h1>Test</h1><p>Sayfa metni.</p>';
 		if (isset($_GET['dp_long'])) { // phpcs:ignore
 			echo '<div id="dp-sim-center" style="margin:0 auto;max-width:300px;height:40px;background:#ddd"></div>';
 		}

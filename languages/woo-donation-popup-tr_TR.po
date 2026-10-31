@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 09:30:57+0000\n"
-"PO-Revision-Date: 2026-10-31 09:30:57+0000\n"
+"POT-Creation-Date: 2026-10-31 10:34:45+0000\n"
+"PO-Revision-Date: 2026-10-31 10:34:45+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -1864,6 +1864,10 @@ msgstr "İthaf"
 msgid "Dedication / anonymous"
 msgstr "İthaf / anonim"
 
+#: src/Admin/Product/class-product-data-tab.php
+msgid "Dedication and anonymous donation"
+msgstr "İthaf ve anonim bağış"
+
 #: includes/class-admin-design-studio-renderer.php:263
 #: includes/class-admin-design-studio-renderer.php:263
 #: includes/class-admin-product-data-tab.php:704
@@ -2452,6 +2456,10 @@ msgstr "E-posta, ithaf ve anonim bağış"
 #: includes/class-admin-product-data-tab.php:696
 msgid "Email, dedication, anonymous donation, and note"
 msgstr "E-posta, ithaf, anonim bağış ve not"
+
+#: src/Admin/class-guide.php
+msgid "Email: the form asks for an email only with direct donation, and there it is required (the payment page does not ask for billing details, and card payments and order emails need the address). A signed-in donor is not asked: the account email is used. Through the cart the form has no email field; WooCommerce asks for it on the checkout page. There is no email setting any more."
+msgstr "E-posta: form e-postayı yalnız doğrudan bağışta sorar ve orada zorunludur (ödeme sayfası fatura bilgisi sormaz; kartlı ödeme ve sipariş e-postaları adrese ihtiyaç duyar). Giriş yapmış bağışçıya sorulmaz: hesap e-postası kullanılır. Sepetli akışta formda e-posta alanı yoktur; WooCommerce ödeme sayfasında ister. Artık bir e-posta ayarı yoktur."
 
 #: src/Admin/class-guide.php
 msgid "Email: with direct donation the form always shows a required email field after the phone number, even when the email field is switched off for the product. The payment page does not ask for billing details, and card payments and order emails need the address. Through the cart nothing changes."
@@ -5728,6 +5736,10 @@ msgstr "Bağıştan sonra teşekkür ekranında ve teşekkür e-postasında gös
 #: src/Admin/
 msgid "Shown only when the form asks for email, dedication or shareholder details."
 msgstr "Yalnız form e-posta, ithaf ya da hissedar bilgisi istediğinde gösterilir."
+
+#: src/Admin/class-field-registry.php
+msgid "Shown only when the form asks for personal details: email (direct donation only), dedication or shareholder details."
+msgstr "Yalnız form kişisel bilgi istediğinde gösterilir: e-posta (yalnız doğrudan bağışta), ithaf ya da hissedar bilgisi."
 
 #: src/Admin/class-field-registry.php
 msgid "Shows \"Would you like to add to your donation?\" with up to three small amounts under the gifts. One tap adds it with the donor details already in the basket. Hidden when that gift is already in the basket."

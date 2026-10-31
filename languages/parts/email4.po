@@ -1,0 +1,23 @@
+# Turkish translations — 124-email4 (e-posta kuralı: yalnız doğrudan ödemede, zorunlu; sepetlide formda yok).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/Product/class-product-data-tab.php
+msgid "Dedication and anonymous donation"
+msgstr "İthaf ve anonim bağış"
+
+#: src/Admin/class-field-registry.php
+msgid "Shown only when the form asks for personal details: email (direct donation only), dedication or shareholder details."
+msgstr "Yalnız form kişisel bilgi istediğinde gösterilir: e-posta (yalnız doğrudan bağışta), ithaf ya da hissedar bilgisi."
+
+#: src/Admin/class-guide.php
+msgid "Email: the form asks for an email only with direct donation, and there it is required (the payment page does not ask for billing details, and card payments and order emails need the address). A signed-in donor is not asked: the account email is used. Through the cart the form has no email field; WooCommerce asks for it on the checkout page. There is no email setting any more."
+msgstr "E-posta: form e-postayı yalnız doğrudan bağışta sorar ve orada zorunludur (ödeme sayfası fatura bilgisi sormaz; kartlı ödeme ve sipariş e-postaları adrese ihtiyaç duyar). Giriş yapmış bağışçıya sorulmaz: hesap e-postası kullanılır. Sepetli akışta formda e-posta alanı yoktur; WooCommerce ödeme sayfasında ister. Artık bir e-posta ayarı yoktur."

@@ -316,7 +316,7 @@ final class CartTest extends TestCase {
 			$this->model(),
 			$this->input( array( 'donation_email' => 'bagis@ornek.org', 'donation_dedication' => 'Annem Şükriye için', 'donation_anonymous' => '1' ) )
 		);
-		$this->assertSame( 'bagis@ornek.org', $data['email'] );
+		$this->assertArrayNotHasKey( 'email', $data, 'sepetli akışta formda e-posta yok; WooCommerce ödeme sayfasında alınır' );
 		$this->assertSame( 'Annem Şükriye için', $data['dedication'] );
 		$this->assertSame( '1', $data['anonymous'] );
 		$this->assertSame( 'Çağlar Şükrü Öztürk İğdır', $data['full_name'] );

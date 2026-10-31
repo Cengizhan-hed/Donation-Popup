@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-10-24T12:28:59+00:00",
-  "call_count": 417,
+  "call_count": 414,
   "file_count": 41,
   "functions": {
     "esc_html_e": 1,
@@ -51,17 +51,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-design-studio-renderer.php",
       "line": 115,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_html__",
-      "msgid": "E-posta alanı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-design-studio-renderer.php",
-      "line": 261,
       "arg_count": 2,
       "placeholders": []
     },
@@ -734,17 +723,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/class-admin-product-data-tab.php",
       "line": 696,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "__",
-      "msgid": "E-posta alanı",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/class-admin-product-data-tab.php",
-      "line": 703,
       "arg_count": 2,
       "placeholders": []
     },
@@ -4391,17 +4369,6 @@
       "domain": "woo-donation-popup",
       "file": "includes/templates/class-form-fields-renderer.php",
       "line": 531,
-      "arg_count": 2,
-      "placeholders": []
-    },
-    {
-      "function": "esc_attr__",
-      "msgid": "E-posta (isteğe bağlı)",
-      "plural": null,
-      "context": null,
-      "domain": "woo-donation-popup",
-      "file": "includes/templates/class-form-fields-renderer.php",
-      "line": 537,
       "arg_count": 2,
       "placeholders": []
     },

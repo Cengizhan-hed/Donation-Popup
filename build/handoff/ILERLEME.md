@@ -1,2 +1,6 @@
 - 124-compact1 bütçe: compact paketi CSS gz 2296 → 2432 B (+136; tavan testi 2304 → 2432): sabit fiyat tek ekran satırı + sıkı yerleşim (≥48 px hedefler korunarak 384 px'e sığdırmak için); compact-tax CSS +30 B (849 → 879; beyan tek satır değişkenleri); compact JS +160 B (9539 → 9699; tek ekran adım mantığı + klavye boşluğu ≥12 px).
 - 124-compact2 bütçe (azalma): compact CSS gz 2432 → 2200 (InlineStylesTest tavanı 2432 → 2208), compact-tax CSS 879 → 848 (tavan 1024 → 896), compact-pay CSS 750 → kaldırıldı (paket yok), compact JS 9699 → 5912 (-3,8 KB: ödeme katmanı/iframe/layer içe aktarımı kalktı). Gerekçe: compact yalnız sepetli ve sade.
+- 2026-10-31 13:10 124-stripe2: port 9074 wt-124-email4-base ile çakıştı (karşılıklı SIGTERM); iPhone blok koşusu 9095'te yeniden
+- 2026-10-31 13:20 124-stripe2: BİTTİ — blok 36/36, GBP 36/36, EUR 12/12, sızıntı 0; eklenti hatası yok; port 9074 çakışması (email4-base) notu RAPOR'da
+- 2026-10-31: stripe2 birleşti; email4 çakışma çözümü sürüyor (kurgu-matrix); compact2 ve cron-status çalışıyor.
+- ports birleşti; cron-status iki sitede tam: Ikram DISABLE_WP_CRON tanımsız, gecikmiş 0, crontab=no; staging30 DISABLE_WP_CRON=true, 72 gecikmiş, crontab=no (kullanıcı SiteGround Cron Jobs'a bakacak)

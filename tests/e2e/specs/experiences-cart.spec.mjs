@@ -55,6 +55,20 @@ async function storeApiCart(page) {
   return response.json();
 }
 
+// 12.4 email4: sepetli akışta hiçbir yüzeyde e-posta alanı yoktur (e-posta WooCommerce ödeme sayfasında alınır).
+for (const kind of ['inline', 'popup', 'side_panel', 'bottom_sheet']) {
+  test(`sepetli, ${kind}: formda e-posta alanı yok`, async ({ page }) => {
+    await page.goto(`/?dp_exp_test=${kind}&dp_product=${PRODUCT}`);
+    if (kind !== 'inline') {
+      await page.locator('[data-dp-open]').click();
+      await expect(page.locator('[data-dp-overlay]')).toHaveClass(/is-open/);
+    }
+    await expect(page.locator('[data-dp-form]').first()).toBeAttached({ timeout: 20000 });
+    expect(await page.locator('input[name="donation_email"]').count()).toBe(0);
+    expect(await page.locator('[data-dp-field="donation_email"]').count()).toBe(0);
+  });
+}
+
 test.describe('sepet köprüsü (yeni motor)', () => {
   test('tutar -> sepet -> ödeme: doğru ürün ve tutar, Store API uzantısı kişi verisiz', async ({ page }) => {
     await loadForm(page);

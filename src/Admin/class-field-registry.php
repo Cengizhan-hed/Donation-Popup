@@ -257,7 +257,6 @@ final class Field_Registry {
 		);
 
 		$optional = array(
-			'form.donor_email'   => array( 'donor_email', 'enable_donor_email', __( 'Email field', 'woo-donation-popup' ), __( 'Asks for an email address so the donor can get a receipt.', 'woo-donation-popup' ) ),
 			'form.dedication'    => array( 'dedication', 'enable_dedication', __( 'On behalf of / dedication', 'woo-donation-popup' ), __( 'Lets donors give in someone\'s name or memory.', 'woo-donation-popup' ) ),
 			'form.anonymous'     => array( 'anonymous', 'enable_anonymous', __( 'Anonymous option', 'woo-donation-popup' ), __( 'Hides the donor name on public lists. The order keeps the real name.', 'woo-donation-popup' ) ),
 			'form.multi_step'    => array( 'multi_step', 'enable_multi_step', __( 'Two steps', 'woo-donation-popup' ), __( 'Splits the form into amount first, details second.', 'woo-donation-popup' ) ),
@@ -323,18 +322,6 @@ final class Field_Registry {
 			'legacy'  => array(
 				'option' => 'wdp_shareholder_settings',
 				'key'    => 'shareholder_enable_copy_button',
-				'kind'   => 'flag01',
-			),
-		);
-		$f['shares.email']       = array(
-			'page'    => Admin_Bootstrap::SLUG_FORMS,
-			'section' => 'shares',
-			'label'   => __( 'Shareholder email', 'woo-donation-popup' ),
-			'help'    => __( 'Adds an optional email field for each shareholder.', 'woo-donation-popup' ),
-			'type'    => 'switch',
-			'legacy'  => array(
-				'option' => 'wdp_shareholder_settings',
-				'key'    => 'shareholder_enable_email',
 				'kind'   => 'flag01',
 			),
 		);
@@ -620,7 +607,7 @@ final class Field_Registry {
 			'page'    => Admin_Bootstrap::SLUG_PRIVACY,
 			'section' => 'notice',
 			'label'   => __( 'Show a privacy link under the form', 'woo-donation-popup' ),
-			'help'    => __( 'Shown only when the form asks for email, dedication or shareholder details.', 'woo-donation-popup' ),
+			'help'    => __( 'Shown only when the form asks for personal details: email (direct donation only), dedication or shareholder details.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 			'legacy'  => array(
 				'option' => 'wdp_button_settings',

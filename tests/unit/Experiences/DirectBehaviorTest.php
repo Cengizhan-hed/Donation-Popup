@@ -207,15 +207,19 @@ final class DirectBehaviorTest extends TestCase {
 		$this->assertNotSame( '', $email['required_msg'] );
 		$this->assertSame( 1, count( array_keys( $names, 'donation_email', true ) ), 'tek e-posta alanı' );
 
-		// Alan açıkken (isteğe bağlı) doğrudan akışta aynı alan zorunlu olur; yeri değişmez.
+		// Eski "e-posta alanı" ayarı artık yok sayılır: doğrudanda yine tek ve zorunlu alan, sepetlide hiç.
 		$model = Form_Context::from_legacy( $legacy + array( 'enable_email' => true ), $product );
 		$names = array_column( $model['fields'], 'name' );
 		$this->assertSame( 1, count( array_keys( $names, 'donation_email', true ) ) );
 		$this->assertTrue( $model['fields'][ array_search( 'donation_email', $names, true ) ]['required'] );
+		$this->settings( array( 'direct' => array( 'enabled' => false ) ) );
+		$model = Form_Context::from_legacy( $legacy + array( 'enable_email' => true ), $product );
+		$this->assertNotContains( 'donation_email', array_column( $model['fields'], 'name' ) );
 
 		// Ayarda görünen = uygulanan: ayar açıklaması ve Rehber bu kuralı söyler.
-		$this->assertStringContainsString( 'email', Field_Registry::fields_for( Admin_Bootstrap::SLUG_CHECKOUT )['direct.enabled']['help'] );
-		$this->assertStringContainsString( 'required email field', implode( ' ', Guide::sections()['direct']['body'] ) );
+		$pattern = '/e-?mail|e-posta/iu';
+		$this->assertMatchesRegularExpression( $pattern, Field_Registry::fields_for( Admin_Bootstrap::SLUG_CHECKOUT )['direct.enabled']['help'] );
+		$this->assertMatchesRegularExpression( $pattern, implode( ' ', Guide::sections()['direct']['body'] ) );
 	}
 
 	public function test_compact_shortcode_builder_and_guide_sections(): void {

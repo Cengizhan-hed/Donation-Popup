@@ -65,7 +65,7 @@ final class Guide {
 					__( 'For one product: Products → edit the product → Product data → Donation → "Skip the cart (direct donation)". The line under it shows the current value and where it comes from.', 'woo-donation-popup' ),
 					__( 'Order: the product setting wins, then the donation type, then the general setting. A direct donation is a single-line order, so the add-on donation choice is not shown when the result is direct.', 'woo-donation-popup' ),
 					__( 'On the compact card the payment page opens in a secure window. If a payment method cannot work inside the window, the donor taps "Open the payment page instead". Unpaid direct donations are cancelled automatically after the WooCommerce stock hold time.', 'woo-donation-popup' ),
-					__( 'Email: with direct donation the form always shows a required email field after the phone number, even when the email field is switched off for the product. The payment page does not ask for billing details, and card payments and order emails need the address. Through the cart nothing changes.', 'woo-donation-popup' ),
+					__( 'Email: the form asks for an email only with direct donation, and there it is required (the payment page does not ask for billing details, and card payments and order emails need the address). A signed-in donor is not asked: the account email is used. Through the cart the form has no email field; WooCommerce asks for it on the checkout page. There is no email setting any more.', 'woo-donation-popup' ),
 				),
 				'code'   => '',
 				'figure' => 'direct',

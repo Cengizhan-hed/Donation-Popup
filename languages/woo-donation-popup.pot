@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 12:30+0300\n"
+"POT-Creation-Date: 2026-10-31 13:34+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,34 +38,34 @@ msgstr ""
 msgid "Donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:384
+#: src/Admin/Product/class-product-data-tab.php:383
 msgid "Use general setting"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:385
-#: src/Admin/Product/class-product-data-tab.php:438
+#: src/Admin/Product/class-product-data-tab.php:384
+#: src/Admin/Product/class-product-data-tab.php:437
 msgid "On"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:386
-#: src/Admin/Product/class-product-data-tab.php:438
-#: src/Admin/Product/class-product-data-tab.php:461
+#: src/Admin/Product/class-product-data-tab.php:385
+#: src/Admin/Product/class-product-data-tab.php:437
+#: src/Admin/Product/class-product-data-tab.php:460
 msgid "Off"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:437
-#: src/Admin/Product/class-product-data-tab.php:444
-#: src/Admin/Product/class-product-data-tab.php:449
+#: src/Admin/Product/class-product-data-tab.php:436
+#: src/Admin/Product/class-product-data-tab.php:443
+#: src/Admin/Product/class-product-data-tab.php:448
 msgid "Donation product"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:437
-#: src/Admin/Product/class-product-data-tab.php:450
+#: src/Admin/Product/class-product-data-tab.php:436
+#: src/Admin/Product/class-product-data-tab.php:449
 #: src/Admin/Product/class-product-list.php:87
 msgid "Regular product"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:445
+#: src/Admin/Product/class-product-data-tab.php:444
 msgid ""
 "On donation products the donation form is used instead of the WooCommerce "
 "add-to-cart field, and the product appears in donation lists."
@@ -73,204 +73,204 @@ msgstr ""
 
 #. translators: %s: what the general setting currently decides
 #. translators: %s: On / Off
-#: src/Admin/Product/class-product-data-tab.php:448
-#: src/Admin/Product/class-product-data-tab.php:460
+#: src/Admin/Product/class-product-data-tab.php:447
+#: src/Admin/Product/class-product-data-tab.php:459
 #, php-format
 msgid "General setting (currently: %s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:456
+#: src/Admin/Product/class-product-data-tab.php:455
 msgid "Automatic placement"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:457
+#: src/Admin/Product/class-product-data-tab.php:456
 msgid ""
 "If off, you add the form to the product page yourself with a shortcode, "
 "block, or widget only."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:482
-#: src/Admin/class-field-registry.php:538
+#: src/Admin/Product/class-product-data-tab.php:481
+#: src/Admin/class-field-registry.php:525
 msgid "Skip the cart (direct donation)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:483
+#: src/Admin/Product/class-product-data-tab.php:482
 msgid ""
 "Direct: the donor goes from the form straight to payment and nothing is "
 "added to the cart. Works with every form style, including the compact card."
 msgstr ""
 
 #. translators: %s: current value and where it comes from, e.g. "Direct (from the donation type: Campaign)"
-#: src/Admin/Product/class-product-data-tab.php:486
+#: src/Admin/Product/class-product-data-tab.php:485
 #, php-format
 msgid "Donation type or general setting (now: %s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:487
-#: src/Admin/Product/class-product-data-tab.php:508
-#: src/Admin/class-field-registry.php:547 src/Admin/class-guide.php:243
+#: src/Admin/Product/class-product-data-tab.php:486
+#: src/Admin/Product/class-product-data-tab.php:507
+#: src/Admin/class-field-registry.php:534 src/Admin/class-guide.php:243
 msgid "Direct (skip the cart)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:488
-#: src/Admin/Product/class-product-data-tab.php:508
-#: src/Admin/class-field-registry.php:546 src/Admin/class-guide.php:238
+#: src/Admin/Product/class-product-data-tab.php:487
+#: src/Admin/Product/class-product-data-tab.php:507
+#: src/Admin/class-field-registry.php:533 src/Admin/class-guide.php:238
 msgid "Through the cart"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:491
+#: src/Admin/Product/class-product-data-tab.php:490
 msgid "Donation Panel → Cart and checkout → How donors pay"
 msgstr ""
 
 #. translators: %s: current value and where it comes from
-#: src/Admin/Product/class-product-data-tab.php:494
+#: src/Admin/Product/class-product-data-tab.php:493
 #, php-format
 msgid "Current value: %s"
 msgstr ""
 
 #. translators: %s: link to the settings screen
-#: src/Admin/Product/class-product-data-tab.php:497
+#: src/Admin/Product/class-product-data-tab.php:496
 #, php-format
 msgid "Donation type and general settings: %s"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:511
+#: src/Admin/Product/class-product-data-tab.php:510
 msgid "source: this product"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:515
-#: src/Admin/class-field-registry.php:569
+#: src/Admin/Product/class-product-data-tab.php:514
+#: src/Admin/class-field-registry.php:556
 msgid "Products that offer an add-on donation"
 msgstr ""
 
 #. translators: %s: donation type name
-#: src/Admin/Product/class-product-data-tab.php:517
+#: src/Admin/Product/class-product-data-tab.php:516
 #, php-format
 msgid "source: donation type \"%s\""
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:520
+#: src/Admin/Product/class-product-data-tab.php:519
 msgid "source: a code filter on this site"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:523
+#: src/Admin/Product/class-product-data-tab.php:522
 msgid "source: general setting"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:536
+#: src/Admin/Product/class-product-data-tab.php:535
 #: src/WooCommerce/class-donation-order-meta.php:54
 #: templates/donation-panel/experiences/form.php:222
 #: templates/donation-panel/experiences/form.php:223
 msgid "Donation type"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:537
+#: src/Admin/Product/class-product-data-tab.php:536
 msgid ""
 "Choose how this product’s donation form works; only the selected type’s "
 "settings appear below."
 msgstr ""
 
 #. translators: %s: formatted product price
-#: src/Admin/Product/class-product-data-tab.php:569
+#: src/Admin/Product/class-product-data-tab.php:568
 #, php-format
 msgid ""
 "The donation amount is the product price: %s. You can change the price on "
 "the \"General\" tab."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:571
+#: src/Admin/Product/class-product-data-tab.php:570
 msgid ""
 "This product has no price; enter a regular price on the \"General\" tab for "
 "a fixed amount."
 msgstr ""
 
 #. translators: %s: currency symbol
-#: src/Admin/Product/class-product-data-tab.php:580
+#: src/Admin/Product/class-product-data-tab.php:579
 #, php-format
 msgid "Goal amount (%s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:581
+#: src/Admin/Product/class-product-data-tab.php:580
 msgid ""
 "Campaign goal at which the progress bar is 100% (in the store’s main "
 "currency). Empty or zero cannot be saved."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:590
+#: src/Admin/Product/class-product-data-tab.php:589
 msgid ""
 "The donor enters the amount. The WooCommerce General price field may stay "
 "empty for these types."
 msgstr ""
 
 #. translators: %s: currency symbol
-#: src/Admin/Product/class-product-data-tab.php:595
-#: src/Admin/Product/class-product-data-tab.php:816
+#: src/Admin/Product/class-product-data-tab.php:594
+#: src/Admin/Product/class-product-data-tab.php:814
 #, php-format
 msgid "Minimum amount (%s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:596
+#: src/Admin/Product/class-product-data-tab.php:595
 msgid "The lowest amount the donor can enter. 0 means no minimum."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:605
+#: src/Admin/Product/class-product-data-tab.php:604
 msgid "Maximum shares"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:606
+#: src/Admin/Product/class-product-data-tab.php:605
 msgid "The highest number of shares the donor can select at once (maximum 50)."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:620
+#: src/Admin/Product/class-product-data-tab.php:619
 msgid "When the goal is reached"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:621
+#: src/Admin/Product/class-product-data-tab.php:620
 msgid ""
 "When the campaign reaches its goal, should donations keep being accepted, or "
 "should they be closed?"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:623
+#: src/Admin/Product/class-product-data-tab.php:622
 msgid "Keep accepting donations (no message)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:624
+#: src/Admin/Product/class-product-data-tab.php:623
 msgid "Accept donations + show a thank-you message"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:625
+#: src/Admin/Product/class-product-data-tab.php:624
 msgid "Close new donations + show a message"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:631
+#: src/Admin/Product/class-product-data-tab.php:630
 msgid "Message when the goal is reached"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:632
+#: src/Admin/Product/class-product-data-tab.php:631
 msgid ""
 "If left empty, the default thank-you text is used (maximum 300 characters)."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:661
+#: src/Admin/Product/class-product-data-tab.php:660
 msgid "Raised so far"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:663
+#: src/Admin/Product/class-product-data-tab.php:662
 msgid "Progress toward goal"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:665
+#: src/Admin/Product/class-product-data-tab.php:664
 #: src/Admin/class-pages.php:204 src/Admin/class-pages.php:223
 msgid "Carried over"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:666
+#: src/Admin/Product/class-product-data-tab.php:665
 #: src/Admin/class-pages.php:209 src/Admin/class-pages.php:223
 msgid "Added by hand"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:667
+#: src/Admin/Product/class-product-data-tab.php:666
 #: src/Admin/class-pages.php:215 src/Admin/class-pages.php:223
 #: src/Modules/EntryPoints/Elementor/class-donations-list-widget.php:289
 #: blocks/donations/index.js:180
@@ -278,7 +278,7 @@ msgid "Progress"
 msgstr ""
 
 #. translators: %d: number of orders
-#: src/Admin/Product/class-product-data-tab.php:673
+#: src/Admin/Product/class-product-data-tab.php:672
 #, php-format
 msgid "%d order could not be converted"
 msgid_plural "%d orders could not be converted"
@@ -286,246 +286,235 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: link to the Campaigns screen
-#: src/Admin/Product/class-product-data-tab.php:681
+#: src/Admin/Product/class-product-data-tab.php:680
 #, php-format
 msgid ""
 "These figures are shown for reference. To add an amount by hand or "
 "recalculate the total, open %s."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:682
+#: src/Admin/Product/class-product-data-tab.php:681
 msgid "Donation Panel → Campaigns"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:699
+#: src/Admin/Product/class-product-data-tab.php:698
 msgid "Amount options"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:699
+#: src/Admin/Product/class-product-data-tab.php:698
 msgid "Quick amount buttons, quantity, and processing fee"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:702
+#: src/Admin/Product/class-product-data-tab.php:701
 #: src/Admin/class-field-registry.php:244
 msgid "Quick amount buttons"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:702
+#: src/Admin/Product/class-product-data-tab.php:701
 msgid "Shows one-click amount buttons above the amount field."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:706
+#: src/Admin/Product/class-product-data-tab.php:705
 #: src/Admin/class-field-registry.php:57 src/Admin/class-field-registry.php:256
 msgid "Amounts"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:707
+#: src/Admin/Product/class-product-data-tab.php:706
 msgid ""
 "Whole numbers only; separate with commas, spaces, or semicolons (maximum 6). "
 "If left empty, the amounts from the general setting are used. Buttons below "
 "the minimum amount are not shown."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:713
+#: src/Admin/Product/class-product-data-tab.php:712
 msgid "Suggested amount"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:714
+#: src/Admin/Product/class-product-data-tab.php:713
 msgid ""
 "Shows a \"Most chosen\" label on that amount of the list. It is not pre-"
 "selected. A value that is not on the list blocks saving."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:723
+#: src/Admin/Product/class-product-data-tab.php:722
 msgid "Quantity selector"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:723
+#: src/Admin/Product/class-product-data-tab.php:722
 msgid ""
 "Shows quantity plus/minus buttons on a fixed-amount form. If off, the "
 "quantity is always 1."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:726
+#: src/Admin/Product/class-product-data-tab.php:725
 msgid "Cover processing fee"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:726
+#: src/Admin/Product/class-product-data-tab.php:725
 msgid ""
 "Offers the donor the option to also cover the payment processing cost (on "
 "all donation types)."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:730
+#: src/Admin/Product/class-product-data-tab.php:729
 msgid "Processing fee (%)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:731
+#: src/Admin/Product/class-product-data-tab.php:730
 msgid ""
 "0 = off; otherwise a percentage between 0.5 and 15. A value outside the "
 "range is not saved."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:748
+#: src/Admin/Product/class-product-data-tab.php:747
 #: src/Admin/class-field-registry.php:58
 msgid "Form fields"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:748
-msgid "Email, dedication, and anonymous donation"
+#: src/Admin/Product/class-product-data-tab.php:747
+msgid "Dedication and anonymous donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:750
-#: src/Admin/class-field-registry.php:267
-msgid "Email field"
-msgstr ""
-
-#: src/Admin/Product/class-product-data-tab.php:750
-msgid ""
-"Asks the donor for an email address; \"Use general setting\" follows the "
-"Forms and Appearance screen."
-msgstr ""
-
-#: src/Admin/Product/class-product-data-tab.php:751
+#: src/Admin/Product/class-product-data-tab.php:749
 msgid "Dedication field"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:751
+#: src/Admin/Product/class-product-data-tab.php:749
 msgid "Shows a field to write who the donation is on behalf of."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:752
+#: src/Admin/Product/class-product-data-tab.php:750
 msgid "Dedication placeholder"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:752
+#: src/Admin/Product/class-product-data-tab.php:750
 msgid "Sample text shown inside the dedication field when it is empty."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:753
-#: src/Modules/Experiences/class-form-context.php:527
+#: src/Admin/Product/class-product-data-tab.php:751
+#: src/Modules/Experiences/class-form-context.php:504
 msgid "Anonymous donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:753
+#: src/Admin/Product/class-product-data-tab.php:751
 msgid ""
 "If checked, the donor name is hidden on public lists; it remains visible on "
 "order records."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:756
+#: src/Admin/Product/class-product-data-tab.php:754
 msgid ""
 "Share-based forms ask for a name and phone number for each share; these "
 "fields do not change per product."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:772
+#: src/Admin/Product/class-product-data-tab.php:770
 msgid "Extra donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:772
+#: src/Admin/Product/class-product-data-tab.php:770
 msgid "A second, smaller donation row added to the form"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:774
+#: src/Admin/Product/class-product-data-tab.php:772
 msgid ""
 "On a goal campaign the extra donation is not shown on the form; the settings "
 "are used if you switch to other types."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:776
+#: src/Admin/Product/class-product-data-tab.php:774
 msgid "Add an extra donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:776
+#: src/Admin/Product/class-product-data-tab.php:774
 msgid "Lets the donor add a small extra donation on top of the main donation."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:780
+#: src/Admin/Product/class-product-data-tab.php:778
 msgctxt "product data tab"
 msgid "Button text"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:781
+#: src/Admin/Product/class-product-data-tab.php:779
 msgid "Text of the button that opens the extra donation."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:783
+#: src/Admin/Product/class-product-data-tab.php:781
 msgid "Add extra donation"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:801
+#: src/Admin/Product/class-product-data-tab.php:799
 msgid "Extra donation product"
 msgstr ""
 
 #. translators: %d: default product ID
-#: src/Admin/Product/class-product-data-tab.php:805
+#: src/Admin/Product/class-product-data-tab.php:803
 #, php-format
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default (#%d) "
 "is used."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:808
+#: src/Admin/Product/class-product-data-tab.php:806
 msgid ""
 "WooCommerce product to add to the cart; if empty, the general default is "
 "used, and if that is also missing the row is not added."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:817
+#: src/Admin/Product/class-product-data-tab.php:815
 msgid "Lower limit applied when the donor types the amount themselves."
 msgstr ""
 
 #. translators: %s: currency symbol
-#: src/Admin/Product/class-product-data-tab.php:824
+#: src/Admin/Product/class-product-data-tab.php:822
 #, php-format
 msgid "Fixed amount (%s)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:825
+#: src/Admin/Product/class-product-data-tab.php:823
 msgid ""
 "If filled, the extra donation is added at this amount and the minimum amount "
 "is ignored."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:834
+#: src/Admin/Product/class-product-data-tab.php:832
 msgid "Extra donation note"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:835
+#: src/Admin/Product/class-product-data-tab.php:833
 msgid "Description shown next to the extra donation row."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:851
-#: src/Admin/Product/class-product-data-tab.php:860
+#: src/Admin/Product/class-product-data-tab.php:849
+#: src/Admin/Product/class-product-data-tab.php:858
 msgid "Shortcode"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:852
+#: src/Admin/Product/class-product-data-tab.php:850
 msgid "Choose a view, copy the shortcode, and paste it into a page or post."
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:854
+#: src/Admin/Product/class-product-data-tab.php:852
 msgid "View"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:861
+#: src/Admin/Product/class-product-data-tab.php:859
 #: src/Admin/class-admin-view.php:301 src/Admin/class-compact-tools.php:82
 msgid "Copy"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:875
+#: src/Admin/Product/class-product-data-tab.php:873
 msgid "Button (opens in the center)"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:879
+#: src/Admin/Product/class-product-data-tab.php:877
 #: src/Admin/class-field-registry.php:128
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:127
 #: blocks/donation-form/index.js:107
 msgid "Side panel"
 msgstr ""
 
-#: src/Admin/Product/class-product-data-tab.php:883
+#: src/Admin/Product/class-product-data-tab.php:881
 #: src/Modules/EntryPoints/Elementor/class-donation-form-widget.php:125
 #: blocks/donation-form/index.js:105
 msgid "Inline form"
@@ -551,52 +540,52 @@ msgid_plural "Updated the donation flag for %d products."
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/Product/class-product-settings.php:199
+#: src/Admin/Product/class-product-settings.php:198
 msgid "The maximum number of shares can be 50."
 msgstr ""
 
 #. translators: 1: field name, 2: original value, 3: corrected value
-#: src/Admin/Product/class-product-settings.php:210
+#: src/Admin/Product/class-product-settings.php:209
 #, php-format
 msgid "The «%1$s» value was corrected from %2$s to %3$s."
 msgstr ""
 
-#: src/Admin/Product/class-product-settings.php:211
+#: src/Admin/Product/class-product-settings.php:210
 msgid "Minimum amount"
 msgstr ""
 
-#: src/Admin/Product/class-product-settings.php:223
+#: src/Admin/Product/class-product-settings.php:222
 msgid "The goal amount cannot be empty or zero."
 msgstr ""
 
 #. translators: %s: max amount
-#: src/Admin/Product/class-product-settings.php:230
+#: src/Admin/Product/class-product-settings.php:229
 #, php-format
 msgid "The goal amount can be at most %s."
 msgstr ""
 
-#: src/Admin/Product/class-product-settings.php:319
+#: src/Admin/Product/class-product-settings.php:317
 msgid "Please enter a valid amount."
 msgstr ""
 
-#: src/Admin/Product/class-product-settings.php:333
+#: src/Admin/Product/class-product-settings.php:331
 msgid "The goal amount must be a valid number."
 msgstr ""
 
 #. translators: %s: invalid token
-#: src/Admin/Product/class-product-settings.php:358
+#: src/Admin/Product/class-product-settings.php:356
 #, php-format
 msgid ""
 "Quick amount buttons must be whole numbers only; invalid value: \"%s\". "
 "Separate amounts with commas, spaces, or semicolons (e.g. 100, 250, 500)."
 msgstr ""
 
-#: src/Admin/Product/class-product-settings.php:388
+#: src/Admin/Product/class-product-settings.php:386
 msgid "You can define at most 6 quick amount buttons."
 msgstr ""
 
 #. translators: %s: invalid value
-#: src/Admin/Product/class-product-settings.php:420
+#: src/Admin/Product/class-product-settings.php:418
 #, php-format
 msgid ""
 "The suggested amount must be a positive whole number only; invalid value: "
@@ -604,17 +593,17 @@ msgid ""
 msgstr ""
 
 #. translators: %s: invalid value
-#: src/Admin/Product/class-product-settings.php:431
+#: src/Admin/Product/class-product-settings.php:429
 #, php-format
 msgid ""
 "The suggested amount must be in the quick amount list; invalid value: \"%s\"."
 msgstr ""
 
-#: src/Admin/Product/class-product-settings.php:462
+#: src/Admin/Product/class-product-settings.php:460
 msgid "The processing fee percentage must be a number: 0 (off) or 0.5–15."
 msgstr ""
 
-#: src/Admin/Product/class-product-settings.php:477
+#: src/Admin/Product/class-product-settings.php:475
 msgid "The processing fee percentage must be 0 (off) or between 0.5 and 15."
 msgstr ""
 
@@ -1258,220 +1247,208 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-field-registry.php:267
-msgid "Asks for an email address so the donor can get a receipt."
-msgstr ""
-
-#: src/Admin/class-field-registry.php:268
 msgid "On behalf of / dedication"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:268
+#: src/Admin/class-field-registry.php:267
 msgid "Lets donors give in someone's name or memory."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:269
+#: src/Admin/class-field-registry.php:268
 msgid "Anonymous option"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:269
+#: src/Admin/class-field-registry.php:268
 msgid "Hides the donor name on public lists. The order keeps the real name."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:270
+#: src/Admin/class-field-registry.php:269
 msgid "Two steps"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:270
+#: src/Admin/class-field-registry.php:269
 msgid "Splits the form into amount first, details second."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:271
+#: src/Admin/class-field-registry.php:270
 msgid "Trust line"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:271
+#: src/Admin/class-field-registry.php:270
 msgid "A short reassurance line under the donate button."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:290
+#: src/Admin/class-field-registry.php:289
 msgid "Dedication field hint"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:291
+#: src/Admin/class-field-registry.php:290
 msgid ""
 "The hint inside the dedication field. Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:302
+#: src/Admin/class-field-registry.php:301
 msgid "Trust line wording"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:303
+#: src/Admin/class-field-registry.php:302
 msgid "Leave empty for the built-in secure payment sentence."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:315
+#: src/Admin/class-field-registry.php:314
 msgid "Shareholder heading"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:316
+#: src/Admin/class-field-registry.php:315
 msgid ""
 "Title above the shareholder name fields. Leave empty for the built-in "
 "wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:327
+#: src/Admin/class-field-registry.php:326
 msgid "Copy shareholder button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:328
+#: src/Admin/class-field-registry.php:327
 msgid "Lets donors repeat the first shareholder's details quickly."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:339
-msgid "Shareholder email"
-msgstr ""
-
 #: src/Admin/class-field-registry.php:340
-msgid "Adds an optional email field for each shareholder."
-msgstr ""
-
-#: src/Admin/class-field-registry.php:353
 msgid "Replace \"Add to cart\" with the donate button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:354
+#: src/Admin/class-field-registry.php:341
 msgid ""
 "Uses the standard WooCommerce spots on product pages. If your page layout "
 "has no such spot, a fallback button is drawn."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:367
+#: src/Admin/class-field-registry.php:354
 msgid "Position"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:368
+#: src/Admin/class-field-registry.php:355
 msgid "Where on the product page the donate button goes."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:371
+#: src/Admin/class-field-registry.php:358
 msgid "Where the add-to-cart button was"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:372
+#: src/Admin/class-field-registry.php:359
 msgid "After the short description"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:373
+#: src/Admin/class-field-registry.php:360
 msgid "Below the product summary"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:384
+#: src/Admin/class-field-registry.php:371
 msgid "Hide the product price"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:385
+#: src/Admin/class-field-registry.php:372
 msgid "Donation products usually have no fixed price to show."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:398
+#: src/Admin/class-field-registry.php:385
 msgid "Show a title above the in-page form"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:399
+#: src/Admin/class-field-registry.php:386
 msgid "Only for the \"In the page\" style."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:412
+#: src/Admin/class-field-registry.php:399
 msgid "Button in product lists"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:413
+#: src/Admin/class-field-registry.php:400
 msgid "What the button does in shop and category lists."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:416
+#: src/Admin/class-field-registry.php:403
 msgid "Opens the form panel"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:417
+#: src/Admin/class-field-registry.php:404
 msgid "Opens a centered window"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:418
+#: src/Admin/class-field-registry.php:405
 msgid "Links to the product page"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:419
+#: src/Admin/class-field-registry.php:406
 msgid "No button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:430
+#: src/Admin/class-field-registry.php:417
 msgid "Which products are donation products"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:431
+#: src/Admin/class-field-registry.php:418
 msgid ""
 "All products, only chosen categories, or only products you mark on the "
 "product page."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:434
+#: src/Admin/class-field-registry.php:421
 msgid "All products"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:435
+#: src/Admin/class-field-registry.php:422
 msgid "Products in chosen categories"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:436
+#: src/Admin/class-field-registry.php:423
 msgid "Only products I mark"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:447
+#: src/Admin/class-field-registry.php:434
 msgid "Category IDs"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:448
+#: src/Admin/class-field-registry.php:435
 msgid ""
 "Used with \"chosen categories\". Category IDs separated by commas (see "
 "Products > Categories)."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:460
+#: src/Admin/class-field-registry.php:447
 msgid "Add-on product ID"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:461
+#: src/Admin/class-field-registry.php:448
 msgid ""
 "The WooCommerce product ID of the extra donation. Leave 0 to offer none. A "
 "product can set its own add-on."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:472
+#: src/Admin/class-field-registry.php:459
 msgid "Add-on label"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:473
+#: src/Admin/class-field-registry.php:460
 msgid ""
 "The wording of the switch donors see. Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:485
+#: src/Admin/class-field-registry.php:472
 msgid "Thank-you message"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:486
+#: src/Admin/class-field-registry.php:473
 msgid ""
 "Shown on the thank-you screen and in the thank-you e-mail after a donation. "
 "Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:492
+#: src/Admin/class-field-registry.php:479
 msgid "Thank-you in donor e-mails"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:493
+#: src/Admin/class-field-registry.php:480
 msgid ""
 "Adds a short thank-you above the order table in the \"Processing\" and "
 "\"Completed\" e-mails donors receive. It uses the thank-you message above, "
@@ -1483,61 +1460,61 @@ msgid ""
 "from WooCommerce → Settings → Emails."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:499
+#: src/Admin/class-field-registry.php:486
 msgid "Celebration animation"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:500
+#: src/Admin/class-field-registry.php:487
 msgid ""
 "A short, gentle animation. It switches off by itself for visitors who prefer "
 "reduced motion."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:506
+#: src/Admin/class-field-registry.php:493
 msgid "Share button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:507
+#: src/Admin/class-field-registry.php:494
 msgid "Lets donors share the campaign after giving."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:512
+#: src/Admin/class-field-registry.php:499
 msgid "Step title"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:512
+#: src/Admin/class-field-registry.php:499
 msgid "Short label for the step."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:513
+#: src/Admin/class-field-registry.php:500
 msgid "Heading"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:513
+#: src/Admin/class-field-registry.php:500
 msgid "The question heading the donor sees."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:514
+#: src/Admin/class-field-registry.php:501
 msgid "Explanation"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:514
+#: src/Admin/class-field-registry.php:501
 msgid "A sentence or two explaining the declaration."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:515
+#: src/Admin/class-field-registry.php:502
 msgid "Checkbox wording"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:515
+#: src/Admin/class-field-registry.php:502
 msgid "The sentence next to the tick box. It is never ticked in advance."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:530
+#: src/Admin/class-field-registry.php:517
 msgid "Trusted proxy addresses"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:531
+#: src/Admin/class-field-registry.php:518
 msgid ""
 "Leave empty unless your site runs behind a proxy or CDN. One address or "
 "range per line (for example 10.0.0.0/8). Visitor addresses sent by these "
@@ -1545,7 +1522,7 @@ msgid ""
 "addresses you do not control."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:539
+#: src/Admin/class-field-registry.php:526
 msgid ""
 "General setting for every donation product. The donor goes from the form "
 "straight to payment and a cart the donor already has stays untouched. "
@@ -1554,154 +1531,155 @@ msgid ""
 "visitors can be told apart."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:539
+#: src/Admin/class-field-registry.php:526
 msgid ""
 "With direct donation the form always asks for the donor's email address "
 "(required): WooCommerce's payment page does not ask for billing details, and "
 "payment methods and order emails need it."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:545
+#: src/Admin/class-field-registry.php:532
 msgid "Use the general setting"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:551
+#: src/Admin/class-field-registry.php:538
 msgid "Products with a fixed price where the donor only picks a quantity."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:552
+#: src/Admin/class-field-registry.php:539
 msgid "Products where the donor types the amount."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:553
+#: src/Admin/class-field-registry.php:540
 msgid "Share-based products with shareholder names."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:554
+#: src/Admin/class-field-registry.php:541
 msgid "Products with a goal and a progress bar."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:570
+#: src/Admin/class-field-registry.php:557
 msgid ""
 "Wins over the product's own donation type. A direct donation is a single-"
 "line order, so the add-on choice is not shown to the donor when the result "
 "is direct."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:578
+#: src/Admin/class-field-registry.php:565
 msgid "Floating basket button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:579
+#: src/Admin/class-field-registry.php:566
 msgid ""
 "A round basket button in the bottom corner. It appears only after a gift is "
 "added and disappears when the basket is empty. Switch it off if your theme "
 "already shows its own cart icon."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:585
+#: src/Admin/class-field-registry.php:572
 msgid "Button corner"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:586
+#: src/Admin/class-field-registry.php:573
 msgid ""
 "Which bottom corner the floating basket button sits in. Choose the corner "
 "that does not cover your chat or back-to-top button. On right-to-left sites "
 "the sides swap."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:589 src/Admin/class-guide.php:272
+#: src/Admin/class-field-registry.php:576 src/Admin/class-guide.php:272
 msgid "Bottom right"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:590 src/Admin/class-guide.php:265
+#: src/Admin/class-field-registry.php:577 src/Admin/class-guide.php:265
 msgid "Bottom left"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:597
+#: src/Admin/class-field-registry.php:584
 msgid "Suggest an extra gift in the basket"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:598
+#: src/Admin/class-field-registry.php:585
 msgid ""
 "Shows \"Would you like to add to your donation?\" with up to three small "
 "amounts under the gifts. One tap adds it with the donor details already in "
 "the basket. Hidden when that gift is already in the basket."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:604
+#: src/Admin/class-field-registry.php:591
 msgid "Suggested donation product ID"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:605
+#: src/Admin/class-field-registry.php:592
 msgid ""
 "The WooCommerce product ID of the gift to suggest (Products → All products, "
 "the ID shows when you point at a name). Leave 0 to use the add-on product "
 "above. It must be a published donation product."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:612
+#: src/Admin/class-field-registry.php:599
 msgid "Suggested amounts"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:613
+#: src/Admin/class-field-registry.php:600
 msgid ""
 "Up to three amounts separated by commas, for example 50, 100. Shown in your "
 "store currency."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:620
+#: src/Admin/class-field-registry.php:607
 msgid "Short line under the name"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:621
+#: src/Admin/class-field-registry.php:608
 msgid ""
 "Optional, one short sentence. Leave empty to show only the product name."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:629
+#: src/Admin/class-field-registry.php:616
 msgid "Show a privacy link under the form"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:630
+#: src/Admin/class-field-registry.php:617
 msgid ""
-"Shown only when the form asks for email, dedication or shareholder details."
+"Shown only when the form asks for personal details: email (direct donation "
+"only), dedication or shareholder details."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:641
+#: src/Admin/class-field-registry.php:628
 msgid "Link text"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:642
+#: src/Admin/class-field-registry.php:629
 msgid "Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:653
+#: src/Admin/class-field-registry.php:640
 msgid "Link address"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:654
+#: src/Admin/class-field-registry.php:641
 msgid "Leave empty to use the privacy policy page set in WordPress."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:666
+#: src/Admin/class-field-registry.php:653
 msgid "Delete plugin data when the plugin is deleted"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:667
+#: src/Admin/class-field-registry.php:654
 msgid ""
 "Removes the plugin's settings and product options. Orders and order records "
 "are never touched. This cannot be undone."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:669
+#: src/Admin/class-field-registry.php:656
 msgid ""
 "All plugin settings and product options will be deleted when the plugin is "
 "deleted. Orders are not affected. This cannot be undone. Have you made a "
 "backup?"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:702
+#: src/Admin/class-field-registry.php:689
 msgid "Hex or CSS variable (e.g. var(--e-global-color-primary))."
 msgstr ""
 
@@ -1876,10 +1854,12 @@ msgstr ""
 
 #: src/Admin/class-guide.php:67
 msgid ""
-"Email: with direct donation the form always shows a required email field "
-"after the phone number, even when the email field is switched off for the "
-"product. The payment page does not ask for billing details, and card "
-"payments and order emails need the address. Through the cart nothing changes."
+"Email: the form asks for an email only with direct donation, and there it is "
+"required (the payment page does not ask for billing details, and card "
+"payments and order emails need the address). A signed-in donor is not asked: "
+"the account email is used. Through the cart the form has no email field; "
+"WooCommerce asks for it on the checkout page. There is no email setting any "
+"more."
 msgstr ""
 
 #: src/Admin/class-guide.php:71
@@ -4069,51 +4049,46 @@ msgstr ""
 msgid "Your details"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:339
-#: src/Modules/Experiences/class-form-context.php:475
+#: src/Modules/Experiences/class-form-context.php:338
+#: src/Modules/Experiences/class-form-context.php:463
 msgid "Full name *"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:341
+#: src/Modules/Experiences/class-form-context.php:340
 msgid "Please enter the shareholder’s name."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:348
-#: src/Modules/Experiences/class-form-context.php:484
+#: src/Modules/Experiences/class-form-context.php:347
+#: src/Modules/Experiences/class-form-context.php:472
 msgid "Phone number *"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:350
+#: src/Modules/Experiences/class-form-context.php:349
 msgid "Please enter the shareholder’s phone number."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:360
-#: src/Modules/Experiences/class-form-context.php:496
-msgid "Email (optional)"
-msgstr ""
-
-#: src/Modules/Experiences/class-form-context.php:370
-#: src/Modules/Experiences/class-form-context.php:518
+#: src/Modules/Experiences/class-form-context.php:358
+#: src/Modules/Experiences/class-form-context.php:495
 msgid "Note (optional)"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:442
+#: src/Modules/Experiences/class-form-context.php:430
 msgid "Email *"
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:444
+#: src/Modules/Experiences/class-form-context.php:432
 msgid "Please enter your email address."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:477
+#: src/Modules/Experiences/class-form-context.php:465
 msgid "Please enter your full name."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:486
+#: src/Modules/Experiences/class-form-context.php:474
 msgid "Please enter your phone number."
 msgstr ""
 
-#: src/Modules/Experiences/class-form-context.php:508
+#: src/Modules/Experiences/class-form-context.php:485
 #: src/WooCommerce/class-cart-hooks.php:279
 #: src/WooCommerce/class-order-meta-keys.php:75
 msgid "Dedication"

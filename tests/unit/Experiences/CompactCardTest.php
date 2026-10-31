@@ -166,6 +166,8 @@ final class CompactCardTest extends TestCase {
 		$this->assertSame( 1, substr_count( $html, 'class="donation-panel-compact__rec"' ) );
 		$this->assertStringContainsString( 'inputmode="decimal"', $html );
 		$this->assertStringContainsString( 'autocomplete="name"', $html );
+		$this->assertStringNotContainsString( 'autocomplete="email"', $html );
+		$this->assertStringNotContainsString( 'donation_email', $html );
 		$this->assertStringContainsString( 'autocomplete="tel"', $html );
 		$this->assertStringContainsString( 'aria-disabled="true"', $html );
 		$this->assertStringContainsString( 'aria-live="polite"', $html );
