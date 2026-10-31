@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 14:02+0300\n"
+"POT-Creation-Date: 2026-10-31 14:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 #: src/Admin/Product/class-product-data-tab.php:76
 #: src/Admin/Product/class-product-list.php:65
 #: src/Admin/Product/class-product-list.php:69
-#: templates/donation-panel/experiences/form.php:415
+#: templates/donation-panel/experiences/form.php:418
 #: templates/donation-panel/thanks/summary.php:39
 msgid "Donation"
 msgstr ""
@@ -1030,7 +1030,7 @@ msgstr ""
 
 #: src/Admin/class-field-registry.php:64
 #: src/WooCommerce/class-cart-hooks.php:751
-#: templates/donation-panel/experiences/form.php:417
+#: templates/donation-panel/experiences/form.php:420
 msgid "Add-on donation"
 msgstr ""
 
@@ -2310,9 +2310,9 @@ msgstr ""
 #: src/Admin/class-guide.php:271
 #: src/Modules/DonorAccount/class-account-renderer.php:208
 #: src/Modules/SideCart/class-side-cart-renderer.php:88
-#: templates/donation-panel/experiences/form.php:414
-#: templates/donation-panel/experiences/form.php:418
-#: templates/donation-panel/experiences/form.php:452
+#: templates/donation-panel/experiences/form.php:417
+#: templates/donation-panel/experiences/form.php:421
+#: templates/donation-panel/experiences/form.php:455
 #: templates/donation-panel/thanks/summary.php:49
 msgid "Total"
 msgstr ""
@@ -4938,7 +4938,7 @@ msgstr ""
 
 #: src/WooCommerce/class-cart-hooks.php:311
 #: src/WooCommerce/class-order-meta-keys.php:77
-#: templates/donation-panel/experiences/form.php:416
+#: templates/donation-panel/experiences/form.php:419
 msgid "Processing fee"
 msgstr ""
 
@@ -5174,30 +5174,34 @@ msgstr ""
 msgid "We use this number to keep you updated about your donation."
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:444
+#: templates/donation-panel/experiences/form.php:410
+msgid "Your donation receipt will be sent to your account email"
+msgstr ""
+
+#: templates/donation-panel/experiences/form.php:447
 msgctxt "Donation form: disabled button while no amount is chosen"
 msgid "Choose an amount"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:444
+#: templates/donation-panel/experiences/form.php:447
 msgctxt "Donation form: next step button"
 msgid "Continue"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:460
+#: templates/donation-panel/experiences/form.php:463
 msgid "Add to cart"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:460
+#: templates/donation-panel/experiences/form.php:463
 msgid "Add to cart, choose another"
 msgstr ""
 
-#: templates/donation-panel/experiences/form.php:461
+#: templates/donation-panel/experiences/form.php:464
 msgid "Secure payment · Your details are encrypted"
 msgstr ""
 
 #. translators: %s: link to the privacy policy.
-#: templates/donation-panel/experiences/form.php:468
+#: templates/donation-panel/experiences/form.php:471
 #, php-format
 msgid "By continuing you confirm you have read the %s."
 msgstr ""
