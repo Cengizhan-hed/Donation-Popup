@@ -52,6 +52,19 @@ async function main() {
   fs.mkdirSync(mu, { recursive: true });
   fs.copyFileSync(path.join(__dirname, 'helpers/wdp-e6-sim.php'), path.join(mu, 'wdp-e6-sim.php'));
   fs.copyFileSync(path.join(__dirname, 'helpers/wdp-mail-sink.php'), path.join(mu, 'wdp-mail-sink.php'));
+  // 12.4 email: site dili, teşekkür e-postası ayarı, kampanya hedefi (yalnız bu geçici yerel WP).
+  const locale = flag(argv, '--locale') === 'tr_TR' ? 'tr_TR' : 'en_US';
+  const thanksEmail = !argv.includes('--no-thanks');
+  fs.copyFileSync(path.join(__dirname, 'helpers/wdp-mail-opts.php'), path.join(mu, 'wdp-mail-opts.php'));
+  fs.writeFileSync(
+    path.join(wpDir, 'wp-content/wdp-mail-opts.json'),
+    JSON.stringify({
+      locale,
+      thanksEmail,
+      message: 'Allah kabul etsin, bağışınız için çok teşekkürler: çğüşiö ÇĞÜŞİÖ.',
+      campaignProduct: Number(probe.products.custom.id),
+    })
+  );
   restoreSqlite(wpDir, snap);
   const gateways = matrixEval(wpDir, ['enable-offline-gateways']);
   if (gateways && gateways.ok === false) throw new Error(`çevrimdışı ödeme yöntemleri açılamadı: ${gateways.error || ''}`);
@@ -72,6 +85,8 @@ async function main() {
         WDP_EXP_PRODUCT_ID: String(probe.products.custom.id),
         WDP_EXP_TRY: '1',
         WDP_EXP_CHECKOUT: checkout,
+        WDP_MAIL_LOCALE: locale,
+        WDP_MAIL_THANKS: thanksEmail ? '1' : '0',
         WDP_EXP_STORE: JSON.stringify(store),
         WDP_LOCAL_WP_DIR: wpDir,
         WDP_MAILPIT_SMTP_PORT: String(SMTP_PORT),
