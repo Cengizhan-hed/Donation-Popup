@@ -406,6 +406,9 @@ $donation_panel_extras = static function () use ( $donation_panel_key, $donation
 							<input class="donation-panel-input" id="<?php echo esc_attr( $donation_panel_id ); ?>" name="<?php echo esc_attr( $donation_panel_name ); ?>" type="<?php echo esc_attr( $donation_panel_type ); ?>"<?php echo ! empty( $donation_panel_field['required'] ) ? ' required aria-required="true" data-required-msg="' . esc_attr( isset( $donation_panel_field['required_msg'] ) ? (string) $donation_panel_field['required_msg'] : __( 'This field is required.', 'woo-donation-popup' ) ) . '"' : ''; ?><?php echo ! empty( $donation_panel_field['inputmode'] ) ? ' inputmode="' . esc_attr( (string) $donation_panel_field['inputmode'] ) . '"' : ''; ?><?php echo ! empty( $donation_panel_field['placeholder'] ) ? ' placeholder="' . esc_attr( (string) $donation_panel_field['placeholder'] ) . '"' : ''; ?> autocomplete="<?php echo esc_attr( (string) $donation_panel_field['autocomplete'] ); ?>" maxlength="<?php echo esc_attr( (string) (int) $donation_panel_field['maxlength'] ); ?>" aria-describedby="<?php echo esc_attr( $donation_panel_id ); ?>-err" />
 							<?php endif; ?>
 						<p class="donation-panel-error" id="<?php echo esc_attr( $donation_panel_id ); ?>-err" data-dp-error="<?php echo esc_attr( $donation_panel_name ); ?>"></p>
+						<?php if ( $donation_panel_direct && 'donation_email' === $donation_panel_name ) : ?>
+						<p class="donation-panel-account-note" role="status" aria-live="polite" data-dp-account-note data-text="<?php echo esc_attr__( 'Your donation receipt will be sent to your account email', 'woo-donation-popup' ); ?>"></p>
+						<?php endif; ?>
 					</div>
 						<?php endif; ?>
 					<?php endforeach; ?>

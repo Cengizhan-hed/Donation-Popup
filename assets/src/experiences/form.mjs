@@ -173,7 +173,16 @@ function watchAccountEmail(root, form, direct) {
     input.required = false;
     input.removeAttribute('required');
     input.disabled = true;
-    wrap.hidden = true;
+    // Alan gizlenmez: aynı kutuda bilgi satırı görünür (yükseklik değişmez, düğme ve alttakiler kaymaz).
+    const note = wrap.querySelector('[data-dp-account-note]');
+    if (note) {
+      wrap.dataset.dpAccount = '1';
+      if (note.textContent === '') {
+        note.textContent = note.dataset.text || '';
+      }
+    } else {
+      wrap.hidden = true;
+    }
   };
   on(root, 'dp:session', apply);
   apply();
