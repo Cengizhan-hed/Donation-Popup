@@ -68,3 +68,47 @@ if ( ! empty( $wdp_opts['campaignProduct'] ) ) {
 		20
 	);
 }
+// Test yalıtımı: yönetici e-postaları koşuya özgü benzersiz adrese gider (ortak kutuda başka koşuyla karışmaz).
+if ( ! empty( $wdp_opts['adminEmail'] ) ) {
+	foreach ( array( 'new_order', 'failed_order', 'cancelled_order' ) as $wdp_opts_admin_id ) {
+		add_filter( 'woocommerce_email_recipient_' . $wdp_opts_admin_id, static fn() => (string) $wdp_opts['adminEmail'], PHP_INT_MAX );
+	}
+}
+// Blok e-posta düzenleyicisinde YAYIMLANMIŞ özel şablon: "işleniyor" e-postası için woo_email yazısı (geçici test WP'si).
+if ( ! empty( $wdp_opts['blockEmail'] ) && ! empty( $wdp_opts['customTemplate'] ) ) {
+	add_action(
+		'init',
+		static function () {
+			$gen = '\Automattic\WooCommerce\Internal\EmailEditor\WCTransactionalEmails\WCTransactionalEmailPostsGenerator';
+			$mgr = '\Automattic\WooCommerce\Internal\EmailEditor\WCTransactionalEmails\WCTransactionalEmailPostsManager';
+			if ( ! class_exists( $gen ) || ! class_exists( $mgr ) ) {
+				return;
+			}
+			$manager = $mgr::get_instance();
+			$type    = 'customer_processing_order';
+			if ( $manager->get_email_post( $type ) ) {
+				return;
+			}
+			$email = $manager->get_email_by_id( $type );
+			if ( ! $email ) {
+				return;
+			}
+			$content = (string) $gen::compute_canonical_post_content( $email );
+			$marker  = '<!-- wp:paragraph --><p>WDP-CUSTOM-TEMPLATE-MARK</p><!-- /wp:paragraph -->';
+			$content = $marker . $content;
+			$post_id = wp_insert_post(
+				array(
+					'post_type'    => 'woo_email',
+					'post_status'  => 'publish',
+					'post_name'    => $type,
+					'post_title'   => 'WDP custom template',
+					'post_content' => $content,
+				)
+			);
+			if ( $post_id && ! is_wp_error( $post_id ) ) {
+				$manager->save_email_template_post_id( $type, (int) $post_id );
+			}
+		},
+		99
+	);
+}
