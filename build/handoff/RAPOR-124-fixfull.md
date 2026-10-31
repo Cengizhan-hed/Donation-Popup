@@ -52,3 +52,56 @@ Gerek yok. Yönetici ayarı ya da kullanıcıya görünen davranış değişmedi
 ## Kalan işler
 1. (Öneri, iş kararı) Fiziksel klavyeli dokunmatik cihazda alt bölüm: klavye ~1 sn içinde ölçülmezse görünür olsun. Değişecek yer: layer.mjs `onFieldFocus` + experiences-instant sözleşme testi.
 2. Uzak doğrulama (remote-smoke iki site) Claude'da.
+
+---
+
+# Ek görev: fiziksel klavyeli dokunmatik cihaz (kullanıcının yöntemi)
+
+## Ne yapıldı
+`assets/src/experiences/keyboard.mjs` ve `layer.mjs` değişti; ayar yok, davranış otomatik.
+
+1. **Birincil işaret: yazma var, görünür alan küçülmemiş.** Alan odaktayken `input` ya da `keydown` gelir ama visualViewport küçülmemişse (küçülme < 80 px, `typedWithoutKeyboard`), fiziksel klavye sayılır. Alt bölüm tek seferde görünür. Sanal klavyede yazma ancak görünüm küçüldükten sonra olur, o yüzden bu koşul sağlanmaz ve davranış eskisi gibi kalır.
+2. **Destek: `navigator.virtualKeyboard`.** Yalnız `geometrychange` dinleniyor; `overlaysContent`'e dokunulmuyor. Kaynak MDN: olay klavye gösterilip gizlenince ateşlenir, API deneysel ve yalnız güvenli bağlamda çalışır. Yükseklik > 0 bildirilirse sanal klavye görülmüş sayılır.
+3. **Yedek zamanlayıcı: hiç yazılmadıysa NO_KEYBOARD_MS = 2000 ms.**
+   - Görünüm 400 ms içinde yeniden boyutlandıysa karar ertelenir.
+   - Oturumda bir kez sanal klavye görüldüyse (görünüm küçüldü ya da API bildirdi) zamanlayıcı o oturumda kullanılmaz.
+   - Fiziksel klavye bilgisi katman ömrü boyunca tutulur; alan değiştirince düğmeler yeniden gizlenmez.
+   - Gerçek klavye ölçülünce bu bilgi sıfırlanır.
+
+## Süre seçimi ve emülatör
+- Emülatör bu oturumda başlatılamadı. `emulator -avd wdp-pixel7-a35 -sysdir …` korumalı alanda (sandbox) rc=139 ile çöktü. Korumalı alan dışında çalıştırma izni otomatik onaylayıcı tarafından reddedildi.
+- Bu yüzden gerçek açılış ölçümü yok. 2000 ms, önerilen 1,5–2 sn aralığının üst sınırı; yavaş klavyede düğmeyi erken göstermemek için seçildi.
+- Ölçümü kolaylaştırmak için `gercek-android.spec` güncellendi:
+  - İzde artık `kbOpen {firstMs, settledMs, steps}` var: ilk alana dokunuştan görünüm küçülmesine kadar geçen süre.
+  - `kbLogFields` iddiası eklendi: sanal klavyede alanlar arasında alt bölüm hiç görünmez, durum izi tek değer.
+  - Klavye `WDP_ANDROID_IME` ile seçilebiliyor.
+- Ana oturumun çalıştıracağı komutlar (Playwright ile aynı anda çalıştırmayın):
+  - Gboard (cihaz varsayılanı): `npm run e2e:android`
+  - AnySoftKeyboard: `WDP_ANDROID_IME=com.menny.android.anysoftkeyboard/.SoftKeyboard npm run e2e:android`
+  - Ölçülen `kbOpen.settledMs` 2000'e yakın ya da üstündeyse sabit güncellenmeli.
+
+## Kanıt (yerel, port 9088)
+| Koşu | Sonuç |
+|---|---|
+| android-keyboard (android) | 10/10. visual/content kare izi 1. Fiziksel klavyede görünme gecikmesi 6 ms, yazmayla. Yazmasız modda 2001 ms, yedek zamanlayıcıyla. Yavaş klavye 4 mod (1 sn tek adım, 0,5→1,7 sn 7 adım, content 1 sn, 1,8 sn): düğme hiç görünmedi, durum izi `[true]` |
+| ios-kb (iphone, iPhone 13/SE) | 10/10. Kare izi 1. Fiziksel klavyede gecikme 5–7 ms. Yazmasız modda 2001 ms |
+| experiences | 166 geçti / 0 hata (experiences-instant sözleşmesi dahil) |
+| e2e:full | 128 / 0 |
+| verify / test | yeşil; PHPUnit 909 OK; node 886/0 (yeni birim testleri: typedWithoutKeyboard, keyboardPresence, noKeyboard) |
+| measure:plugin-perf | 171 geçti / 0 kaldı |
+
+## Hız etkisi (yeni özellik, onaylı)
+- Formlu sayfalarda ilk yük JS: 11799 → 12134 B gz (+335 B; layer.mjs ek mantığı). Bütçe ~25 KB'nin içinde.
+- Satır içi CSS değişmedi.
+- Ana iş ms (koşular arası dağılım içinde):
+
+| sayfa | önce | sonra |
+|---|---|---|
+| popup | 2.4 | 2.9 |
+| sayfa-ici-form | 5.7 | 6.5 |
+
+- Eşli ölçümle gürültü olduğu ayrıca kanıtlanmadı.
+- Kural yorumu Claude'da: onaylı yeni işlev bayt ekliyor. Bayt azaltmak istenirse VirtualKeyboard dinleyicisi çıkarılabilir; işaret 2 olmadan da çalışır.
+
+## Ayar/rehber
+Gerek yok: ayar ve yönetici ekranı yok, cihaz algısı otomatik. Rehbere bir cümle eklenebilir ("fiziksel klavyeli tablette düğmeler ilk tuşta görünür"); bu docs/rehber birleştirmesi Claude'da.

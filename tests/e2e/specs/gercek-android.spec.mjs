@@ -23,6 +23,11 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
     const base = new URL(process.env.E2E_BASE_URL || 'http://127.0.0.1:8911');
     expect(reversePort(serial, base.port), 'adb reverse').toBe(true);
     adb(['shell', 'settings', 'put', 'secure', 'show_ime_with_hard_keyboard', '1'], serial);
+    // Klavye seçimi (ör. AnySoftKeyboard): WDP_ANDROID_IME=com.menny.android.anysoftkeyboard/.SoftKeyboard; yoksa cihazın varsayılanı (Gboard).
+    if (process.env.WDP_ANDROID_IME) {
+      adb(['shell', 'ime', 'enable', process.env.WDP_ANDROID_IME], serial);
+      expect(adb(['shell', 'ime', 'set', process.env.WDP_ANDROID_IME], serial).ok, 'klavye seçimi').toBe(true);
+    }
     fs.mkdirSync(OUT, { recursive: true });
     const remote = '/sdcard/wdp-gercek-android.mp4';
     const rec = spawn('adb', ['-s', serial, 'shell', 'screenrecord', '--time-limit', '60', remote], { stdio: 'ignore' });
@@ -132,9 +137,20 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
       });
 
       const keyboardShown = () => adb(['shell', 'dumpsys', 'input_method'], serial).out.includes('mInputShown=true');
+      // Alt bölüm durum izi (data-dp-kb): sanal klavyeyle alanlar arasında hiç "göster" olmamalı (yedek zamanlayıcı/yazma algısı tetiklenmez).
+      await page.evaluate(() => {
+        const root = document.querySelector('[data-dp-exp]');
+        window.__dpKbLog = [];
+        new MutationObserver(() => window.__dpKbLog.push([Math.round(performance.now()), root.hasAttribute('data-dp-kb')])).observe(root, { attributes: true, attributeFilter: ['data-dp-kb'] });
+      });
+      const ime = adb(['shell', 'settings', 'get', 'secure', 'default_input_method'], serial).out.trim();
       const perField = [];
+      let tapAt = 0;
       for (let i = 0; i < fields.length; i += 1) {
         step(`alan ${i} dokun`);
+        if (i === 0) {
+          tapAt = await page.evaluate(() => Math.round(performance.now()));
+        }
         await tap(fields[i]);
         await page.waitForTimeout(i === 0 ? 2500 : 1500);
         adb(['shell', 'input', 'text', 'Ab'], serial);
@@ -156,6 +172,7 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
         m.imeShown = keyboardShown();
         perField.push(m);
       }
+      const kbLogFields = await page.evaluate(() => window.__dpKbLog.slice());
       // Boş yere dokun: başlığa dokun (alan odağı kaybeder), klavye kapanır.
       await tap(page.locator('[data-dp-title]'));
       await page.waitForTimeout(2500);
@@ -167,8 +184,11 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
       });
       const vvLog = await page.evaluate(() => window.__dpVv);
       const distinct = (pick) => new Set(frames.map((f) => JSON.stringify(pick(f)))).size;
+      // Klavye açılış ölçümü (yedek zamanlayıcı süresinin gerekçesi): ilk alana dokunuştan ilk ve son görünüm küçülmesine (ms).
+      const opening = vvLog.filter((v) => v[0] >= tapAt && v[0] <= tapAt + 2500 && v[2] < env.vv);
+      const kbOpen = opening.length ? { firstMs: opening[0][0] - tapAt, settledMs: opening[opening.length - 1][0] - tapAt, steps: opening.length } : null;
       const trace = {
-        env, frames: frames.length, vvResizes: vvLog.length, perField, closedVv, imeAfter,
+        env, ime, kbOpen, kbLogFields, frames: frames.length, vvResizes: vvLog.length, perField, closedVv, imeAfter,
         barRects: distinct((f) => f.bar), btnRects: distinct((f) => f.btn), bodyWidths: distinct((f) => f.bodyW),
         surfaceWidths: distinct((f) => f.surfW), bodySbar: distinct((f) => f.sbar), docSbar: distinct((f) => f.docSbar), docY: distinct((f) => f.docY),
       };
@@ -182,6 +202,8 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
         expect(m.fieldBottom, `alan ${i} klavye altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.visBottom - 12); // alanın altı ile klavye arasında en az 12 px
       }
       expect(imeAfter, 'klavye kapanmadı').toBe(false);
+      // Sanal klavye varken alanlar arasında alt bölüm hiç gösterilmez: durum izi yalnız "gizle" (tek değer).
+      expect(kbLogFields.map((x) => x[1]), `sanal klavyede alt bölüm erken göründü ${JSON.stringify(kbLogFields)}`).toEqual([true]);
       expect(trace.barRects, `alt bölüm konum/genişlik ${JSON.stringify(trace)}`).toBe(1);
       expect(trace.btnRects, `düğme ${JSON.stringify(trace)}`).toBe(1);
       expect(trace.bodyWidths, `gövde genişliği ${JSON.stringify(trace)}`).toBe(1);

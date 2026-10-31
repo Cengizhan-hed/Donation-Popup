@@ -6,7 +6,7 @@
  * yaklaşılınca/dokunulunca ya da ilk açılışta <dialog> olarak oluşturulur ve form bağlanır.
  */
 import { NARROW_QUERY, presentedAs, shouldDismissOnDrag } from './store.mjs';
-import { KEYBOARD_MIN_PX, REVEAL_GAP_PX, TEXT_FIELD, keyboardShrink, nextKeyboardUp, shouldHideActionBar } from './keyboard.mjs';
+import { KEYBOARD_MIN_PX, NO_KEYBOARD_MS, REVEAL_GAP_PX, TEXT_FIELD, VIEWPORT_STABLE_MS, keyboardPresence, keyboardShrink, nextKeyboardUp, shouldHideActionBar, typedWithoutKeyboard } from './keyboard.mjs';
 import { isTopmost, lockPage, measureScrollbar, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 
 let layerSeq = 0;
@@ -55,6 +55,14 @@ export function createLayer(root, hooks = {}) {
   let keyboardUp = false;
   let keyboardDismissedFlag = false;
   let fieldFocused = false;
+  // Fiziksel klavye (ekran klavyesi yok): görünüm küçülmeden yazıldı ya da yedek zamanlayıcı (keyboard.mjs NO_KEYBOARD_MS).
+  // Gerçek klavye ölçülünce false. Katman ömrü boyunca tutulur (her alan değişiminde yeniden gizleyip göstermesin).
+  let noKeyboard = false;
+  // Bu oturumda sanal klavye görüldü (görünüm küçüldü ya da VirtualKeyboard API bildirdi): yedek zamanlayıcı kullanılmaz.
+  let virtualSeen = false;
+  let presenceTimer = 0;
+  let lastResizeAt = -Infinity;
+  const vk = 'virtualKeyboard' in navigator ? navigator.virtualKeyboard : null;
   let baseline = 0;
   let baselineWidth = 0;
   let geoFrame = 0;
@@ -232,6 +240,10 @@ export function createLayer(root, hooks = {}) {
       if (wasUp && !keyboardUp) {
         keyboardDismissedFlag = true; // klavye kapandı, alan odakta (Android geri hareketi)
       }
+      if (keyboardUp) {
+        noKeyboard = false; // ekran klavyesi gerçekten var
+        virtualSeen = true;
+      }
     }
     // Alan odağı bırakılsa da klavye gerçekten kapanana (resize) dek gizli kalır: görünür alan hâlâ küçükken alt bölümün
     // akışa dönmesi taşma ve sıçrama yaratır (iPhone SE).
@@ -242,6 +254,7 @@ export function createLayer(root, hooks = {}) {
         keyboard: keyboardUp ? KEYBOARD_MIN_PX : 0,
         coarse: coarse.matches,
         dismissed: keyboardDismissedFlag,
+        noKeyboard,
       });
     // Tek seferlik durum değişimi: alt bölüm yerinde kalır, yalnız opacity ile gizlenir/görünür (konum/boyut geçişi yok).
     setBarHidden(hide);
@@ -252,6 +265,7 @@ export function createLayer(root, hooks = {}) {
 
   /** resize olayı: geometri hemen (kare başına), karar ~100 ms sakinleşince (debounce). */
   const onViewportResize = () => {
+    lastResizeAt = window.performance.now();
     scheduleGeometry();
     window.clearTimeout(settleTimer);
     settleTimer = window.setTimeout(() => syncKeyboard(true), SETTLE_MS);
@@ -269,6 +283,58 @@ export function createLayer(root, hooks = {}) {
     revealTarget = event.target;
     window.clearTimeout(revealTimer);
     revealTimer = window.setTimeout(reveal, keyboardUp ? REVEAL_WARM_MS : REVEAL_COLD_MS);
+    window.clearTimeout(presenceTimer);
+    if (barHidden && !keyboardUp && viewport && !virtualSeen) {
+      presenceTimer = window.setTimeout(checkPresence, NO_KEYBOARD_MS);
+    }
+  };
+
+  /**
+   * Birincil işaret: alan odaktayken yazılıyor ama görsel görünüm küçülmemiş → fiziksel klavye; alt bölüm tek seferde
+   * görünür. Sanal klavyede yazma, görünüm küçüldükten sonra olur (koşul sağlanmaz; mevcut davranış aynen).
+   *
+   * @param {Event} event input/keydown.
+   */
+  const onFieldType = (event) => {
+    if (!opened || !barHidden || keyboardUp || !viewport || !isTextField(event.target)) {
+      return;
+    }
+    updateBaseline();
+    if (typedWithoutKeyboard({ shrink: keyboardShrink(baseline, viewport.height), vkHeight: vk && vk.boundingRect ? vk.boundingRect.height : 0 })) {
+      noKeyboard = true;
+      syncKeyboard();
+    }
+  };
+
+  /** VirtualKeyboard API (destekleyen tarayıcıda; yalnız dinlenir): sanal klavye bildirildiyse oturumda görülmüş sayılır. */
+  const onVirtualKeyboard = () => {
+    if (vk.boundingRect && vk.boundingRect.height > 0) {
+      virtualSeen = true;
+      window.clearTimeout(presenceTimer);
+      if (noKeyboard) {
+        noKeyboard = false;
+        syncKeyboard();
+      }
+    }
+  };
+
+  /**
+   * Yedek (hiç yazılmadan): odaktan NO_KEYBOARD_MS sonra ekran klavyesi gelmediyse (görsel görünüm küçülmedi ve sakin)
+   * alt bölüm tek seferde görünür olur. Açılış animasyonu sürüyorsa (yakın zamanda resize) karar sakinleşene dek
+   * ertelenir: yavaş klavyede düğme erken görünmez.
+   */
+  const checkPresence = () => {
+    presenceTimer = 0;
+    if (!opened || !fieldFocused || !barHidden || virtualSeen) {
+      return;
+    }
+    const verdict = keyboardPresence({ keyboardUp, sinceResize: window.performance.now() - lastResizeAt });
+    if (verdict === 'wait') {
+      presenceTimer = window.setTimeout(checkPresence, VIEWPORT_STABLE_MS);
+    } else if (verdict === 'absent') {
+      noKeyboard = true;
+      syncKeyboard();
+    }
   };
 
   const onFieldBlur = () => {
@@ -402,6 +468,9 @@ export function createLayer(root, hooks = {}) {
       viewport.addEventListener('resize', onViewportResize);
       viewport.addEventListener('scroll', onViewportScroll);
     }
+    if (vk) {
+      vk.addEventListener('geometrychange', onVirtualKeyboard);
+    }
     window.cancelAnimationFrame(openFrame);
     openFrame = window.requestAnimationFrame(afterOpenFrame);
     // Otomatik alan odağı yok (mobilde klavye açılmasın): odak başlığa. showModal başlığa (autofocus) zaten odaklandıysa
@@ -451,7 +520,10 @@ export function createLayer(root, hooks = {}) {
       viewport.removeEventListener('resize', onViewportResize);
       viewport.removeEventListener('scroll', onViewportScroll);
     }
-    [settleTimer, blurTimer, revealTimer, gapTimer].forEach((t) => window.clearTimeout(t));
+    if (vk) {
+      vk.removeEventListener('geometrychange', onVirtualKeyboard);
+    }
+    [settleTimer, blurTimer, revealTimer, gapTimer, presenceTimer].forEach((t) => window.clearTimeout(t));
     if (geoFrame) {
       window.cancelAnimationFrame(geoFrame);
       geoFrame = 0;
@@ -500,6 +572,8 @@ export function createLayer(root, hooks = {}) {
     );
     surface.addEventListener('focusin', onFieldFocus);
     surface.addEventListener('focusout', onFieldBlur);
+    surface.addEventListener('input', onFieldType);
+    surface.addEventListener('keydown', onFieldType);
     root.querySelectorAll('[data-dp-close]').forEach((button) => {
       button.addEventListener('click', close);
     });

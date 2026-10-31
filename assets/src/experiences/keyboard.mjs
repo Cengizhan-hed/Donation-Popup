@@ -57,22 +57,66 @@ export function nextKeyboardUp(wasUp, shrink) {
 }
 
 /**
+ * Fiziksel klavye algısı (dokunmatik ekran; ör. klavyeli tablet, Chromebook tablet kipi) — üç işaret, öncelik sırasıyla:
+ *  1) Birincil, kanıta dayalı: alan odaktayken bağışçı yazıyor (`input`/`keydown`) ama görsel görünüm (visualViewport)
+ *     küçülmemiş (typedWithoutKeyboard). Sanal klavyede yazma ancak klavye göründükten, yani görünüm küçüldükten sonra olur.
+ *  2) Destek: `navigator.virtualKeyboard` varsa `geometrychange` yalnız DİNLENİR (MDN: klavye gösterilip gizlenince
+ *     ateşlenir; deneysel, yalnız güvenli bağlamda). Yüksekliği > 0 bildirirse sanal klavye görülmüş sayılır.
+ *     `overlaysContent` DEĞİŞTİRİLMEZ (görünüm küçülmesini kapatıp yerleşimi bozar).
+ *  3) Yedek zamanlayıcı, yalnız hiç yazılmadan beklenen durum için: odaktan NO_KEYBOARD_MS sonra görünüm küçülmemiş ve
+ *     VIEWPORT_STABLE_MS boyunca sakinse (açılış animasyonu sürmüyorsa) ekran klavyesi yok sayılır. Oturumda bir kez
+ *     sanal klavye görüldüyse (görünüm küçüldü ya da geometrychange) zamanlayıcı o oturumda kullanılmaz.
+ * NO_KEYBOARD_MS = 2000: önerilen 1,5–2 sn aralığının üst sınırı. Gerçek emülatör ölçümü bu oturumda yapılamadı
+ * (RAPOR-124-fixfull); yavaş Android klavyesinde düğmenin erken görünmemesi için üst sınır seçildi.
+ */
+export const NO_KEYBOARD_MS = 2000;
+
+/**
+ * Yazma olayı fiziksel klavyeden mi: görünüm kapanma eşiğinin (KEYBOARD_GONE_PX) altında küçülmüş ve (varsa)
+ * VirtualKeyboard API sanal klavye bildirmiyor.
+ *
+ * @param {{shrink: number, vkHeight?: number}} input shrink: keyboardShrink sonucu; vkHeight: navigator.virtualKeyboard.boundingRect.height.
+ * @return {boolean} Fiziksel klavye.
+ */
+export function typedWithoutKeyboard({ shrink, vkHeight = 0 }) {
+  return Number(shrink) < KEYBOARD_GONE_PX && !(Number(vkHeight) > 0);
+}
+
+/** Karar için görsel görünümün sakin kalması gereken süre (ms); bu süre içinde `resize` geldiyse açılış sürüyor sayılır. */
+export const VIEWPORT_STABLE_MS = 400;
+
+/**
+ * Odaktan NO_KEYBOARD_MS sonra: ekran klavyesi var mı, karar ertelensin mi, yok mu.
+ *
+ * @param {{keyboardUp: boolean, sinceResize: number}} input keyboardUp: histerezisli klavye durumu; sinceResize: son
+ *   görsel görünüm `resize` olayından bu yana geçen süre (ms; hiç olmadıysa Infinity).
+ * @return {'present'|'wait'|'absent'} Karar.
+ */
+export function keyboardPresence({ keyboardUp, sinceResize }) {
+  if (keyboardUp) {
+    return 'present';
+  }
+  return sinceResize < VIEWPORT_STABLE_MS ? 'wait' : 'absent';
+}
+
+/**
  * Sabit alt bölüm (toplam + düğmeler) gizlensin mi.
  *
  * Kural: bir yazı alanı odakta VE (klavye yüksekliği eşiği aştı YA DA dokunmatik ekran). Klavye açılıp sonra
- * odak alanda kalarak kapanırsa (Android geri hareketi) bölüm bir sonraki odağa kadar geri döner.
+ * odak alanda kalarak kapanırsa (Android geri hareketi) bölüm bir sonraki odağa kadar geri döner. Dokunmatik ekranda
+ * ekran klavyesi hiç gelmediyse (noKeyboard: keyboardPresence 'absent') bölüm görünür kalır.
  *
- * @param {{fieldFocused: boolean, keyboard: number, coarse: boolean, dismissed: boolean}} input Durum.
+ * @param {{fieldFocused: boolean, keyboard: number, coarse: boolean, dismissed: boolean, noKeyboard?: boolean}} input Durum.
  * @return {boolean} Gizlensin mi.
  */
-export function shouldHideActionBar({ fieldFocused, keyboard, coarse, dismissed }) {
+export function shouldHideActionBar({ fieldFocused, keyboard, coarse, dismissed, noKeyboard = false }) {
   if (!fieldFocused) {
     return false;
   }
   if (keyboard >= KEYBOARD_MIN_PX) {
     return true;
   }
-  return Boolean(coarse) && !dismissed;
+  return Boolean(coarse) && !dismissed && !noKeyboard;
 }
 
 /**

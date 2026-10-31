@@ -193,6 +193,48 @@ for (const size of SIZES) {
       expect(trace.surfaceWidths, `yüzey genişliği ${JSON.stringify(trace)}`).toBe(1);
     });
 
+    for (const typeFirst of [true, false]) {
+      test(`fiziksel klavyeli cihaz (ekran klavyesi gelmez), ${typeFirst ? 'yazma var: ilk tuşta' : 'yazma yok: yedek ~2 sn'} görünür ve dokunulabilir`, async ({ page }) => {
+        await installIosKeyboardSim(page, { none: true });
+        const fields = await openDetails(page);
+        test.skip(fields.length < 1, 'metin alanı yok');
+        await page.evaluate(() => {
+          const root = document.querySelector('[data-dp-exp]');
+          window.__dpKbLog = [];
+          window.__dpKbT0 = performance.now();
+          new MutationObserver(() => {
+            window.__dpKbLog.push({ t: Math.round(performance.now() - window.__dpKbT0), kb: root.hasAttribute('data-dp-kb') });
+          }).observe(root, { attributes: true, attributeFilter: ['data-dp-kb'] });
+        });
+        await fields[0].focus();
+        if (typeFirst) {
+          await fields[0].pressSequentially('Ab', { delay: 30 });
+        } else {
+          await page.waitForTimeout(600);
+          expect(await page.locator('[data-dp-exp]').getAttribute('data-dp-kb'), '600 ms, yazma yok: hâlâ gizli').toBe('1');
+        }
+        await expect(page.locator('[data-dp-exp]')).not.toHaveAttribute('data-dp-kb', '1', { timeout: 4000 });
+        const tappable = () =>
+          page.evaluate(() => {
+            const bar = document.querySelector('.donation-panel-actionbar');
+            const btn = bar.querySelector('[data-dp-submit]');
+            const r = btn.getBoundingClientRect();
+            const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+            return !bar.hasAttribute('inert') && getComputedStyle(bar).opacity === '1' && Boolean(hit && btn.contains(hit));
+          });
+        await expect.poll(tappable, { timeout: 2000 }).toBe(true);
+        const log = await page.evaluate(() => window.__dpKbLog);
+        console.log(`KBD-IOS-${typeFirst ? 'PHYS' : 'NOKB'} ${size.name} ${JSON.stringify(log)}`);
+        expect(log.map((x) => x.kb), JSON.stringify(log)).toEqual([true, false]);
+        if (typeFirst) {
+          expect(log[1].t - log[0].t, JSON.stringify(log)).toBeLessThan(800);
+        } else {
+          expect(log[1].t - log[0].t, JSON.stringify(log)).toBeGreaterThanOrEqual(1950);
+          expect(log[1].t - log[0].t, JSON.stringify(log)).toBeLessThanOrEqual(2800);
+        }
+      });
+    }
+
     test('giriş alanlarında yazı boyutu en az 16px (iOS odak yakınlaşması yok)', async ({ page }) => {
       await installIosKeyboardSim(page);
       await openDetails(page);

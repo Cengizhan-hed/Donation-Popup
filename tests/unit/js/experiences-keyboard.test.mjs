@@ -22,6 +22,33 @@ test('alt bölüm yalnız yazı alanı odakta ve klavye açıkken gizlenir', () 
   assert.equal(shouldHideActionBar({ ...base, coarse: true, dismissed: true }), false);
 });
 
+test('ekran klavyesi gelmeyen dokunmatik cihaz: bölüm görünür; gerçek klavye her zaman gizler', () => {
+  const base = { fieldFocused: true, keyboard: 0, coarse: true, dismissed: false };
+  assert.equal(shouldHideActionBar({ ...base, noKeyboard: true }), false);
+  assert.equal(shouldHideActionBar({ ...base, noKeyboard: false }), true);
+  // Klavye sonradan gerçekten açılırsa (ölçüldü) bayraktan bağımsız gizlenir.
+  assert.equal(shouldHideActionBar({ ...base, keyboard: KEYBOARD_MIN_PX, noKeyboard: true }), true);
+});
+
+test('keyboardPresence: klavye ölçüldüyse var; görünüm yakında yeniden boyutlandıysa bekle; sakinse yok', async () => {
+  const { keyboardPresence, NO_KEYBOARD_MS, VIEWPORT_STABLE_MS } = await import('../../../assets/src/experiences/keyboard.mjs');
+  assert.equal(keyboardPresence({ keyboardUp: true, sinceResize: Infinity }), 'present');
+  assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: Infinity }), 'absent');
+  assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS - 1 }), 'wait');
+  assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS }), 'absent');
+  // Yavaş klavye koruması: yedek bekleme 1,5–2 sn aralığında.
+  assert.ok(NO_KEYBOARD_MS >= 1500 && NO_KEYBOARD_MS <= 2000);
+});
+
+test('typedWithoutKeyboard: görünüm küçülmeden yazma = fiziksel klavye; küçüldüyse ya da API sanal klavye bildirirse değil', async () => {
+  const { typedWithoutKeyboard, KEYBOARD_GONE_PX } = await import('../../../assets/src/experiences/keyboard.mjs');
+  assert.equal(typedWithoutKeyboard({ shrink: 0 }), true);
+  assert.equal(typedWithoutKeyboard({ shrink: KEYBOARD_GONE_PX - 1 }), true); // iPad kısayol çubuğu gibi küçük şerit
+  assert.equal(typedWithoutKeyboard({ shrink: KEYBOARD_GONE_PX }), false);
+  assert.equal(typedWithoutKeyboard({ shrink: 300 }), false);
+  assert.equal(typedWithoutKeyboard({ shrink: 0, vkHeight: 280 }), false);
+});
+
 test('keyboardDismissed yalnız açıktan kapanışta true', () => {
   assert.equal(keyboardDismissed(true, 0), true);
   assert.equal(keyboardDismissed(false, 0), false);

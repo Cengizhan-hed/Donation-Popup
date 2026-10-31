@@ -10,13 +10,17 @@
  * Sayaçlar: scrollIntoView çağrıları, olay sayısı. `window.__dpKbSim` üzerinden okunur.
  *
  * @param {import('@playwright/test').Page} page Sayfa (goto öncesi).
- * @param {{kb?: number, delay?: number, pan?: boolean}} [opts] Klavye yüksekliği, animasyon gecikmesi, kaydırma.
+ * `none: true`: ekran klavyesi hiç açılmayan dokunmatik cihaz (fiziksel klavyeli iPad): visualViewport sabit, olay yok.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa (goto öncesi).
+ * @param {{kb?: number, delay?: number, pan?: boolean, none?: boolean}} [opts] Klavye yüksekliği, animasyon gecikmesi, kaydırma, klavyesiz cihaz.
  */
 export async function installIosKeyboardSim(page, opts = {}) {
   await page.addInitScript((o) => {
     const KB = o.kb || 336;
     const DELAY = o.delay || 220;
     const PAN = o.pan !== false;
+    const NONE = o.none === true;
     const FIELD = 'input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]):not([type=hidden]), textarea';
     const target = new EventTarget();
     const vv = {
@@ -33,6 +37,11 @@ export async function installIosKeyboardSim(page, opts = {}) {
     };
     const sim = { keyboardUp: false, scrollIntoView: 0, resize: 0, scroll: 0, focusCount: 0, log: [] };
     window.__dpKbSim = sim;
+    if (NONE) {
+      // Klavyesiz cihaz: görsel görünüm her an düzen görünümüne eşit (belge başında innerHeight henüz son değer değil).
+      Object.defineProperty(vv, 'height', { get: () => window.innerHeight });
+      Object.defineProperty(vv, 'width', { get: () => window.innerWidth });
+    }
     Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true });
     const fire = (name) => {
       sim[name] += 1;
@@ -45,6 +54,9 @@ export async function installIosKeyboardSim(page, opts = {}) {
     };
     const openKb = () => {
       clear();
+      if (NONE) {
+        return;
+      }
       if (sim.keyboardUp) {
         // Alandan alana geçiş: Safari küçük bir kaydırma ayarı yapar.
         timers.push(setTimeout(() => {
@@ -69,6 +81,9 @@ export async function installIosKeyboardSim(page, opts = {}) {
     };
     const closeKb = () => {
       clear();
+      if (NONE) {
+        return;
+      }
       timers.push(setTimeout(() => {
         sim.keyboardUp = false;
         vv.height = window.innerHeight;
