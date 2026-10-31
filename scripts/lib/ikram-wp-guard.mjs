@@ -8,6 +8,26 @@ export const IKRAM_WP_ALIAS = 'ikramaid';
 export const CLEANUP_EVAL_FILE = 'tests/e2e/helpers/cleanup-e2e.php';
 export const TEMP_PRODUCT_EVAL_FILE = 'tests/e2e/helpers/e2e-temp-product.php';
 export const TRASH_REPORT_EVAL_FILE = 'tests/e2e/helpers/trash-report.php';
+export const CRON_STATUS_EVAL_FILE = 'tests/e2e/helpers/cron-status.php';
+
+/**
+ * Salt okunur sunucu cron ipucu: yalnız evet/hayır yazar, crontab satırı ASLA yazılmaz.
+ * (`crontab -l` çıktısı doğrudan grep -q'ya gider; ekrana düşmez.)
+ */
+export const CRON_CRONTAB_HINT_COMMAND =
+  "if crontab -l 2>/dev/null | grep -qE 'wp-cron\\.php|wp cron event run'; then echo crontab_wp_cron=yes; else echo crontab_wp_cron=no; fi";
+
+/** cron-status.php içinde bulunmaması gereken yazma/çalıştırma/ağ çağrıları. */
+const CRON_STATUS_WRITE_BLOCK =
+  /\b(wp_schedule_event|wp_schedule_single_event|wp_unschedule_event|wp_clear_scheduled_hook|wp_unschedule_hook|spawn_cron|wp_cron|do_action|do_action_ref_array|update_option|delete_option|add_option|_set_cron_array|wp_remote_\w+|file_put_contents|exec|shell_exec|system|passthru|curl_\w+)\s*\(/i;
+
+/**
+ * @param {string} src cron-status.php kaynağı
+ * @returns {boolean} true = yazma/ağ çağrısı yok
+ */
+export function isReadOnlyCronStatusSource(src) {
+  return !CRON_STATUS_WRITE_BLOCK.test(String(src || ''));
+}
 
 const BLOCKED = [
   /\bdb\s+(drop|reset|clean|repair|query)\b/i,
@@ -88,7 +108,7 @@ export function allowIkramWpCommand(tail) {
     if (!file) {
       return {
         ok: false,
-        reason: `eval-file yalnız ${CLEANUP_EVAL_FILE}, ${TEMP_PRODUCT_EVAL_FILE} veya ${TRASH_REPORT_EVAL_FILE} için izinli.`,
+        reason: `eval-file yalnız ${CLEANUP_EVAL_FILE}, ${TEMP_PRODUCT_EVAL_FILE}, ${TRASH_REPORT_EVAL_FILE} veya ${CRON_STATUS_EVAL_FILE} için izinli.`,
       };
     }
     return { ok: true, kind: 'eval-file', file };
@@ -105,7 +125,7 @@ export function resolveAllowedEvalFile(cmd) {
   const rest = String(cmd || '').replace(/^eval-file\s+/i, '').trim();
   const fileTok = rest.split(/\s+/)[0] || '';
   const norm = fileTok.replace(/\\/g, '/').replace(/^\.\//, '');
-  const allowedFiles = [CLEANUP_EVAL_FILE, TEMP_PRODUCT_EVAL_FILE, TRASH_REPORT_EVAL_FILE];
+  const allowedFiles = [CLEANUP_EVAL_FILE, TEMP_PRODUCT_EVAL_FILE, TRASH_REPORT_EVAL_FILE, CRON_STATUS_EVAL_FILE];
   return allowedFiles.find((f) => norm.endsWith(f) || norm === f) || '';
 }
 
