@@ -253,11 +253,21 @@ class Card_Forms {
 	 * @return array<string, mixed>|null
 	 */
 	private static function render_piece( $renderer, $product_id, $kind, array $args ) {
-		$model = Form_Controller::model_for_id( $product_id );
-		if ( empty( $model ) ) {
+		// Gömülü form bu sayfada ÇİZİLMEZ: model/şablon kodunun "form sayfada" varsayımıyla kuyruğa aldığı paketler (ör.
+		// kampanya çubuğu betiği + satır içi stili) sayfa yüküne girmesin. Paketleri katman kurulurken liste betiği
+		// paketteki `assets` bilgisinden yükler (REST yanıtıyla aynı yol). Süzgeç yalnız bu çizim süresince bağlı.
+		$quiet = '__return_true';
+		add_filter( 'donation_panel_front_disabled', $quiet, PHP_INT_MAX );
+		try {
+			$model = Form_Controller::model_for_id( $product_id );
+			$html  = empty( $model ) ? '' : $renderer->render( $model, $kind, $args );
+		} finally {
+			remove_filter( 'donation_panel_front_disabled', $quiet, PHP_INT_MAX );
+		}
+		if ( '' === $html ) {
 			return null;
 		}
-		$norm = Form_Pack::normalize( $renderer->render( $model, $kind, $args ), $product_id );
+		$norm = Form_Pack::normalize( $html, $product_id );
 		if ( null === $norm || '' === $norm ) {
 			return null;
 		}
