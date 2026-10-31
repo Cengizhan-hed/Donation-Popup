@@ -142,7 +142,7 @@ final class InlineStylesTest extends TestCase {
 			'experiences'   => 5120,
 			'campaign'      => 2048,
 			// 12.3: alan parçaları + durum yalıtımı form paketinden ayrıldı (form + compact ortak; compact form paketini taşımaz).
-			'ui-fields'     => 1536,
+			'ui-fields'     => 1600, // 12.4 late: girişli e-posta bilgi satırı (3 kural) için +64 B; ölçülen 1588
 			'compact'       => 2208, // 12.4 sade kart (yalnız sepetli): önceki tavan 2432 → ölçülen 2200 (ödeme/teşekkür/güven/toplam kuralları kalktı)
 			// Koşullu parça: yalnız beyanlı kartta basılır (doğrudan bağış / ödeme adımı parçası 12.4'te kaldırıldı).
 			'compact-tax'   => 896,
