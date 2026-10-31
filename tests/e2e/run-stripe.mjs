@@ -213,23 +213,24 @@ async function main() {
     if (project) args.push('--project', project);
     const grep = flag(argv, '--grep');
     if (grep) args.push('--grep', grep);
-    const r = spawnSync('npx', args, {
-      cwd: ROOT,
-      stdio: 'inherit',
-      env: {
-        ...withoutStripeEnv(process.env),
-        E2E_BASE_URL: base,
-        WDP_STRIPE_READY: '1',
-        WDP_EXP_PRODUCT_ID: String(product),
-        WDP_EXP_CHECKOUT: checkout,
-        WDP_EXP_STORE: JSON.stringify(store),
-        WDP_STRIPE_STORE_KEY: storeKey,
-        WDP_LOCAL_WP_DIR: wpDir,
-        WDP_MAILPIT_SMTP_PORT: String(SMTP_PORT),
-        WDP_MAILPIT_HTTP_PORT: String(HTTP_PORT),
-      },
+    const env = {
+      ...withoutStripeEnv(process.env),
+      E2E_BASE_URL: base,
+      WDP_STRIPE_READY: '1',
+      WDP_EXP_PRODUCT_ID: String(product),
+      WDP_EXP_CHECKOUT: checkout,
+      WDP_EXP_STORE: JSON.stringify(store),
+      WDP_STRIPE_STORE_KEY: storeKey,
+      WDP_LOCAL_WP_DIR: wpDir,
+      WDP_MAILPIT_SMTP_PORT: String(SMTP_PORT),
+      WDP_MAILPIT_HTTP_PORT: String(HTTP_PORT),
+    };
+    // Eşzamansız: `stripe listen` çıktısı bu süreçte okunup maskelenir. spawnSync olay döngüsünü kilitlerse boru dolar,
+    // listen yazamaz ve webhook yönlendirmesi ~10 dk sonra durur (ilk 3 cihazlı koşuda görüldü).
+    status = await new Promise((resolve) => {
+      const child = spawn('npx', args, { cwd: ROOT, stdio: 'inherit', env });
+      child.on('exit', (code) => resolve(code ?? 1));
     });
-    status = r.status ?? 1;
     if (status === 0) fs.rmSync(path.join(ROOT, 'test-results'), { recursive: true, force: true });
   } finally {
     if (listen) await listen.stop();
