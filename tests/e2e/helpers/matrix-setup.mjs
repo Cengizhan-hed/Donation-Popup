@@ -9,6 +9,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
 import { withFileLockSync } from './file-lock.mjs';
 import { listenPids, reservePort, stopOwnListener } from './port-reserve.mjs';
+import { killTree, registerServerCleanup } from './server-cleanup.mjs';
 import {
   ensureLocalWp,
   writeWpConfig,
@@ -411,6 +412,7 @@ export async function startPhpServer(opts) {
     const proc = spawn('php', ['-S', `${host}:${port}`, '-t', wpDir, path.join(wpDir, 'router.php')], {
       cwd: wpDir,
       stdio: ['ignore', logFd, logFd],
+      detached: true, // kendi süreç grubu: işçi süreçleri de tek hamlede kapanır
       env: { ...process.env, PHP_CLI_SERVER_WORKERS: String(phpWorkers) },
     });
     fs.closeSync(logFd);
@@ -429,10 +431,16 @@ export async function startPhpServer(opts) {
     }
   }
 
+  const unregister = registerServerCleanup({
+    pid: () => (child && child.exitCode == null ? child.pid : null),
+    release: () => reservation.release(),
+  });
+
   try {
     await spawnOnce();
   } catch (e) {
     stopping = true;
+    unregister();
     if (child && child.exitCode == null) await stopOwnListener(port, child.pid).catch(() => {});
     reservation.release();
     throw e;
@@ -448,16 +456,17 @@ export async function startPhpServer(opts) {
     spawnCount: () => spawnCount,
     async stop() {
       stopping = true;
+      unregister();
       const proc = child;
       if (!proc || proc.exitCode != null) {
         reservation.release();
         return;
       }
-      // Yalnız KENDİ çocuk sürecimiz kapatılır.
-      proc.kill('SIGTERM');
+      // Yalnız KENDİ çocuk sürecimiz (ve süreç grubu) kapatılır.
+      killTree(proc.pid, 'SIGTERM');
       await new Promise((resolve) => {
         const t = setTimeout(() => {
-          if (proc.exitCode == null) proc.kill('SIGKILL');
+          if (proc.exitCode == null) killTree(proc.pid, 'SIGKILL');
           resolve();
         }, 3000);
         proc.once('exit', () => {
