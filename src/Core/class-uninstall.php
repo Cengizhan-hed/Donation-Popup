@@ -103,6 +103,7 @@ class Uninstall {
 			'_impact_line_text',
 			'_amount_presets',
 			'_amount_preset_recommended',
+			// 12.4: ayar kaldırıldı (göç `email_settings_cleanup` siler); eski kayıt kalmış olabileceğinden kaldırmada yine silinir.
 			'_enable_email',
 			'_enable_dedication',
 			'_enable_anonymous',
