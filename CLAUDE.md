@@ -58,3 +58,11 @@ Kullanıcıyla **Türkçe** konuş. Ayrıntı/geçmiş: docs/KURALLAR-DETAY.md (
 - 12.3 kapsamı (birleşti): kurgu ayrımı + ayar/rehber, anında açılış (ön alma), titreme düzeltmesi, ince odak, canlı ilerleme çubuğu, renk kuralı, yan sepet denetimi. Bekleyen: compact kart v2 (CSS ≤9 KB, ana iş) + progress2 (döngü katmanı) birleşmesi → tam paket → ship iki site → hız karşılaştırması.
 - **12.4 (yeni oturum):** görsel cila (piksel karşılaştırma + temsilci ekranlar), code-review ikinci tur, Lighthouse (≥7 koşu), hello-elementor `[products]` ön alma sorunu, ölü kod (confetti/bar--chunky) temizliği, Stripe test modu, KVKK/Faz 8/9 listeleri (docs/CANLIYA-ALMA.md).
 - Açık: Cursor 12 Kas'a kadar kapalı; gerçek ödeme geçidi testleri kullanıcıda ("BEN YAPARIM"); iOS Safari otomatik doldurma görsel kanıtı gerçek cihazda.
+
+## 9. Token acil düzeni (2026-10-31; hedef günde ~%10)
+- Ana oturum bağlamı ~150k token'ı geçince yeni oturum öner, SIRADAKI-IS'i hazırla (sürüm içinde bile). Her alt iş bitince de.
+- Yoklama yok: arka plan işinin bitiş bildirimini bekle; bildirim yoksa aralık ≥5 dk (her yoklama tüm bağlamı taşır).
+- Her ajan görevine token tavanı yaz: basit 60k, orta 120k, zor 200k; tavana yaklaşınca dur, durum + kalan işi yaz. Aynı hata 3 denemede çözülmezse dur, teşhisi yaz (kör deneme yok).
+- Ajanlar varsayılan Sonnet; Opus yalnız tek zor işte gerekçeyle; mekanik Haiku. Ajan çıktısının tamamı bağlama alınmaz, yalnız özet satırları.
+- Emülatör yalnız sürüm öncesi tek koşu ≤20 dk; kare görüntüleri modele gösterilmez (sayısal özet); bellek yetmezse koşma, raporla.
+- Kullanıcıya mesajlar ≤~15 satır; ayrıntı dosyalarda. AŞAMA ÖZETİ'nde `npx ccusage` ile oturum/ajan bazlı token dağılımı + en pahalı 3 iş ve nedeni (ccusage yalnız yerel kayıt okur).
