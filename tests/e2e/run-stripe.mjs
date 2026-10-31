@@ -183,7 +183,8 @@ async function main() {
       })
     );
   } catch (e) {
-    throw new Error(maskSecrets(e && e.message ? e.message : String(e)));
+    // Özgün hata (cause) bilinçli olarak taşınmaz: ham çıktı anahtar içerebilir; yalnız maskeli metin.
+    setup = { ok: false, error: e && e.message ? e.message : String(e) };
   }
   if (!setup.ok) throw new Error(`Stripe kurulumu: ${maskSecrets(setup.error || '')}`);
   console.log(`[stripe] eklenti ${setup.version}, test modu=${setup.testmode}, para=${setup.currency}, anahtarlar=${JSON.stringify(setup.keys)}, ürün=${product}`);
@@ -191,7 +192,7 @@ async function main() {
   const mailpit = await ensureMailpit();
   const server = await startPhpServer({ wpDir, port: PORT });
   let listen = null;
-  let status = 1;
+  let status;
   try {
     listen = await startListen(keys.keys.secret, `${base}/?wc-api=wc_stripe`, listenLog);
     await warmUpWooFirstRequests(base);
@@ -204,7 +205,10 @@ async function main() {
       return;
     }
     fs.rmSync(path.join(ROOT, 'test-results'), { recursive: true, force: true });
-    const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', flag(argv, '--spec') || 'specs/stripe-payments.spec'];
+    if (!argv.includes('--keep-results')) {
+      fs.rmSync(path.join(ROOT, `build/handoff/RAPOR-124-stripe/results-${storeKey}-${checkout}.jsonl`), { force: true });
+    }
+    const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', flag(argv, '--spec') || 'specs/stripe-'];
     const project = flag(argv, '--project');
     if (project) args.push('--project', project);
     const grep = flag(argv, '--grep');

@@ -12,7 +12,8 @@
 function wdp_stripe_e2e_log( array $row ) {
 	$dir = wp_upload_dir( null, false );
 	$row['t']   = microtime( true );
-	$row['via'] = isset( $_GET['wc-api'] ) ? 'webhook' : ( wp_doing_ajax() ? 'ajax' : ( defined( 'REST_REQUEST' ) && REST_REQUEST ? 'rest' : 'page' ) ); // phpcs:ignore
+	$row['via'] = isset( $_GET['wc-api'] ) ? 'webhook' : ( isset( $_GET['dp_stripe_cron'] ) ? 'cron-webhook' : '' );
+	$row['via'] = '' !== $row['via'] ? $row['via'] : ( wp_doing_ajax() ? 'ajax' : ( defined( 'REST_REQUEST' ) && REST_REQUEST ? 'rest' : 'page' ) ); // phpcs:ignore
 	file_put_contents( trailingslashit( $dir['basedir'] ) . 'wdp-stripe-e2e.jsonl', wp_json_encode( $row ) . "\n", FILE_APPEND | LOCK_EX ); // phpcs:ignore
 }
 
@@ -75,6 +76,25 @@ add_action(
 add_action(
 	'template_redirect',
 	static function () {
+		if ( isset( $_GET['dp_stripe_cron'] ) ) { // phpcs:ignore
+			// Yerel işçide DISABLE_WP_CRON: gerçek sitede WP-Cron'un yapacağını yapar (vadesi gelen Action Scheduler işleri).
+			// `dp_expire_lock=ID`: geçidin 5 dk'lık ödeme kilidinin süresi dolmuş gibi (istemci hiç dönmedi senaryosu; bekleme kısalır).
+			nocache_headers();
+			$expired = 0;
+			if ( isset( $_GET['dp_expire_lock'] ) ) { // phpcs:ignore
+				$order = wc_get_order( (int) $_GET['dp_expire_lock'] ); // phpcs:ignore
+				if ( $order && '' !== (string) $order->get_meta( '_stripe_lock_payment', true ) ) {
+					$order->update_meta_data( '_stripe_lock_payment', time() - 1 );
+					$order->save_meta_data();
+					$expired = 1;
+				}
+			}
+			$ran = 0;
+			if ( class_exists( 'ActionScheduler_QueueRunner' ) ) {
+				$ran = (int) ActionScheduler_QueueRunner::instance()->run( 'wdp-e2e' );
+			}
+			wp_send_json( array( 'ran' => $ran, 'expired' => $expired ) );
+		}
 		if ( isset( $_GET['dp_stripe_state'] ) ) { // phpcs:ignore
 			nocache_headers();
 			$product = isset( $_GET['dp_product'] ) ? (int) $_GET['dp_product'] : 0; // phpcs:ignore
@@ -121,14 +141,31 @@ add_action(
 					),
 				);
 			}
-			$log  = array();
-			$dir  = wp_upload_dir( null, false );
-			$file = trailingslashit( $dir['basedir'] ) . 'wdp-stripe-e2e.jsonl';
+			$log       = array();
+			$paid_ids  = array();
+			$dir       = wp_upload_dir( null, false );
+			$file      = trailingslashit( $dir['basedir'] ) . 'wdp-stripe-e2e.jsonl';
 			if ( is_readable( $file ) ) {
 				foreach ( file( $file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES ) as $line ) {
 					$row = json_decode( $line, true );
-					if ( is_array( $row ) && ( (float) $row['t'] >= $since ) && ( ! isset( $row['o'] ) || in_array( (int) $row['o'], $ids, true ) ) ) {
+					if ( ! is_array( $row ) || (float) $row['t'] < $since ) {
+						continue;
+					}
+					// Bu andan sonra ödenmiş duruma geçen HER sipariş (önceki testten geç gelen teyit dahil): beklenen toplam artışı.
+					if ( 'status' === $row['e'] && in_array( $row['to'], array( 'processing', 'completed' ), true ) && ! in_array( $row['from'], array( 'processing', 'completed' ), true ) ) {
+						$paid_ids[ (int) $row['o'] ] = true;
+					}
+					if ( ! isset( $row['o'] ) || in_array( (int) $row['o'], $ids, true ) ) {
 						$log[] = $row;
+					}
+				}
+			}
+			$paid_sum = 0.0;
+			foreach ( array_keys( $paid_ids ) as $paid_id ) {
+				$paid_order = wc_get_order( $paid_id );
+				foreach ( $paid_order ? $paid_order->get_items() : array() as $item ) {
+					if ( (int) $item->get_product_id() === $product ) {
+						$paid_sum += (float) $item->get_total();
 					}
 				}
 			}
@@ -138,6 +175,7 @@ add_action(
 					'donors' => (int) get_post_meta( $product, '_wdp_donor_count', true ),
 					'orders' => $orders,
 					'log'    => $log,
+					'paid'   => array( 'ids' => array_keys( $paid_ids ), 'sum' => $paid_sum ),
 					'now'    => time(),
 				)
 			);
@@ -151,7 +189,12 @@ add_action(
 		wp_head();
 		echo '</head><body><main style="padding:16px;max-width:640px;margin:0 auto"><h1>Test</h1>';
 		echo '<section id="sp-card">' . do_shortcode( '[donation_panel_progress id="' . $id . '"]' ) . '</section>'; // phpcs:ignore
-		echo '<section id="sp-form">' . do_shortcode( '[donation_panel_experience id="' . $id . '" kind="inline"]' ) . '</section>'; // phpcs:ignore
+		if ( 'compact' === $_GET['dp_stripe'] ) { // phpcs:ignore
+			// Compact kart: ödeme adımı aynı kökenli çerçevede (order-pay, donation_panel_embed=1).
+			echo '<section id="sp-compact">' . do_shortcode( '[wdp_donation_form id="' . $id . '" layout="compact"]' ) . '</section>'; // phpcs:ignore
+		} else {
+			echo '<section id="sp-form">' . do_shortcode( '[donation_panel_experience id="' . $id . '" kind="inline"]' ) . '</section>'; // phpcs:ignore
+		}
 		echo '</main>';
 		wp_footer();
 		echo '</body></html>';
