@@ -151,12 +151,15 @@
 .donation-panel-compact .donation-panel-custom { min-block-size: var(--_ctl); }
 .donation-panel-compact .donation-panel-custom:has([aria-invalid="true"]) { border-style: solid; border-color: var(--dp-color-danger); }
 
-/* Sabit fiyat: fiyat + adet bir döşemede; kartta yer varsa döşeme büyür (en çok 152 px), boş alan bırakılmaz. */
-.donation-panel-compact__main--fixed { flex: 1 1 auto; max-block-size: 152px; }
-.donation-panel-compact__fixed { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-block-size: 72px; padding: 12px 16px; border-radius: var(--dp-radius-field); background: var(--dp-color-surface-2); }
-.donation-panel-compact__price { display: grid; gap: 2px; }
-.donation-panel-compact__price b { font-size: 24px; font-weight: 800; }
-.donation-panel-compact__price small { font-size: 13px; color: var(--dp-color-text-muted); }
+/* Sabit fiyat (tek ekran): fiyat × adet = toplam TEK ince satırda (≥48 px dokunma hedefi); altında bilgiler gelir. */
+.donation-panel-compact__fixed { display: flex; align-items: center; gap: 6px; flex: none; min-block-size: 56px; padding: 2px 14px; border-radius: var(--dp-radius-field); background: var(--dp-color-surface-2); font-size: 18px; font-weight: 800; }
+.donation-panel-compact__times, .donation-panel-compact__priceword { flex: none; color: var(--dp-color-text-muted); font-size: 15px; font-weight: 650; }
+.donation-panel-compact__sum1 { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: end; font-size: 20px; }
+.donation-panel-compact__fixed .donation-panel-stepper { block-size: 52px; }
+.donation-panel-compact__fixed .donation-panel-stepper button { inline-size: 48px; block-size: 48px; }
+.donation-panel-compact__fixed .donation-panel-stepper output { min-inline-size: 28px; }
+.donation-panel .donation-panel-compact__effect--line { margin: 0; text-align: start; }
+.donation-panel-compact__effect--line:not(:empty)::before { content: none; }
 
 /* Toplam satırı: etiket | etki ifadesi (esnek, ellipsis) | tutar. Sütunlar içerikten bağımsız: metin değişince kutu kaymaz. */
 .donation-panel .donation-panel-compact__total { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 8px; min-block-size: 32px; margin: 0; padding-block-start: 8px; border-block-start: 1px dashed var(--dp-color-border); font-size: 14px; line-height: 24px; color: var(--dp-color-text-muted); }

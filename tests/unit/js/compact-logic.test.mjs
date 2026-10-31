@@ -11,6 +11,8 @@ import {
   fill,
   frameState,
   horizontalWheel,
+  backStep,
+  countedStep,
   isolates,
   moveStep,
   percentOf,
@@ -91,6 +93,18 @@ test('bağışçı sayısı ve yüzde', () => {
   assert.equal(percentOf(140), 100);
   assert.equal(percentOf(-3), 0);
   assert.equal(percentOf('42.6'), 43);
+});
+
+test('12.4: sabit fiyatta geri ve sayılan adım (tek ekran + ödeme)', () => {
+  assert.equal(backStep(true, 2), 0);
+  assert.equal(backStep(true, 0), 0);
+  assert.equal(backStep(false, 2), 1);
+  assert.equal(backStep(false, 1), 0);
+  assert.equal(countedStep(true, 2), 1);
+  assert.equal(countedStep(true, 0), 0);
+  assert.equal(countedStep(false, 2), 2);
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', countedStep(true, 2), 'Payment', 2), 'Step 2 of 2: Payment');
+  assert.equal(announcement('Step %1$d of %2$d: %3$s', countedStep(true, 3), 'Thank you', 2), 'Thank you');
 });
 
 test('12.3 v2: duyuru gerçek adım sayısıyla (sepetli 2, doğrudan 3)', () => {

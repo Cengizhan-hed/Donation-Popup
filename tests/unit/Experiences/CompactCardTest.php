@@ -174,6 +174,69 @@ final class CompactCardTest extends TestCase {
 		$this->assertStringContainsString( 'width="20" height="20"', $html );
 	}
 
+	/**
+	 * 12.4 compact1: sabit fiyatlı üründe ayrı tutar adımı yok; fiyat × adet = toplam tek satır, hemen altında bilgiler.
+	 */
+	public function test_fixed_price_is_a_single_screen(): void {
+		$fixed = array(
+			'product_id'         => 8,
+			'product_name'       => 'Kurban',
+			'product_price'      => '250',
+			'allow_custom_price' => false,
+			'enable_email'       => true,
+			'enable_quantity'    => true,
+			'max_quantity'       => 5,
+			'currency_symbol'    => '£',
+		);
+		$args  = array( 'rest_url' => 'https://example.org/wp-json/donation-panel/v1/' );
+
+		// Sepetli: tek adım (sayaç yok), tek bölüm: fiyat satırı + alanlar + "Ödemeye geç · £250".
+		$cart = $this->card()->render( Form_Context::from_legacy( $fixed ), $args );
+		$this->assertSame( 1, substr_count( $cart, 'class="donation-panel-compact__step' ) );
+		$this->assertStringContainsString( 'data-steps="1"', $cart );
+		$this->assertStringContainsString( 'data-dp-cstep="amount"', $cart );
+		$this->assertStringNotContainsString( 'data-dp-cstep="details"', $cart );
+		$this->assertStringNotContainsString( 'donation-panel-compact__count', $cart, 'tek adımda sayaç gizlenir' );
+		$this->assertStringNotContainsString( 'data-dp-cnext', $cart );
+		$this->assertStringContainsString( 'donation-panel-compact__fixed', $cart );
+		$this->assertSame( 1, substr_count( $cart, 'data-dp-ctotal' ) );
+		$this->assertStringContainsString( 'name="donation_full_name"', $cart );
+		$this->assertStringContainsString( 'autocomplete="tel"', $cart );
+		$this->assertStringContainsString( 'name="quantity" value="1"', $cart );
+		$this->assertMatchesRegularExpression( '#data-dp-cpay data-label="[^"]*%s[^"]*"><span data-dp-cpay-label>[^<]*250[^<]*</span>#', $cart );
+		$this->assertSame( 1, substr_count( $cart, 'class="donation-panel-compact__trust"' ) );
+
+		// Doğrudan: iki adım (tek ekran, ödeme) + teşekkür; ödeme sayacı 2/2.
+		$direct_model           = Form_Context::from_legacy( $fixed );
+		$direct_model['direct'] = true;
+		$direct                 = $this->card()->render( $direct_model, $args );
+		$this->assertSame( 3, substr_count( $direct, 'class="donation-panel-compact__step' ) );
+		$this->assertStringContainsString( 'data-steps="2"', $direct );
+		$this->assertStringContainsString( '>1/2<', $direct );
+		$this->assertStringContainsString( '>2/2<', $direct );
+		$this->assertStringNotContainsString( '>3/', $direct );
+		$this->assertStringNotContainsString( 'data-dp-cstep="details"', $direct );
+
+		// Serbest tutar değişmez: ayrı "bilgiler" adımı sürer.
+		$custom = $this->card()->render( $this->model(), $args );
+		$this->assertStringContainsString( 'data-dp-cstep="details"', $custom );
+		$this->assertStringNotContainsString( 'donation-panel-compact__fixed', $custom );
+	}
+
+	public function test_fixed_price_step_count_in_view(): void {
+		$fixed = Form_Context::from_legacy(
+			array(
+				'product_id'         => 8,
+				'product_price'      => '250',
+				'allow_custom_price' => false,
+			)
+		);
+		$this->assertSame( 1, Compact_Card::view( $fixed, Compact_Card::normalize_settings( array() ) )['steps'] );
+		$fixed['direct'] = true;
+		$this->assertSame( 2, Compact_Card::view( $fixed, Compact_Card::normalize_settings( array() ) )['steps'] );
+		$this->assertSame( 2, Compact_Card::view( $this->model(), Compact_Card::normalize_settings( array() ) )['steps'] );
+	}
+
 	public function test_direct_mode_renders_payment_layer_template(): void {
 		$model           = $this->model();
 		$model['direct'] = true;

@@ -82,6 +82,28 @@ export function moveStep(current, delta) {
 }
 
 /**
+ * Geri düğmesinin hedefi: sabit fiyatta bilgiler adımı yoktur (tek ekran = 0, ödeme = 2), ödemeden geri tek ekrana döner.
+ *
+ * @param {boolean} fixed   Sabit fiyatlı ürün.
+ * @param {number}  current Mevcut dizin.
+ * @return {number} Hedef dizin.
+ */
+export function backStep(fixed, current) {
+  return fixed && current === 2 ? 0 : moveStep(current, -1);
+}
+
+/**
+ * Sayılan adım dizini (duyuru için): sabit fiyatta ödeme ikinci adımdır (tek ekran 0, ödeme 1; teşekkür sayaçsız).
+ *
+ * @param {boolean} fixed Sabit fiyatlı ürün.
+ * @param {number}  index Adım dizini.
+ * @return {number} Sayılan dizin.
+ */
+export function countedStep(fixed, index) {
+  return fixed && index === 2 ? 1 : index;
+}
+
+/**
  * `%1$d`, `%2$s`, `%s` yer tutucularını sırayla doldurur (çevrilebilir metinler sunucudan gelir).
  *
  * @param {string}             format Metin.
