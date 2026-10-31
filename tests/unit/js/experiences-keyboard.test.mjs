@@ -22,6 +22,24 @@ test('alt bölüm yalnız yazı alanı odakta ve klavye açıkken gizlenir', () 
   assert.equal(shouldHideActionBar({ ...base, coarse: true, dismissed: true }), false);
 });
 
+test('ekran klavyesi gelmeyen dokunmatik cihaz: bölüm görünür; gerçek klavye her zaman gizler', () => {
+  const base = { fieldFocused: true, keyboard: 0, coarse: true, dismissed: false };
+  assert.equal(shouldHideActionBar({ ...base, noKeyboard: true }), false);
+  assert.equal(shouldHideActionBar({ ...base, noKeyboard: false }), true);
+  // Klavye sonradan gerçekten açılırsa (ölçüldü) bayraktan bağımsız gizlenir.
+  assert.equal(shouldHideActionBar({ ...base, keyboard: KEYBOARD_MIN_PX, noKeyboard: true }), true);
+});
+
+test('keyboardPresence: klavye ölçüldüyse var; görünüm yakında yeniden boyutlandıysa bekle; sakinse yok', async () => {
+  const { keyboardPresence, NO_KEYBOARD_MS, VIEWPORT_STABLE_MS } = await import('../../../assets/src/experiences/keyboard.mjs');
+  assert.equal(keyboardPresence({ keyboardUp: true, sinceResize: Infinity }), 'present');
+  assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: Infinity }), 'absent');
+  assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS - 1 }), 'wait');
+  assert.equal(keyboardPresence({ keyboardUp: false, sinceResize: VIEWPORT_STABLE_MS }), 'absent');
+  // Yavaş klavye koruması: bekleme süresi tipik açılış animasyonunun (≤600 ms) iki katından az olamaz.
+  assert.ok(NO_KEYBOARD_MS >= 1200);
+});
+
 test('keyboardDismissed yalnız açıktan kapanışta true', () => {
   assert.equal(keyboardDismissed(true, 0), true);
   assert.equal(keyboardDismissed(false, 0), false);
