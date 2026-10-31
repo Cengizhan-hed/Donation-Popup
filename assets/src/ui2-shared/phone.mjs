@@ -60,11 +60,22 @@ export function phoneState(input) {
 }
 
 /**
+ * Bölümdeki dolu ama eksik/fazla/tanınmayan açık telefon alanları.
+ *
+ * @param {HTMLElement} root Bölüm.
+ * @return {HTMLInputElement[]} Alanlar.
+ */
+export function blockedIn(root) {
+  return Array.from(root.querySelectorAll('.donation-panel-phone__input:not(:disabled)')).filter((input) => phoneState(input).blocked);
+}
+
+/**
  * Telefon kutusunu bağlar (bir kez). Çekirdek yalnız küçük bağlam verir; ileti/ipucu davranışı burada.
  *
  * @param {HTMLElement} box   `.donation-panel-phone` kutusu.
- * @param {{error:Function, gate:Function, soft:Function}} ctx error(input, ileti): odak çıkınca eksik hane iletisi ('' temizler);
- *   gate(): devam düğmesi durumu; soft(ileti): ipucu alanı yoksa (kart) durum satırına yazar.
+ * @param {{say:Function, gate:Function}} ctx say(input, ileti, geçersiz): odak çıkınca eksik hane iletisi ('' temizler;
+ *   geçersiz=true alanı işaretler); ipucu alanı (`[data-dp-phone-note]`) yoksa (kart) uyarıyı da buradan işaretsiz yazar.
+ *   gate(): devam düğmesi durumu (verilmezse kartın bilgiler adımındaki düğme bu pakette yönetilir).
  */
 export function bindPhone(box, ctx) {
   const input = box.querySelector('.donation-panel-phone__input');
@@ -74,22 +85,31 @@ export function bindPhone(box, ctx) {
   }
   input.dataset.dpPhone = '1';
   const note = box.parentElement ? box.parentElement.querySelector('[data-dp-phone-note]') : null;
+  const step = box.closest('[data-dp-cstep]');
+  const button = step ? step.querySelector('button[type="submit"]') : null;
+  const gate =
+    ctx.gate ||
+    (() => {
+      if (button) {
+        button.setAttribute('aria-disabled', String(blockedIn(step).length > 0));
+      }
+    });
   const hooks = {
     onInput: () => {
       if (note) {
         note.hidden = true;
       }
-      ctx.error(input, '');
-      ctx.gate();
+      ctx.say(input, '');
+      gate();
     },
     onBlur: (info) => {
-      ctx.error(input, info.blocked ? input.dataset.msgShort || '' : '');
+      ctx.say(input, info.blocked ? input.dataset.msgShort || '' : '', true);
       const message = info.hint && !info.blocked ? (info.hint === 'length' ? input.dataset.msgLength : input.dataset.msgMobile) || '' : '';
       if (note) {
         note.textContent = message;
         note.hidden = message === '';
-      } else if (message && ctx.soft) {
-        ctx.soft(message);
+      } else if (message) {
+        ctx.say(input, message);
       }
     },
   };

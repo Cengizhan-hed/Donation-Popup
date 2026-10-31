@@ -332,31 +332,21 @@ export function createCompact(root) {
 
   // Telefon: yazarken biçimleme/sınır (ortak `phone.mjs`); eksik hane iletisi odak çıkınca, mobil önek yalnız uyarı;
   // dolu ama eksik numarada "devam" düğmesi geçerli olana kadar pasif.
-  const detailsButton = sections[1] ? sections[1].querySelector('button[type="submit"]') : null;
   let phoneMessageOn = false;
-  // Kurallar tembel pakettedir (ilk odak/yazma/otomatik doldurmada yüklenir); çekirdekte yalnız bu bağlam.
-  phoneBind(form, () => ({
-    gate: () => {
-      const off = phoneBad(sections[1]).length > 0;
-      if (detailsButton) {
-        detailsButton.setAttribute('aria-disabled', off ? 'true' : 'false');
-        detailsButton.classList.toggle('is-pending', off);
-      }
-    },
-    // Hata satırı: eksik hane (alan geçersiz işaretli) ya da yalnız uyarı (işaretsiz, devam engellenmez).
-    error: (input, message) => {
+  // Kurallar tembel pakettedir (ilk odak/yazma/otomatik doldurmada yüklenir); çekirdekte yalnız bu bağlam
+  // (devam düğmesinin pasifliğini paket kendisi yönetir; soluk görünümü `.donation-panel-btn[aria-disabled="true"]` verir).
+  phoneBind(form, {
+    // Hata satırı: eksik hane (alan geçersiz işaretli: bad) ya da yalnız uyarı (işaretsiz, devam engellenmez).
+    say: (input, message, bad) => {
       if (message || phoneMessageOn) {
-        phoneMessageOn = Boolean(message);
-        setError(1, message, message ? [input] : []);
+        phoneMessageOn = !!message;
+        setError(1, message, bad ? [input] : []);
       }
     },
-    soft: (message) => {
-      phoneMessageOn = true;
-      setError(1, message);
-    },
-  }));
+  });
 
   const validateDetails = () => {
+    const off = phoneBad(sections[1]);
     const bad = detailsInputs().filter((input) => {
       if (input.type === 'checkbox' || input.disabled) {
         return false;
@@ -365,7 +355,7 @@ export function createCompact(root) {
       if (input.required && value === '') {
         return true;
       }
-      return phoneBad(sections[1]).includes(input) || value !== '' && input.type === 'email' && input.validity && input.validity.typeMismatch;
+      return off.includes(input) || value !== '' && input.type === 'email' && input.validity && input.validity.typeMismatch;
     });
     if (!bad.length) {
       return true;

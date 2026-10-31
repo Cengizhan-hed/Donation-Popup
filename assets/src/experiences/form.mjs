@@ -500,15 +500,15 @@ export function createForm(root, hooks = {}) {
   });
   bindToggles(form);
   // Telefon kuralları tembel pakettedir (ilk odak/yazma/otomatik doldurmada yüklenir); çekirdekte yalnız bu bağlam.
-  phoneBind(form, () => ({
+  phoneBind(form, {
     gate: paintGate,
-    error: (input, message) => {
+    say: (input, message) => {
       if (message || phoneBlurErrors[input.name]) {
         phoneBlurErrors[input.name] = message;
         paintErrors();
       }
     },
-  }));
+  });
   form.querySelectorAll('input, textarea').forEach((input) => {
     if (input.name && !['amount', 'addon_amount'].includes(input.name)) {
       input.addEventListener('input', () => {

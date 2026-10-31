@@ -28,6 +28,9 @@ async function paste(box, value) {
 async function behaviours(box) {
   const input = box.locator('.donation-panel-phone__input');
   const select = box.locator('[data-dp-dial]');
+  // Kurallar tembel pakettedir: ilk odakta yüklenir; yüklenene kadar yazma serbesttir, yüklenince değer biçimlenir.
+  await input.focus();
+  await input.page().waitForFunction(() => Boolean(window.__dpPhone));
   await select.selectOption('90');
   await expect(box.locator('[data-dp-dial-label]')).toHaveText('+90');
   expect(await isoOf(select)).toBe('tr');
@@ -62,8 +65,21 @@ async function behaviours(box) {
 test.describe('telefon alanı', () => {
   test('form (hissedar satırı): biçimleme, yapıştırma, eksik hane uyarısı, pasif devam, mobil önek yalnız ipucu', async ({ page }) => {
     test.skip(!IDS.shares, 'hisseli test ürünü yok');
+    const chunk = [];
+    page.on('request', (request) => {
+      if (/\/assets\/build\/phone\/index\.js/.test(request.url())) {
+        chunk.push(request.url());
+      }
+    });
     await page.goto(`/?dp_exp_test=inline&dp_product=${IDS.shares}`);
     await expect(page.locator('[data-dp-form]')).toBeVisible({ timeout: 20000 });
+    expect(chunk, 'telefon paketi ilk yükte istenmez').toHaveLength(0);
+    // Yüklenmeden yazılan değer, paket gelince biçimlenir.
+    await page.locator('input[name="shareholder_1_phone"]').fill('0530 307 15 93');
+    await expect(page.locator('input[name="shareholder_1_phone"]')).toHaveValue('530 307 15 93');
+    expect(chunk).toHaveLength(1);
+    expect(new URL(chunk[0]).origin).toBe(new URL(page.url()).origin);
+    await page.locator('input[name="shareholder_1_phone"]').fill('');
     const box = page.locator('[data-dp-holder="1"] .donation-panel-phone');
     await behaviours(box);
 

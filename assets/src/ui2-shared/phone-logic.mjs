@@ -168,22 +168,32 @@ export function parsePhone(raw, defaultIso, idx) {
     return out;
   }
   const rule = idx.table[iso];
-  const range = lengthRange(idx, iso);
   const result = { ...out, iso, dial: rule.dial, national };
-  if (national.length < range.min) {
-    return { ...result, status: 'short' };
+  const verdict = judge(national, rule, lengthRange(idx, iso));
+  if (verdict.status !== 'ok') {
+    return { ...result, status: verdict.status };
   }
-  if (national.length > range.max) {
-    return { ...result, status: 'long' };
+  return { ...result, status: 'ok', e164: `+${rule.dial}${national}`, warning: verdict.hint !== '', hint: verdict.hint };
+}
+
+/**
+ * Uzunluk kararı: engel sınırı dışı short/long; sınır içinde ama kural aralığı dışı geçer, yalnız uyarı (`length`);
+ * sonra mobil önek ipucu (`mobile`).
+ *
+ * @param {string} national Rakamlar.
+ * @param {object} rule     Ülke kuralı.
+ * @param {object} range    `lengthRange` sonucu.
+ * @return {{status:string, hint:string}} Karar.
+ */
+function judge(national, rule, range) {
+  const len = national.length;
+  if (len < range.min || len > range.max) {
+    return { status: len < range.min ? 'short' : 'long', hint: '' };
   }
-  // Engel sınırı içinde ama kural aralığı dışında: geçer, yalnız uyarı (`length`); sonra mobil önek ipucu (`mobile`).
-  let hint = '';
-  if (national.length < range.softMin || national.length > range.softMax) {
-    hint = 'length';
-  } else if (rule.mobile !== '' && !national.startsWith(rule.mobile)) {
-    hint = 'mobile';
+  if (len < range.softMin || len > range.softMax) {
+    return { status: 'ok', hint: 'length' };
   }
-  return { ...result, status: 'ok', e164: `+${rule.dial}${national}`, warning: hint !== '', hint };
+  return { status: 'ok', hint: rule.mobile !== '' && !national.startsWith(rule.mobile) ? 'mobile' : '' };
 }
 
 /**

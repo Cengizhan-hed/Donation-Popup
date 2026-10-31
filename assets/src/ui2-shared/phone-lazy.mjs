@@ -7,6 +7,7 @@
  */
 const own = document.currentScript;
 const found = own && own.src.match(/^(.*\/assets\/build\/)(?:experiences|compact)(\/index\.js(?:\?ver=[\w.-]+)?)$/);
+// (Adres kimlik bilgisi/parça içermez: kalıp yalnız eklentinin kendi derleme yolunu ve `ver` sorgusunu kabul eder.)
 const src = found && found[0].indexOf(`${location.origin}/`) === 0 ? `${found[1]}phone${found[2]}` : '';
 let loading;
 
@@ -15,24 +16,22 @@ export const phoneBad = (root) => (window.__dpPhone && root ? window.__dpPhone.b
 
 /**
  * @param {HTMLElement} form Telefon kutusu içeren form/kart.
- * @param {(box: HTMLElement) => object} ctxFor Kutuya göre bağlam (paket yüklenince çağrılır).
+ * @param {object} ctx Bağlam (`bindPhone` belgesine bakın).
  */
-export function phoneBind(form, ctxFor) {
-  const run = () => form.querySelectorAll('.donation-panel-phone').forEach((box) => window.__dpPhone.bindPhone(box, ctxFor(box)));
+export function phoneBind(form, ctx) {
   const go = () => {
-    if (window.__dpPhone) {
+    const run = () => window.__dpPhone && form.querySelectorAll('.donation-panel-phone').forEach((box) => window.__dpPhone.bindPhone(box, ctx));
+    if (window.__dpPhone || !src) {
       run();
-    } else if (src) {
-      loading =
-        loading ||
-        new Promise((done) => {
-          const tag = document.createElement('script');
-          tag.src = src;
-          tag.onload = tag.onerror = done;
-          document.head.appendChild(tag);
-        });
-      loading.then(() => window.__dpPhone && run());
+      return;
     }
+    if (!loading) {
+      loading = document.createElement('script');
+      loading.src = src;
+      document.head.appendChild(loading);
+    }
+    loading.addEventListener('load', run);
   };
-  ['focusin', 'input', 'change'].forEach((type) => form.addEventListener(type, go, { once: true }));
+  // Otomatik doldurma `input` olayı verir; yüklenince mevcut değer biçimlenir.
+  ['focusin', 'input'].forEach((type) => form.addEventListener(type, go, { once: true }));
 }
