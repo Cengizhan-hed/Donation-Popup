@@ -529,7 +529,7 @@ final class Field_Registry {
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'payment',
 			'label'   => __( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
-			'help'    => __( 'General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ),
+			'help'    => __( 'General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ) . ' ' . __( 'With direct donation the form always asks for the donor\'s email address (required): WooCommerce\'s payment page does not ask for billing details, and payment methods and order emails need it.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 		);
 

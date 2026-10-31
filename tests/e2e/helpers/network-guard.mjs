@@ -1383,3 +1383,48 @@ export async function createGuardedContext(browser, contextOpts, env, extra = {}
   installBrowserGuard(browser, env, extra);
   return browser.newContext(contextOpts);
 }
+
+/**
+ * 12.4 Stripe (YALNIZ yerel): üçüncü taraf yasağı sürerken yalnız Stripe'ın kendi alan adlarına izin.
+ * stripe.com (js/api/hooks), stripe.network (Stripe.js iç çerçeveleri), stripecdn.com (Stripe varlıkları) — hepsi Stripe'a ait.
+ * Ölçüm alt alanları (r./q./m.stripe.com) TRACKER_HOST_SUFFIXES ile yine kesilir.
+ */
+export const STRIPE_LOCAL_ALLOWED_SUFFIXES = Object.freeze(['stripe.com', 'stripe.network', 'stripecdn.com']);
+
+/**
+ * Yerel koşuda: birinci taraf + izinli sonekler geçer, izleyiciler ve diğer TÜM üçüncü taraflar kesilir.
+ * Yerel olmayan taban adreste HATA (izin yalnız `--env local` ve ilgili spec için).
+ * @param {import('@playwright/test').BrowserContext} context
+ * @param {{ siteHost: string, allowSuffixes?: readonly string[] }} opts
+ * @return {Promise<{ blocked: string[], allowed: Record<string, number> }>} Canlı sayaçlar (yalnız host adları).
+ */
+export async function applyLocalThirdPartyAllowlist(context, opts) {
+  const siteHost = String(opts?.siteHost || '').toLowerCase();
+  if (!isIpOrLocalhost(siteHost)) {
+    throw new Error(`üçüncü taraf izin listesi yalnız yerel WP'de: ${siteHost || '(boş)'}`);
+  }
+  const suffixes = Array.isArray(opts?.allowSuffixes) ? opts.allowSuffixes : STRIPE_LOCAL_ALLOWED_SUFFIXES;
+  const stats = { blocked: [], allowed: {} };
+  await context.route('**/*', async (route) => {
+    const url = route.request().url();
+    const parts = parseUrlParts(url);
+    const host = parts ? String(parts.hostname || '').toLowerCase() : '';
+    if (!parts || /^(data|blob|about):/i.test(url) || host === siteHost) {
+      await route.fallback();
+      return;
+    }
+    if (isTrackerUrl(url, { siteHost })) {
+      stats.blocked.push(host);
+      await route.abort('blockedbyclient');
+      return;
+    }
+    if (suffixes.some((s) => hostMatchesSuffix(host, s))) {
+      stats.allowed[host] = (stats.allowed[host] || 0) + 1;
+      await route.fallback();
+      return;
+    }
+    stats.blocked.push(host);
+    await route.abort('blockedbyclient');
+  });
+  return stats;
+}
