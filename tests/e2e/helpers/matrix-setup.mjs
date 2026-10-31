@@ -8,6 +8,7 @@ import http from 'node:http';
 import { spawn, spawnSync } from 'node:child_process';
 import { ROOT } from './env-root.mjs';
 import { withFileLockSync } from './file-lock.mjs';
+import { listenPids, reservePort, stopOwnListener } from './port-reserve.mjs';
 import {
   ensureLocalWp,
   writeWpConfig,
@@ -333,53 +334,22 @@ export function prepareConfigSnapshot(resolved) {
   return { snap, meta };
 }
 
-/**
- * @param {number} port
- * @returns {number[]}
- */
-export function listenPids(port) {
-  const r = spawnSync('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t'], {
-    encoding: 'utf8',
-  });
-  return String(r.stdout || '')
-    .trim()
-    .split(/\s+/)
-    .map((x) => Number(x))
-    .filter((n) => Number.isFinite(n) && n > 1);
-}
+export { listenPids };
 
 /**
- * Portu dinleyen süreçleri kapat; kalıntı kalmayınca döner.
+ * Port boşalana dek bekler; HİÇBİR süreci kapatmaz (başkasının sunucusuna dokunulmaz).
  * @param {number} port
  * @param {number} [timeoutMs]
  */
-export async function freeListenPort(port, timeoutMs = 8000) {
+export async function waitPortFree(port, timeoutMs = 8000) {
   const t0 = Date.now();
-  let pids = listenPids(port);
-  for (const pid of pids) {
-    try {
-      process.kill(pid, 'SIGTERM');
-    } catch (e) {
-      if (e && e.code !== 'ESRCH') throw e;
-    }
-  }
   while (Date.now() - t0 < timeoutMs) {
-    pids = listenPids(port);
-    if (!pids.length) return;
-    if (Date.now() - t0 > 1500) {
-      for (const pid of pids) {
-        try {
-          process.kill(pid, 'SIGKILL');
-        } catch (e) {
-          if (e && e.code !== 'ESRCH') throw e;
-        }
-      }
-    }
+    if (!listenPids(port).length) return;
     await new Promise((r) => setTimeout(r, 40));
   }
-  pids = listenPids(port);
+  const pids = listenPids(port);
   if (pids.length) {
-    throw new Error(`port ${port} hâlâ dinleniyor: ${pids.join(',')}`);
+    throw new Error(`port ${port} hâlâ dinleniyor (PID ${pids.join(',')}); başka koşunun olabilir, kapatılmadı. Boş bir WDP_LOCAL_E2E_PORT seçin.`);
   }
 }
 
@@ -419,6 +389,11 @@ export async function startPhpServer(opts) {
   const port = Number(opts.port);
   const wpDir = opts.wpDir;
   copyRouter(wpDir);
+  // Port rezervasyonu: başka koşuya ait portta başlamaz, başkasının sunucusunu KAPATMAZ.
+  const reservation = reservePort(port);
+  if (!reservation.ok) {
+    throw new Error(`${reservation.reason}. Boş bir port seçin (WDP_LOCAL_E2E_PORT / WDP_MATRIX_BASE_PORT).`);
+  }
   const logFile = path.join(MATRIX_DIR, `php-${port}.log`);
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.writeFileSync(logFile, '', 'utf8');
@@ -429,7 +404,7 @@ export async function startPhpServer(opts) {
   let spawnCount = 0;
 
   async function spawnOnce() {
-    await freeListenPort(port);
+    await waitPortFree(port);
     spawnCount += 1;
     const logFd = fs.openSync(logFile, 'a');
     const phpWorkers = Math.max(1, Number(process.env.WDP_PHP_SERVER_WORKERS || 2) || 2);
@@ -440,6 +415,7 @@ export async function startPhpServer(opts) {
     });
     fs.closeSync(logFd);
     child = proc;
+    reservation.setChild(proc.pid ?? null);
     proc.on('exit', (code, sig) => {
       if (stopping) return;
       console.error(`[e2e] PHP ${port} çıktı kod=${code} sig=${sig} — yeniden başlat`);
@@ -453,7 +429,14 @@ export async function startPhpServer(opts) {
     }
   }
 
-  await spawnOnce();
+  try {
+    await spawnOnce();
+  } catch (e) {
+    stopping = true;
+    if (child && child.exitCode == null) await stopOwnListener(port, child.pid).catch(() => {});
+    reservation.release();
+    throw e;
+  }
 
   return {
     get child() {
@@ -467,9 +450,10 @@ export async function startPhpServer(opts) {
       stopping = true;
       const proc = child;
       if (!proc || proc.exitCode != null) {
-        await freeListenPort(port, 3000);
+        reservation.release();
         return;
       }
+      // Yalnız KENDİ çocuk sürecimiz kapatılır.
       proc.kill('SIGTERM');
       await new Promise((resolve) => {
         const t = setTimeout(() => {
@@ -481,7 +465,7 @@ export async function startPhpServer(opts) {
           resolve();
         });
       });
-      await freeListenPort(port, 3000);
+      reservation.release();
     },
   };
 }

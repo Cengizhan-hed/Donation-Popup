@@ -8,7 +8,7 @@ export function sleepSync(ms) {
 }
 
 /** @param {number} pid */
-function pidAlive(pid) {
+export function pidAlive(pid) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
   try {
     process.kill(pid, 0);
@@ -16,6 +16,11 @@ function pidAlive(pid) {
   } catch (e) {
     return Boolean(e) && e.code === 'EPERM';
   }
+}
+
+/** @param {string} file @param {number} staleMs */
+export function isLockStale(file, staleMs) {
+  return isStale(file, staleMs);
 }
 
 /** @param {string} file @param {number} staleMs */

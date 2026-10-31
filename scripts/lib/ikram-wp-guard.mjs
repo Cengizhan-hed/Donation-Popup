@@ -3,19 +3,17 @@
  * Yıkıcı WP-CLI (db drop, site empty, user/post delete, …) reddedilir.
  */
 
-export const IKRAM_WP_SLUG = 'woo-donation-popup';
+import { CRON_CRONTAB_HINT_COMMAND } from './deploy-guards.mjs';
+
+export const IKRAM_WP_SLUG ='woo-donation-popup';
 export const IKRAM_WP_ALIAS = 'ikramaid';
 export const CLEANUP_EVAL_FILE = 'tests/e2e/helpers/cleanup-e2e.php';
 export const TEMP_PRODUCT_EVAL_FILE = 'tests/e2e/helpers/e2e-temp-product.php';
 export const TRASH_REPORT_EVAL_FILE = 'tests/e2e/helpers/trash-report.php';
 export const CRON_STATUS_EVAL_FILE = 'tests/e2e/helpers/cron-status.php';
 
-/**
- * Salt okunur sunucu cron ipucu: yalnız evet/hayır yazar, crontab satırı ASLA yazılmaz.
- * (`crontab -l` çıktısı doğrudan grep -q'ya gider; ekrana düşmez.)
- */
-export const CRON_CRONTAB_HINT_COMMAND =
-  "if crontab -l 2>/dev/null | grep -qE 'wp-cron\\.php|wp cron event run'; then echo crontab_wp_cron=yes; else echo crontab_wp_cron=no; fi";
+/** Sabit tanım deploy-guards.mjs içinde (guard tam dizge eşleşmesi için); burada yeniden dışa açılır. */
+export { CRON_CRONTAB_HINT_COMMAND };
 
 /** cron-status.php içinde bulunmaması gereken yazma/çalıştırma/ağ çağrıları. */
 const CRON_STATUS_WRITE_BLOCK =
