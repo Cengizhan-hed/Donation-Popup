@@ -53,25 +53,46 @@ export function phoneState(input) {
   if (!select || !iso) {
     // Ülke seçici yok: yalnız eski ölçüt (en az 6 hane).
     const digits = input.value.replace(/\D/g, '');
-    return { status: digits === '' ? 'empty' : digits.length < 6 ? 'short' : 'ok', warning: false, empty: digits === '', blocked: digits !== '' && digits.length < 6 };
+    return { status: digits === '' ? 'empty' : digits.length < 6 ? 'short' : 'ok', warning: false, hint: '', empty: digits === '', blocked: digits !== '' && digits.length < 6 };
   }
   const result = parsePhone(input.value, iso, getIndex());
-  return { status: result.status, warning: result.warning, empty: result.status === 'empty', blocked: result.status !== 'empty' && result.status !== 'ok' };
+  return { status: result.status, warning: result.warning, hint: result.hint, empty: result.status === 'empty', blocked: result.status !== 'empty' && result.status !== 'ok' };
 }
 
 /**
- * Telefon kutusunu bağlar (bir kez).
+ * Telefon kutusunu bağlar (bir kez). Çekirdek yalnız küçük bağlam verir; ileti/ipucu davranışı burada.
  *
  * @param {HTMLElement} box   `.donation-panel-phone` kutusu.
- * @param {{onInput?:Function, onBlur?:Function}} [hooks] Olaylar: (durum) => void.
+ * @param {{error:Function, gate:Function, soft:Function}} ctx error(input, ileti): odak çıkınca eksik hane iletisi ('' temizler);
+ *   gate(): devam düğmesi durumu; soft(ileti): ipucu alanı yoksa (kart) durum satırına yazar.
  */
-export function bindPhone(box, hooks = {}) {
+export function bindPhone(box, ctx) {
   const input = box.querySelector('.donation-panel-phone__input');
   const select = box.querySelector('[data-dp-dial]');
   if (!input || !select || input.dataset.dpPhone === '1') {
     return;
   }
   input.dataset.dpPhone = '1';
+  const note = box.parentElement ? box.parentElement.querySelector('[data-dp-phone-note]') : null;
+  const hooks = {
+    onInput: () => {
+      if (note) {
+        note.hidden = true;
+      }
+      ctx.error(input, '');
+      ctx.gate();
+    },
+    onBlur: (info) => {
+      ctx.error(input, info.blocked ? input.dataset.msgShort || '' : '');
+      const message = info.hint && !info.blocked ? (info.hint === 'length' ? input.dataset.msgLength : input.dataset.msgMobile) || '' : '';
+      if (note) {
+        note.textContent = message;
+        note.hidden = message === '';
+      } else if (message && ctx.soft) {
+        ctx.soft(message);
+      }
+    },
+  };
   const options = Array.from(select.options);
   const available = new Set(options.map((option) => option.dataset.iso).filter(Boolean));
   const isoOf = () => (select.selectedOptions[0] && select.selectedOptions[0].dataset.iso) || '';

@@ -2,7 +2,7 @@
  * Form çekirdeği: bağış türleri (sabit/serbest/hisseli/kampanya), çok adımlı akış, durum -> DOM,
  * sepete ekleme ve doğrulama (REST `cart/add`).
  */
-import { bindPhone, phoneState } from '../ui2-shared/phone.mjs';
+import { phoneBad, phoneBind } from '../ui2-shared/phone-lazy.mjs';
 import { clampQty, computeTotals, firstErrorStep, formatTotal, initialState, nextPresetIndex, parseAmount, reducer, stepLabel } from './store.mjs';
 
 const RTL = () => document.documentElement.dir === 'rtl' || document.dir === 'rtl';
@@ -362,10 +362,7 @@ export function createForm(root, hooks = {}) {
   // Telefon: odak çıkınca gösterilen (yazarken rahatsız etmeyen) eksik/fazla hane iletisi; alan adı -> ileti.
   const phoneBlurErrors = {};
   /** Geçerli adımda dolu ama eksik/fazla telefon var mı (devam düğmesi geçerli olana kadar pasif). */
-  const phoneBlocked = () => {
-    const section = sections[state.step];
-    return Boolean(section) && Array.from(section.querySelectorAll('.donation-panel-phone__input:not(:disabled)')).some((input) => phoneState(input).blocked);
-  };
+  const phoneBlocked = () => phoneBad(sections[state.step]).length > 0;
 
   const paintErrors = () => {
     form.querySelectorAll('[data-dp-error]').forEach((error) => {
@@ -457,7 +454,7 @@ export function createForm(root, hooks = {}) {
       const pending = amountPending();
       submit.classList.toggle('is-loading', busy);
       submit.classList.toggle('is-pending', pending);
-      submit.setAttribute('aria-disabled', busy || pending || phoneBlocked() ? 'true' : 'false');
+      paintGate();
     }
   };
 
@@ -502,37 +499,16 @@ export function createForm(root, hooks = {}) {
     focusStep();
   });
   bindToggles(form);
-  form.querySelectorAll('.donation-panel-phone').forEach((box) => {
-    const input = box.querySelector('.donation-panel-phone__input');
-    const note = box.parentElement ? box.parentElement.querySelector('[data-dp-phone-note]') : null;
-    if (!input) {
-      return;
-    }
-    bindPhone(box, {
-      onInput: () => {
-        if (note) {
-          note.hidden = true;
-        }
-        if (phoneBlurErrors[input.name]) {
-          delete phoneBlurErrors[input.name];
-          paintErrors();
-        }
-        paintGate();
-      },
-      onBlur: (info) => {
-        if (info.blocked) {
-          phoneBlurErrors[input.name] = input.dataset.msgShort || '';
-        } else {
-          delete phoneBlurErrors[input.name];
-        }
-        if (note) {
-          note.textContent = !info.blocked && info.warning ? input.dataset.msgMobile || '' : '';
-          note.hidden = note.textContent === '';
-        }
+  // Telefon kuralları tembel pakettedir (ilk odak/yazma/otomatik doldurmada yüklenir); çekirdekte yalnız bu bağlam.
+  phoneBind(form, () => ({
+    gate: paintGate,
+    error: (input, message) => {
+      if (message || phoneBlurErrors[input.name]) {
+        phoneBlurErrors[input.name] = message;
         paintErrors();
-      },
-    });
-  });
+      }
+    },
+  }));
   form.querySelectorAll('input, textarea').forEach((input) => {
     if (input.name && !['amount', 'addon_amount'].includes(input.name)) {
       input.addEventListener('input', () => {
@@ -635,10 +611,8 @@ export function createForm(root, hooks = {}) {
       }
     });
     // Telefon: dolu ama eksik/fazla/tanınmayan numara ilerletmez (mobil önek uyarısı engel değildir).
-    section.querySelectorAll('.donation-panel-phone__input:not(:disabled)').forEach((input) => {
-      if (!errors[input.name] && phoneState(input).blocked) {
-        errors[input.name] = input.dataset.msgShort || '';
-      }
+    phoneBad(section).forEach((input) => {
+      errors[input.name] = errors[input.name] || input.dataset.msgShort || '';
     });
     return errors;
   };

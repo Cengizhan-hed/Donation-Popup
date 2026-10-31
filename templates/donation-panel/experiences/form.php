@@ -110,7 +110,8 @@ $donation_panel_lock_icon = '<svg class="donation-panel-ico" width="20" height="
  */
 $donation_panel_phone_short  = __( 'This phone number looks incomplete or too long. Please check the digits.', 'woo-donation-popup' );
 $donation_panel_phone_mobile = __( 'This does not look like a mobile number. You can still continue.', 'woo-donation-popup' );
-$donation_panel_phone_field  = static function ( $name, $id, $required, $extra ) use ( $donation_panel_phone, $donation_panel_phone_short, $donation_panel_phone_mobile ) {
+$donation_panel_phone_length = __( 'This number has an unusual length for the selected country. Please double-check it; you can still continue.', 'woo-donation-popup' );
+$donation_panel_phone_field  = static function ( $name, $id, $required, $extra ) use ( $donation_panel_phone, $donation_panel_phone_short, $donation_panel_phone_mobile, $donation_panel_phone_length ) {
 	$dial = isset( $donation_panel_phone['dial'] ) ? (string) $donation_panel_phone['dial'] : '';
 	$iso  = isset( $donation_panel_phone['iso'] ) ? (string) $donation_panel_phone['iso'] : '';
 	$list = isset( $donation_panel_phone['countries'] ) ? (array) $donation_panel_phone['countries'] : array();
@@ -127,7 +128,7 @@ $donation_panel_phone_field  = static function ( $name, $id, $required, $extra )
 				</select>
 			</span>
 		<?php endif; ?>
-		<input class="donation-panel-phone__input" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="tel" inputmode="tel" autocomplete="tel" maxlength="28" data-msg-short="<?php echo esc_attr( $donation_panel_phone_short ); ?>" data-msg-mobile="<?php echo esc_attr( $donation_panel_phone_mobile ); ?>"<?php echo $required ? ' required aria-required="true"' : ''; ?> <?php echo $extra; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Çağıran kaçışlar. ?> />
+		<input class="donation-panel-phone__input" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="tel" inputmode="tel" autocomplete="tel" maxlength="28" data-msg-short="<?php echo esc_attr( $donation_panel_phone_short ); ?>" data-msg-mobile="<?php echo esc_attr( $donation_panel_phone_mobile ); ?>" data-msg-length="<?php echo esc_attr( $donation_panel_phone_length ); ?>"<?php echo $required ? ' required aria-required="true"' : ''; ?> <?php echo $extra; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Çağıran kaçışlar. ?> />
 	</span>
 	<?php if ( $list ) : ?>
 		<p class="donation-panel-phone__note" data-dp-phone-note role="status" hidden></p>

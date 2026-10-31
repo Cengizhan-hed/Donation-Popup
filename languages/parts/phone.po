@@ -21,6 +21,11 @@ msgstr "Bu telefon numarası eksik ya da fazla görünüyor. Lütfen haneleri ko
 msgid "This does not look like a mobile number. You can still continue."
 msgstr "Bu numara cep telefonu gibi görünmüyor. Yine de devam edebilirsiniz."
 
+#: templates/donation-panel/experiences/form.php
+#: templates/donation-panel/experiences/compact.php
+msgid "This number has an unusual length for the selected country. Please double-check it; you can still continue."
+msgstr "Bu numaranın hane sayısı seçili ülke için alışılmadık. Lütfen bir kez daha kontrol edin; yine de devam edebilirsiniz."
+
 #: src/Admin/class-guide.php
 msgid "Phone number field"
 msgstr "Telefon numarası alanı"
