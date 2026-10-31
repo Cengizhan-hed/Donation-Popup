@@ -109,6 +109,28 @@ Not: Eklentinin eski çerezi (`wdp_vid`) kaldırıldı; geri dönüşte eski sü
 - **Doğrulama:** `docs/CANLIYA-ALMA.md` G2 yedek adımları; sonra KONTROL-LISTESI K–O bölümleri.
 - **Geri dönüş planı:** önceki zip (12.2.0) G2 adımlarıyla kurulur; yeni seçenek anahtarları (`direct.type_*`, `progress.*`, `compact.trust`, yan sepet ayarları) 12.2.0'da yok sayılır, kalabilir.
 
+## S. Stripe canlı kurulum ve WP-Cron (12.4; KRİTİK KAPI — yalnız kullanıcı yapar)
+Eklenti Stripe'a özel kod içermez; ödeme geçidi WooCommerce'in resmi Stripe eklentisidir (yerelde test modunda uçtan uca doğrulandı: sepetli+doğrudan, başarılı, 3D Secure, red, yarıda bırakma, gecikmeli webhook; TRY/GBP/EUR; blok+klasik ödeme sayfası). Canlıya geçişte:
+
+### S1. Anahtarlar ve mod
+- [ ] WooCommerce › Ayarlar › Ödemeler › Stripe: önce **test modu** açık, test anahtarlarıyla bir küçük test bağışı (yalnız sizin yapacağınız; Stripe test kartı 4242 4242 4242 4242, 3D Secure için 4000 0025 0000 3155).
+- [ ] Canlıya geçiş: test modunu kapat, Stripe panelinden **canlı** yayınlanabilir ve gizli anahtarı gir. Gizli anahtarları (`sk_live_…`) hiçbir yere yazmayın/paylaşmayın (sohbet, e-posta, depo).
+- [ ] Kullanılmış test anahtarlarını Stripe panelinde yenileyin (sohbette paylaşıldıysa mutlaka).
+
+### S2. Webhook uç noktası ve imza sırrı (Stripe panelinden)
+- [ ] Stripe panel › Geliştiriciler › Webhook'lar › **Uç nokta ekle**: adres WooCommerce Stripe eklentisinin ayar ekranında gösterilen webhook adresidir (genellikle `https://SİTE/?wc-api=wc_stripe`; eklenti sürümünüzün ayar ekranındaki adresi kullanın).
+- [ ] Olaylar: eklentinin ayar ekranının istediği olaylar (en az `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`, `charge.dispute.created`, `payment_intent.requires_action`; eklenti ayar ekranındaki listeye uyun).
+- [ ] Uç nokta oluşunca **İmzalama sırrı** (`whsec_…`) gösterilir: WooCommerce › Stripe ayarlarındaki "Webhook sırrı" alanına yapıştırın. Sırrı başka yere yazmayın.
+- [ ] Test modu ve canlı mod için AYRI uç nokta ve AYRI imza sırrı gerekir.
+- [ ] Doğrulama: Stripe panelinde uç noktanın "Gönderilen olaylar" listesinde HTTP 200 görün; küçük gerçek bağışta (yalnız siz) sipariş "İşleniyor" olur, kampanya toplamı bir kez artar.
+
+### S3. WP-Cron (kartlı ödemede webhook teyidi gecikebilir)
+- Stripe 11.x kartlı ödemede webhook işlemesini ~2 dk erteler ve siparişe ~5 dk ödeme kilidi koyar; bu işler WP-Cron ile yürür. WP-Cron çalışmazsa sipariş geç/hiç "İşleniyor"a geçmeyebilir.
+- Kontrol (yalnız okuma, `npm run staging:wp -- cron-status` / `npm run ikram:wp -- cron-status` ile test sitelerinde yapıldı; CANLIDA hosting panelinden/ssh ile sizin kontrolünüz): `DISABLE_WP_CRON` sabiti, gecikmiş zamanlanmış olay sayısı, sunucu cron'u.
+- **Test sitesi sonuçları (2026-10-31):** Ikram: DISABLE_WP_CRON tanımsız (WP-Cron ziyaretle çalışır), 26 olay, 1 gecikmiş (1 sn) → sağlıklı. staging30: DISABLE_WP_CRON=true, 75 olaydan 72'si gecikmiş, en eski ≈ 8,9 gün → sunucu cron'u çalışmıyor görünüyor (staging kullanım dışı olabilir; canlıda aynı ayar varsa SORUN).
+- [ ] CANLI: `DISABLE_WP_CRON` true ise hosting panelinde gerçek cron işi şart (örn. dakikada bir `wp cron event run --due-now` ya da `php wp-cron.php`/`curl https://SİTE/wp-cron.php`); false/tanımsız ise ziyaretçi trafiği tetikler. WooCommerce › Durum › Zamanlanmış eylemler'de "Gecikmiş" olay birikmemeli.
+- [ ] Doğrulama: küçük gerçek bağıştan sonra sipariş ≤ ~7 dk içinde "İşleniyor" olmalı.
+
 ## B. Ikram Aid yayına alma listesi
 
 Ikram (ikramaid.uk): Hello Elementor + Elementor Pro, GBP, şu an "coming soon" açık. Test için eklentinin kendi ayarlarından modüller açıktır (yeni motor, kampanya, etki, sosyal kanıt, yan sepet, bağışçı hesabı, teşekkür, vergi indirimi/Gift Aid).
