@@ -100,7 +100,8 @@ export function bindPhone(box, ctx) {
   const hooks = {
     onInput: () => {
       if (note) {
-        note.hidden = true;
+        // Görünürlük metne bağlı (fields.css `:not(:empty)`): `hidden` kullanılmaz; temaların `[hidden]{display:none}`
+        // kuralı ayrılmış yeri silip kaymaya yol açmasın.
         note.textContent = '';
       }
       ctx.say(input, '');
@@ -111,7 +112,6 @@ export function bindPhone(box, ctx) {
       const message = info.hint && !info.blocked ? (info.hint === 'length' ? input.dataset.msgLength : input.dataset.msgMobile) || '' : '';
       if (note) {
         note.textContent = message;
-        note.hidden = message === '';
       } else if (message) {
         ctx.say(input, message);
       }

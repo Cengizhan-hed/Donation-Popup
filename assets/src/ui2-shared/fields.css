@@ -32,7 +32,7 @@
 .donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note { display: flex; align-items: flex-start; margin: 0; font-size: 1rem; line-height: 1.35; min-block-size: calc(3 * 1.35em); visibility: hidden; }
 .donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note { display: block; }
 .donation-panel-field:has(.donation-panel-phone).has-error > .donation-panel-error,
-.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note:not([hidden]) { visibility: visible; }
+.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note:not(:empty) { visibility: visible; }
 .donation-panel-field:has(.donation-panel-phone__note) > :is(.donation-panel-error, .donation-panel-phone__note) { grid-area: 3 / 1; }
 @media (min-width: 520px) { .donation-panel-field:has(.donation-panel-phone) > :is(.donation-panel-error, .donation-panel-phone__note) { min-block-size: calc(2 * 1.35em); } }
 
