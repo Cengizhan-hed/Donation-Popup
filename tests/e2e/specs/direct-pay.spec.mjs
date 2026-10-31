@@ -171,8 +171,11 @@ test('girişli, doğrudan: e-posta alanı gösterilmez; sipariş hesap e-postas�
   });
   await fillWithoutEmail(page);
   // 12.4 late: alan gizlenmez; yerinde aynı kutuda bilgi satırı (e-posta adresi gösterilmez).
-  await expect(page.locator('[data-dp-account-note]')).toHaveText('Your donation receipt will be sent to your account email');
+  // Dilden bağımsız doğrulama (TR/EN çevirisi): dolu, '@' yok, yazı boyu >= 16 px.
+  await expect(page.locator('[data-dp-account-note]')).not.toBeEmpty();
   await expect(page.locator('[data-dp-account-note]')).not.toContainText('@');
+  const noteSize = await page.locator('[data-dp-account-note]').evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(noteSize).toBeGreaterThanOrEqual(16);
   await expect(page.locator('input[name="donation_email"]')).toBeHidden();
   await expect(page.locator('input[name="donation_email"]')).toBeDisabled();
   await expect(page.locator('input[name="donation_email"]')).not.toHaveAttribute('required', /.*/);
@@ -285,7 +288,7 @@ for (const kind of LATE_KINDS) {
     });
     await page.waitForTimeout(300);
     release();
-    await expect(page.locator('[data-dp-account-note]')).toHaveText(/account email/);
+    await expect(page.locator('[data-dp-account-note]')).not.toBeEmpty();
     await page.waitForTimeout(400);
     const trace = await page.evaluate(() => window.__lateTrace);
     expect(trace.frames.length).toBeGreaterThan(10);

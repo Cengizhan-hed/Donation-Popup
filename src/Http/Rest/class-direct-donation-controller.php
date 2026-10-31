@@ -85,6 +85,12 @@ class Direct_Donation_Controller extends Rest_Controller {
 			return $this->error( 'donation_panel_json_required', 'The request must be sent as JSON.', 415 );
 		}
 
+		// O5: e-posta yalnız dize olur (dizi/nesne → 400; dize dönüşümü uyarısı üretilmez).
+		$email_param = $request->get_param( 'donation_email' );
+		if ( null !== $email_param && ! is_scalar( $email_param ) ) {
+			return $this->error( 'donation_panel_invalid_email', 'The email must be text.', 400 );
+		}
+
 		$product_id = absint( $request->get_param( 'product_id' ) );
 		if ( $product_id < 1 ) {
 			return $this->error( 'donation_panel_product_id_required', 'A product ID is required.', 400 );
@@ -140,7 +146,7 @@ class Direct_Donation_Controller extends Rest_Controller {
 		// Doğrudan akışta ek bağış satırı yok (tek kalemlik sipariş).
 		$input['addon_active'] = '';
 		// Zorunlu e-posta boşsa girişli bağışçının hesap e-postası kullanılır (sayfa HTML'i kullanıcıya özel olamaz).
-		if ( array_key_exists( 'donation_email', $input ) && '' === trim( (string) $input['donation_email'] ) && function_exists( 'wp_get_current_user' ) ) {
+		if ( array_key_exists( 'donation_email', $input ) && ( ! is_scalar( $input['donation_email'] ) || '' === trim( (string) $input['donation_email'] ) ) && function_exists( 'wp_get_current_user' ) ) {
 			$user = wp_get_current_user();
 			if ( $user->exists() && '' !== (string) $user->user_email ) {
 				$input['donation_email'] = (string) $user->user_email;

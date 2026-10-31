@@ -130,7 +130,7 @@ class Card_Forms {
 				continue;
 			}
 			$piece = $piece_cache ? get_transient( self::piece_key( $product_id, $kind ) ) : false;
-			if ( ! is_array( $piece ) || ! isset( $piece['h'], $piece['m'] ) ) {
+			if ( ! is_array( $piece ) || ! isset( $piece['h'], $piece['m'] ) || ! Donations_List::is_current( $piece ) ) {
 				$piece = self::render_piece( $renderer, $product_id, $kind, $args );
 				if ( null === $piece ) {
 					continue; // Boş sonuç önbelleğe yazılmaz.
@@ -270,6 +270,9 @@ class Card_Forms {
 		if ( '' === $html ) {
 			return null;
 		}
+		// D6: belirteç karakterleri (SOH/STX) HTML'de anlamsız denetim karakterleridir; içerikte (ürün adı/açıklaması) varsa
+		// temizlenir ki kart formu sessizce atlanmasın. Görünür metin etkilenmez.
+		$html = (string) preg_replace( '/[\x01\x02]/', '', $html );
 		$norm = Form_Pack::normalize( $html, $product_id );
 		if ( null === $norm || '' === $norm ) {
 			return null;
@@ -277,14 +280,16 @@ class Card_Forms {
 		// Sıkıştırılmış ikili veri utf8mb4 sütununda bozulmasın diye base64 (parça ~1/4 boyut).
 		$zip = function_exists( 'gzdeflate' ) ? gzdeflate( $norm, 6 ) : false;
 		return array(
-			'h' => false === $zip ? $norm : base64_encode( $zip ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- ikili veriyi metin sütununda saklamak için.
-			'z' => false !== $zip,
-			'm' => array( 'campaign' => array( 'live' => ! empty( $model['campaign']['live'] ) ) ),
+			'h'  => false === $zip ? $norm : base64_encode( $zip ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- ikili veriyi metin sütununda saklamak için.
+			'z'  => false !== $zip,
+			'm'  => array( 'campaign' => array( 'live' => ! empty( $model['campaign']['live'] ) ) ),
+			'cv' => Donations_List::cache_version(),
 		);
 	}
 
 	/**
-	 * Ürün başına form parçası önbellek anahtarı (liste önbellek sürümü dahil: ürün/ayar/bağış değişince yenisi).
+	 * Ürün başına form parçası önbellek anahtarı (sürümsüz: ürün başına tek satır; sürüm parçanın içinde, ürün/ayar/bağış
+	 * değişince `Donations_List::is_current` yanlışlaşır ve parça aynı anahtara yeniden yazılır).
 	 *
 	 * @param int    $product_id Ürün.
 	 * @param string $kind       Kap türü.

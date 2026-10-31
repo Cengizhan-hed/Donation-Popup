@@ -49,19 +49,22 @@ final class CardFormsTest extends TestCase {
 		$this->assertNotSame($a, Card_Forms::piece_key(51, 'popup'));
 		$this->assertNotSame($a, Card_Forms::piece_key(50, 'side_panel'));
 		$this->assertLessThanOrEqual(172, strlen('_transient_timeout_' . $a));
-		// Ürün metası değişti → liste önbellek sürümü artar → parça anahtarı değişir.
+		// 12.4 (O1): anahtar sürümsüz (ürün başına tek satır); sürüm parçanın değerinde, bump onu bayatlatır.
+		$piece = array( 'h' => 'x', 'm' => array(), 'cv' => $list::cache_version() );
+		$this->assertTrue($list::is_current($piece));
 		$list::reset_bump_guard();
 		$list::on_product_meta(1, 50, '_price', '10');
-		$b = Card_Forms::piece_key(50, 'popup');
-		$this->assertNotSame($a, $b);
-		// Formu etkileyen ayar değişti → yine yenilenir; ilgisiz seçenek değiştirmez.
+		$this->assertSame($a, Card_Forms::piece_key(50, 'popup'), 'bump anahtarı değiştirmez (birikim yok)');
+		$this->assertFalse($list::is_current($piece));
+		// Formu etkileyen ayar değişti → yine bayatlar; ilgisiz seçenek değiştirmez.
+		$piece = array( 'h' => 'x', 'm' => array(), 'cv' => $list::cache_version() );
 		$list::reset_bump_guard();
 		$list::on_option('wdp_button_settings');
-		$c = Card_Forms::piece_key(50, 'popup');
-		$this->assertNotSame($b, $c);
+		$this->assertFalse($list::is_current($piece));
+		$piece = array( 'h' => 'x', 'm' => array(), 'cv' => $list::cache_version() );
 		$list::reset_bump_guard();
 		$list::on_option('woocommerce_queue_flush');
-		$this->assertSame($c, Card_Forms::piece_key(50, 'popup'));
+		$this->assertTrue($list::is_current($piece));
 	}
 
 	public function test_filter_excludes_per_product(): void {

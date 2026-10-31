@@ -53,6 +53,11 @@ class Donations_List {
 		'woocommerce_allowed_countries',
 		'woocommerce_specific_allowed_countries',
 		'woocommerce_default_country',
+		// Y1: gömülü formdaki REST kökü ve ödeme adresi bu seçeneklerden türer (https/alan adı/kalıcı bağlantı/ödeme sayfası değişince tazelenir).
+		'home',
+		'siteurl',
+		'permalink_structure',
+		'woocommerce_checkout_page_id',
 	);
 
 	/** @var bool */
@@ -289,7 +294,8 @@ class Donations_List {
 			$cache_key = self::cache_key( $atts );
 			$cached    = get_transient( $cache_key );
 			// 12.4: önbellek değeri HTML + kart formlarının gömme paketi (aynı kayıtta; ek sorgu yok).
-			if ( is_array( $cached ) && isset( $cached['html'] ) && is_string( $cached['html'] ) && '' !== $cached['html'] ) {
+			// O1: anahtar sürümsüz (tek satır, üzerine yazılır); değer içindeki sürüm eskiyse yeniden üretilir.
+			if ( is_array( $cached ) && isset( $cached['html'] ) && is_string( $cached['html'] ) && '' !== $cached['html'] && self::is_current( $cached ) ) {
 				$html  = $cached['html'];
 				$forms = isset( $cached['forms'] ) && is_array( $cached['forms'] ) ? $cached['forms'] : null;
 			}
@@ -308,6 +314,7 @@ class Donations_List {
 					array(
 						'html'  => $html,
 						'forms' => $forms,
+						'cv'    => self::cache_version(),
 					),
 					DAY_IN_SECONDS
 				);
@@ -337,6 +344,25 @@ class Donations_List {
 	private static function inline_styles() {
 		$plugin = Plugin::instance();
 		return null === $plugin ? '' : $plugin->container()->get( Assets::class )->inline_styles();
+	}
+
+	/**
+	 * Geçerli liste önbellek sürümü.
+	 *
+	 * @return int
+	 */
+	public static function cache_version() {
+		return (int) get_option( self::CACHE_VERSION, 1 );
+	}
+
+	/**
+	 * Önbellek değeri (liste ya da kart parçası) geçerli sürümde mi?
+	 *
+	 * @param mixed $value Saklanan değer.
+	 * @return bool
+	 */
+	public static function is_current( $value ) {
+		return is_array( $value ) && isset( $value['cv'] ) && self::cache_version() === (int) $value['cv'];
 	}
 
 	/**
@@ -1092,8 +1118,9 @@ class Donations_List {
 		$locale   = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
 		$currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '';
 		$version  = defined( 'WDP_VERSION' ) ? WDP_VERSION : '';
-		$cv       = (int) get_option( self::CACHE_VERSION, 1 );
-		return 'wdp_list_' . md5( wp_json_encode( $atts ) . '|' . $locale . '|' . $currency . '|' . $version . '|' . $cv . '|' . self::MARKUP_REV );
+		// Sürüm (`cache_version`) anahtarda DEĞİL değerde: her bump yeni satır bırakmaz (O1). Site/ödeme adresi anahtarda (Y1).
+		$urls = (string) get_option( 'home', '' ) . '|' . (string) get_option( 'siteurl', '' ) . '|' . (string) get_option( 'permalink_structure', '' ) . '|' . (string) get_option( 'woocommerce_checkout_page_id', '' );
+		return 'wdp_list_' . md5( wp_json_encode( $atts ) . '|' . $locale . '|' . $currency . '|' . $version . '|' . self::MARKUP_REV . '|' . $urls );
 	}
 
 	/**
