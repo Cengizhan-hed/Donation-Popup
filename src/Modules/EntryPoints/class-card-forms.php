@@ -257,7 +257,9 @@ class Card_Forms {
 		// Gömülü form bu sayfada ÇİZİLMEZ: model/şablon kodunun "form sayfada" varsayımıyla kuyruğa aldığı paketler (ör.
 		// kampanya çubuğu betiği + satır içi stili) sayfa yüküne girmesin. Paketleri katman kurulurken liste betiği
 		// paketteki `assets` bilgisinden yükler (REST yanıtıyla aynı yol). Süzgeç yalnız bu çizim süresince bağlı.
-		$quiet = '__return_true';
+		$quiet = static function () {
+			return true;
+		};
 		add_filter( 'donation_panel_front_disabled', $quiet, PHP_INT_MAX );
 		try {
 			$model = Form_Controller::model_for_id( $product_id );
