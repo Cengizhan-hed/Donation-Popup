@@ -1,7 +1,7 @@
 <?php
 /**
- * Doğrudan (sepetsiz) bağış = ÖDEME DAVRANIŞI; görünümden (popup, sağ panel, alttan panel, sayfa içi form, compact kart)
- * bağımsızdır. Açıkken bağış sepete eklenmez; gönderim sipariş (pending) üretir ve ödeme WooCommerce'in standart order-pay
+ * Doğrudan (sepetsiz) bağış = ÖDEME DAVRANIŞI; görünümden (popup, sağ panel, alttan panel, sayfa içi form) bağımsızdır.
+ * Compact kart bu karara uymaz: her zaman sepetlidir (`Compact_Card::render` modeli `direct = false` yapar). Açıkken bağış sepete eklenmez; gönderim sipariş (pending) üretir ve ödeme WooCommerce'in standart order-pay
  * uç noktasında yapılır.
  *
  * Üç seviye, öncelik ürün > bağış türü > genel:

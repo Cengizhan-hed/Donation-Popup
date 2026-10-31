@@ -18,7 +18,6 @@ use DonationPanel\Http\Rest\Direct_Donation_Controller;
 use DonationPanel\Modules\EntryPoints\Product_Resolver;
 use DonationPanel\WooCommerce\Cart;
 use DonationPanel\WooCommerce\Direct\Direct_Cleanup;
-use DonationPanel\WooCommerce\Direct\Pay_Embed;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,10 +68,9 @@ final class Experiences_Module implements Module_Interface {
 
 		$container->get( Assets::class )->define( self::SLUG, 'assets/build/experiences/index.js', 'assets/build/experiences/index.css', array( 'ui-controls', 'ui-fields' ) );
 		// Compact kart form paketinin stilini taşımaz (katmanlar, tutar kartları, adımlar): yalnız ortak alan parçaları;
-		// vergi beyanı ve doğrudan bağış stilleri yalnız gereken kartta (yalnız CSS parçaları).
+		// vergi beyanı stili yalnız gereken kartta (yalnız CSS parçası).
 		$container->get( Assets::class )->define( Compact_Card::ASSET, 'assets/build/compact/index.js', 'assets/build/compact/index.css', array( 'ui-controls', 'ui-fields' ) );
 		$container->get( Assets::class )->define( Compact_Card::ASSET_TAX, '', 'assets/build/compact-tax/index.css', array( 'ui-controls', 'ui-fields' ) );
-		$container->get( Assets::class )->define( Compact_Card::ASSET_PAY, '', 'assets/build/compact-pay/index.css', array( 'ui-controls', 'ui-fields' ) );
 
 		$this->cart = new Cart();
 		$this->cart->register();
@@ -82,8 +80,6 @@ final class Experiences_Module implements Module_Interface {
 		add_filter( 'donation_panel_experience_assets', array( $this, 'rest_assets' ), 5, 2 );
 		// Doğrudan (sepetsiz) bağış: yarım siparişleri temizleyen olay işleyicisi (zamanlama ilk siparişte kurulur).
 		Direct_Cleanup::register();
-		// Compact kartın ödeme katmanı: order-pay sayfasının yalın (gömülü) görünümü.
-		Pay_Embed::register();
 		add_action( 'init', array( $this, 'register_shortcode' ) );
 	}
 
@@ -213,10 +209,6 @@ final class Experiences_Module implements Module_Interface {
 		}
 		$this->rendered = true;
 		$assets         = $this->container->get( Assets::class );
-		// Form paketinin stili yalnız doğrudan bağışta (ödeme katmanı: popup / mobilde alttan panel yüzeyi) gerekir.
-		if ( ! empty( $model['direct'] ) ) {
-			$assets->require_style( self::SLUG );
-		}
 		$assets->enqueue( Compact_Card::ASSET );
 		foreach ( Compact_Card::extra_styles( $model ) as $donation_panel_part ) {
 			$assets->require_style( $donation_panel_part );

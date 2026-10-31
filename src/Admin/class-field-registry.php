@@ -53,14 +53,14 @@ final class Field_Registry {
 			Admin_Bootstrap::SLUG_FORMS     => array(
 				'open'      => array( __( 'How should the form open?', 'woo-donation-popup' ), __( 'Choose how the donation form appears when a donor taps the donate button. On phones it always opens as a bottom sheet. You can override this for each product later.', 'woo-donation-popup' ) ),
 				'colors'    => array( __( 'Colors', 'woo-donation-popup' ), __( 'By default the form follows your theme. Pick your own colors only if you need to.', 'woo-donation-popup' ) ),
-				'compact'   => array( __( 'Compact card (slider/hero)', 'woo-donation-popup' ), __( 'A small donation card whose height never changes, made for sliders and hero areas. It is only a look: how the donor pays (through the cart or direct) is set under Cart and checkout. Colors and fonts come from the settings above.', 'woo-donation-popup' ) ),
+				'compact'   => array( __( 'Compact card (slider/hero)', 'woo-donation-popup' ), __( 'The compact card is made for sliders and hero areas and always sends the donor to the checkout page: it adds the gift to the cart and opens WooCommerce checkout. Direct donation is not used with this layout. Its height never changes. Colors and fonts come from the settings above.', 'woo-donation-popup' ) ),
 				'amounts'   => array( __( 'Amounts', 'woo-donation-popup' ), __( 'Quick amount buttons shown above the free amount field.', 'woo-donation-popup' ) ),
 				'fields'    => array( __( 'Form fields', 'woo-donation-popup' ), __( 'Optional fields the donor can fill in. Whatever donors type is saved on the order exactly as typed.', 'woo-donation-popup' ) ),
 				'shares'    => array( __( 'Share-based donations', 'woo-donation-popup' ), __( 'Wording for products where donors buy shares and enter shareholder names.', 'woo-donation-popup' ) ),
 				'placement' => array( __( 'Product pages and lists', 'woo-donation-popup' ), __( 'Where the donate button appears. Shortcodes and blocks always work anywhere.', 'woo-donation-popup' ) ),
 			),
 			Admin_Bootstrap::SLUG_CHECKOUT  => array(
-				'payment' => array( __( 'How donors pay', 'woo-donation-popup' ), __( 'Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with every form style (centered window, side panel, bottom sheet, in-page form and compact card). A product setting wins over its donation type, and a donation type wins over the general setting.', 'woo-donation-popup' ) ),
+				'payment' => array( __( 'How donors pay', 'woo-donation-popup' ), __( 'Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with the centered window, side panel, bottom sheet and in-page form; the compact card always goes through the cart. A product setting wins over its donation type, and a donation type wins over the general setting.', 'woo-donation-popup' ) ),
 				'cart'    => array( __( 'Add-on donation', 'woo-donation-popup' ), __( 'Offer one extra donation product next to the main gift.', 'woo-donation-popup' ) ),
 				'basket'  => array( __( 'Side cart', 'woo-donation-popup' ), __( 'A basket that slides in after a gift is added, so donors can give several gifts and pay once. Only used when the Side cart module above is on. Not shown on the cart and checkout pages, which have their own basket.', 'woo-donation-popup' ) ),
 				'thanks'  => array( __( 'Thank-you screen', 'woo-donation-popup' ), __( 'The wording and the extra touches below are used on the thank-you screen (Thank-you screen module on). The thank-you in e-mails works on its own.', 'woo-donation-popup' ) ),
@@ -229,13 +229,6 @@ final class Field_Registry {
 			'section' => 'compact',
 			'label'   => __( 'Start over when the card is hidden', 'woo-donation-popup' ),
 			'help'    => __( 'When the card leaves the screen (for example the slider moves to another slide), it goes back to the first step. Typed details are kept.', 'woo-donation-popup' ),
-			'type'    => 'switch',
-		);
-		$f['compact.trust']            = array(
-			'page'    => Admin_Bootstrap::SLUG_FORMS,
-			'section' => 'compact',
-			'label'   => __( '"Secure payment" line', 'woo-donation-popup' ),
-			'help'    => __( 'A small lock and the words "Secure payment" just above the card\'s button. If an amount has an impact phrase (Impact phrases module), the card shows it under the amounts; the tax relief declaration (Tax relief module) gets a short version with a Details link that opens the full text inside the card.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 		);
 		$f['form.presets_enabled']     = array(
@@ -523,7 +516,7 @@ final class Field_Registry {
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'payment',
 			'label'   => __( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
-			'help'    => __( 'General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ) . ' ' . __( 'With direct donation the form always asks for the donor\'s email address (required): WooCommerce\'s payment page does not ask for billing details, and payment methods and order emails need it.', 'woo-donation-popup' ),
+			'help'    => __( 'General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. Not applied to the compact card: that layout always goes through the cart. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart.', 'woo-donation-popup' ) . ' ' . __( 'With direct donation the form always asks for the donor\'s email address (required): WooCommerce\'s payment page does not ask for billing details, and payment methods and order emails need it.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 		);
 
@@ -545,7 +538,7 @@ final class Field_Registry {
 				'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 				'section' => 'payment',
 				'label'   => isset( $type_defs[ $type ]['label'] ) ? $type_defs[ $type ]['label'] : $type,
-				'help'    => $help,
+				'help'    => $help . ' ' . __( 'Not applied to the compact card (it always goes through the cart).', 'woo-donation-popup' ),
 				'type'    => 'select',
 				'options' => $direct_choices,
 			);
@@ -554,7 +547,7 @@ final class Field_Registry {
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'payment',
 			'label'   => __( 'Products that offer an add-on donation', 'woo-donation-popup' ),
-			'help'    => __( 'Wins over the product\'s own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct.', 'woo-donation-popup' ),
+			'help'    => __( 'Wins over the product\'s own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct. Not applied to the compact card (it always goes through the cart).', 'woo-donation-popup' ),
 			'type'    => 'select',
 			'options' => $direct_choices,
 		);

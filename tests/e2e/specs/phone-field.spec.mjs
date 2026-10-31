@@ -205,10 +205,6 @@ test.describe('telefon alanı', () => {
     const details = card.locator('[data-dp-cstep="details"]');
     await expect(details).toBeVisible();
     await details.locator('input[name="donation_full_name"]').fill('Çağlar Şükrü Öztürk');
-    const email = details.locator('input[name="donation_email"]');
-    if (await email.count()) {
-      await email.fill('caglar@example.org');
-    }
     const box = details.locator('.donation-panel-phone');
     await behaviours(box);
 
@@ -224,7 +220,8 @@ test.describe('telefon alanı', () => {
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await cta.click({ force: true });
     await expect(details).toBeVisible();
-    await expect(card.locator('[data-dp-cstep="pay"].is-on')).toHaveCount(0);
+    // Eksik numarayla sepete eklenmez: sayfa aynı kalır.
+    await expect(page).not.toHaveURL(/checkout|odeme|ödeme/i);
 
     await input.pressSequentially('93', { delay: 5 });
     await expect(cta).toHaveAttribute('aria-disabled', 'false');
@@ -237,6 +234,7 @@ test.describe('telefon alanı', () => {
     await expect(input).not.toHaveAttribute('aria-invalid', 'true');
     await expect(cta).toHaveAttribute('aria-disabled', 'false');
     await cta.click();
-    await expect(card.locator('[data-dp-cstep="pay"].is-on')).toHaveCount(1);
+    // Uyarı engellemez: sepete eklenir ve WooCommerce ödeme sayfası açılır.
+    await page.waitForURL(/checkout|odeme|ödeme/i, { timeout: 30000 });
   });
 });
