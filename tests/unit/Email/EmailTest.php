@@ -201,8 +201,19 @@ final class EmailTest extends TestCase {
 		$parts = Email_Thanks::parts( $this->donation_order(), $settings );
 		$this->assertSame( 'Allah kabul etsin, bu bağış hayra vesile olsun', $parts['message'] );
 		$html = Email_Thanks::html( $parts );
-		$this->assertStringContainsString( '<p>', $html );
-		$this->assertStringNotContainsString( 'style=', $html, 'satır içi stil yok' );
+		$this->assertStringContainsString( '<table', $html, 'e-posta uyumlu tablo' );
+		$this->assertStringContainsString( '<p style="', $html, 'paragraf satır içi stilli' );
+		$this->assertStringContainsString( 'border-left:4px solid #', $html );
+		$this->assertStringNotContainsString( '<img', $html );
+		$this->assertStringNotContainsString( '<style', $html );
+		$this->assertStringNotContainsString( '<link', $html );
+		$this->assertStringContainsString( 'Allah kabul etsin, bu bağış hayra vesile olsun', $html, 'Türkçe karakterler bozulmaz' );
+		// Kaçışlama (wp_kses) gerçek WP'de e2e ile doğrulanır; birim kalıbı kses'i taklit etmez.
+		$xss = Email_Thanks::html( array( 'message' => '<a href="https://x.test">k</a>', 'campaign' => array() ) );
+		$this->assertStringContainsString( '<a style="color:#', $xss, 'bağlantı rengi satır içi' );
+		$colors = Email_Thanks::colors();
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/', $colors['tint'] );
+		$this->assertMatchesRegularExpression( '/^#[0-9a-f]{6}$/', $colors['accent'] );
 
 		$settings->update( array( 'thanks' => array( 'email' => false ) ) );
 		$this->assertSame( array(), Email_Thanks::parts( $this->donation_order(), $settings ), 'ayar kapalı: bölüm yok' );

@@ -6,7 +6,7 @@
 import { test, expect } from '@playwright/test';
 
 const PRODUCT = process.env.WDP_EXP_PRODUCT_ID || '0';
-const DONOR = { name: 'Çağlar Şükrü Öztürk', phone: '+44 7700 900123' };
+const DONOR = { name: 'Çağlar Şükrü Öztürk', phone: '+44 7700 900123', email: 'dogrudan@wdp-e2e.test' };
 
 /**
  * @param {import('@playwright/test').Page} page Sayfa.
@@ -28,6 +28,9 @@ async function fill(page) {
   await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
   await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
   await page.locator('input[name="donation_phone"]').fill(DONOR.phone);
+  // 12.4: doğrudan akışta e-posta zorunlu (order-pay fatura sormaz; ödeme geçitleri ve sipariş e-postaları ister).
+  await expect(page.locator('input[name="donation_email"]')).toHaveAttribute('required', '');
+  await page.locator('input[name="donation_email"]').fill(DONOR.email);
 }
 
 /**

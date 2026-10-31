@@ -1,0 +1,27 @@
+# Turkish translations — 124-stripe (doğrudan bağışta e-posta zorunlu; ayar açıklaması ve Rehber).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Modules/Experiences/class-form-context.php
+msgid "Email *"
+msgstr "E-posta *"
+
+#: src/Modules/Experiences/class-form-context.php
+msgid "Please enter your email address."
+msgstr "Lütfen e-posta adresinizi yazın."
+
+#: src/Admin/class-field-registry.php
+msgid "With direct donation the form always asks for the donor's email address (required): WooCommerce's payment page does not ask for billing details, and payment methods and order emails need it."
+msgstr "Doğrudan bağışta form bağışçının e-posta adresini her zaman sorar (zorunlu): WooCommerce ödeme sayfası fatura bilgisi istemez; ödeme yöntemleri ve sipariş e-postaları bu adrese ihtiyaç duyar."
+
+#: src/Admin/class-guide.php
+msgid "Email: with direct donation the form always shows a required email field after the phone number, even when the email field is switched off for the product. The payment page does not ask for billing details, and card payments and order emails need the address. Through the cart nothing changes."
+msgstr "E-posta: doğrudan bağışta form, üründe e-posta alanı kapalı olsa bile telefon numarasından sonra zorunlu bir e-posta alanı gösterir. Ödeme sayfası fatura bilgisi istemez; kartla ödeme ve sipariş e-postaları bu adrese ihtiyaç duyar. Sepetli akışta hiçbir şey değişmez."

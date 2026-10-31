@@ -1,0 +1,23 @@
+{
+  "report": [
+    {
+      "who": "musteri",
+      "subject": "Your WDP Local order has been received!",
+      "htmlBytes": 12072,
+      "hasName": true
+    },
+    {
+      "who": "yonetici",
+      "subject": "[WDP Local]: New order #20",
+      "htmlBytes": 11670,
+      "hasName": true
+    }
+  ],
+  "paths": [
+    "/Users/cengizhancoban/Desktop/Wordpress Eklentiler/Donation Popup/wt-124-email3/build/handoff/RAPOR-124-email3/mail-classic-desktop-musteri.png",
+    "/Users/cengizhancoban/Desktop/Wordpress Eklentiler/Donation Popup/wt-124-email3/build/handoff/RAPOR-124-email3/mail-classic-desktop-yonetici.png"
+  ],
+  "themedSections": [
+    "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;margin:0 0 24px;border-collapse:collapse\"><tr><td style=\"padding:16px 20px;background-color:#f4ecfd;border-left:4px solid #720eec;color:#3c3c3c;font-family:inherit;font-size:15px;line-height:1.5;text-align:left\" bgcolor=\"#f4ecfd\" align=\"left\"><p style=\"margin:0 0 12px;padding:0;color:#3c3c3c;font-family:inherit;font-size:15px;line-height:1.5\">{M}</p>\r\n<p style=\"margin:0;padding:0;color:#3c3c3c;font-family:inherit;font-size:15px;line-height:1.5\">{C}<span class=\"woocommerce-Price-amount amount\"><span class=\"woocommerce-Price-currencySymbol\" dir=\"auto\">₺</span>250</span> raised of <span class=\"woocommerce-Price-amount amount\"><span class=\"woocommerce-Price-currencySymbol\" dir=\"auto\">₺</span>5.000</span> goal so far.</p></td></tr></table>"
+  ]
+}

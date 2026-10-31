@@ -141,6 +141,8 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		if ( isset( $body['submission_key'] ) && '' !== $body['submission_key'] ) {
 			$body['submission_key'] = $this->key( (string) $body['submission_key'] );
 		}
+		// 12.4: doğrudan akışta e-posta zorunlu (order-pay fatura sormaz). Açıkça verilen (boş dahil) değer korunur.
+		$body += array( 'donation_email' => 'bagisci-' . $this->run . '@example.com' );
 		return $this->rest_post( '/donation-panel/v1/direct', $body );
 	}
 
@@ -863,9 +865,10 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$user_id = self::factory_user();
 		wp_set_current_user( $user_id );
 		$product = $this->direct_product();
-		$order   = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '25', 'k-user' ) ) );
+		// E-posta boş gönderilse de girişli bağışçının hesap e-postası kullanılır (zorunlu alan karşılanır).
+		$order = $this->order_from( $this->direct( $this->donor_body( $product->get_id(), '25', 'k-user', array( 'donation_email' => '' ) ) ) );
 		$this->assertSame( $user_id, $order->get_customer_id() );
-		$this->assertNotSame( '', $order->get_billing_email(), 'Hesap e-postası fatura e-postasına yazılır.' );
+		$this->assertSame( get_userdata( $user_id )->user_email, $order->get_billing_email(), 'Hesap e-postası fatura e-postasına yazılır.' );
 		wp_set_current_user( 0 );
 		require_once ABSPATH . 'wp-admin/includes/user.php';
 		wp_delete_user( $user_id );

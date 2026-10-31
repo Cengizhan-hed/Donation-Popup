@@ -139,6 +139,13 @@ class Direct_Donation_Controller extends Rest_Controller {
 		}
 		// Doğrudan akışta ek bağış satırı yok (tek kalemlik sipariş).
 		$input['addon_active'] = '';
+		// Zorunlu e-posta boşsa girişli bağışçının hesap e-postası kullanılır (sayfa HTML'i kullanıcıya özel olamaz).
+		if ( array_key_exists( 'donation_email', $input ) && '' === trim( (string) $input['donation_email'] ) && function_exists( 'wp_get_current_user' ) ) {
+			$user = wp_get_current_user();
+			if ( $user->exists() && '' !== (string) $user->user_email ) {
+				$input['donation_email'] = (string) $user->user_email;
+			}
+		}
 		return $input;
 	}
 }
