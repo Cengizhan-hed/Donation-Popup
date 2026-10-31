@@ -39,7 +39,13 @@ export const phoneBad = (root) => (window.__dpPhone && root ? window.__dpPhone.b
  * @param {object} ctx Bağlam (`bindPhone` belgesine bakın).
  */
 export function phoneBind(form, ctx) {
+  const types = ['focusin', 'input'];
   const go = () => {
+    // Telefon kutusu yoksa (ya da henüz eklenmediyse) paket istenmez, dinleyici tüketilmez.
+    if (!form.querySelector('.donation-panel-phone')) {
+      return;
+    }
+    types.forEach((type) => form.removeEventListener(type, go));
     const run = () => window.__dpPhone && form.querySelectorAll('.donation-panel-phone').forEach((box) => window.__dpPhone.bindPhone(box, ctx));
     if (window.__dpPhone) {
       run();
@@ -59,5 +65,5 @@ export function phoneBind(form, ctx) {
     loading.addEventListener('load', run);
   };
   // Otomatik doldurma `input` olayı verir; yüklenince mevcut değer biçimlenir.
-  ['focusin', 'input'].forEach((type) => form.addEventListener(type, go, { once: true }));
+  types.forEach((type) => form.addEventListener(type, go));
 }

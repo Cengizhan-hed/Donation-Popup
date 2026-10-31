@@ -16,9 +16,33 @@ function setup(src) {
     head: { appendChild: (node) => appended.push(node) },
   };
   global.window = { __dpPhoneSrc: src, console: { warn: (msg) => warnings.push(msg) } };
-  const form = { addEventListener: (type, fn) => (handlers[type] = fn), querySelectorAll: () => [] };
+  const form = {
+    box: true,
+    addEventListener: (type, fn) => (handlers[type] = fn),
+    removeEventListener: (type) => delete handlers[type],
+    querySelector() {
+      return this.box ? {} : null;
+    },
+    querySelectorAll: () => [],
+  };
   return { appended, warnings, handlers, form };
 }
+
+const SRC = 'https://site.test/wp-content/plugins/p/assets/build/phone/index.js?ver=1';
+
+test('telefon kutusu yok: paket istenmez, dinleyici tüketilmez; kutu sonradan eklenince yüklenir', async () => {
+  const env = setup(SRC);
+  env.form.box = false;
+  const { phoneBind } = await import(`../../../assets/src/ui2-shared/phone-lazy.mjs?c=${Math.random()}`);
+  phoneBind(env.form, {});
+  env.handlers.focusin();
+  env.handlers.input();
+  assert.equal(env.appended.length, 0);
+  env.form.box = true;
+  env.handlers.focusin();
+  assert.equal(env.appended.length, 1);
+  assert.equal(env.handlers.focusin, undefined);
+});
 
 test('currentScript yok: sunucu adresi (aynı köken, eklenti yolu) ile yüklenir', async () => {
   const env = setup('https://site.test/wp-content/plugins/woo-donation-popup/assets/build/phone/index.js?ver=abc');
@@ -36,7 +60,6 @@ test('adres yok ya da güvensiz: yüklenmez, tek konsol uyarısı', async () => 
     const { phoneBind } = await import(`../../../assets/src/ui2-shared/phone-lazy.mjs?b=${Math.random()}`);
     phoneBind(env.form, {});
     env.handlers.focusin();
-    env.handlers.input();
     assert.equal(env.appended.length, 0, String(bad));
     assert.equal(env.warnings.length, 1, String(bad));
   }
