@@ -11,7 +11,7 @@
 - Mail e2e (her biri 3 cihaz, 3/3 yeşil): classic EN; blocks TR; classic EN + blok-editör; blocks TR + blok-editör; classic EN + blok-editör + ÖZEL ŞABLON; blocks TR + blok-editör + ÖZEL ŞABLON; classic on-hold + blok-editör.
 - Biçim eşitliği (masaüstü, 3 yapı: klasik / blok varsayılan şablon düzeni / blok özel şablon): bölüm HTML'i farkı yalnız satır sonu ve kampanya tutarı/dil metni; yapı, renk, boşluk aynı (`difflib`).
 - Paralel iki koşu (port 9071 ve 9072, aynı Mailpit 8035): A 08:37:18-08:37:40, B 08:37:29-08:37:51 (~11 sn çakışma), her ikisi 3/3 yeşil; araya konan `noise@wdp-e2e.test` iletisi koşular sonunda duruyor; kutuda başka kalıntı yok.
-- Bulgu: paylaşılan matris şablonuna eşzamanlı başlayan iki koşu `installCurrentPlugin` yarışına girer (ENOENT chmod). Çözüm: ikinci koşuyu şablon kurulumundan sonra başlat (12 sn ara yetti). Mail yalıtımıyla ilgisiz, mevcut matris altyapısı sınırı.
+- Bulgu: paylaşılan matris şablonuna eşzamanlı başlayan iki koşu `installCurrentPlugin` yarışına girer (ENOENT chmod). Çözüm: şablon kurulumu dosya kilidiyle korunur (124-lock). Mail yalıtımıyla ilgisiz, mevcut matris altyapısı sınırı.
 - Ekran görüntüsü (≤800 px): `build/handoff/RAPOR-124-email3/{cmp-classic,par-a,par-b}/mail-*-desktop-musteri.png` (yalnız masaüstü müşteri e-postaları saklandı). Bir tanesi incelendi: kutu sipariş tablosunun üstünde, vurgu şeridi + açık zemin, taşma yok.
 - measure:plugin-perf koşulmadı: ön yüz/JS/CSS değişmedi (yalnız e-posta HTML'i, yönetici metni, test dosyaları).
 
