@@ -5,6 +5,7 @@
  * katmanda (popup / alttan panel) aynı kökenli çerçevede.
  */
 import { addToCart, phoneValue } from '../experiences/form.mjs';
+import { phoneBad, phoneBind } from '../ui2-shared/phone-lazy.mjs';
 import { formatTotal } from '../experiences/store.mjs';
 import { createLayer } from '../experiences/layer.mjs';
 import { ISOLATED_EVENTS, STEPS, announcement, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel, moveStep } from './logic.mjs';
@@ -329,7 +330,23 @@ export function createCompact(root) {
     });
   });
 
+  // Telefon: yazarken biçimleme/sınır (ortak `phone.mjs`); eksik hane iletisi odak çıkınca, mobil önek yalnız uyarı;
+  // dolu ama eksik numarada "devam" düğmesi geçerli olana kadar pasif.
+  let phoneMessageOn = false;
+  // Kurallar tembel pakettedir (ilk odak/yazma/otomatik doldurmada yüklenir); çekirdekte yalnız bu bağlam
+  // (devam düğmesinin pasifliğini paket kendisi yönetir; soluk görünümü `.donation-panel-btn[aria-disabled="true"]` verir).
+  phoneBind(form, {
+    // Hata satırı: eksik hane (alan geçersiz işaretli: bad) ya da yalnız uyarı (işaretsiz, devam engellenmez).
+    say: (input, message, bad) => {
+      if (message || phoneMessageOn) {
+        phoneMessageOn = !!message;
+        setError(1, message, bad ? [input] : []);
+      }
+    },
+  });
+
   const validateDetails = () => {
+    const off = phoneBad(sections[1]);
     const bad = detailsInputs().filter((input) => {
       if (input.type === 'checkbox' || input.disabled) {
         return false;
@@ -338,13 +355,13 @@ export function createCompact(root) {
       if (input.required && value === '') {
         return true;
       }
-      return value !== '' && input.type === 'email' && input.validity && input.validity.typeMismatch;
+      return off.includes(input) || value !== '' && input.type === 'email' && input.validity && input.validity.typeMismatch;
     });
     if (!bad.length) {
       return true;
     }
     const first = bad[0];
-    const message = first.value.trim() === '' ? first.dataset.requiredMsg || ds.msgInvalid : ds.msgEmail || ds.msgInvalid;
+    const message = first.value.trim() === '' ? first.dataset.requiredMsg || ds.msgInvalid : first.dataset.msgShort || ds.msgEmail || ds.msgInvalid;
     setError(1, message || '', bad);
     first.focus();
     return false;

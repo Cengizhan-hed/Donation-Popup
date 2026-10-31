@@ -125,6 +125,16 @@ final class Guide {
 				),
 				'code'  => '',
 			),
+			'phone'      => array(
+				'title' => __( 'Phone number field', 'woo-donation-popup' ),
+				'body'  => array(
+					__( '1. Where it is: the phone number is part of the donor details step of the donation form and of the compact card. There is nothing to set: the check works for every country and language, on phones and computers.', 'woo-donation-popup' ),
+					__( '2. What donors see: the country code list starts with your WooCommerce store country. While typing, the number is spaced the way that country writes it (for Turkey: 530 307 15 93) and no extra digits can be typed. A leading 0, 00 or country code (+90, +44) that is typed or pasted is removed by itself and the country code list follows it.', 'woo-donation-popup' ),
+					__( '3. Wrong numbers: if the number is too short, a clear line appears under the field when the donor leaves it, and the Continue button stays dimmed until the number is complete. A number that does not look like a mobile number (Turkey: not starting with 5, United Kingdom: not starting with 7) only shows a hint and never blocks the gift. The same goes for countries whose number lengths vary: a number of unusual length only shows a hint, and only clearly impossible lengths are stopped.', 'woo-donation-popup' ),
+					__( '4. What is saved: the donor details on the order keep the number exactly as typed with its country code. The WooCommerce billing phone receives the same number in international format (for example +905303071593), which payment, SMS and shipping tools expect. The server checks the number again with the same rules.', 'woo-donation-popup' ),
+				),
+				'code'  => '[wdp_donation_form]',
+			),
 			'colors'     => array(
 				'title'  => __( 'Setting the colors', 'woo-donation-popup' ),
 				'body'   => array(

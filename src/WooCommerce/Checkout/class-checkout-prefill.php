@@ -12,6 +12,8 @@
 
 namespace DonationPanel\WooCommerce\Checkout;
 
+use DonationPanel\Support\Phone_Countries;
+use DonationPanel\Support\Phone_Rules;
 use DonationPanel\WooCommerce\Cart_Data;
 
 defined( 'ABSPATH' ) || exit;
@@ -139,7 +141,8 @@ final class Checkout_Prefill {
 
 		$phone = isset( $data['phone'] ) && is_scalar( $data['phone'] ) ? Cart_Data::phone( (string) $data['phone'] ) : '';
 		if ( '' !== $phone ) {
-			$values['phone'] = $phone;
+			// Ödeme sayfası telefon alanına E.164 gider (çözümlenemezse ham değer aynen).
+			$values['phone'] = Phone_Rules::to_e164( $phone, Phone_Countries::get_default_country_iso() );
 		}
 
 		$email = isset( $data['email'] ) && is_scalar( $data['email'] ) ? sanitize_email( trim( (string) $data['email'] ) ) : '';

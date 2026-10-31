@@ -2,6 +2,7 @@
  * Form çekirdeği: bağış türleri (sabit/serbest/hisseli/kampanya), çok adımlı akış, durum -> DOM,
  * sepete ekleme ve doğrulama (REST `cart/add`).
  */
+import { phoneBad, phoneBind } from '../ui2-shared/phone-lazy.mjs';
 import { clampQty, computeTotals, firstErrorStep, formatTotal, initialState, nextPresetIndex, parseAmount, reducer, stepLabel } from './store.mjs';
 
 const RTL = () => document.documentElement.dir === 'rtl' || document.dir === 'rtl';
@@ -358,10 +359,15 @@ export function createForm(root, hooks = {}) {
     }
   };
 
+  // Telefon: odak çıkınca gösterilen (yazarken rahatsız etmeyen) eksik/fazla hane iletisi; alan adı -> ileti.
+  const phoneBlurErrors = {};
+  /** Geçerli adımda dolu ama eksik/fazla telefon var mı (devam düğmesi geçerli olana kadar pasif). */
+  const phoneBlocked = () => phoneBad(sections[state.step]).length > 0;
+
   const paintErrors = () => {
     form.querySelectorAll('[data-dp-error]').forEach((error) => {
       const name = error.dataset.dpError;
-      const message = state.errors[name] || '';
+      const message = state.errors[name] || phoneBlurErrors[name] || '';
       error.textContent = message;
       const wrap = error.closest('[data-dp-field], .donation-panel-fieldset');
       if (wrap) {
@@ -448,7 +454,14 @@ export function createForm(root, hooks = {}) {
       const pending = amountPending();
       submit.classList.toggle('is-loading', busy);
       submit.classList.toggle('is-pending', pending);
-      submit.setAttribute('aria-disabled', busy || pending ? 'true' : 'false');
+      paintGate();
+    }
+  };
+
+  /** Yazarken yalnız devam düğmesinin pasifliği güncellenir (tam boyama yok). */
+  const paintGate = () => {
+    if (submit) {
+      submit.setAttribute('aria-disabled', state.status === 'submitting' || amountPending() || phoneBlocked() ? 'true' : 'false');
     }
   };
 
@@ -486,6 +499,16 @@ export function createForm(root, hooks = {}) {
     focusStep();
   });
   bindToggles(form);
+  // Telefon kuralları tembel pakettedir (ilk odak/yazma/otomatik doldurmada yüklenir); çekirdekte yalnız bu bağlam.
+  phoneBind(form, {
+    gate: paintGate,
+    say: (input, message) => {
+      if (message || phoneBlurErrors[input.name]) {
+        phoneBlurErrors[input.name] = message;
+        paintErrors();
+      }
+    },
+  });
   form.querySelectorAll('input, textarea').forEach((input) => {
     if (input.name && !['amount', 'addon_amount'].includes(input.name)) {
       input.addEventListener('input', () => {
@@ -586,6 +609,10 @@ export function createForm(root, hooks = {}) {
       if (input.value.trim() === '') {
         errors[input.name] = input.dataset.requiredMsg || '';
       }
+    });
+    // Telefon: dolu ama eksik/fazla/tanınmayan numara ilerletmez (mobil önek uyarısı engel değildir).
+    phoneBad(section).forEach((input) => {
+      errors[input.name] = errors[input.name] || input.dataset.msgShort || '';
     });
     return errors;
   };

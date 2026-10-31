@@ -208,12 +208,14 @@ final class DirectDonationTest extends WDP_Integration_Test_Case {
 		$this->assertSame( 'donation_panel_direct', $order->get_created_via() );
 		$this->assertSame( 'Ayşe', $order->get_billing_first_name() );
 		$this->assertSame( 'Yılmaz', $order->get_billing_last_name() );
-		$this->assertSame( '+90 532 000 00 00', $order->get_billing_phone() );
+		// WooCommerce'e E.164; bağışçının yazdığı ham değer kalem meta'sında aynen durur.
+		$this->assertSame( '+905320000000', $order->get_billing_phone() );
 		$items = array_values( $order->get_items() );
 		$this->assertCount( 1, $items );
 		$this->assertSame( $product->get_id(), $items[0]->get_product_id() );
 		$this->assertSame( 75.0, (float) $items[0]->get_meta( '_custom_price' ) );
 		$this->assertSame( 'custom', $items[0]->get_meta( 'wdp_donation_type' ) );
+		$this->assertSame( '+90 532 000 00 00', $items[0]->get_meta( 'wdp_donor_phone' ), 'Ham telefon kalem meta’sında aynen kalır.' );
 		$this->assertStringContainsString( 'order-pay', $res->get_data()['redirect_url'] );
 		$this->assertStringContainsString( 'key=' . $order->get_order_key(), $res->get_data()['redirect_url'] );
 		$this->assertTrue( $order->needs_payment() );
