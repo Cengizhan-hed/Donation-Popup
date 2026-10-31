@@ -445,6 +445,12 @@ if (!function_exists('wp_kses')) {
 		return (string) $string;
 	}
 }
+if (!function_exists('wpautop')) {
+	function wpautop($text) {
+		$paragraphs = preg_split('/\n\s*\n/', trim((string) $text));
+		return '<p>' . implode("</p>\n<p>", array_map('trim', (array) $paragraphs)) . "</p>\n";
+	}
+}
 if (!function_exists('wp_kses_post')) {
 	function wp_kses_post($string) {
 		return (string) $string;

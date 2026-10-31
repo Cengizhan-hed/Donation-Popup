@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 $donation_panel_summary  = isset( $args['summary'] ) && is_array( $args['summary'] ) ? $args['summary'] : array();
 $donation_panel_lines    = isset( $donation_panel_summary['lines'] ) ? (array) $donation_panel_summary['lines'] : array();
 $donation_panel_currency = isset( $donation_panel_summary['currency'] ) ? (string) $donation_panel_summary['currency'] : '';
-$donation_panel_message  = ! empty( $args['message'] ) ? (string) $args['message'] : __( 'Your donation has been received. May it be a source of goodness.', 'woo-donation-popup' );
+$donation_panel_message  = \DonationPanel\Modules\Thanks\Thanks_Summary::message( isset( $args['message'] ) ? (string) $args['message'] : '' );
 $donation_panel_money    = static function ( $amount ) use ( $donation_panel_currency ) {
 	return function_exists( 'wc_price' ) ? wc_price( (float) $amount, array( 'currency' => $donation_panel_currency ) ) : esc_html( (string) $amount );
 };

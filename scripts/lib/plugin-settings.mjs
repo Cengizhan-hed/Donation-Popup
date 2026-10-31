@@ -22,6 +22,7 @@ export const ALLOWLIST = Object.freeze({
   'thanks.celebrate': { type: 'bool' },
   'thanks.share': { type: 'bool' },
   'thanks.message': { type: 'string' },
+  'thanks.email': { type: 'bool' },
   'tax_relief.step_label': { type: 'string' },
   'tax_relief.title': { type: 'string' },
   'tax_relief.text': { type: 'string' },

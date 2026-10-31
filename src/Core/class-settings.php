@@ -176,6 +176,10 @@ class Settings {
 					'type'    => 'text',
 					'default' => '',
 				),
+				'email'     => array(
+					'type'    => 'bool',
+					'default' => true,
+				),
 			),
 			'tax_relief' => array(
 				'step_label'     => array(

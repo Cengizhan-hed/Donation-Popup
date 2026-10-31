@@ -216,6 +216,7 @@ class Uninstall {
 			'wdp_addon_line_ids',
 			'wdp_sadaka_line_ids',
 			'wdp_donor_count_',
+			'wdp_cf_',
 		);
 	}
 

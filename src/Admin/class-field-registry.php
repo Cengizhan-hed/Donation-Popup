@@ -63,7 +63,7 @@ final class Field_Registry {
 				'payment' => array( __( 'How donors pay', 'woo-donation-popup' ), __( 'Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with every form style (centered window, side panel, bottom sheet, in-page form and compact card). A product setting wins over its donation type, and a donation type wins over the general setting.', 'woo-donation-popup' ) ),
 				'cart'    => array( __( 'Add-on donation', 'woo-donation-popup' ), __( 'Offer one extra donation product next to the main gift.', 'woo-donation-popup' ) ),
 				'basket'  => array( __( 'Side cart', 'woo-donation-popup' ), __( 'A basket that slides in after a gift is added, so donors can give several gifts and pay once. Only used when the Side cart module above is on. Not shown on the cart and checkout pages, which have their own basket.', 'woo-donation-popup' ) ),
-				'thanks'  => array( __( 'Thank-you screen', 'woo-donation-popup' ), __( 'Shown after the order. Only used when the Thank-you screen module is on.', 'woo-donation-popup' ) ),
+				'thanks'  => array( __( 'Thank-you screen', 'woo-donation-popup' ), __( 'The wording and the extra touches below are used on the thank-you screen (Thank-you screen module on). The thank-you in e-mails works on its own.', 'woo-donation-popup' ) ),
 				'tax'     => array( __( 'Tax relief declaration', 'woo-donation-popup' ), __( 'One question at checkout. Only used when the Tax relief module is on.', 'woo-donation-popup' ) ),
 			),
 			Admin_Bootstrap::SLUG_TOOLS     => array(
@@ -483,8 +483,15 @@ final class Field_Registry {
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'thanks',
 			'label'   => __( 'Thank-you message', 'woo-donation-popup' ),
-			'help'    => __( 'Shown on the thank-you screen after a donation. Leave empty for the built-in wording.', 'woo-donation-popup' ),
+			'help'    => __( 'Shown on the thank-you screen and in the thank-you e-mail after a donation. Leave empty for the built-in wording.', 'woo-donation-popup' ),
 			'type'    => 'textarea',
+		);
+		$f['thanks.email']     = array(
+			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
+			'section' => 'thanks',
+			'label'   => __( 'Thank-you in donor e-mails', 'woo-donation-popup' ),
+			'help'    => __( 'Adds a short thank-you above the order table in the "Processing" and "Completed" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Never added to e-mails sent to you. Works even when the Thank-you screen module is off.', 'woo-donation-popup' ),
+			'type'    => 'switch',
 		);
 		$f['thanks.celebrate'] = array(
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,

@@ -26,6 +26,17 @@ final class Thanks_Summary {
 	const LINE_KEYS = array( 'product_id', 'project', 'amount' );
 
 	/**
+	 * Teşekkür metni: yönetici metni doluysa o, değilse yerleşik söz (sayfa ve e-posta AYNI kaynağı kullanır).
+	 *
+	 * @param string $custom Ayarlardaki metin (`thanks.message`).
+	 * @return string
+	 */
+	public static function message( $custom = '' ) {
+		$custom = trim( (string) $custom );
+		return '' !== $custom ? $custom : __( 'Your donation has been received. May it be a source of goodness.', 'woo-donation-popup' );
+	}
+
+	/**
 	 * Sipariş satırı bağış satırı mı: ürün bağış kapsamında ya da bağış tutarı meta alanı var.
 	 *
 	 * @param object $item Sipariş kalemi (WC_Order_Item_Product benzeri).
