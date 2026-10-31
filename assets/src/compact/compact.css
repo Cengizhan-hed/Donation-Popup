@@ -152,13 +152,13 @@
 .donation-panel-compact .donation-panel-custom:has([aria-invalid="true"]) { border-style: solid; border-color: var(--dp-color-danger); }
 
 /* Sabit fiyat (tek ekran): fiyat × adet = toplam TEK ince satırda (≥48 px dokunma hedefi); altında bilgiler gelir. */
-.donation-panel-compact__fixed { display: flex; align-items: center; gap: 6px; flex: none; min-block-size: 56px; padding: 2px 14px; border-radius: var(--dp-radius-field); background: var(--dp-color-surface-2); font-size: 18px; font-weight: 800; }
-.donation-panel-compact__times, .donation-panel-compact__priceword { flex: none; color: var(--dp-color-text-muted); font-size: 15px; font-weight: 650; }
-.donation-panel-compact__sum1 { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: end; font-size: 20px; }
+.donation-panel-compact__fixed { display: flex; align-items: center; gap: 6px; flex: none; min-block-size: 52px; padding: 0 14px; border-radius: var(--dp-radius-field); background: var(--dp-color-surface-2); font-size: 20px; font-weight: 800; }
+.donation-panel-compact__times, .donation-panel-compact__priceword { color: var(--dp-color-text-muted); font-size: 15px; font-weight: 650; }
+.donation-panel-compact__sum1 { flex: 1; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: end; }
 .donation-panel-compact__fixed .donation-panel-stepper { block-size: 52px; }
 .donation-panel-compact__fixed .donation-panel-stepper button { inline-size: 48px; block-size: 48px; }
-.donation-panel-compact__fixed .donation-panel-stepper output { min-inline-size: 28px; }
-.donation-panel .donation-panel-compact__effect--line { margin: 0; text-align: start; }
+.donation-panel-compact__fixed output { min-inline-size: 28px; }
+.donation-panel .donation-panel-compact__effect--line { margin: 0; }
 .donation-panel-compact__effect--line:not(:empty)::before { content: none; }
 
 /* Toplam satırı: etiket | etki ifadesi (esnek, ellipsis) | tutar. Sütunlar içerikten bağımsız: metin değişince kutu kaymaz. */

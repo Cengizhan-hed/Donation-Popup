@@ -1,0 +1,30 @@
+# Turkish translations — 124-compact1 (sabit fiyatlı ürün tek ekran).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: templates/donation-panel/experiences/compact.php
+msgctxt "Compact donation card: single-screen step name (fixed price product)"
+msgid "Donation and details"
+msgstr "Bağış ve bilgileriniz"
+
+#: src/Admin/class-compact-tools.php
+msgid "Steps: through the cart the card has 2 steps (amount, then your details with \"Continue to checkout\"); with direct donation it has 3 (amount, details, payment). A fixed-price product has no amount step: price × quantity = total sits on one thin line with the name and phone fields right below it, so it has 1 step through the cart and 2 with direct donation (details, payment). The height is the same with or without a goal, an impact phrase or the tax relief declaration, and a fixed-price product is as tall as the others."
+msgstr "Adımlar: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç\" düğmeli bilgileriniz); doğrudan bağışta 3 adımdır (tutar, bilgiler, ödeme). Sabit fiyatlı üründe tutar adımı yoktur: fiyat × adet = toplam tek ince satırdadır, ad ve telefon alanları hemen altındadır; bu yüzden sepetli akışta 1, doğrudan bağışta 2 adımdır (bilgiler, ödeme). Yükseklik; hedef, etki ifadesi veya vergi indirimi beyanı olsa da olmasa da aynıdır ve sabit fiyatlı ürün diğerleriyle aynı yüksekliktedir."
+
+#: src/Admin/class-compact-tools.php
+#. translators: %d: card height in pixels.
+#, php-format
+msgid "Exception: a fixed-price product that also shows the tax relief declaration (or an impact phrase) has more on its single screen and is about %d px tall. Make the slide that tall, or set the CSS variable below."
+msgstr "İstisna: vergi indirimi beyanı (veya etki ifadesi) de gösteren sabit fiyatlı ürünün tek ekranında daha çok şey vardır ve yaklaşık %d px yüksekliktedir. Slaydı o kadar yüksek yapın ya da aşağıdaki CSS değişkenini ayarlayın."
+
+#: src/Admin/class-guide.php
+msgid "7. What the donor sees: through the cart the card has 2 steps (amount, then details with \"Continue to checkout · amount\"); with direct donation it has 3 (amount, details, payment) and a thank-you. The step counter shows the real number (it is hidden when there is only one step). A fixed-price or quantity product has no amount step: price × quantity = total sits on one thin line, with the name, phone (and email, if you ask for it) fields right below it, the Gift Aid line if it is on, the lock line and the main button; through the cart that is a single screen with \"Continue to checkout · amount\", with direct donation it is a single screen plus payment. A small lock line (\"Secure payment\") sits above the button; you can switch it off under Compact card. With the Impact phrases module the chosen amount's impact appears next to the amount; with the Tax relief module the declaration shows its title and a short line, and \"Details\" opens the full text inside the card."
+msgstr "7. Bağışçının gördüğü: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç · tutar\" düğmeli bilgiler); doğrudan bağışta 3 adım (tutar, bilgiler, ödeme) ve teşekkür vardır. Adım sayacı gerçek sayıyı gösterir (tek adım varsa gizlenir). Sabit fiyatlı veya adetli üründe tutar adımı yoktur: fiyat × adet = toplam tek ince satırdadır; ad, telefon (ve istediyseniz e-posta) alanları, açıksa Gift Aid satırı, güven satırı ve ana düğme hemen altındadır; sepetli akışta bu tek ekrandır (\"Ödemeye geç · tutar\"), doğrudan bağışta tek ekran artı ödemedir. Düğmenin üstünde küçük bir kilit satırı (\"Güvenli ödeme\") durur; Compact kart altında kapatabilirsiniz. Etki ifadeleri modülüyle seçilen tutarın etkisi tutarın yanında görünür; Vergi indirimi modülüyle beyan başlığını ve kısa bir satırı gösterir, \"Ayrıntılar\" tam metni kartın içinde açar."

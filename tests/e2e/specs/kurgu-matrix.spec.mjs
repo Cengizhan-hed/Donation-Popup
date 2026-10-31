@@ -204,7 +204,8 @@ test.describe('compact kart yükseklikleri', () => {
     for (const [key, width] of Object.entries(widths)) {
       await page.setViewportSize({ width, height: 900 });
       out[key] = [];
-      for (const [col, id] of [[0, IDS.custom], [1, IDS.campaign]]) {
+      // Sütun 2: sabit fiyatlı ürün (tek ekran); serbest tutarlı ürünle AYNI yükseklikte olmalı.
+      for (const [col, id] of [[0, IDS.custom], [1, IDS.campaign], [2, IDS.fixed]].filter(([, value]) => value)) {
         const measured = {};
         for (const behavior of BEHAVIORS) {
           await page.context().clearCookies();
@@ -217,6 +218,9 @@ test.describe('compact kart yükseklikleri', () => {
         }
         expect(Math.abs(measured.cart - measured.direct), `${key}/${col}: ${JSON.stringify(measured)}`).toBeLessThanOrEqual(0.5);
         out[key][col] = Math.round(measured.cart);
+        if (col === 2) {
+          expect(Math.abs(measured.cart - out[key][0]), `${key}: sabit fiyat ${measured.cart} ≠ serbest tutar ${out[key][0]}`).toBeLessThanOrEqual(0.5);
+        }
         if (heights[key] && heights[key][col] > 0) {
           expect(Math.abs(measured.cart - heights[key][col]), `${key}/${col}: ölçülen ${measured.cart}, tablo ${heights[key][col]}`).toBeLessThanOrEqual(tolerance);
         }

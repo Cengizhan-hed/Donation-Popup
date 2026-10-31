@@ -469,7 +469,8 @@ test.describe('compact kart', () => {
     await expect(amount.locator('[data-dp-camount-in]')).toHaveCount(0);
     await expect(step(page, 'details')).toHaveCount(0);
     await expect(amount).toHaveClass(/is-on/);
-    await expect(amount.locator('.donation-panel-compact__count')).toHaveCount(0);
+    // Doğrudan akış (open varsayılanı): 2 adım; sepetli tek adımda sayaç çizilmez (birim testte).
+    await expect(amount.locator('.donation-panel-compact__count')).toHaveText('1/2');
     await expect(amount.locator('input[name="donation_full_name"]')).toBeVisible();
     await expect(amount.locator('input[name="donation_phone"]')).toBeVisible();
     const h0 = await height(page);

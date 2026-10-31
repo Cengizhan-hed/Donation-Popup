@@ -151,6 +151,12 @@ test.describe('compact görüntüler', () => {
         await more.click();
         await shot(page, `${width}-beyan-2-ayrinti`);
       }
+      // Sabit fiyat + vergi indirimi beyanı + etki ifadesi (tek ekranın en kalabalık hali; kampanyasız).
+      if (IDS.fixed) {
+        await open(page, baseURL, IDS.fixed, true, '&dp_ctax=1&dp_cimpact=1');
+        out[`${width}-sabit-beyan`] = await height(page);
+        await shot(page, `${width}-sabit-beyan-1`);
+      }
     }
     fs.writeFileSync(path.join(SHOTS, 'yukseklik.json'), `${JSON.stringify(out, null, 2)}\n`);
     fs.writeFileSync(path.join(SHOTS, 'bosluk.json'), `${JSON.stringify(GAPS, null, 2)}\n`);
