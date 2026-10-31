@@ -5,3 +5,4 @@
 - 2026-10-31: stripe2 birleşti; email4 çakışma çözümü sürüyor (kurgu-matrix); compact2 ve cron-status çalışıyor.
 - ports birleşti; cron-status iki sitede tam: Ikram DISABLE_WP_CRON tanımsız, gecikmiş 0, crontab=no; staging30 DISABLE_WP_CRON=true, 72 gecikmiş, crontab=no (kullanıcı SiteGround Cron Jobs'a bakacak)
 - 15:59 124-fixfull: kök neden 1 (klavye sözleşmesi→tapAction/dismissKeyboard) + 2 (telefon gruplama, rakam karşılaştırma) test yardımcılarında; iphone koşusu
+- 17:21 124-fixfull: BİTTİ — e2e:full 128/0, matrix 264/0, experiences 166/0, list 54/0, verify+test yeşil; RAPOR-124-fixfull.md
