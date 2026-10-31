@@ -19,6 +19,7 @@ import {
   assertLocal,
   fillBilling,
   hookCounts,
+  moneyPattern,
   openAndSubmit,
   placeOrder,
   record,
@@ -87,6 +88,10 @@ test.describe('Stripe test modu (yerel)', () => {
       const orderId = orderIdFrom(page.url());
       expect(orderId).toBeGreaterThan(0);
       await expect(page.locator('[data-dp-thanks]'), 'teşekkür özeti bir kez').toHaveCount(1);
+      // Tutar mağazanın Woo para biçimiyle (simge konumu, ayraçlar, ondalık) teşekkür sayfasında.
+      const money = moneyPattern(STORE, Number(amount));
+      await expect(page.locator('body'), `teşekkür sayfasında ${money}`).toContainText(money);
+      await expect(page.locator('[data-dp-thanks]'), 'teşekkür özetinde biçimli tutar').toContainText(money);
 
       // Webhook'lar (payment_intent.succeeded / charge.succeeded) gelsin; yine de tek sayım.
       await expect.poll(async () => (await state(request, PRODUCT, since)).log.filter((r) => r.e === 'webhook_in').length, { timeout: 45000, message: 'webhook ulaştı' }).toBeGreaterThan(0);
@@ -118,7 +123,14 @@ test.describe('Stripe test modu (yerel)', () => {
       expect((await rest.json()).raised).toBeCloseTo(after.raised, 2);
       await page.goto(`/?dp_stripe=form&dp_product=${PRODUCT}`);
       const raisedText = page.locator('#sp-card [data-dp-live-raised]');
-      await expect.poll(async () => Number(String(await raisedText.textContent()).replace(/[^0-9]/g, '')), { timeout: 15000 }).toBe(Math.round(after.raised));
+      // Mağaza ayraçlarıyla çözümle (TRY ₺1.250 / GBP £1,250.00 / EUR 1.250,00 €).
+      const parseMoney = (t) => {
+        let s = String(t || '').replace(/[^\d.,]/g, '');
+        if (STORE.thousandSeparator) s = s.split(STORE.thousandSeparator).join('');
+        if (STORE.decimalSeparator && STORE.decimalSeparator !== '.') s = s.replace(STORE.decimalSeparator, '.');
+        return Number.parseFloat(s);
+      };
+      await expect.poll(async () => Math.round(parseMoney(await raisedText.textContent())), { timeout: 15000 }).toBe(Math.round(after.raised));
 
       // E-posta: müşteri + yönetici, ad/telefon/not Türkçe karakterlerle.
       // Önceki senaryodan geç gelen teyit e-postası da kutuya düşebilir: yalnız bu siparişin iletileri denetlenir.
@@ -133,8 +145,9 @@ test.describe('Stripe test modu (yerel)', () => {
         expect(text).toContain(d.name);
         expect(text).toContain(d.note);
         expect(String(m.HTML || '') + text).not.toMatch(/�|Ã§|Ä±|ÅŸ/);
+        expect(text, 'e-postada biçimli tutar').toMatch(money);
       }
-      record({ scenario: 'basarili', flow, project: info.project.name, status: order.status, hooks, raisedDelta: after.raised - before.raised, mails: messages.length });
+      record({ scenario: 'basarili', flow, project: info.project.name, currency: STORE.currency, money: String(money), status: order.status, hooks, raisedDelta: after.raised - before.raised, mails: messages.length });
     });
 
     test(`${flow}: 3D Secure tamamlandı → başarı, toplam bir kez`, async ({ page, request, baseURL }, info) => {
