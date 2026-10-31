@@ -143,20 +143,23 @@ function mount(root) {
   }
 }
 
-// Tembel sayfa içi formlar: belge düzeyinde tek yakalama dinleyicisi (form başına dinleyici yok; kopyalanan slaytlar da kapsanır).
-WAKE_EVENTS.forEach((type) => document.addEventListener(type, wakeFromEvent, { capture: true, passive: true }));
-
 function init() {
   // Özel renk CSS değişkeniyle verildiyse düğme yazı rengi çözülen renge göre (yalnız gerekirse; boşta) ayarlanır.
   syncColorsWhenIdle();
   document.querySelectorAll('[data-dp-exp]').forEach(mount);
 }
 
-// Sonradan eklenen formlar (ör. bağış listesi kartı) `dp:scan` olayıyla bağlanır.
-document.addEventListener('dp:scan', init);
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
+// Paket sayfada bir kez çalışır: liste/mağaza kartı sayfasında betik ihtiyaçta (REST yanıtındaki doğrulanmış adresle)
+// sonradan eklenir; sayfada zaten varsa ikinci kopya hiçbir dinleyici kurmaz.
+if (!window.__dpExperiences) {
+  window.__dpExperiences = true;
+  // Tembel sayfa içi formlar: belge düzeyinde tek yakalama dinleyicisi (form başına dinleyici yok; kopyalanan slaytlar da kapsanır).
+  WAKE_EVENTS.forEach((type) => document.addEventListener(type, wakeFromEvent, { capture: true, passive: true }));
+  // Sonradan eklenen formlar (ör. bağış listesi kartı) `dp:scan` olayıyla bağlanır.
+  document.addEventListener('dp:scan', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 }

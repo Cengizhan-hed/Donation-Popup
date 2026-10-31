@@ -257,29 +257,17 @@ test.describe('liste kartı ön alma', () => {
     page.on('request', (r) => requests.push({ url: r.url(), t: Date.now() }));
     await page.goto(url('list'), { waitUntil: 'load' });
     const cta = page.locator('.wdp-list-wrap .wdp-card__cta[data-wdp-form]:not(#dp-rogue)').first();
-    // Yüklemede eklenti isteği yok (ön alma ilk etkileşimde başlar; Safari'de istemci yükleme sonrası boşta alır).
-    const native = await page.evaluate(() => document.createElement('link').relList.supports('prefetch'));
-    if (native) {
-      expect(requests.filter((r) => /donation-panel(\/|%2F)v1/.test(r.url)).length, 'yüklemede eklenti REST isteği').toBe(0);
-    }
+    // Yüklemede eklenti isteği yok (ön alma ilk etkileşimde ya da yüklemeden 1 sn sonra boşta başlar; form BELLEKTE tutulur).
+    expect(requests.filter((r) => /donation-panel(\/|%2F)v1/.test(r.url)).length, 'yüklemede eklenti REST isteği').toBe(0);
     await page.mouse.move(5, 5); // ilk etkileşim
     await page.mouse.move(40, 40);
-    const id = await cta.getAttribute('data-wdp-form');
-    await page.waitForFunction(
-      (pid) =>
-        document.querySelector(`[data-wdp-form="${pid}"][data-wdp-ready="1"]`) ||
-        Array.from(document.querySelectorAll('link[rel="prefetch"][data-dp-prefetch]')).some(
-          (l) => new URL(l.href).searchParams.get('ids').split(',').includes(pid) && performance.getEntriesByName(l.href).some((r) => r.responseEnd > 0)
-        ),
-      id,
-      { timeout: 15000 }
-    );
+    await expect(cta).toHaveAttribute('data-wdp-ready', '1', { timeout: 15000 });
     const batch = requests.filter((r) => /donation-panel(\/|%2F)v1(\/|%2F)experiences/.test(r.url));
     expect(batch.length, 'tek toplu istek').toBe(1);
     const tPre = await page.evaluate(() => performance.now());
     await cta.click();
     await expect(page.locator('dialog[open] [data-dp-surface]')).toBeVisible();
-    // Dokunuşta AĞA giden eklenti isteği yok (tarayıcı önbelleğinden gelen yanıtın transferSize'ı 0).
+    // Dokunuşta AĞA giden eklenti isteği yok (form bellekte).
     const network = await page.evaluate(
       (from) => performance.getEntriesByType('resource').filter((r) => r.startTime >= from && /donation-panel(\/|%2F)v1/.test(r.name) && r.transferSize > 0).length,
       tPre

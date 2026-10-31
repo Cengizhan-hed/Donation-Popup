@@ -1,10 +1,12 @@
 /**
  * Donation Panel — bağış listesi: kategori süzgeci (sekmeler) ve kart düğmesiyle formu açma.
  *
- * Form sayfa HTML'ine basılmaz (sayfa önbelleğe uygun, nonce yok). Kart görünür alana yaklaşınca, sayfa yüklendikten
- * sonra boşta, aynı REST kökü + kap türündeki kartların formları TEK istekte (`GET donation-panel/v1/experiences?ids=…`,
- * en çok 12) önceden alınır; dokunma niyetinde (üstüne gelme/basma/odak) eksikse hemen alınır ve katman DOM'u kurulur.
- * Dokunuşta form hazırsa ağ isteği yoktur. Veri tasarrufu/2G'de yalnız niyetle alınır. JS yoksa düğme ürün sayfasına gider.
+ * Form sayfa HTML'ine basılmaz (sayfa önbelleğe uygun, nonce yok). Ziyaretçinin ilk etkileşiminde ya da sayfa
+ * yüklendikten sonra boşta (hangisi önce), görünür alana yakın kartların formları aynı REST kökü + kap türü için TEK
+ * istekte (`GET donation-panel/v1/experiences?ids=…`, en çok 12) alınır ve BELLEKTE (Blob) tutulur; dokunma niyetinde
+ * (üstüne gelme/basma/odak) eksikse hemen alınır ve katman DOM'u kurulur. Dokunuşta form hazırsa ağ isteği yoktur ve bu,
+ * tarayıcının HTTP önbelleğine (Vary/no-store/çerez değişimi) bağlı değildir. Veri tasarrufu/2G'de yalnız niyetle alınır.
+ * JS yoksa düğme ürün sayfasına gider.
  */
 import './list.css';
 import {
@@ -16,7 +18,6 @@ import {
   matchesCategory,
   parseHashSlug,
   shouldHandleClick,
-  parsePrefetchHref,
   shouldPrefetchAhead,
   trustedRestRoot,
   uniqueIds,
@@ -148,8 +149,38 @@ let aheadDisabled = false;
  */
 function entryOf(data, html, id) {
   const progress = lazyAsset(data, 'progress', window.location.href);
-  return { html, progress: progress && progress.ids.includes(String(id)) ? progress : null };
+  return { html, progress: progress && progress.ids.includes(String(id)) ? progress : null, exp: lazyAsset(data, 'experiences', window.location.href) };
 }
+
+/** Form deneyimi paketi (bir kez) yüklendi sözü. */
+let experiencesLoad = null;
+
+/**
+ * Form deneyimi betiği: liste/mağaza kartı sayfasında sayfa yüklemesinde YOK (ilk yük baytı yok); formlar alınınca
+ * yalnız sunucu yanıtındaki doğrulanmış adresten (`lazyAsset`) bir kez eklenir. Sayfada zaten varsa hiçbir şey yapmaz.
+ *
+ * @param {{script: string}|null} info Paket bilgisi.
+ * @return {Promise<void>} Betik yüklendi (ya da gerekmiyor / yüklenemedi).
+ */
+function loadExperiences(info) {
+  if (window.__dpExperiences || document.getElementById('donation-panel-experiences-js') || !info) {
+    return Promise.resolve();
+  }
+  if (!experiencesLoad) {
+    experiencesLoad = new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.id = 'donation-panel-experiences-js';
+      script.src = info.script;
+      script.async = true;
+      script.onload = script.onerror = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+  return experiencesLoad;
+}
+
+/** Formu bellekte hazır ürünler (sonradan DOM'a gelen/yeniden çizilen kart düğmeleri de işaretlenir). */
+const readyIds = new Set();
 
 /**
  * Form hazır (dokunuşta ağ isteği olmayacak): kartın düğmelerine `data-wdp-ready="1"` (testler/ölçüm bunu bekler).
@@ -157,6 +188,7 @@ function entryOf(data, html, id) {
  * @param {string} id Ürün kimliği.
  */
 function markReady(id) {
+  readyIds.add(String(id));
   document.querySelectorAll(`[data-wdp-form="${String(id).replace(/[^0-9]/g, '')}"]`).forEach((cta) => {
     if (cta.dataset.wdpReady !== '1') {
       cta.dataset.wdpReady = '1';
@@ -218,21 +250,6 @@ function ensureSource(rest, id, kind) {
   if (cached) {
     return cached;
   }
-  // Sunucunun bastığı ön alma bağlantısı bu kartı kapsıyorsa AYNI adres istenir: tarayıcı önbelleğinden gelir (ağ yok).
-  const link = prefetchFor(id, kind);
-  if (link) {
-    return remember(
-      sources,
-      key,
-      linkData(link).then((data) => {
-        const items = (data && data.items) || {};
-        if (typeof items[id] !== 'string' || items[id] === '') {
-          throw new Error('missing'); // sourceEntry bir kez tek istekle yeniden dener
-        }
-        return { entry: () => entryOf(data, items[id], id) };
-      })
-    );
-  }
   return remember(
     sources,
     key,
@@ -245,61 +262,6 @@ function ensureSource(rest, id, kind) {
     })
   );
 }
-
-/** Ön alma bağlantısı adresi => çözülmüş yanıt sözü (bağlantı başına bir kez). */
-const linkBatches = new Map();
-
-/**
- * @param {string} href Doğrulanmış toplu uç adresi.
- * @return {Promise<any>} Yanıt (`items`: ürün => HTML; `assets`: isteğe bağlı paketler).
- */
-function linkData(href) {
-  if (!linkBatches.has(href)) {
-    remember(
-      linkBatches,
-      href,
-      getJson(href).then((data) => data || {})
-    );
-  }
-  return linkBatches.get(href);
-}
-
-/**
- * Bu kartı kapsayan geçerli ön alma bağlantısı (yalnız ihtiyaçta, dokunma niyetinde okunur: yüklemede iş yok).
- *
- * @param {string} id   Ürün.
- * @param {string}  kind        Kap türü.
- * @param {boolean} requireDone Yalnız indirmesi bitmiş bağlantı (dokunuş yolu); false = kapsıyor mu (kuyruk).
- * @return {string} Adres ya da ''.
- */
-function prefetchFor(id, kind, requireDone = true) {
-  if (!nativePrefetch()) {
-    return ''; // bağlantı hiç alınmadı: aynı adresi istemek 12 formu dokunuşta indirirdi
-  }
-  for (const link of document.querySelectorAll('link[rel="prefetch"][data-dp-prefetch]')) {
-    const info = parsePrefetchHref(link.getAttribute('href'), window.location.href);
-    // Yalnız tarayıcı indirmeyi BİTİRDİYSE (önbellekte): sürerken aynı adresi istemek 12 formu ikinci kez indirebilirdi.
-    const done = info && (!requireDone || performance.getEntriesByName(link.href).some((r) => r.responseEnd > 0));
-    if (info && done && info.kind === kind && info.ids.includes(String(id))) {
-      return info.href;
-    }
-  }
-  return '';
-}
-
-/**
- * Tarayıcı `<link rel="prefetch">` destekliyor mu (Safari desteklemez: orada istemci boşta kendisi alır).
- *
- * @return {boolean} Destek.
- */
-function nativePrefetch() {
-  if (nativeSupport === null) {
-    const link = document.createElement('link');
-    nativeSupport = Boolean(link.relList && typeof link.relList.supports === 'function' && link.relList.supports('prefetch'));
-  }
-  return nativeSupport;
-}
-let nativeSupport = null;
 
 /**
  * Form girdisi: önbellekteki kaynak çözülemezse (toplu yanıtta yoksa) bir kez tek istekle yeniden alınır.
@@ -364,8 +326,9 @@ function ensureHost(rest, id, kind) {
     remember(
       hosts,
       key,
-      sourceEntry(rest, id, kind).then(({ html, progress }) => {
+      sourceEntry(rest, id, kind).then(({ html, progress, exp }) => {
         loadProgress(progress);
+        loadExperiences(exp);
         const host = document.createElement('div');
         host.className = 'wdp-form-host';
         const template = document.createElement('template');
@@ -411,6 +374,11 @@ function prefetchBatch(rest, kind, ids) {
       return parsed;
     };
     const items = async (blob) => (await read(blob)).items || {};
+    // Yanıt boşta çözülür ve form deneyimi betiği (sayfada yoksa) şimdi yüklenir: dokunuşta ne ağ ne betik beklenir.
+    const ready = request
+      .then((blob) => new Promise((resolve) => idle(resolve)).then(() => read(blob)))
+      .then((data) => loadExperiences(lazyAsset(data, 'experiences', window.location.href)));
+    ready.catch(() => {}); // İptal/hata dokunuşta ele alınır (sayfa değişiminde işlenmemiş ret yok).
     part.forEach((id) => {
       const key = hostKey(rest, id, kind);
       const lazy = request.then(async (blob) => {
@@ -418,6 +386,7 @@ function prefetchBatch(rest, kind, ids) {
         if (blob.size < 512 && typeof (await items(blob))[id] !== 'string') {
           throw new Error('missing');
         }
+        await ready;
         markReady(id);
         // Çözümü erteleyen nesne: kap ilk kez kurulurken çözülür.
         return {
@@ -552,8 +521,8 @@ function scheduleFlush() {
  */
 function queueCta(cta) {
   const info = ctaInfo(cta);
-  if (!info || aheadDisabled || sources.has(hostKey(info.rest, info.id, info.kind)) || prefetchFor(info.id, info.kind, false)) {
-    return; // zaten alındı ya da tarayıcının ön alma bağlantısı kapsıyor
+  if (!info || aheadDisabled || sources.has(hostKey(info.rest, info.id, info.kind))) {
+    return; // zaten alındı / alınıyor
   }
   const group = JSON.stringify([info.rest, info.kind]);
   if (!queued.has(group)) {
@@ -625,18 +594,50 @@ function bindDocument() {
   INTENT_EVENTS.forEach((type) => document.addEventListener(type, onIntent, { capture: true, passive: true }));
 }
 
-/** Görünür alana yaklaşan (bağlantıyla önceden alınmamış) kartları izlemeye başlar (bir kez). */
+/**
+ * Kart düğmelerini izlemeye alır (bir kez; sonradan DOM'a gelen ya da sayfa oluşturucunun yeniden çizdiği düğmeler
+ * dahil). Formu zaten bellekte olan ürünün yeni düğmesi hemen hazır işaretlenir.
+ */
 function watchCards() {
   startObserver();
-  if (!observer) {
-    return;
-  }
   document.querySelectorAll('[data-wdp-form]').forEach((cta) => {
-    if (!watched.has(cta)) {
-      watched.add(cta);
+    if (watched.has(cta)) {
+      return;
+    }
+    watched.add(cta);
+    if (readyIds.has(cta.getAttribute('data-wdp-form') || '')) {
+      cta.dataset.wdpReady = '1';
+    }
+    if (observer) {
       observer.observe(cta);
     }
   });
+}
+
+/**
+ * Boşta çalıştırır (yoksa kısa gecikmeyle).
+ *
+ * @param {function(): void} task İş.
+ */
+function idle(task) {
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(task, { timeout: 1500 });
+  } else {
+    window.setTimeout(task, 50);
+  }
+}
+
+let rescanPending = false;
+
+/** DOM değişti: kart düğmeleri boşta, tek seferde yeniden taranır (değişiklik başına iş yok). */
+function scheduleRescan() {
+  if (!rescanPending) {
+    rescanPending = true;
+    idle(() => {
+      rescanPending = false;
+      watchCards();
+    });
+  }
 }
 
 function init() {
@@ -649,41 +650,40 @@ function init() {
     bindTabs(wrap);
     wrap.querySelectorAll('.wdp-card__cta[data-wdp-form]:not([aria-haspopup])').forEach((cta) => cta.setAttribute('aria-haspopup', 'dialog'));
   });
-  // Ön alma ziyaretçinin İLK etkileşiminde (kaydırma, fare hareketi, dokunma, tuş) başlar: yüklemede eklenti betiği
-  // yalnız dinleyici kaydeder (ana iş süresi tabanla aynı) ve hiç etkileşmeyen ziyaretçi (bot, hemen çıkan) sunucuya ek
-  // istek göndermez. Tarayıcı `<link rel="prefetch">` destekliyorsa ilk kartları TARAYICI alır; kalan/desteklemeyen
-  // (Safari) kartlar görünür alana yaklaşınca istemcide boşta toplu alınır. Karta ilk etkileşim doğrudan dokunuşsa form o
-  // an tek istekle alınır.
+  // Ön alma, ziyaretçinin İLK etkileşiminde (kaydırma, fare hareketi, dokunma, tuş) ya da sayfa yüklendikten
+  // IDLE_START_MS sonra boşta — hangisi önce — başlar. Yükleme sırasında eklenti betiği yalnız dinleyici kaydeder (ana iş
+  // süresi tabanla aynı); karta ilk dokunuş sayfa açılır açılmaz gelse de (kaydırmasız) form çoğunlukla hazırdır.
   if (!firstScheduled) {
     firstScheduled = true;
-    FIRST_INTERACTION.forEach((type) => window.addEventListener(type, onFirstInteraction, { capture: true, passive: true }));
+    FIRST_INTERACTION.forEach((type) => window.addEventListener(type, activate, { capture: true, passive: true }));
+    const later = () => window.setTimeout(() => idle(activate), IDLE_START_MS);
+    if (document.readyState === 'complete') {
+      later();
+    } else {
+      window.addEventListener('load', later, { once: true });
+    }
   }
 }
 let firstScheduled = false;
 const FIRST_INTERACTION = ['scroll', 'pointermove', 'pointerdown', 'touchstart', 'keydown', 'wheel'];
-
-function onFirstInteraction() {
-  FIRST_INTERACTION.forEach((type) => window.removeEventListener(type, onFirstInteraction, { capture: true }));
-  if (nativePrefetch()) {
-    activatePrefetchLinks();
-  }
-  watchCards();
-}
+/** Etkileşim yoksa ön almanın başladığı an (yüklemeden sonra, ms): sayfanın kendi işi bitmiş olur. */
+const IDLE_START_MS = 1000;
+let active = false;
 
 /**
- * Sunucunun etkisiz `<template data-dp-prefetch-links>` içinde bastığı ön alma bağlantılarını sayfa yüklendikten sonra
- * `<head>`'e taşır: tarayıcı toplu ucu en düşük öncelikle alır (ilk yükte bayt/bant yok; betik `fetch()` başlatmaz).
- * Yalnız doğrulanan (aynı köken + eklenti toplu ucu) bağlantılar taşınır.
+ * Ön almayı başlatır (bir kez): görünür alana yakın kart düğmeleri izlenir; sonradan eklenen/yeniden çizilen kartlar
+ * (sayfa oluşturucu, kaydırıcı kopyaları) DOM değişikliğinde boşta yeniden taranır.
  */
-function activatePrefetchLinks() {
-  document.querySelectorAll('template[data-dp-prefetch-links]').forEach((tpl) => {
-    tpl.content.querySelectorAll('link[rel="prefetch"][data-dp-prefetch]').forEach((link) => {
-      if (parsePrefetchHref(link.getAttribute('href'), window.location.href)) {
-        document.head.appendChild(document.importNode(link, false));
-      }
-    });
-    tpl.remove();
-  });
+function activate() {
+  if (active) {
+    return;
+  }
+  active = true;
+  FIRST_INTERACTION.forEach((type) => window.removeEventListener(type, activate, { capture: true }));
+  watchCards();
+  if (typeof window.MutationObserver === 'function' && document.body) {
+    new window.MutationObserver(scheduleRescan).observe(document.body, { childList: true, subtree: true });
+  }
 }
 
 if (document.readyState === 'loading') {

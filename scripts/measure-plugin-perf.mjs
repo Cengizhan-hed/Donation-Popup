@@ -126,13 +126,24 @@ function pageObservers() {
     // `loading` olayındaki her FontFace'in `loaded` sözü izlenir (aile/kalınlık/stil ile: metin kaymasının yazı tipi eşleşmesi).
     if (document.fonts && document.fonts.addEventListener) {
       const mark = () => window.__dpPerf.fontTimes.push(performance.now());
-      document.fonts.addEventListener('loadingdone', mark);
+      const seen = new WeakSet();
+      const face = (f) => {
+        if (seen.has(f)) return;
+        seen.add(f);
+        window.__dpPerf.fontFaces.push({ t: performance.now(), family: f.family, weight: f.weight, style: f.style });
+      };
+      // Chromium `loading` olayında `fontfaces` BOŞ gelir (CSS'e bağlı yüzler); yüklenen yüzler `loadingdone` olayında
+      // listelenir (12.3 fix: uzak ölçümlerde fontFaces hep boştu, yazı tipi değişimi eklentiye yazılıyordu).
+      document.fonts.addEventListener('loadingdone', (e) => {
+        mark();
+        for (const f of e.fontfaces || []) face(f);
+      });
       document.fonts.addEventListener('loading', (e) => {
-        for (const face of e.fontfaces || []) {
-          face.loaded.then(
+        for (const f of e.fontfaces || []) {
+          f.loaded.then(
             () => {
               mark();
-              window.__dpPerf.fontFaces.push({ t: performance.now(), family: face.family, weight: face.weight, style: face.style });
+              face(f);
             },
             () => {}
           );

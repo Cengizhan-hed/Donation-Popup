@@ -10,6 +10,7 @@
 
 namespace DonationPanel\Modules\SideCart;
 
+use DonationPanel\Http\Rate_Limiter;
 use DonationPanel\Http\Rest_Controller;
 use DonationPanel\Modules\Experiences\Form_Controller;
 use DonationPanel\WooCommerce\Cart;
@@ -20,6 +21,25 @@ defined( 'ABSPATH' ) || exit;
  * Side_Cart_Controller.
  */
 class Side_Cart_Controller extends Rest_Controller {
+
+	/**
+	 * Çekmece etkileşim paketinin adresi (sürüm sorgusuyla; `Assets::script_url`). Sayfa yüklemesinde gelmeyen paketi
+	 * istemci yalnız bu yanıttan (doğrulayarak) alır; boşsa çekmece paketi yüklenmez.
+	 *
+	 * @var string
+	 */
+	private $drawer_url;
+
+	/**
+	 * Kurucu.
+	 *
+	 * @param Rate_Limiter $limiter    Hız sınırlayıcı.
+	 * @param string       $drawer_url Çekmece paketi adresi.
+	 */
+	public function __construct( Rate_Limiter $limiter, $drawer_url = '' ) {
+		parent::__construct( $limiter );
+		$this->drawer_url = (string) $drawer_url;
+	}
 
 	/**
 	 * Rotaları kaydeder.
@@ -136,6 +156,7 @@ class Side_Cart_Controller extends Rest_Controller {
 				'subtotal' => $subtotal,
 				'sub'      => $lines ? Side_Cart_Renderer::count_text( count( $lines ) ) : '',
 				'html'     => Side_Cart_Renderer::body( $lines, $subtotal, function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '', Side_Cart_Suggestion::current( $lines ) ),
+				'drawer'   => $this->drawer_url,
 			)
 		);
 		$response->header( 'Cache-Control', 'no-store, private' );

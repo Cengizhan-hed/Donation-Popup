@@ -78,6 +78,8 @@ final class Experiences_Module implements Module_Interface {
 		$this->cart->register();
 
 		add_filter( 'donation_panel_rest_controllers', array( $this, 'add_rest_controller' ) );
+		// Liste/mağaza kartı sayfasında form betiği sayfa yüklemesinde yok: REST'le gelen formla birlikte adresi bildirilir.
+		add_filter( 'donation_panel_experience_assets', array( $this, 'rest_assets' ), 5, 2 );
 		// Doğrudan (sepetsiz) bağış: yarım siparişleri temizleyen olay işleyicisi (zamanlama ilk siparişte kurulur).
 		Direct_Cleanup::register();
 		// Compact kartın ödeme katmanı: order-pay sayfasının yalın (gömülü) görünümü.
@@ -92,6 +94,32 @@ final class Experiences_Module implements Module_Interface {
 	 */
 	public function register_shortcode() {
 		add_shortcode( self::SHORTCODE, array( $this, 'shortcode' ) );
+	}
+
+	/**
+	 * REST'le gelen formların paketi: form deneyimi betiği (`experiences`). Liste/mağaza kartı sayfası bu betiği sayfa
+	 * yüklemesinde almaz (ilk yük baytı yok); istemci yalnız bu sunucu yanıtındaki, eklentinin kendi derleme yolundaki aynı
+	 * kökenli adresi kabul eder (DOM özniteliğinden adres okunmaz). Stil sayfada zaten vardır.
+	 *
+	 * @param array<string, mixed>             $assets Paketler.
+	 * @param array<int, array<string, mixed>> $models Ürün => form modeli.
+	 * @return array<string, mixed>
+	 */
+	public function rest_assets( $assets, $models ) {
+		$assets = (array) $assets;
+		$ids    = array_map( 'intval', array_keys( (array) $models ) );
+		if ( empty( $ids ) || ! $this->container ) {
+			return $assets;
+		}
+		$script = $this->container->get( Assets::class )->script_url( self::SLUG );
+		if ( '' !== $script ) {
+			$assets[ self::SLUG ] = array(
+				'ids'    => $ids,
+				'script' => $script,
+				'style'  => '',
+			);
+		}
+		return $assets;
 	}
 
 	/**

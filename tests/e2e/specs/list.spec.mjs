@@ -178,11 +178,11 @@ test('form: panel içinde ürün/kampanya görseli yok', async ({ page }) => {
 });
 
 test('ön alma sürerken sayfadan ayrılma: sayfa hatası yok (WebKit "access control checks")', async ({ page }) => {
-  // Tam paket `iphone-mut2/shortcode-bad-hash` kırmızısı (467f0db ve 1b2d84a öncesi dallar): liste betiği toplu ön almayı
-  // YÜKLEMEDEN SONRA KENDİLİĞİNDEN başlatıyordu; kısa kod denetimleri sayfayı `domcontentloaded` ile hızla değiştirince
-  // istek yarıda kesiliyor, WebKit bunu "Fetch API cannot load … due to access control checks" sayfa hatası olarak
-  // yazıyordu (aynı köken; CORS değil, iptal). 1b2d84a'dan beri ön alma yalnız ilk etkileşimde başlar. Bu test: (1)
-  // etkileşimsiz ziyarette eklenti isteği yok, (2) etkileşimle başlayan istek ağdayken (yavaş sunucu) ayrılınca sayfa hatası yok.
+  // Tam paket `iphone-mut2/shortcode-bad-hash` kırmızısı (467f0db öncesi): uçuştaki ön alma isteği sayfa değişimiyle
+  // kesilince WebKit "Fetch API cannot load … due to access control checks" yazar (aynı köken; CORS değil, iptal).
+  // 12.3 fix: ön alma ilk etkileşimde YA DA yüklemeden 1 sn sonra boşta başlar (ilk dokunuş kaydırmasız gelse de form
+  // hazır). Bu test: (1) yükleme ve hemen sonrası (≤0,8 sn) istek yok; hızlı `domcontentloaded` ayrılmaları temiz;
+  // (2) etkileşimle VE (3) etkileşimsiz boşta başlayan istek ağdayken (yavaş sunucu) ayrılınca sayfa hatası yok.
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e && e.message ? e.message : e)));
   const logs = [];
@@ -196,10 +196,10 @@ test('ön alma sürerken sayfadan ayrılma: sayfa hatası yok (WebKit "access co
   await page.context().addCookies([{ name: 'dp_slow_rest', value: '1', url: new globalThis.URL(page.url()).origin }]);
   const started = [];
   page.on('request', (r) => /donation-panel(\/|%2F)v1(\/|%2F)experiences/.test(r.url()) && started.push(r.url()));
-  // (1) Etkileşimsiz: yükleme + boşta bekleme boyunca eklenti ön alma isteği yok; hızlı ayrılma (domcontentloaded) temiz.
+  // (1) Yükleme ve hemen sonrası: eklenti ön alma isteği yok; hızlı ayrılma (domcontentloaded) temiz.
   await page.goto(URL, { waitUntil: 'load' });
-  await page.waitForTimeout(1500);
-  expect(started, 'etkileşimsiz ziyarette ön alma isteği').toEqual([]);
+  await page.waitForTimeout(800);
+  expect(started, 'yükleme sırasında ön alma isteği').toEqual([]);
   await page.goto(`${URL}&n=x`, { waitUntil: 'domcontentloaded' });
   await page.goto(URL, { waitUntil: 'domcontentloaded' });
   // (2) Etkileşimle başlayan istek ağdayken ayrılma (4 kez).
@@ -211,7 +211,84 @@ test('ön alma sürerken sayfadan ayrılma: sayfa hatası yok (WebKit "access co
     await expect.poll(() => started.length, { timeout: 10000 }).toBeGreaterThan(seen);
     await page.goto(`${URL}&n=${i}#bagis-x`, { waitUntil: 'load' });
   }
+  // (3) Etkileşimsiz: boşta kendiliğinden başlayan istek ağdayken ayrılma (2 kez).
+  for (let i = 0; i < 2; i += 1) {
+    await page.goto(`${URL}&m=${i}`, { waitUntil: 'load' });
+    const seen = started.length;
+    await expect.poll(() => started.length, { timeout: 10000 }).toBeGreaterThan(seen);
+    await page.goto(`${URL}&m=${i}#bagis-y`, { waitUntil: 'load' });
+  }
   await page.waitForTimeout(800);
-  expect(started.length, 'ön alma isteği ayrılma anında ağdaydı').toBeGreaterThanOrEqual(4);
+  expect(started.length, 'ön alma isteği ayrılma anında ağdaydı').toBeGreaterThanOrEqual(6);
   expect(errors, logs.join(' | ')).toEqual([]);
+});
+
+/**
+ * Dokunuş → panel (sayfa içinde ölçülür: click yakalama → `dialog[open]` görünür) ve dokunuş anından sonra AĞA giden
+ * eklenti REST istekleri (transferSize > 0).
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {import('@playwright/test').Locator} cta Kart düğmesi.
+ * @return {Promise<{ms: number, network: number}>} Ölçüm.
+ */
+async function tapAndMeasure(page, cta) {
+  await page.evaluate(() => {
+    window.__tap = { t0: 0, t1: 0 };
+    document.addEventListener('click', () => (window.__tap.t0 = performance.now()), { capture: true, once: true });
+    const mo = new MutationObserver(() => {
+      const d = document.querySelector('.wdp-form-host dialog[open]');
+      if (d && !window.__tap.t1) {
+        window.__tap.t1 = performance.now();
+        mo.disconnect();
+      }
+    });
+    mo.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['open'] });
+  });
+  const from = await page.evaluate(() => performance.now());
+  await cta.click();
+  await expect(page.locator('.wdp-form-host dialog[open] [data-dp-surface]')).toBeVisible({ timeout: 15000 });
+  return page.evaluate(
+    (t) => ({
+      ms: Math.round(window.__tap.t1 - window.__tap.t0),
+      network: performance.getEntriesByType('resource').filter((r) => r.startTime >= t && /donation-panel(\/|%2F)v1/.test(r.name) && r.transferSize > 0).length,
+    }),
+    from
+  );
+}
+
+test.describe('kart ön alma: oluşturucu çıktısı, yeniden çizim, çerez değişimi (12.3 fix)', () => {
+  // Genel durumlar (tema/oluşturucu adı yok): kartlar yüklemeden sonra betikle gelir; ziyaretçinin İLK etkileşimi doğrudan
+  // karta dokunuş (kaydırma/fare yok); başka betikler çerez yazar (HTTP önbelleği `Vary: Cookie` ıskası). Hepsinde form
+  // dokunuştan önce bellekte hazır, dokunuşta eklenti REST ağ isteği 0, panel ağır CSS'te bile < 100 ms.
+  const sim = (q) => `${URL}&${q}`;
+
+  test('oluşturucu çıktısı + ağır CSS: kaydırmasız ilk dokunuşta ağ 0, < 100 ms', async ({ page }) => {
+    await page.goto(sim('dp_builder=1&dp_heavy=1'), { waitUntil: 'load' });
+    await page.waitForFunction(() => window.__simBuilt === 1);
+    const cta = page.locator('.wdp-card__cta[data-wdp-form]').first();
+    await expect(cta).toHaveAttribute('data-wdp-ready', '1', { timeout: 10000 });
+    const r = await tapAndMeasure(page, cta);
+    expect(r.network, 'dokunuşta eklenti REST ağ isteği').toBe(0);
+    expect(r.ms, 'dokunuş → panel (ms)').toBeLessThan(100);
+  });
+
+  test('yeniden çizilen kart düğmesi de hazır; dokunuşta ağ 0', async ({ page }) => {
+    await page.goto(sim('dp_builder=1&dp_rerender=1'), { waitUntil: 'load' });
+    await expect(page.locator('.wdp-card__cta[data-wdp-form]').first()).toHaveAttribute('data-wdp-ready', '1', { timeout: 10000 });
+    await page.waitForFunction(() => window.__simRerendered === 1, null, { timeout: 10000 });
+    const cta = page.locator('.wdp-card__cta[data-wdp-form]').first();
+    await expect(cta, 'yeni düğüm hazır işaretlendi').toHaveAttribute('data-wdp-ready', '1', { timeout: 10000 });
+    const r = await tapAndMeasure(page, cta);
+    expect(r.network).toBe(0);
+  });
+
+  test('çerez değişse de (başka betik) dokunuşta ağ 0', async ({ page }) => {
+    await page.goto(sim('dp_cookie_churn=1'), { waitUntil: 'load' });
+    const cta = page.locator('.wdp-card__cta[data-wdp-form]').first();
+    await expect(cta).toHaveAttribute('data-wdp-ready', '1', { timeout: 10000 });
+    const before = await page.evaluate(() => document.cookie.match(/sim_churn=(\d+)/)?.[1] || '');
+    await expect.poll(() => page.evaluate(() => document.cookie.match(/sim_churn=(\d+)/)?.[1] || '')).not.toBe(before);
+    const r = await tapAndMeasure(page, cta);
+    expect(r.network, 'çerez değişimi sonrası dokunuşta ağ').toBe(0);
+  });
 });

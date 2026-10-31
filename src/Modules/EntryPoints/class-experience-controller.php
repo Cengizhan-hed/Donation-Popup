@@ -38,9 +38,6 @@ class Experience_Controller extends Rest_Controller {
 	 */
 	const PREFETCH_LIMIT = 240;
 
-	/** Toplu ön alma yanıtının tarayıcı önbelleğindeki ömrü (sn; yalnız `private`). */
-	const PREFETCH_TTL = 300;
-
 	/**
 	 * Form çıktısı üretici.
 	 *
@@ -148,7 +145,9 @@ class Experience_Controller extends Rest_Controller {
 				$models[ $product_id ]         = $model;
 			}
 		}
-		$response = rest_ensure_response(
+		// Önbelleğe alınmaz (içerikte nonce): istemci yanıtı kendi belleğinde (Blob) tutar; dokunuşta ağ isteği olmaması
+		// tarayıcının HTTP önbelleğine (Vary: Cookie, araya giren önbellek başlıkları, çerez değişimi) bağlı değildir.
+		return $this->no_store(
 			self::with_assets(
 				array(
 					'kind'  => $kind,
@@ -157,12 +156,6 @@ class Experience_Controller extends Rest_Controller {
 				$models
 			)
 		);
-		// Tarayıcı düzeyi ön alma (`<link rel="prefetch">`, Prefetch_Links): yanıt YALNIZ o tarayıcının önbelleğinde kısa
-		// süre tutulur ki dokunuştaki aynı istek ağa gitmesin. `private` = paylaşılan/vekil önbellek yok; `Vary: Cookie` =
-		// oturum/sepet çerezi değişince yeniden alınır. İçerikteki REST nonce'u 12–24 saat geçerli; ömür bunun çok altında.
-		$response->header( 'Cache-Control', 'private, max-age=' . self::PREFETCH_TTL );
-		$response->header( 'Vary', 'Cookie' );
-		return $response;
 	}
 
 	/**

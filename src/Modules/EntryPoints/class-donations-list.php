@@ -38,6 +38,23 @@ class Donations_List {
 	/** @var bool */
 	private static $invalidation_hooked = false;
 
+	/**
+	 * Bu istekte formu açan kart düğmesi (liste ya da mağaza/arşiv döngüsü) çizildi mi.
+	 *
+	 * @var bool
+	 */
+	private static $card_forms = false;
+
+	/**
+	 * Bu istekte formu açan kart düğmesi çizildi mi (form betiği sayfada olmasa da kart formu sepete ekler; yan sepet
+	 * bunu sorar).
+	 *
+	 * @return bool
+	 */
+	public static function has_card_forms() {
+		return self::$card_forms;
+	}
+
 	/** @var bool One bump per HTTP request (option increment is cheap; skip repeats). */
 	private static $bumped_this_request = false;
 
@@ -251,10 +268,6 @@ class Donations_List {
 		}
 
 		$html = self::apply_request_ids( $html );
-		if ( 'link' !== $atts['button'] ) {
-			// Kart formları tarayıcı düzeyinde önceden alınır (sayfa sonunda <link rel="prefetch">; önbellekli HTML'de de).
-			Prefetch_Links::add_from_html( $html, 'popup' === $atts['button'] ? 'popup' : 'side_panel' );
-		}
 		if ( ! empty( $built['empty'] ) && function_exists( 'current_user_can' ) && current_user_can( 'edit_products' ) ) {
 			$notice = Admin_Notice::admin_notice_html( self::empty_reason( $atts ) );
 			$html   = preg_replace( '/(<div\b[^>]*\bclass="[^"]*wdp-list-wrap[^"]*"[^>]*>)/', '$1' . $notice, $html, 1 );
@@ -423,7 +436,10 @@ class Donations_List {
 		$assets = $plugin->container()->get( Assets::class );
 		$assets->enqueue( self::ASSET_SLUG );
 		if ( $with_form ) {
-			$assets->enqueue( Experiences_Module::SLUG );
+			// Form stili sayfada (katman her karede stilli); form BETİĞİ sayfa yüklemesinde yok: liste betiği formlarla
+			// birlikte REST yanıtındaki adresten ihtiyaçta ekler (12.3 fix: liste sayfası JS baytı).
+			$assets->require_style( Experiences_Module::SLUG );
+			self::$card_forms = true;
 		}
 	}
 
@@ -440,7 +456,8 @@ class Donations_List {
 		}
 		$assets = $plugin->container()->get( Assets::class );
 		$assets->enqueue( self::ASSET_SLUG, false, false );
-		$assets->enqueue( Experiences_Module::SLUG, true );
+		$assets->require_style( Experiences_Module::SLUG );
+		self::$card_forms = true;
 	}
 
 	/**
