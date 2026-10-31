@@ -1,0 +1,12 @@
+{"scenario": "basarili", "flow": "cart", "project": "desktop", "currency": "EUR", "money": "/125,00[\\s\\u00a0]?€/", "status": "processing", "hooks": {"payment_complete": 1, "to_processing": 1, "thankyou": 1, "via_webhook": 0, "statuses": ["pending>processing@ajax"]}, "raisedDelta": 125, "mails": 2}
+{"scenario": "3ds-tamam", "flow": "cart", "project": "desktop", "status": "processing", "hooks": {"payment_complete": 1, "to_processing": 1, "thankyou": 1, "via_webhook": 0, "statuses": ["pending>processing@ajax"]}, "raisedDelta": 140}
+{"scenario": "3ds-red", "flow": "cart", "project": "desktop", "statuses": ["failed"], "errorShown": true, "raisedDelta": 0}
+{"scenario": "red-kart+tekrar", "flow": "cart", "project": "desktop", "status": "processing", "extraUnpaidOrders": 0, "errorShown": true, "raisedDelta": 160}
+{"scenario": "yarida-birakma", "flow": "cart", "project": "desktop", "statuses": ["failed"], "pendingLeft": 1, "raisedDelta": 0}
+{"scenario": "webhook-gecikmeli", "flow": "cart", "project": "desktop", "status": "processing", "hooks": {"payment_complete": 1, "to_processing": 1, "thankyou": 0, "via_webhook": 0, "statuses": ["pending>processing@cron-webhook"]}, "verifyAborted": 1, "lockExpiredSimulated": true, "raisedDelta": 180}
+{"scenario": "basarili", "flow": "direct", "project": "desktop", "currency": "EUR", "money": "/125,00[\\s\\u00a0]?€/", "status": "processing", "hooks": {"payment_complete": 1, "to_processing": 1, "thankyou": 1, "via_webhook": 0, "statuses": ["pending>processing@page"]}, "raisedDelta": 125, "mails": 2}
+{"scenario": "3ds-tamam", "flow": "direct", "project": "desktop", "status": "processing", "hooks": {"payment_complete": 1, "to_processing": 1, "thankyou": 1, "via_webhook": 0, "statuses": ["pending>processing@ajax"]}, "raisedDelta": 140}
+{"scenario": "3ds-red", "flow": "direct", "project": "desktop", "statuses": ["failed"], "errorShown": true, "raisedDelta": 0}
+{"scenario": "red-kart+tekrar", "flow": "direct", "project": "desktop", "status": "processing", "extraUnpaidOrders": 0, "errorShown": true, "raisedDelta": 160}
+{"scenario": "yarida-birakma", "flow": "direct", "project": "desktop", "statuses": ["failed"], "pendingLeft": 2, "raisedDelta": 0}
+{"scenario": "webhook-gecikmeli", "flow": "direct", "project": "desktop", "status": "processing", "hooks": {"payment_complete": 1, "to_processing": 1, "thankyou": 0, "via_webhook": 0, "statuses": ["pending>processing@cron-webhook"]}, "verifyAborted": 1, "lockExpiredSimulated": true, "raisedDelta": 180}
