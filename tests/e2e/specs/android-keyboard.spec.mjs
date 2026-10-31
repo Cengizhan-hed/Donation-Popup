@@ -115,7 +115,7 @@ for (const mode of MODES) {
         jumps.push(m);
         expect(m.kb, `alan ${i}: kb açık ${JSON.stringify(m)}`).toBe('1');
         expect(m.covered, `alan ${i} sabit bölüm altında ${JSON.stringify(m)}`).toBe(false);
-        expect(m.fieldBottom, `alan ${i} klavye altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.visBottom - 4);
+        expect(m.fieldBottom, `alan ${i} klavye altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.visBottom - 12);
         expect(m.fieldTop, `alan ${i} üstte taştı ${JSON.stringify(m)}`).toBeGreaterThanOrEqual(0);
         expect(m.bodyH, `gövde çok dar ${JSON.stringify(m)}`).toBeGreaterThanOrEqual(100);
       }
