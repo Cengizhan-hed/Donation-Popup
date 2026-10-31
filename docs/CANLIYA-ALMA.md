@@ -109,6 +109,15 @@ Not: Eklentinin eski çerezi (`wdp_vid`) kaldırıldı; geri dönüşte eski sü
 - **Doğrulama:** `docs/CANLIYA-ALMA.md` G2 yedek adımları; sonra KONTROL-LISTESI K–O bölümleri.
 - **Geri dönüş planı:** önceki zip (12.2.0) G2 adımlarıyla kurulur; yeni seçenek anahtarları (`direct.type_*`, `progress.*`, `compact.trust`, yan sepet ayarları) 12.2.0'da yok sayılır, kalabilir.
 
+## G6. 12.4.0
+- **Yeni / değişen ayar yolları** (Bağış Paneli altında; ekran adları sitede doğrulanmalı):
+  - Sepet ve Ödeme › **Teşekkür ekranı**: "e-postada teşekkür bölümü" (varsayılan açık; kapatılabilir; yalnız ödemesi alınmış siparişlerde müşteri e-postasına eklenir).
+  - Formlar ve Görünüm › **Compact kart**: kart yüksekliği 356 px (sabit, tek ekran). Elementor slayt/konteyner yüksekliği en az **372 px** olmalı (kart + boşluk); daha kısaysa kart kırpılmaz ama slayt kayar.
+  - **Kaldırılan ayarlar:** `compact.trust` (güven satırı) ve kaldırılan e-posta ayarları; güncellemede göçle temizlenir, elle işlem gerekmez.
+  - Davranış: doğrudan (sepetsiz) bağışta misafirden e-posta zorunlu; girişli bağışçıda bilgi satırı; sepetli formda e-posta alanı yok. Telefon alanı ülke tablosuyla biçimlenir (+kod/0 ayıklanır).
+- **Geri dönüş planı:** önceki zip (12.3.0) G2 adımlarıyla kurulur; kaldırılan ayarlar 12.3.0'a dönüşte varsayılana düşer, siparişler ve kampanya toplamları etkilenmez.
+- **Canlıya almadan önce kontrol:** (1) bölüm **S3** WP-Cron adımları (Günlük Cron ✔, gecikmiş eylem yok); (2) bölüm **S1–S2** Stripe anahtar + webhook bağlantısı (test modunda küçük test bağışı, sonra canlı); (3) KONTROL-LISTESI 12.4 bölümleri (P–T) ve A (Android klavye); (4) tam yedek (G2).
+
 ## S. Stripe canlı kurulum ve WP-Cron (12.4; KRİTİK KAPI — yalnız kullanıcı yapar)
 Eklenti Stripe'a özel kod içermez; ödeme geçidi WooCommerce'in resmi Stripe eklentisidir (yerelde test modunda uçtan uca doğrulandı: sepetli+doğrudan, başarılı, 3D Secure, red, yarıda bırakma, gecikmeli webhook; TRY/GBP/EUR; blok+klasik ödeme sayfası). Canlıya geçişte:
 

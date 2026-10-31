@@ -5,7 +5,7 @@ Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
-Stable tag: 12.3.0
+Stable tag: 12.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,9 @@ Write it on your site; the form only shows a link to the page you choose.
 
 == Upgrade Notice ==
 
+= 12.4.0 =
+Phone field with country formatting, thank-you section in the customer email, compact card v3 (cart only, 356 px). Direct donations now ask for the donor email (required for card payments). Removed email settings are cleaned up on update. Rolling back to 12.3.0 is safe. Back up first.
+
 = 12.3.0 =
 Direct donation settings, compact card v2, live campaign progress bar, instant panels from lists. Theme colors use named palette roles only; themes without them get a neutral button color. Rolling back to 12.2.0 is safe. Back up first.
 
@@ -62,6 +65,13 @@ Performance and security release. Nothing loads on pages without a donation surf
 Major release. One experience, one menu: the previous form engine and settings screens were removed. Settings, orders, shortcodes and blocks are kept. Back up before updating.
 
 == Changelog ==
+
+= 12.4.0 =
+* Added: phone field (country table, formatting, +code/leading 0 stripping, warning, E.164 hand-off, server validation); thank-you section in the customer email (can be turned off, paid orders only); item labels in the recipient's language; phone and technical meta hidden from customer emails; block email editor compatibility; email info line for logged-in donors; Android keyboard checks.
+* Changed: card forms are embedded in the page HTML (no extra request); compact card v3 (cart only, 356 px, one fixed-height screen, no trust or total row, setting compact.trust removed); the email field appears only on direct guest donations and is required, never in cart forms; on keyboard close only the lower section fades and the field stays at least 12 px above the keyboard; removed email settings are cleaned up on update.
+* Fixed: direct donations did not ask for an email, so Stripe payments failed; the button shook and shrank when the keyboard closed; the phone hint shifted the button.
+* Security: card bundle independent of capability, per-product cache key, `logged_in` is boolean only, read-only cron status.
+* Rollback: returning to 12.3.0 with the zip is safe.
 
 = 12.3.0 =
 * Added: direct donation settings (global, per donation type, per product); compact card v2 (384 px, 2 or 3 steps, Gift Aid details, trust line); live campaign progress bar with a personal preview, cart sync and a goal celebration; form prefetch on list and shop cards; color source display in the admin; side cart settings.
