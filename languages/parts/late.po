@@ -1,0 +1,15 @@
+# Turkish translations — 124-late (girişli bağışçıda e-posta alanı yerine bilgi satırı).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: templates/donation-panel/experiences/form.php
+msgid "Your donation receipt will be sent to your account email"
+msgstr "Bağış makbuzunuz hesabınızın e-postasına gönderilecek"

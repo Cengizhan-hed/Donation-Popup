@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 11:02:26+0000\n"
-"PO-Revision-Date: 2026-10-31 11:02:26+0000\n"
+"POT-Creation-Date: 2026-10-31 11:18:10+0000\n"
+"PO-Revision-Date: 2026-10-31 11:18:10+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -7581,6 +7581,10 @@ msgstr "Bağışınız zaten işleniyor. Lütfen biraz bekleyin."
 #. translators: 1: formatted amount, 2: product name.
 msgid "Your donation of %1$s to %2$s was received."
 msgstr "%2$s için %1$s bağışınız alındı."
+
+#: templates/donation-panel/experiences/form.php
+msgid "Your donation receipt will be sent to your account email"
+msgstr "Bağış makbuzunuz hesabınızın e-postasına gönderilecek"
 
 #: includes/traits/trait-wdp-assets-registry.php:370
 msgid "Your donation was added to the cart"

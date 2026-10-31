@@ -170,7 +170,10 @@ test('girişli, doğrudan: e-posta alanı gösterilmez; sipariş hesap e-postas�
     }
   });
   await fillWithoutEmail(page);
-  await expect(page.locator('[data-dp-field="donation_email"]')).toBeHidden();
+  // 12.4 late: alan gizlenmez; yerinde aynı kutuda bilgi satırı (e-posta adresi gösterilmez).
+  await expect(page.locator('[data-dp-account-note]')).toHaveText('Your donation receipt will be sent to your account email');
+  await expect(page.locator('[data-dp-account-note]')).not.toContainText('@');
+  await expect(page.locator('input[name="donation_email"]')).toBeHidden();
   await expect(page.locator('input[name="donation_email"]')).toBeDisabled();
   await expect(page.locator('input[name="donation_email"]')).not.toHaveAttribute('required', /.*/);
   await page.locator('[data-dp-submit]').click();
@@ -209,4 +212,102 @@ test('misafir, doğrudan: yazılan e-posta siparişe eksiksiz yazılır', async 
   const order = orderEmails(page.url());
   expect(order.billing).toBe(DONOR.email);
   expect(order.item).toBe(DONOR.email);
+});
+
+// --- 12.4 late: girişli bağışçıda e-posta alanı yerine AYNI yükseklikte bilgi satırı; yerleşim kayması 0 ---
+const LATE_KINDS = ['popup', 'side_panel', 'bottom_sheet', 'inline'];
+
+/**
+ * Doğrudan formu açar (katmanlı kaplarda tetikleyiciyle), tutarı yazar ve ayrıntı adımına gelir.
+ *
+ * @param {import('@playwright/test').Page} page Sayfa.
+ * @param {string} baseURL Taban adres.
+ * @param {string} kind Kap.
+ */
+async function openDetails(page, baseURL, kind) {
+  await page.context().addCookies([{ name: 'dp_direct', value: '1', url: baseURL }]);
+  await page.goto(`/?dp_exp_test=${kind}&dp_product=${PRODUCT}&dp_no_login_class=1`);
+  if (kind !== 'inline') {
+    await page.locator('[data-dp-open]').click();
+  }
+  await expect(page.locator('[data-dp-form]')).toBeVisible({ timeout: 20000 });
+  // Hazır tutar düğmesi (mobil katmanlarda klavye açan yazı alanı yerine; gerçek kullanıcı akışı).
+  await page.locator('[data-dp-amounts] [role="radio"]').nth(1).click();
+  await page.locator('[data-dp-submit]').click();
+  await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
+}
+
+for (const kind of LATE_KINDS) {
+  test(`girişli, ${kind}: alan -> bilgi satırı geçişinde düğme ve altındakiler kaymaz (rAF + CLS)`, async ({ page, context, baseURL }) => {
+    const auth = parseLocalEvalJson(
+      runLocalEvalFile('tests/e2e/helpers/wdp-checkout-prefill-user.php', [JSON.stringify({ first_name: 'Hesap' })], { env: { WDP_LOCAL_WP_DIR: WP_DIR } })
+    );
+    expect(auth.ok).toBe(true);
+    await context.addCookies([
+      { name: auth.logged_in_name, value: auth.logged_in, url: baseURL },
+      { name: auth.auth_name, value: auth.auth, url: baseURL },
+    ]);
+    // Nonce yanıtı elle tutulur: "yanıt gelmeden önce" ve "sonra" durumları ayrı ölçülür.
+    let release = () => {};
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/donation-panel/v1/nonce*', async (route) => {
+      await gate;
+      await route.continue();
+    });
+    await openDetails(page, baseURL, kind);
+    const wrap = page.locator('[data-dp-field="donation_email"]');
+    await expect(wrap).toBeVisible();
+    await expect(page.locator('input[name="donation_email"]')).toHaveAttribute('required', '');
+    await page.locator('input[name="donation_full_name"]').fill(DONOR.name); // ilk etkileşim: nonce isteği başlar (yanıt tutulur)
+    await page.waitForTimeout(700); // adım girişi/odak kaydırması otursun; ölçüm yalnız geçişi kapsar
+    await page.evaluate(() => {
+      const state = { cls: 0, frames: [] };
+      window.__lateTrace = state;
+      new window.PerformanceObserver((list) => {
+        list.getEntries().forEach((e) => {
+          if (!e.hadRecentInput) state.cls += e.value;
+        });
+      }).observe({ type: 'layout-shift', buffered: false });
+      const round = (n) => Math.round(n * 10) / 10;
+      const sample = () => {
+        const rect = (selector) => {
+          const el = document.querySelector(selector);
+          return el ? el.getBoundingClientRect() : null;
+        };
+        const w = rect('[data-dp-field="donation_email"]');
+        const b = rect('[data-dp-submit]');
+        state.frames.push([w && round(w.top), w && round(w.height), b && round(b.top), b && round(b.height)].join('|'));
+        window.requestAnimationFrame(sample);
+      };
+      window.requestAnimationFrame(sample);
+    });
+    await page.waitForTimeout(300);
+    release();
+    await expect(page.locator('[data-dp-account-note]')).toHaveText(/account email/);
+    await page.waitForTimeout(400);
+    const trace = await page.evaluate(() => window.__lateTrace);
+    expect(trace.frames.length).toBeGreaterThan(10);
+    // Tüm karelerde alan kutusu ve gönder düğmesi konum/yükseklik değerleri TEK değer.
+    expect([...new Set(trace.frames)], `kap ${kind}`).toHaveLength(1);
+    expect(trace.cls).toBe(0);
+    const box = await wrap.boundingBox();
+    const note = await page.locator('[data-dp-account-note]').boundingBox();
+    expect(Math.abs(note.height - box.height)).toBeLessThanOrEqual(1);
+    const size = await page.locator('[data-dp-account-note]').evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(size).toBeGreaterThanOrEqual(16);
+    await expect(page.locator('[data-dp-account-note]')).toHaveAttribute('role', 'status');
+    await expect(page.locator('[data-dp-account-note]')).not.toContainText('@');
+  });
+}
+
+test('misafir, doğrudan: bilgi satırı çıkmaz, alan görünür ve zorunlu', async ({ page, baseURL }) => {
+  await openDetails(page, baseURL, 'inline');
+  await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
+  await page.waitForTimeout(800);
+  await expect(page.locator('input[name="donation_email"]')).toBeVisible();
+  await expect(page.locator('input[name="donation_email"]')).toHaveAttribute('required', '');
+  await expect(page.locator('[data-dp-account-note]')).toHaveText('');
+  await expect(page.locator('[data-dp-field="donation_email"]')).not.toHaveAttribute('data-dp-account', /.*/);
 });
