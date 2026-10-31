@@ -25,7 +25,7 @@ function lin(c) {
  * @param {number[]} rgb [r, g, b] 0..255.
  * @return {number} 0..1.
  */
-export function luminance(rgb) {
+function luminance(rgb) {
   return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
 }
 

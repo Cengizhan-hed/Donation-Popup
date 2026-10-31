@@ -3,7 +3,7 @@
  */
 
 /** Parola alt sınırı (sunucuyla aynı). */
-export const MIN_PASSWORD = 8;
+const MIN_PASSWORD = 8;
 
 /**
  * E-posta biçimi (gevşek; asıl doğrulama sunucuda).

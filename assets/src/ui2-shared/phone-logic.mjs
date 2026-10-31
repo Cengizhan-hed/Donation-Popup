@@ -55,7 +55,7 @@ function lengthRange(idx, iso) {
  * @param {string} digits Rakamlar.
  * @return {{dial:string, isos:string[]}|null} Eşleşme.
  */
-export function matchDial(idx, digits) {
+function matchDial(idx, digits) {
   for (let len = 3; len >= 1; len -= 1) {
     const dial = digits.slice(0, len);
     if (idx.byDial[dial]) {

@@ -45,7 +45,7 @@ function caretAfter(text, digits) {
  * @param {HTMLInputElement} input Telefon girdisi.
  * @return {{status:string, warning:boolean, empty:boolean, blocked:boolean}} blocked: dolu ama eksik/fazla/tanınmayan.
  */
-export function phoneState(input) {
+function phoneState(input) {
   const box = input.closest('.donation-panel-phone');
   const select = box ? box.querySelector('[data-dp-dial]') : null;
   const option = select && select.selectedOptions ? select.selectedOptions[0] : null;
