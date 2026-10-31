@@ -2,11 +2,8 @@
  * Yan sepet saf mantığı (DOM yok): birim testlenir.
  */
 
-/** Dar ekran (alttan panel) sorgusu: tek form çekirdeğiyle aynı eşik. */
-export const NARROW_QUERY = '(max-width: 639.98px)';
-
 /** Sürükleyerek kapatma eşiği (px). */
-export const DRAG_DISMISS_PX = 110;
+const DRAG_DISMISS_PX = 110;
 
 /**
  * Yeni miktar (en az 1, tam sayı).

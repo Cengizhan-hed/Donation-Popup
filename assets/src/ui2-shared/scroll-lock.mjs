@@ -199,6 +199,9 @@ export function isTopmost(owner) {
 }
 
 /**
+ * Birim testi dinamik içe aktarmayla kullanır (knip statik izleyemez).
+ *
+ * @public
  * @return {boolean} Sayfa kilitli mi (en az bir katman açık).
  */
 export function isLocked() {

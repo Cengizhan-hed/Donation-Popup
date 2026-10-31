@@ -13,7 +13,7 @@ const NAV_KEYS = new Set(['Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRigh
  * @param {{key?: string, metaKey?: boolean, ctrlKey?: boolean, altKey?: boolean}} event Tuş olayı.
  * @return {boolean} Bu tuş klavye ile gezinme mi.
  */
-export function isNavigationKey(event) {
+function isNavigationKey(event) {
   return Boolean(event) && !event.metaKey && !event.ctrlKey && !event.altKey && NAV_KEYS.has(String(event.key));
 }
 

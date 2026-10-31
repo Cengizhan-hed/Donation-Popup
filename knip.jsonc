@@ -1,0 +1,44 @@
+{
+  // Yalnız geliştirme aracı (devDependency); pakete girmez. verify içinde `npm run knip` kapısı: bulgu / araç yok => kırmızı.
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "assets/src/*/index.{js,mjs}",
+    "tests/e2e/playwright.config.mjs",
+    "blocks/**/*.js",
+    "scripts/*.mjs",
+    "tools/**/*.mjs",
+    "tests/e2e/run-*.mjs",
+    // Tek seferlik ölçüm/teşhis araçları (docs/MIMARI.md'de adıyla anılır, elle koşulur)
+    "tests/e2e/quality-diag-*.mjs",
+    "tests/e2e/specs/**/*.{js,mjs}",
+    "tests/unit/js/*.test.mjs"
+  ],
+  "project": [
+    "assets/src/**/*.{js,mjs}",
+    "blocks/**/*.js",
+    "scripts/**/*.mjs",
+    "tools/**/*.mjs",
+    "tests/**/*.{js,mjs}"
+  ],
+  "ignore": [
+    // Eski motorun ürün-meta suite'leri: capture.mjs dizgeyle ('./shortcodes.mjs') ya da full-slices adıyla yükler; birim testler
+    // metin olarak okur (shell-capture-wait.test.mjs). Silme kararı RAPOR-12-e2e.md "Kalan işler"; knip statik izleyemez.
+    "tests/e2e/helpers/{amount-options,campaign-blocks,empty-price,form-fields,layout,product-theme,shortcodes}.mjs"
+  ],
+  // Dev kodunda (scripts/tools/tests) dışa aktarılan yardımcılar testler/koşucular için API olabilir; dışa aktarım denetimi yalnız ürün kaynağında.
+  "ignoreIssues": {
+    "scripts/**": ["exports", "types", "duplicates"],
+    "tools/**": ["exports", "types", "duplicates"],
+    "tests/**": ["exports", "types", "duplicates"]
+  },
+  "ignoreDependencies": [
+    // scripts/build-modules.mjs wp-scripts ikilisini çalıştırır (webpack, @wordpress/*)
+    "@wordpress/scripts",
+    // node_modules/axe-core/axe.min.js yol ile okunup sayfaya enjekte edilir (quality-gates.spec.mjs)
+    "axe-core",
+    // scripts/code-report.mjs node_modules/.bin/jscpd'yi çalıştırır; .jscpd.json yapılandırması
+    "jscpd"
+  ],
+  // Sistem/harici ikililer (PHP araçları, yerel WP, cihaz/posta/ödeme test araçları); npm paketi değil
+  "ignoreBinaries": ["php", "composer", "adb", "mailpit", "stripe", "openssl", "msgfmt", "xgettext", "vm_stat", "xdg-open"]
+}

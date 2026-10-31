@@ -7,7 +7,7 @@ import { getJson } from './rest.mjs';
  * @param {string} anon   Adı olmayan bağışçı etiketi.
  * @return {HTMLLIElement} Satır.
  */
-export function buildRow(item, anon) {
+function buildRow(item, anon) {
   const row = document.createElement('li');
   row.className = 'donation-panel-list__row is-new';
   const avatar = document.createElement('span');
