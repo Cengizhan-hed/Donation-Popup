@@ -162,6 +162,13 @@ test.describe('compact görüntüler', () => {
                 await open(page, baseURL, IDS.fixed, direct, q);
                 const key = `${width}-sabit-b${tax}e${impact}g${trust}-${direct ? 'd' : 's'}`;
                 out[key] = await height(page);
+                // Doğal (kutu yüksekliği 1 px'e indirilince) içerik yüksekliği: 384 px'e göre güvenli pay.
+                out[`${key}-dogal`] = await page.locator(CARD).first().evaluate((el) => {
+                  el.style.setProperty('--dp-compact-h', '1px');
+                  const natural = el.getBoundingClientRect().height;
+                  el.style.removeProperty('--dp-compact-h');
+                  return natural;
+                });
                 if (tax && impact && trust && direct) {
                   await shot(page, `${width}-sabit-beyan-1`);
                   await fillDetails(page);

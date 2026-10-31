@@ -145,7 +145,7 @@ final class InlineStylesTest extends TestCase {
 			'ui-fields'     => 1536,
 			// 12.4 compact1: sabit fiyat tek ekran (fiyat × adet = toplam satırı + sıkı yerleşim; 384 px'e sığar). Yüzey toplamı ≤9 KB
 			// sınırının çok altında.
-			'compact'       => 2416, // ölçülen 2408 (12.3 tavanı 2304 + 104 B)
+			'compact'       => 2432, // ölçülen 2422 (12.3 tavanı 2304 + 128 B)
 			// 12.3 compact v2 koşullu parçalar: yalnız beyanlı / yalnız doğrudan bağışlı kartta basılır.
 			'compact-tax'   => 1024,
 			'compact-pay'   => 1024,

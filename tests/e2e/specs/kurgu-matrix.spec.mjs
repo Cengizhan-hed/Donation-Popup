@@ -97,11 +97,15 @@ async function formFlow(page, layout, behavior) {
   } else {
     await expect(form).not.toHaveAttribute('data-direct', /.*/);
   }
+  // 12.4 klavye sözleşmesi: dokunmatik cihazda yazı alanı odaktayken sabit alt bölüm (düğme) gizlidir; bağışçı klavyeyi
+  // kapatınca (odak çıkınca) düğme geri gelir. Test aynı adımı yapar (alan odaktan çıkar), sonra düğmeye dokunur.
   await page.locator('input[name="amount"]').fill('60');
+  await page.locator('input[name="amount"]').blur();
   await page.locator('[data-dp-submit]').click();
   await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
   await page.locator('input[name="donation_full_name"]').fill(DONOR.name);
   await page.locator('input[name="donation_phone"]').fill(DONOR.phone);
+  await page.locator('input[name="donation_phone"]').blur();
   await page.locator('[data-dp-submit]').click();
   await page.waitForURL(behavior === 'direct' ? /order-pay/ : CHECKOUT_URL, { timeout: 30000 });
 }
