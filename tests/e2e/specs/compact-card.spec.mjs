@@ -93,7 +93,8 @@ async function shot(page, name) {
  * @param {import('@playwright/test').Page} page Sayfa.
  */
 async function fillDetails(page) {
-  const details = step(page, 'details');
+  // Sabit fiyatta ayrı bilgiler adımı yok: alanlar tek ekranda ("amount").
+  const details = (await step(page, 'details').count()) ? step(page, 'details') : step(page, 'amount');
   await details.locator('input[name="donation_full_name"]').fill(DONOR.name);
   const email = details.locator('input[name="donation_email"]');
   if (await email.count()) {
@@ -304,6 +305,9 @@ test.describe('compact kart', () => {
     for (const id of [IDS.custom, IDS.campaign, IDS.fixed].filter(Boolean)) {
       await open(page, baseURL, { ids: [id] });
       expect(await gap(), `tutar ${id}`).toBeLessThanOrEqual(24.5);
+      // Sabit fiyat: tutar adımı yok; ilk ekran ("amount") bilgi alanlarını da taşır.
+      const one = id === IDS.fixed;
+      const details = step(page, one ? 'amount' : 'details');
       const chip = step(page, 'amount').locator('.donation-panel-compact__chip');
       if (await chip.count()) {
         const widths = await chip.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
@@ -311,19 +315,28 @@ test.describe('compact kart', () => {
         expect(Math.min(...(await chip.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height))))).toBeGreaterThanOrEqual(48);
         await chip.first().click();
       }
-      await step(page, 'amount').locator('[data-dp-cnext]').click();
-      await expect(step(page, 'details')).toHaveClass(/is-on/);
+      if (!one) {
+        await step(page, 'amount').locator('[data-dp-cnext]').click();
+      }
+      await expect(details).toHaveClass(/is-on/);
       expect(await gap(), `bilgiler ${id}`).toBeLessThanOrEqual(24.5);
-      const rows = await step(page, 'details').locator('.donation-panel-compact__field').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+      const rows = await details.locator('.donation-panel-compact__field').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
       expect(Math.min(...rows), 'alan satırı ≥48 px').toBeGreaterThanOrEqual(48);
+      if (one) {
+        // Fiyat satırı ve adet düğmeleri ≥48 px dokunma hedefi.
+        const box = await details.locator('.donation-panel-compact__fixed').evaluate((el) => el.getBoundingClientRect().height);
+        expect(box, 'fiyat satırı ≥48 px').toBeGreaterThanOrEqual(48);
+        const btns = await details.locator('[data-dp-cqty]').evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return Math.min(r.width, r.height); }));
+        for (const size of btns) expect(size, 'adet düğmesi ≥48 px').toBeGreaterThanOrEqual(48);
+      }
       // Üst satır: geri, başlık, tutar, sayaç aynı hizada (dikey merkezler ±2 px); başlık tek satır.
-      const centers = await step(page, 'details')
+      const centers = await details
         .locator('.donation-panel-compact__top > *')
         .evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return r.top + r.height / 2; }));
       expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(2);
-      expect(await step(page, 'details').locator('[data-dp-ctitle]').evaluate((el) => getComputedStyle(el).whiteSpace)).toBe('nowrap');
+      expect(await details.locator('[data-dp-ctitle]').evaluate((el) => getComputedStyle(el).whiteSpace)).toBe('nowrap');
       await fillDetails(page);
-      await step(page, 'details').locator('button[type="submit"]').click();
+      await details.locator('button[type="submit"]').click();
       await expect(step(page, 'pay')).toHaveClass(/is-on/);
       expect(await gap(), `ödeme ${id}`).toBeLessThanOrEqual(24.5);
     }
@@ -370,8 +383,7 @@ test.describe('compact kart', () => {
     if (IDS.fixed) {
       await open(page, baseURL, { ids: [IDS.fixed] });
       const fixedTotal = step(page, 'amount').locator('[data-dp-ctotal]');
-      const unit = await step(page, 'amount').locator('[data-dp-cunit]').innerText();
-      await expect(fixedTotal).toHaveText(unit);
+      const unit = await fixedTotal.innerText();
       const plus = step(page, 'amount').locator('[data-dp-cqty="1"]');
       if (await plus.count()) {
         await plus.click();
@@ -453,18 +465,67 @@ test.describe('compact kart', () => {
     test.skip(!IDS.fixed, 'sabit ürün yok');
     await open(page, baseURL, { ids: [IDS.fixed] });
     const amount = step(page, 'amount');
+    // Tek ekran: ayrı tutar/bilgiler adımı yok; fiyat × adet = toplam tek satır, hemen altında alanlar, düğme aynı ekranda.
     await expect(amount.locator('[data-dp-camount-in]')).toHaveCount(0);
-    await expect(amount.locator('[data-dp-cunit]')).toBeVisible();
+    await expect(step(page, 'details')).toHaveCount(0);
+    await expect(amount).toHaveClass(/is-on/);
+    await expect(amount.locator('.donation-panel-compact__count')).toHaveCount(0);
+    await expect(amount.locator('input[name="donation_full_name"]')).toBeVisible();
+    await expect(amount.locator('input[name="donation_phone"]')).toBeVisible();
     const h0 = await height(page);
+    const total = amount.locator('[data-dp-ctotal]');
+    const before = await total.innerText();
     const plus = amount.locator('[data-dp-cqty="1"]');
     if (await plus.count()) {
+      await expect(amount.locator('[data-dp-cunit]')).toBeVisible();
       await plus.click();
       await expect(amount.locator('[data-dp-cqty-out]')).toHaveText('2');
+      await expect(total).not.toHaveText(before);
+      await expect(amount.locator('[data-dp-cpay-label], [data-dp-cnext]').first()).toBeVisible();
+      // Fiyat, adet ve toplam aynı satırda (dikey merkezler ±3 px).
+      const centers = await amount
+        .locator('.donation-panel-compact__fixed > b, .donation-panel-compact__fixed .donation-panel-stepper')
+        .evaluateAll((els) => els.map((el) => { const r = el.getBoundingClientRect(); return r.top + r.height / 2; }));
+      expect(Math.max(...centers) - Math.min(...centers), 'fiyat satırı tek hizada').toBeLessThanOrEqual(3);
     }
-    await expect(amount.locator('[data-dp-cnext]')).toHaveAttribute('aria-disabled', 'false');
-    await amount.locator('[data-dp-cnext]').click();
-    await expect(step(page, 'details')).toHaveClass(/is-on/);
+    // Düğme etiketi toplamı taşır (sepetli: "Ödemeye geç · £X"), tek satır.
+    const pay = amount.locator('[data-dp-cpay]');
+    if (await pay.count()) {
+      await expect(pay).toContainText(/\d/);
+      expect(await pay.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThanOrEqual(60);
+    }
+    // Eksik bilgi: hata aynı ekranda, alan işaretli, yükseklik aynı.
+    await amount.locator('button[type="submit"]').click();
+    await expect(amount.locator('[data-dp-cerr]')).not.toBeEmpty();
+    await expect(amount.locator('input[name="donation_full_name"]')).toHaveAttribute('aria-invalid', 'true');
+    // Gizli tutar/adet alanları bilgi sayılmaz: adet seçimi hata sayılmaz.
     same([h0, await height(page)]);
+  });
+
+  test('sabit fiyat doğrudan: tek ekran → ödeme (2/2) → geri tek ekran → öde → teşekkür; yükseklik sabit', async ({ page, baseURL }) => {
+    test.skip(!IDS.fixed, 'sabit ürün yok');
+    await open(page, baseURL, { ids: [IDS.fixed] });
+    const one = step(page, 'amount');
+    const heights = [await height(page)];
+    const plus = one.locator('[data-dp-cqty="1"]');
+    if (await plus.count()) {
+      await plus.click();
+    }
+    await fillDetails(page);
+    await one.locator('button[type="submit"]').click();
+    await expect(step(page, 'pay')).toHaveClass(/is-on/);
+    await expect(step(page, 'pay').locator('.donation-panel-compact__count')).toHaveText('2/2');
+    heights.push(await height(page));
+    // Ödeme özeti toplamı tek ekrandaki toplamla aynı.
+    await expect(step(page, 'pay').locator('[data-dp-crecap-amount]')).toHaveText(await one.locator('[data-dp-ctotal]').innerText());
+    await step(page, 'pay').locator('[data-dp-cback]').click();
+    await expect(one).toHaveClass(/is-on/);
+    await expect(one.locator('input[name="donation_full_name"]')).toHaveValue(DONOR.name);
+    await one.locator('button[type="submit"]').click();
+    await expect(step(page, 'pay')).toHaveClass(/is-on/);
+    await payInLayer(page);
+    heights.push(await height(page));
+    same(heights);
   });
 
   test('kaydırıcı: kart içinde sürükleme, ok tuşu, yazma ve tekerlek slaytı değiştirmez', async ({ page, baseURL, isMobile }) => {

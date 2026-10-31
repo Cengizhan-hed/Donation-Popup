@@ -85,7 +85,8 @@ async function chooseAmount(page) {
 }
 
 async function fillDetails(page) {
-  const details = step(page, 'details');
+  // Sabit fiyatta bilgiler tek ekranda ("amount").
+  const details = (await step(page, 'details').count()) ? step(page, 'details') : step(page, 'amount');
   await details.locator('input[name="donation_full_name"]').fill(DONOR.name);
   const email = details.locator('input[name="donation_email"]');
   if (await email.count()) {
@@ -116,15 +117,19 @@ test.describe('compact görüntüler', () => {
           await shot(page, `${key}-1-tutar`);
           await chooseAmount(page);
           await shot(page, `${key}-1-tutar-secili`);
-          await step(page, 'amount').locator('[data-dp-cnext]').click();
-          await expect(step(page, 'details')).toHaveClass(/is-on/);
+          // Sabit fiyat: tutar adımı yok, tek ekran.
+          const form = label === 'sabit' ? step(page, 'amount') : step(page, 'details');
+          if (label !== 'sabit') {
+            await step(page, 'amount').locator('[data-dp-cnext]').click();
+          }
+          await expect(form).toHaveClass(/is-on/);
           await shot(page, `${key}-2-bilgiler`);
-          await step(page, 'details').locator('button[type="submit"]').click();
+          await form.locator('button[type="submit"]').click();
           await shot(page, `${key}-2-bilgiler-hata`);
           await fillDetails(page);
           // Sepetli akışta ikinci adım son adımdır (ödeme düğmesi bu adımda): ileri gidilmez (sepete ekleme yok).
           if (await page.locator(`${CARD} [data-dp-cstep="pay"]`).count()) {
-            await step(page, 'details').locator('button[type="submit"]').click();
+            await form.locator('button[type="submit"]').click();
             await expect(step(page, 'pay')).toHaveClass(/is-on/);
             await shot(page, `${key}-3-odeme`);
           } else {
