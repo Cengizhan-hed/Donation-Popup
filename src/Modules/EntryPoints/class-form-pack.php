@@ -111,9 +111,20 @@ class Form_Pack {
 	 * @return int Pakete eklenen yaklaşık bayt (0 = eklenmedi).
 	 */
 	public function add( $product_id, $html ) {
-		$key  = (string) (int) $product_id;
 		$norm = self::normalize( $html, $product_id );
-		if ( null === $norm || isset( $this->forms[ $key ] ) ) {
+		return null === $norm ? 0 : $this->add_normalized( $product_id, $norm );
+	}
+
+	/**
+	 * Belirteçlenmiş (`normalize`) formu pakete ekler (ürün başına önbellekten gelen parça).
+	 *
+	 * @param int    $product_id Ürün.
+	 * @param string $norm       Belirteçli HTML.
+	 * @return int Eklenen yaklaşık bayt (0 = eklenmedi).
+	 */
+	public function add_normalized( $product_id, $norm ) {
+		$key = (string) (int) $product_id;
+		if ( '' === (string) $norm || isset( $this->forms[ $key ] ) ) {
 			return 0;
 		}
 		$segments = preg_split( self::SPLIT, $norm );

@@ -5,6 +5,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const ROOT = path.resolve(import.meta.dirname, '../../..');
 const AXE = fs.readFileSync(path.join(ROOT, 'node_modules/axe-core/axe.min.js'), 'utf8');
@@ -177,50 +178,78 @@ test('form: panel içinde ürün/kampanya görseli yok', async ({ page }) => {
   expect(await page.locator('.wdp-form-host .donation-panel-form img, .wdp-form-host .donation-panel-hero').count()).toBe(0);
 });
 
-test('ön alma sürerken sayfadan ayrılma: sayfa hatası yok (WebKit "access control checks")', async ({ page }) => {
-  // Tam paket `iphone-mut2/shortcode-bad-hash` kırmızısı (467f0db öncesi): uçuştaki ön alma isteği sayfa değişimiyle
-  // kesilince WebKit "Fetch API cannot load … due to access control checks" yazar (aynı köken; CORS değil, iptal).
-  // 12.3 fix: ön alma ilk etkileşimde YA DA yüklemeden 1 sn sonra boşta başlar (ilk dokunuş kaydırmasız gelse de form
-  // hazır). Bu test: (1) yükleme ve hemen sonrası (≤0,8 sn) istek yok; hızlı `domcontentloaded` ayrılmaları temiz;
-  // (2) etkileşimle VE (3) etkileşimsiz boşta başlayan istek ağdayken (yavaş sunucu) ayrılınca sayfa hatası yok.
+test('12.4 gömülü formlar: etkileşimsiz ve etkileşimli sayfada eklenti REST/PHP isteği 0; hızlı ayrılmalar temiz', async ({ page }) => {
+  // 12.3'teki toplu `no-store` ön alma isteği kaldırıldı (her görüntülemede PHP çalıştırıyordu): form verisi sayfa
+  // HTML'inde gömülü. Hiç etkileşmeyen ziyaretçide de, etkileşen ziyaretçide de dokunuşa kadar eklenti REST isteği yok.
+  // Boşta yalnız form deneyimi betiği (statik, sürümlü, önbelleklenebilir dosya; PHP yok) yüklenir.
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e && e.message ? e.message : e)));
   const logs = [];
   page.on('console', (m) => m.type() === 'error' && logs.push(m.text()));
-  // Yavaş sunucu (sim): toplu ön alma isteği ayrılma anında hâlâ ağda.
-  // Tam paketteki ağ koruması gibi her istek yönlendiriciden geçer.
-  await page.context().route('**/*', async (route) => {
-    await route.continue();
+  const rest = [];
+  const statics = [];
+  page.on('request', (r) => {
+    if (/donation-panel(\/|%2F)v1/.test(r.url())) rest.push(r.url());
+    else if (/woo-donation-popup\/assets\/build\/.+\.js/.test(r.url())) statics.push(r.url());
   });
   await page.goto(URL, { waitUntil: 'load' });
-  await page.context().addCookies([{ name: 'dp_slow_rest', value: '1', url: new globalThis.URL(page.url()).origin }]);
-  const started = [];
-  page.on('request', (r) => /donation-panel(\/|%2F)v1(\/|%2F)experiences/.test(r.url()) && started.push(r.url()));
-  // (1) Yükleme ve hemen sonrası: eklenti ön alma isteği yok; hızlı ayrılma (domcontentloaded) temiz.
+  expect(await page.locator('script[type="application/json"][data-dp-forms]').count(), 'gömülü paket').toBeGreaterThan(0);
+  // Etkileşimsiz: boşta hazırlık (1 sn) bitsin; düğmeler hazır, ağ yok.
+  await expect(page.locator('.wdp-card__cta[data-wdp-form]').first()).toHaveAttribute('data-wdp-ready', '1', { timeout: 10000 });
+  await page.waitForTimeout(500);
+  expect(rest, 'etkileşimsiz sayfada eklenti REST isteği').toEqual([]);
+  // Etkileşim (sekme, üzerine gelme) sonrası da yok.
+  await page.locator('a.wdp-list__tab').nth(1).click();
+  await page.locator('a.wdp-list__tab').first().click();
+  await page.locator('.wdp-card__cta[data-wdp-form]').first().hover();
+  await page.waitForTimeout(400);
+  expect(rest, 'etkileşimde eklenti REST isteği').toEqual([]);
+  expect(statics.every((u) => /\/assets\/build\/(list|experiences|progress)\//.test(u)), statics.join(' ')).toBe(true);
+  for (let i = 0; i < 3; i += 1) {
+    await page.goto(`${URL}&n=${i}`, { waitUntil: 'domcontentloaded' });
+  }
   await page.goto(URL, { waitUntil: 'load' });
-  await page.waitForTimeout(800);
-  expect(started, 'yükleme sırasında ön alma isteği').toEqual([]);
-  await page.goto(`${URL}&n=x`, { waitUntil: 'domcontentloaded' });
-  await page.goto(URL, { waitUntil: 'domcontentloaded' });
-  // (2) Etkileşimle başlayan istek ağdayken ayrılma (4 kez).
-  for (let i = 0; i < 4; i += 1) {
-    await page.goto(URL, { waitUntil: 'load' });
-    // İlk etkileşim → ön alma başlar; isteğin başladığı an başka sayfaya geçilir.
-    const seen = started.length;
-    await page.locator('a.wdp-list__tab').nth(1).click();
-    await expect.poll(() => started.length, { timeout: 10000 }).toBeGreaterThan(seen);
-    await page.goto(`${URL}&n=${i}#bagis-x`, { waitUntil: 'load' });
-  }
-  // (3) Etkileşimsiz: boşta kendiliğinden başlayan istek ağdayken ayrılma (2 kez).
-  for (let i = 0; i < 2; i += 1) {
-    await page.goto(`${URL}&m=${i}`, { waitUntil: 'load' });
-    const seen = started.length;
-    await expect.poll(() => started.length, { timeout: 10000 }).toBeGreaterThan(seen);
-    await page.goto(`${URL}&m=${i}#bagis-y`, { waitUntil: 'load' });
-  }
-  await page.waitForTimeout(800);
-  expect(started.length, 'ön alma isteği ayrılma anında ağdaydı').toBeGreaterThanOrEqual(6);
+  await page.waitForTimeout(300);
+  expect(rest).toEqual([]);
   expect(errors, logs.join(' | ')).toEqual([]);
+});
+
+test('12.4 gömülü formlar: sayfa HTML\'i önbellekten (kalıcı önbellek benzetimi) gelse de dokunuşta ağ 0, < 100 ms', async ({ page }) => {
+  // Sayfa önbelleği: HTML bir kez üretilip sonraki ziyaretçiye AYNEN verilir (PHP yok). Gömülü pakette nonce/kullanıcı
+  // verisi olmadığı için önbellekli HTML'le form çalışır; nonce yalnız gönderimde alınır.
+  const first = await page.request.get(URL);
+  const cached = await first.text();
+  expect(cached).not.toMatch(/data-dp-nonce="[a-f0-9]{6,}"/);
+  let served = 0;
+  await page.route((u) => u.href.includes('dp_list_test=1') && u.href.includes('dp_cached=1'), async (route) => {
+    served += 1;
+    await route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: cached });
+  });
+  await page.goto(`${URL}&dp_cached=1`, { waitUntil: 'load' });
+  expect(served).toBe(1);
+  const cta = page.locator('.wdp-card__cta[data-wdp-form]').first();
+  await expect(cta).toHaveAttribute('data-wdp-ready', '1', { timeout: 10000 });
+  const r = await tapAndMeasure(page, cta);
+  expect(r.network, 'dokunuşta eklenti REST ağ isteği').toBe(0);
+  expect(r.ms).toBeLessThan(100);
+  // Gömülü formun nonce'u boş: form ilk gönderimde REST'ten alır (önbellekte kullanıcıya özel veri yok).
+  await expect(page.locator('.wdp-form-host [data-dp-exp]')).toHaveAttribute('data-dp-nonce', '');
+});
+
+test('12.4 güvenlik: yönetici çizimi gizli/taslak/şifreli ürünü pakete sokmaz (önbellekten anonim çıktı da temiz)', async ({ page }) => {
+  test.skip(!process.env.WDP_LOCAL_WP_DIR, 'yerel WP yok');
+  await page.goto(URL);
+  const ids = await page.locator('.wdp-card__cta[data-wdp-form]').evaluateAll((els) => [...new Set(els.map((e) => e.getAttribute('data-wdp-form')))]);
+  expect(ids.length).toBeGreaterThanOrEqual(4);
+  const r = spawnSync('php', [path.join(ROOT, 'tests/local-wp/eval-file.php'), 'tests/e2e/helpers/wdp-card-forms-private.php', ...ids.slice(0, 4)], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    env: process.env,
+  });
+  const out = JSON.parse(String(r.stdout).slice(String(r.stdout).indexOf('{')));
+  expect(out.ok && out.admin_is_admin).toBe(true);
+  expect(out.admin, 'yönetici çizimi').toEqual([Number(ids[0])]);
+  expect(out.guest, 'anonim (önbellekten)').toEqual([Number(ids[0])]);
 });
 
 /**

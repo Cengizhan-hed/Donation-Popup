@@ -103,9 +103,10 @@ class Card_Forms {
 	 * @param int[]  $ids    Ürünler (sırayla; ilk kartlar önce).
 	 * @param string $kind   Kap türü.
 	 * @param int    $budget Ham bayt bütçesi.
+	 * @param bool   $piece_cache Ürün başına form parçasını önbellekten oku/yaz (döngü kartları).
 	 * @return array<string, mixed>|null `kind`, `ids`, `pack`, `assets`, `bytes`; çizilecek form yoksa null.
 	 */
-	public static function build( array $ids, $kind, $budget = self::PAGE_BUDGET ) {
+	public static function build( array $ids, $kind, $budget = self::PAGE_BUDGET, $piece_cache = false ) {
 		$kind     = self::kind( $kind );
 		$renderer = self::renderer();
 		if ( null === $renderer || $budget <= 0 ) {
@@ -119,20 +120,27 @@ class Card_Forms {
 			'nonce'        => '',
 			'checkout_url' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '',
 		);
+		$ids = array_values( array_filter( array_map( 'intval', $ids ) ) );
+		if ( $piece_cache ) {
+			self::prime_pieces( $ids, $kind );
+		}
 		foreach ( $ids as $product_id ) {
-			$product_id = (int) $product_id;
 			if ( $product_id < 1 || $pack->has( $product_id ) || ! self::public_product( $product_id ) ) {
 				continue;
 			}
-			$model = Form_Controller::model_for_id( $product_id );
-			if ( empty( $model ) ) {
-				continue;
+			$piece = $piece_cache ? get_transient( self::piece_key( $product_id, $kind ) ) : false;
+			if ( ! is_array( $piece ) || ! isset( $piece['h'], $piece['m'] ) ) {
+				$piece = self::render_piece( $renderer, $product_id, $kind, $args );
+				if ( null === $piece ) {
+					continue; // Boş sonuç önbelleğe yazılmaz.
+				}
+				if ( $piece_cache ) {
+					set_transient( self::piece_key( $product_id, $kind ), $piece, DAY_IN_SECONDS );
+				}
 			}
-			$html = $renderer->render( $model, $kind, $args );
-			if ( '' === $html ) {
-				continue;
-			}
-			$added = $pack->add( $product_id, $html );
+			$norm  = ! empty( $piece['z'] ) && function_exists( 'gzinflate' ) ? gzinflate( (string) base64_decode( (string) $piece['h'], true ) ) : $piece['h']; // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- kendi yazdığımız parça.
+			$added = is_string( $norm ) ? $pack->add_normalized( $product_id, $norm ) : 0;
+			$model = (array) $piece['m'];
 			if ( $added <= 0 ) {
 				continue;
 			}
@@ -174,21 +182,11 @@ class Card_Forms {
 			if ( empty( $ids ) ) {
 				continue;
 			}
-			// Döngü kartları: paket ürün kümesi + kap türü + liste önbellek sürümüyle (ürün/ayar/bağış değişince tazelenir)
-			// önbellekte; isabette tek sorgu (WP değer+süreyi birlikte okur), çizim yok.
-			sort( $ids );
-			$key     = Donations_List::cache_key(
-				array(
-					'card_forms' => $ids,
-					'kind'       => $kind,
-				)
-			);
-			$payload = get_transient( $key );
-			if ( ! is_array( $payload ) ) {
-				$payload = self::build( $ids, $kind );
-				set_transient( $key, null === $payload ? array( 'empty' => true ) : $payload, DAY_IN_SECONDS );
-			}
-			if ( ! empty( $payload['pack'] ) ) {
+			// Döngü kartları: ÜRÜN BAŞINA önbellekli form parçası (anahtar = ürün + kap türü + liste önbellek sürümü; girdi
+			// sayısı ürün × tür ile sınırlı, arama/süzgeç/sayfa varyasyonu yeni girdi üretmez). Tüm parçalar tek sorguyla
+			// okunur; paket parçalardan bu istekte kurulur.
+			$payload = self::build( $ids, $kind, self::PAGE_BUDGET, true );
+			if ( null !== $payload ) {
 				$out .= self::script( $payload );
 			}
 		}
@@ -243,6 +241,66 @@ class Card_Forms {
 			}
 		}
 		return $out;
+	}
+
+	/**
+	 * Bir ürünün form parçası: belirteçli HTML (sıkıştırılmış) + paket adresleri için en küçük model.
+	 *
+	 * @param Form_Renderer         $renderer   Çizici.
+	 * @param int                   $product_id Ürün.
+	 * @param string                $kind       Kap türü.
+	 * @param array<string, string> $args       Çizim argümanları (nonce boş).
+	 * @return array<string, mixed>|null
+	 */
+	private static function render_piece( $renderer, $product_id, $kind, array $args ) {
+		$model = Form_Controller::model_for_id( $product_id );
+		if ( empty( $model ) ) {
+			return null;
+		}
+		$norm = Form_Pack::normalize( $renderer->render( $model, $kind, $args ), $product_id );
+		if ( null === $norm || '' === $norm ) {
+			return null;
+		}
+		// Sıkıştırılmış ikili veri utf8mb4 sütununda bozulmasın diye base64 (parça ~1/4 boyut).
+		$zip = function_exists( 'gzdeflate' ) ? gzdeflate( $norm, 6 ) : false;
+		return array(
+			'h' => false === $zip ? $norm : base64_encode( $zip ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- ikili veriyi metin sütununda saklamak için.
+			'z' => false !== $zip,
+			'm' => array( 'campaign' => array( 'live' => ! empty( $model['campaign']['live'] ) ) ),
+		);
+	}
+
+	/**
+	 * Ürün başına form parçası önbellek anahtarı (liste önbellek sürümü dahil: ürün/ayar/bağış değişince yenisi).
+	 *
+	 * @param int    $product_id Ürün.
+	 * @param string $kind       Kap türü.
+	 * @return string
+	 */
+	public static function piece_key( $product_id, $kind ) {
+		return 'wdp_cf_' . substr( Donations_List::cache_key( array( 'kind' => self::kind( $kind ) ) ), 9, 12 ) . '_' . (int) $product_id;
+	}
+
+	/**
+	 * Parçaları (değer + süre) tek sorguda belleğe alır (kalıcı nesne önbelleği varsa gerekmez).
+	 *
+	 * @param int[]  $ids  Ürünler.
+	 * @param string $kind Kap türü.
+	 * @return void
+	 */
+	private static function prime_pieces( array $ids, $kind ) {
+		if ( ! function_exists( 'wp_prime_option_caches' ) || ( function_exists( 'wp_using_ext_object_cache' ) && wp_using_ext_object_cache() ) ) {
+			return;
+		}
+		$names = array();
+		foreach ( $ids as $id ) {
+			$key     = self::piece_key( $id, $kind );
+			$names[] = '_transient_' . $key;
+			$names[] = '_transient_timeout_' . $key;
+		}
+		if ( ! empty( $names ) ) {
+			wp_prime_option_caches( $names );
+		}
 	}
 
 	/**

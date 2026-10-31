@@ -41,6 +41,29 @@ final class CardFormsTest extends TestCase {
 		}
 	}
 
+	public function test_piece_key_bounded_per_product_and_invalidated_by_product_or_setting_change(): void {
+		$list = \DonationPanel\Modules\EntryPoints\Donations_List::class;
+		$this->product(50);
+		$a = Card_Forms::piece_key(50, 'popup');
+		$this->assertSame($a, Card_Forms::piece_key(50, 'popup'), 'aynı ürün + tür → tek anahtar (arama/sayfa varyasyonu yok)');
+		$this->assertNotSame($a, Card_Forms::piece_key(51, 'popup'));
+		$this->assertNotSame($a, Card_Forms::piece_key(50, 'side_panel'));
+		$this->assertLessThanOrEqual(172, strlen('_transient_timeout_' . $a));
+		// Ürün metası değişti → liste önbellek sürümü artar → parça anahtarı değişir.
+		$list::reset_bump_guard();
+		$list::on_product_meta(1, 50, '_price', '10');
+		$b = Card_Forms::piece_key(50, 'popup');
+		$this->assertNotSame($a, $b);
+		// Formu etkileyen ayar değişti → yine yenilenir; ilgisiz seçenek değiştirmez.
+		$list::reset_bump_guard();
+		$list::on_option('wdp_button_settings');
+		$c = Card_Forms::piece_key(50, 'popup');
+		$this->assertNotSame($b, $c);
+		$list::reset_bump_guard();
+		$list::on_option('woocommerce_queue_flush');
+		$this->assertSame($c, Card_Forms::piece_key(50, 'popup'));
+	}
+
 	public function test_filter_excludes_per_product(): void {
 		WDP_Test_State::$filters['donation_panel_prefetch_forms'] = static function ($on, $id = 0) {
 			return 41 !== (int) $id && $on;
