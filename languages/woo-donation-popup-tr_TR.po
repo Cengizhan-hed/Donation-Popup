@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 06:26:03+0000\n"
-"PO-Revision-Date: 2026-10-31 06:26:03+0000\n"
+"POT-Creation-Date: 2026-10-31 06:51:29+0000\n"
+"PO-Revision-Date: 2026-10-31 06:51:29+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -77,6 +77,12 @@ msgstr "Sepetinizde %1$s · toplam %2$s olur"
 #. translators: 1: button text (e.g. Donate), 2: donation product name
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
+
+#. translators: 1: campaign name, 2: amount raised so far, 3: goal amount.
+#: src/WooCommerce/Email/class-email-thanks.php
+#, php-format
+msgid "%1$s: %2$s raised of %3$s goal so far."
+msgstr "%1$s: %3$s hedefin %2$s kadarı şu ana kadar toplandı."
 
 #: src/Admin/
 msgid "%d donation product is live"
@@ -230,6 +236,10 @@ msgid "1. Give the product a goal: Products → edit the product → Product dat
 msgstr "1. Ürüne hedef verin: Ürünler → ürünü düzenle → Ürün verileri → Bağış → hedef tutarı. Bundan sonra çubuk ortalanmış pencerede, sağ panelde, alttan panelde, sayfa içi formda ve compact kartta kendiliğinden görünür."
 
 #: src/Admin/class-guide.php
+msgid "1. Nothing to install: the donation details appear in the standard WooCommerce order e-mails (Processing, Completed, New order). Customize their colors and logo under WooCommerce → Settings → Emails."
+msgstr "1. Kurulacak bir şey yok: bağış bilgileri standart WooCommerce sipariş e-postalarında (İşleniyor, Tamamlandı, Yeni sipariş) görünür. Renk ve logoyu WooCommerce → Ayarlar → E-postalar'dan değiştirin."
+
+#: src/Admin/class-guide.php
 msgid "1. Open Donation Panel → Forms and appearance → Colors. Under \"Use my theme colors\" you see the two colors in use and where each one comes from: \"Theme palette: primary\", \"Default\" or \"Follows the main color\"."
 msgstr "1. Bağış Paneli → Formlar ve Görünüm → Renkler'i açın. \"Temamın renklerini kullan\" altında kullanılan iki rengi ve her birinin kaynağını görürsünüz: \"Tema paleti: primary\", \"Varsayılan\" ya da \"Ana rengi izler\"."
 
@@ -268,6 +278,10 @@ msgid "2. In your slider or page editor, add a Shortcode widget (or any text blo
 msgstr "2. Slider ya da sayfa düzenleyicinizde slayta bir Kısa kod (Shortcode) bileşeni (ya da herhangi bir metin bloğu) ekleyin ve kısa kodu yapıştırın. Özel bir bileşen gerekmez. Blok düzenleyicide \"Bağış formu\" bloğunu ekleyip Düzen: Kompakt da seçebilirsiniz."
 
 #: src/Admin/class-guide.php
+msgid "2. Thank-you above the order table: Donation Panel → Cart and checkout → Thank-you screen → \"Thank-you in donor e-mails\" (on by default). Donors get your thank-you message in the Processing and Completed e-mails. For a campaign product one extra line shows the amount raised and the goal at the time the e-mail is sent. It is never added to the e-mails you receive, and it works even when the Thank-you screen module is off."
+msgstr "2. Sipariş tablosunun üstünde teşekkür: Bağış Paneli → Sepet ve Ödeme → Teşekkür ekranı → \"Bağışçı e-postalarında teşekkür\" (varsayılan açık). Bağışçılar İşleniyor ve Tamamlandı e-postalarında teşekkür metninizi görür. Kampanyalı üründe e-posta gönderildiği andaki toplanan tutar ve hedefi gösteren bir satır daha çıkar. Size gelen e-postalara hiç eklenmez; Teşekkür ekranı modülü kapalıyken de çalışır."
+
+#: src/Admin/class-guide.php
 msgid "2. To show the bar on its own anywhere (a page, a sidebar, a slider), use the shortcode below. Without an ID it finds the product it is placed in. Add milestones=\"no\" or donors=\"no\" to hide those parts."
 msgstr "2. Çubuğu tek başına herhangi bir yerde (sayfa, kenar çubuğu, kaydırıcı) göstermek için aşağıdaki kısa kodu kullanın. ID verilmezse bulunduğu ürünü kendisi bulur. Bu bölümleri gizlemek için milestones=\"no\" ya da donors=\"no\" ekleyin."
 
@@ -291,6 +305,10 @@ msgstr "3 Onay"
 msgid "3. A basket icon in your header: place the shortcode below in a header widget or menu block. It shows the number of gifts and opens the same basket."
 msgstr "3. Üst bilgide sepet simgesi: aşağıdaki kısa kodu bir üst bilgi bileşenine ya da menü bloğuna koyun. Bağış sayısını gösterir ve aynı sepeti açar."
 
+#: src/Admin/class-guide.php
+msgid "3. Change the wording: the same \"Thank-you message\" field under Thank-you screen is used on the page and in the e-mail. Leave it empty for the built-in wording. Only links, bold, italic and line breaks are kept."
+msgstr "3. Metni değiştirmek için: Teşekkür ekranı altındaki \"Teşekkür mesajı\" alanı hem sayfada hem e-postada kullanılır. Hazır metin için boş bırakın. Yalnız bağlantı, kalın, italik ve satır sonu korunur."
+
 msgid "3. Finding a product ID: go to Products → All products and point at the product name; the ID is shown under it. The shortcode builder also lists every donation product with its ID."
 msgstr "3. Ürün ID'sini bulma: Ürünler → Tüm ürünler'e gidin ve fareyi ürün adının üzerine getirin; ID adın altında görünür. Kısa kod oluşturucu da her bağış ürününü ID'siyle listeler."
 
@@ -313,6 +331,10 @@ msgstr "4. Bağışçının kendi katkısı: bağışçı tutar seçince ya da y
 #: src/Admin/class-guide.php
 msgid "4. Extra gift suggestion: switch on \"Suggest an extra gift in the basket\", enter the product ID (0 uses the add-on product) and up to three amounts such as 50, 100. Donors add it with one tap; their details are taken from the gift already in the basket."
 msgstr "4. Ek bağış önerisi: \"Sepette ek bağış öner\"i açın, ürün ID'sini (0 ek bağış ürününü kullanır) ve 50, 100 gibi en çok üç tutarı girin. Bağışçı tek dokunuşla ekler; bilgileri sepetteki bağıştan alınır."
+
+#: src/Admin/class-guide.php
+msgid "4. Privacy: in e-mails to donors the phone number is left out (WooCommerce already shows the billing phone); donation type, names and note stay. In e-mails to you every field stays. Internal plugin data is never shown in any e-mail, and the order itself is not changed."
+msgstr "4. Gizlilik: bağışçıya giden e-postalarda telefon numarası bağış satırında gösterilmez (WooCommerce fatura telefonunu zaten gösterir); bağış türü, adlar ve not kalır. Size giden e-postalarda tüm alanlar kalır. Eklentinin iç verileri hiçbir e-postada görünmez; siparişin kendisi değişmez."
 
 msgid "4. Slide height: make the slide at least as tall as the card (about 384 px on every screen). The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
 msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın (her ekranda yaklaşık 384 px). Kompakt kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Tüm kartlara tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) yazın."
@@ -338,6 +360,10 @@ msgstr "5. Düğme yazısı okunur kalsın diye kendiliğinden siyah ya da beyaz
 
 msgid "5. Colors: Forms and appearance → Colors → Choose my own colors. Each color field accepts a hex value or a CSS variable from your theme or page editor, for example var(--brand), so the card follows your site palette."
 msgstr "5. Renkler: Formlar ve Görünüm → Renkler → Kendi renklerimi seçeyim. Her renk alanı bir hex değeri ya da temanızın veya sayfa düzenleyicinizin bir CSS değişkenini (örneğin var(--brand)) kabul eder; böylece kart sitenizin paletini izler."
+
+#: src/Admin/class-guide.php
+msgid "5. Language: e-mails to donors use the site language and the labels are translated when the e-mail is sent, so a Turkish label never appears in an English e-mail and the other way round."
+msgstr "5. Dil: bağışçıya giden e-postalar site dilini kullanır ve etiketler e-posta gönderilirken çevrilir; İngilizce e-postada Türkçe etiket, Türkçe e-postada İngilizce etiket çıkmaz."
 
 #: src/Admin/class-guide.php
 msgid "5. The side cart never opens on the cart and checkout pages, and pages without a donation form load none of its files."
@@ -595,6 +621,10 @@ msgstr "WooCommerce ürünlerine açılır pencere, yan panel veya sayfa içi fo
 #: src/Admin/
 msgid "Adds a goal and progress bar, and short impact phrases next to amounts."
 msgstr "Hedef ve ilerleme çubuğu ekler, tutarların yanına kısa etki ifadeleri koyar."
+
+#: src/Admin/class-field-registry.php
+msgid "Adds a short thank-you above the order table in the \"Processing\" and \"Completed\" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Never added to e-mails sent to you. Works even when the Thank-you screen module is off."
+msgstr "Bağışçıya giden \"İşleniyor\" ve \"Tamamlandı\" e-postalarında sipariş tablosunun üstüne kısa bir teşekkür ekler. Yukarıdaki teşekkür metnini kullanır; kampanyalı üründe toplanan tutar ve hedefle tek satır ekler. Size giden e-postalara hiç eklenmez. Teşekkür ekranı modülü kapalıyken de çalışır."
 
 #: src/Admin/
 msgid "Adds a sign-in icon, a sign-in and register panel, and a \"My donations\" tab in My Account with receipts and a quick way to give again."
@@ -2233,6 +2263,10 @@ msgstr "Bağışçı bilgileri \"Kişisel verileri sil\" kapsamında değil"
 #: src/Admin/
 msgid "Donor details are not part of \"Export personal data\""
 msgstr "Bağışçı bilgileri \"Kişisel verileri dışa aktar\" kapsamında değil"
+
+#: src/Admin/class-guide.php
+msgid "Donor e-mails"
+msgstr "Bağışçı e-postaları"
 
 #: includes/class-order-meta-keys.php:80
 msgid "Donor email"
@@ -4239,6 +4273,10 @@ msgstr "İlerleme çubuğu ayarlarını aç"
 msgid "Open the Side cart settings"
 msgstr "Yan sepet ayarlarını aç"
 
+#: src/Admin/class-guide.php
+msgid "Open the Thank-you settings"
+msgstr "Teşekkür ayarlarını aç"
+
 #: src/Modules/DonorAccount/
 #, php-format
 msgid "Open this link while logged in to add the gifts you made as a guest with this email address to your account:\n\n%1$s\n\nThe link works once and expires in %2$d minutes. If you did not ask for this, ignore this email."
@@ -5638,6 +5676,10 @@ msgstr "Bağıştan sonra teşekkür ekranında gösterilir."
 msgid "Shown on the thank-you screen after a donation. Leave empty for the built-in wording."
 msgstr "Bağıştan sonra teşekkür ekranında gösterilir. Hazır metin için boş bırakın."
 
+#: src/Admin/class-field-registry.php
+msgid "Shown on the thank-you screen and in the thank-you e-mail after a donation. Leave empty for the built-in wording."
+msgstr "Bağıştan sonra teşekkür ekranında ve teşekkür e-postasında gösterilir. Hazır metin için boş bırakın."
+
 #: src/Admin/
 msgid "Shown only when the form asks for email, dedication or shareholder details."
 msgstr "Yalnız form e-posta, ithaf ya da hissedar bilgisi istediğinde gösterilir."
@@ -6126,6 +6168,10 @@ msgstr "Teşekkür ederiz!"
 msgid "Thank you! Your donation was received."
 msgstr "Teşekkür ederiz! Bağışınız alındı."
 
+#: src/Admin/class-field-registry.php
+msgid "Thank-you in donor e-mails"
+msgstr "Bağışçı e-postalarında teşekkür"
+
 #: src/Admin/
 msgid "Thank-you message"
 msgstr "Teşekkür mesajı"
@@ -6456,6 +6502,10 @@ msgstr "Önerilecek bağışın WooCommerce ürün ID'si (Ürünler → Tüm ür
 #: includes/class-admin-form-tabs-renderer.php:250
 msgid "The WooCommerce product used when the product card has no custom ID."
 msgstr "Ürün kartında özel ID yoksa kullanılan WC ürünü."
+
+#: src/Admin/class-field-registry.php
+msgid "The wording and the extra touches below are used on the thank-you screen (Thank-you screen module on). The thank-you in e-mails works on its own."
+msgstr "Aşağıdaki metin ve ek özellikler teşekkür ekranında kullanılır (Teşekkür ekranı modülü açıkken). E-postalardaki teşekkür tek başına çalışır."
 
 #: src/Admin/
 msgid "The wording of the switch donors see. Leave empty for the built-in wording."

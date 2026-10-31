@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup 12.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 09:26+0300\n"
+"POT-Creation-Date: 2026-10-31 09:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -90,7 +90,7 @@ msgid ""
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:482
-#: src/Admin/class-field-registry.php:531
+#: src/Admin/class-field-registry.php:538
 msgid "Skip the cart (direct donation)"
 msgstr ""
 
@@ -108,13 +108,13 @@ msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:487
 #: src/Admin/Product/class-product-data-tab.php:508
-#: src/Admin/class-field-registry.php:540 src/Admin/class-guide.php:228
+#: src/Admin/class-field-registry.php:547 src/Admin/class-guide.php:240
 msgid "Direct (skip the cart)"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:488
 #: src/Admin/Product/class-product-data-tab.php:508
-#: src/Admin/class-field-registry.php:539 src/Admin/class-guide.php:223
+#: src/Admin/class-field-registry.php:546 src/Admin/class-guide.php:235
 msgid "Through the cart"
 msgstr ""
 
@@ -139,7 +139,7 @@ msgid "source: this product"
 msgstr ""
 
 #: src/Admin/Product/class-product-data-tab.php:515
-#: src/Admin/class-field-registry.php:562
+#: src/Admin/class-field-registry.php:569
 msgid "Products that offer an add-on donation"
 msgstr ""
 
@@ -731,7 +731,7 @@ msgid "Quick setup"
 msgstr ""
 
 #: src/Admin/class-admin-view.php:30 src/Admin/class-field-registry.php:37
-#: src/Admin/class-guide.php:176
+#: src/Admin/class-guide.php:188
 msgid "Guide"
 msgstr ""
 
@@ -754,12 +754,12 @@ msgid "Needs attention:"
 msgstr ""
 
 #: src/Admin/class-admin-view.php:219 src/Admin/class-field-registry.php:158
-#: src/Admin/class-guide.php:237
+#: src/Admin/class-guide.php:249
 msgid "Main color"
 msgstr ""
 
 #: src/Admin/class-admin-view.php:220 src/Admin/class-field-registry.php:172
-#: src/Admin/class-guide.php:239
+#: src/Admin/class-guide.php:251
 msgid "Button color"
 msgstr ""
 
@@ -1022,7 +1022,7 @@ msgstr ""
 msgid "Offer one extra donation product next to the main gift."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:65 src/Admin/class-guide.php:152
+#: src/Admin/class-field-registry.php:65 src/Admin/class-guide.php:164
 #: src/Admin/class-settings-store.php:64
 msgid "Side cart"
 msgstr ""
@@ -1040,7 +1040,8 @@ msgstr ""
 
 #: src/Admin/class-field-registry.php:66
 msgid ""
-"Shown after the order. Only used when the Thank-you screen module is on."
+"The wording and the extra touches below are used on the thank-you screen "
+"(Thank-you screen module on). The thank-you in e-mails works on its own."
 msgstr ""
 
 #: src/Admin/class-field-registry.php:67 src/Admin/class-settings-store.php:80
@@ -1449,65 +1450,77 @@ msgstr ""
 
 #: src/Admin/class-field-registry.php:486
 msgid ""
-"Shown on the thank-you screen after a donation. Leave empty for the built-in "
-"wording."
+"Shown on the thank-you screen and in the thank-you e-mail after a donation. "
+"Leave empty for the built-in wording."
 msgstr ""
 
 #: src/Admin/class-field-registry.php:492
-msgid "Celebration animation"
+msgid "Thank-you in donor e-mails"
 msgstr ""
 
 #: src/Admin/class-field-registry.php:493
+msgid ""
+"Adds a short thank-you above the order table in the \"Processing\" and "
+"\"Completed\" e-mails donors receive. It uses the thank-you message above, "
+"and for a campaign one line with the amount raised and the goal. Never added "
+"to e-mails sent to you. Works even when the Thank-you screen module is off."
+msgstr ""
+
+#: src/Admin/class-field-registry.php:499
+msgid "Celebration animation"
+msgstr ""
+
+#: src/Admin/class-field-registry.php:500
 msgid ""
 "A short, gentle animation. It switches off by itself for visitors who prefer "
 "reduced motion."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:499
+#: src/Admin/class-field-registry.php:506
 msgid "Share button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:500
+#: src/Admin/class-field-registry.php:507
 msgid "Lets donors share the campaign after giving."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:505
+#: src/Admin/class-field-registry.php:512
 msgid "Step title"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:505
+#: src/Admin/class-field-registry.php:512
 msgid "Short label for the step."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:506
+#: src/Admin/class-field-registry.php:513
 msgid "Heading"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:506
+#: src/Admin/class-field-registry.php:513
 msgid "The question heading the donor sees."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:507
+#: src/Admin/class-field-registry.php:514
 msgid "Explanation"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:507
+#: src/Admin/class-field-registry.php:514
 msgid "A sentence or two explaining the declaration."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:508
+#: src/Admin/class-field-registry.php:515
 msgid "Checkbox wording"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:508
+#: src/Admin/class-field-registry.php:515
 msgid "The sentence next to the tick box. It is never ticked in advance."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:523
+#: src/Admin/class-field-registry.php:530
 msgid "Trusted proxy addresses"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:524
+#: src/Admin/class-field-registry.php:531
 msgid ""
 "Leave empty unless your site runs behind a proxy or CDN. One address or "
 "range per line (for example 10.0.0.0/8). Visitor addresses sent by these "
@@ -1515,7 +1528,7 @@ msgid ""
 "addresses you do not control."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:532
+#: src/Admin/class-field-registry.php:539
 msgid ""
 "General setting for every donation product. The donor goes from the form "
 "straight to payment and a cart the donor already has stays untouched. "
@@ -1524,147 +1537,147 @@ msgid ""
 "visitors can be told apart."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:538
+#: src/Admin/class-field-registry.php:545
 msgid "Use the general setting"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:544
+#: src/Admin/class-field-registry.php:551
 msgid "Products with a fixed price where the donor only picks a quantity."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:545
+#: src/Admin/class-field-registry.php:552
 msgid "Products where the donor types the amount."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:546
+#: src/Admin/class-field-registry.php:553
 msgid "Share-based products with shareholder names."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:547
+#: src/Admin/class-field-registry.php:554
 msgid "Products with a goal and a progress bar."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:563
+#: src/Admin/class-field-registry.php:570
 msgid ""
 "Wins over the product's own donation type. A direct donation is a single-"
 "line order, so the add-on choice is not shown to the donor when the result "
 "is direct."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:571
+#: src/Admin/class-field-registry.php:578
 msgid "Floating basket button"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:572
+#: src/Admin/class-field-registry.php:579
 msgid ""
 "A round basket button in the bottom corner. It appears only after a gift is "
 "added and disappears when the basket is empty. Switch it off if your theme "
 "already shows its own cart icon."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:578
+#: src/Admin/class-field-registry.php:585
 msgid "Button corner"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:579
+#: src/Admin/class-field-registry.php:586
 msgid ""
 "Which bottom corner the floating basket button sits in. Choose the corner "
 "that does not cover your chat or back-to-top button. On right-to-left sites "
 "the sides swap."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:582 src/Admin/class-guide.php:257
+#: src/Admin/class-field-registry.php:589 src/Admin/class-guide.php:269
 msgid "Bottom right"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:583 src/Admin/class-guide.php:250
+#: src/Admin/class-field-registry.php:590 src/Admin/class-guide.php:262
 msgid "Bottom left"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:590
+#: src/Admin/class-field-registry.php:597
 msgid "Suggest an extra gift in the basket"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:591
+#: src/Admin/class-field-registry.php:598
 msgid ""
 "Shows \"Would you like to add to your donation?\" with up to three small "
 "amounts under the gifts. One tap adds it with the donor details already in "
 "the basket. Hidden when that gift is already in the basket."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:597
+#: src/Admin/class-field-registry.php:604
 msgid "Suggested donation product ID"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:598
+#: src/Admin/class-field-registry.php:605
 msgid ""
 "The WooCommerce product ID of the gift to suggest (Products → All products, "
 "the ID shows when you point at a name). Leave 0 to use the add-on product "
 "above. It must be a published donation product."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:605
+#: src/Admin/class-field-registry.php:612
 msgid "Suggested amounts"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:606
+#: src/Admin/class-field-registry.php:613
 msgid ""
 "Up to three amounts separated by commas, for example 50, 100. Shown in your "
 "store currency."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:613
+#: src/Admin/class-field-registry.php:620
 msgid "Short line under the name"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:614
+#: src/Admin/class-field-registry.php:621
 msgid ""
 "Optional, one short sentence. Leave empty to show only the product name."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:622
+#: src/Admin/class-field-registry.php:629
 msgid "Show a privacy link under the form"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:623
+#: src/Admin/class-field-registry.php:630
 msgid ""
 "Shown only when the form asks for email, dedication or shareholder details."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:634
+#: src/Admin/class-field-registry.php:641
 msgid "Link text"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:635
+#: src/Admin/class-field-registry.php:642
 msgid "Leave empty for the built-in wording."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:646
+#: src/Admin/class-field-registry.php:653
 msgid "Link address"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:647
+#: src/Admin/class-field-registry.php:654
 msgid "Leave empty to use the privacy policy page set in WordPress."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:659
+#: src/Admin/class-field-registry.php:666
 msgid "Delete plugin data when the plugin is deleted"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:660
+#: src/Admin/class-field-registry.php:667
 msgid ""
 "Removes the plugin's settings and product options. Orders and order records "
 "are never touched. This cannot be undone."
 msgstr ""
 
-#: src/Admin/class-field-registry.php:662
+#: src/Admin/class-field-registry.php:669
 msgid ""
 "All plugin settings and product options will be deleted when the plugin is "
 "deleted. Orders are not affected. This cannot be undone. Have you made a "
 "backup?"
 msgstr ""
 
-#: src/Admin/class-field-registry.php:695
+#: src/Admin/class-field-registry.php:702
 msgid "Hex or CSS variable (e.g. var(--e-global-color-primary))."
 msgstr ""
 
@@ -2016,17 +2029,64 @@ msgid ""
 msgstr ""
 
 #: src/Admin/class-guide.php:139
-msgid "Setting the colors"
+msgid "Donor e-mails"
 msgstr ""
 
 #: src/Admin/class-guide.php:141
+msgid ""
+"1. Nothing to install: the donation details appear in the standard "
+"WooCommerce order e-mails (Processing, Completed, New order). Customize "
+"their colors and logo under WooCommerce → Settings → Emails."
+msgstr ""
+
+#: src/Admin/class-guide.php:142
+msgid ""
+"2. Thank-you above the order table: Donation Panel → Cart and checkout → "
+"Thank-you screen → \"Thank-you in donor e-mails\" (on by default). Donors "
+"get your thank-you message in the Processing and Completed e-mails. For a "
+"campaign product one extra line shows the amount raised and the goal at the "
+"time the e-mail is sent. It is never added to the e-mails you receive, and "
+"it works even when the Thank-you screen module is off."
+msgstr ""
+
+#: src/Admin/class-guide.php:143
+msgid ""
+"3. Change the wording: the same \"Thank-you message\" field under Thank-you "
+"screen is used on the page and in the e-mail. Leave it empty for the built-"
+"in wording. Only links, bold, italic and line breaks are kept."
+msgstr ""
+
+#: src/Admin/class-guide.php:144
+msgid ""
+"4. Privacy: in e-mails to donors the phone number is left out (WooCommerce "
+"already shows the billing phone); donation type, names and note stay. In e-"
+"mails to you every field stays. Internal plugin data is never shown in any e-"
+"mail, and the order itself is not changed."
+msgstr ""
+
+#: src/Admin/class-guide.php:145
+msgid ""
+"5. Language: e-mails to donors use the site language and the labels are "
+"translated when the e-mail is sent, so a Turkish label never appears in an "
+"English e-mail and the other way round."
+msgstr ""
+
+#: src/Admin/class-guide.php:148
+msgid "Open the Thank-you settings"
+msgstr ""
+
+#: src/Admin/class-guide.php:151
+msgid "Setting the colors"
+msgstr ""
+
+#: src/Admin/class-guide.php:153
 msgid ""
 "1. Open Donation Panel → Forms and appearance → Colors. Under \"Use my theme "
 "colors\" you see the two colors in use and where each one comes from: "
 "\"Theme palette: primary\", \"Default\" or \"Follows the main color\"."
 msgstr ""
 
-#: src/Admin/class-guide.php:142
+#: src/Admin/class-guide.php:154
 msgid ""
 "2. Which theme colors are used: only colors the theme names primary, brand, "
 "accent, secondary, contrast or foreground (also numbered ones such as "
@@ -2034,14 +2094,14 @@ msgid ""
 "keep its text readable. Nothing is guessed from other colors."
 msgstr ""
 
-#: src/Admin/class-guide.php:143
+#: src/Admin/class-guide.php:155
 msgid ""
 "3. If the theme has no such names you see \"Colors could not be read from "
 "your theme\" here and on the Overview. The form then uses a calm neutral ink "
 "color until you choose your own."
 msgstr ""
 
-#: src/Admin/class-guide.php:144
+#: src/Admin/class-guide.php:156
 msgid ""
 "4. To choose your own: select \"Choose my own colors\" and fill in Main "
 "color and Button color. Each field takes a hex value (#12305A) or a CSS "
@@ -2050,25 +2110,25 @@ msgid ""
 "the color that applies instead."
 msgstr ""
 
-#: src/Admin/class-guide.php:145
+#: src/Admin/class-guide.php:157
 msgid ""
 "5. Button text turns black or white by itself so it stays readable (contrast "
 "at least 4.5:1). Colors you choose are never changed by theme or plugin "
 "updates."
 msgstr ""
 
-#: src/Admin/class-guide.php:149
+#: src/Admin/class-guide.php:161
 msgid "Open the Colors settings"
 msgstr ""
 
-#: src/Admin/class-guide.php:154
+#: src/Admin/class-guide.php:166
 msgid ""
 "1. Turn it on: Donation Panel → Cart and checkout → Modules → Side cart. "
 "After a gift is added, a basket slides in (a bottom sheet on phones) with "
 "the gifts, the total and \"Complete donation\"."
 msgstr ""
 
-#: src/Admin/class-guide.php:155
+#: src/Admin/class-guide.php:167
 msgid ""
 "2. Floating basket button: on the same screen under Side cart. It appears "
 "only when the basket has a gift. Choose Bottom right or Bottom left so it "
@@ -2076,13 +2136,13 @@ msgid ""
 "theme shows its own cart icon."
 msgstr ""
 
-#: src/Admin/class-guide.php:156
+#: src/Admin/class-guide.php:168
 msgid ""
 "3. A basket icon in your header: place the shortcode below in a header "
 "widget or menu block. It shows the number of gifts and opens the same basket."
 msgstr ""
 
-#: src/Admin/class-guide.php:157
+#: src/Admin/class-guide.php:169
 msgid ""
 "4. Extra gift suggestion: switch on \"Suggest an extra gift in the basket\", "
 "enter the product ID (0 uses the add-on product) and up to three amounts "
@@ -2090,109 +2150,109 @@ msgid ""
 "the gift already in the basket."
 msgstr ""
 
-#: src/Admin/class-guide.php:158
+#: src/Admin/class-guide.php:170
 msgid ""
 "5. The side cart never opens on the cart and checkout pages, and pages "
 "without a donation form load none of its files."
 msgstr ""
 
-#: src/Admin/class-guide.php:162
+#: src/Admin/class-guide.php:174
 msgid "Open the Side cart settings"
 msgstr ""
 
-#: src/Admin/class-guide.php:174 src/Admin/class-pages.php:60
+#: src/Admin/class-guide.php:186 src/Admin/class-pages.php:60
 #: src/Admin/class-setup-wizard.php:141
 msgid "You do not have permission to open this page."
 msgstr ""
 
-#: src/Admin/class-guide.php:176
+#: src/Admin/class-guide.php:188
 msgid "Short answers to the questions people ask most."
 msgstr ""
 
-#: src/Admin/class-guide.php:177
+#: src/Admin/class-guide.php:189
 msgid "Guide sections"
 msgstr ""
 
-#: src/Admin/class-guide.php:199
+#: src/Admin/class-guide.php:211
 msgid "Back to overview"
 msgstr ""
 
-#: src/Admin/class-guide.php:222
+#: src/Admin/class-guide.php:234
 msgid ""
 "Through the cart: form, cart, checkout, thank you. Direct: form, payment "
 "page, thank you."
 msgstr ""
 
-#: src/Admin/class-guide.php:224 src/Admin/class-guide.php:229
+#: src/Admin/class-guide.php:236 src/Admin/class-guide.php:241
 msgid "Form"
 msgstr ""
 
-#: src/Admin/class-guide.php:225
+#: src/Admin/class-guide.php:237
 msgid "Cart"
 msgstr ""
 
-#: src/Admin/class-guide.php:226 src/Admin/class-pages.php:305
+#: src/Admin/class-guide.php:238 src/Admin/class-pages.php:305
 #: src/Admin/class-pages.php:434
 msgid "Checkout"
 msgstr ""
 
-#: src/Admin/class-guide.php:227 src/Admin/class-guide.php:231
+#: src/Admin/class-guide.php:239 src/Admin/class-guide.php:243
 #: templates/donation-panel/experiences/compact.php:320
 msgid "Thank you"
 msgstr ""
 
-#: src/Admin/class-guide.php:230
+#: src/Admin/class-guide.php:242
 msgid "Payment page"
 msgstr ""
 
-#: src/Admin/class-guide.php:234
+#: src/Admin/class-guide.php:246
 msgid ""
 "Theme palette names lead to the colors used: primary or brand becomes the "
 "main color, accent or secondary becomes the button color; without these "
 "names a neutral default is used and you are asked to choose."
 msgstr ""
 
-#: src/Admin/class-guide.php:235
+#: src/Admin/class-guide.php:247
 msgid "Theme palette"
 msgstr ""
 
-#: src/Admin/class-guide.php:240
+#: src/Admin/class-guide.php:252
 msgid "No such names"
 msgstr ""
 
-#: src/Admin/class-guide.php:241
+#: src/Admin/class-guide.php:253
 msgid "Neutral default"
 msgstr ""
 
-#: src/Admin/class-guide.php:242
+#: src/Admin/class-guide.php:254
 msgid "Choose your colors"
 msgstr ""
 
-#: src/Admin/class-guide.php:243
+#: src/Admin/class-guide.php:255
 msgid "Your choice wins"
 msgstr ""
 
-#: src/Admin/class-guide.php:246
+#: src/Admin/class-guide.php:258
 msgid ""
 "A page with the side cart open on the right: gifts, an extra gift "
 "suggestion, the total and the Complete donation button. The floating basket "
 "button sits in a bottom corner."
 msgstr ""
 
-#: src/Admin/class-guide.php:248
+#: src/Admin/class-guide.php:260
 msgid "Your page"
 msgstr ""
 
-#: src/Admin/class-guide.php:252
+#: src/Admin/class-guide.php:264
 #: src/Modules/SideCart/class-side-cart-renderer.php:209
 msgid "Your donation basket"
 msgstr ""
 
-#: src/Admin/class-guide.php:254
+#: src/Admin/class-guide.php:266
 msgid "Extra gift suggestion"
 msgstr ""
 
-#: src/Admin/class-guide.php:255
+#: src/Admin/class-guide.php:267
 #: src/Modules/DonorAccount/class-account-renderer.php:208
 #: src/Modules/SideCart/class-side-cart-renderer.php:88
 #: templates/donation-panel/experiences/compact.php:197
@@ -2203,63 +2263,63 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-#: src/Admin/class-guide.php:256
+#: src/Admin/class-guide.php:268
 #: src/Modules/SideCart/class-side-cart-renderer.php:89
 msgid "Complete donation"
 msgstr ""
 
-#: src/Admin/class-guide.php:260
+#: src/Admin/class-guide.php:272
 msgid ""
 "Campaign bar: the solid part is the real total from paid orders; the lighter "
 "striped part after it is the donor's own gift, seen only by that donor."
 msgstr ""
 
 #. translators: %s: goal amount.
-#: src/Admin/class-guide.php:267
+#: src/Admin/class-guide.php:279
 #: templates/donation-panel/experiences/form.php:248
 #, php-format
 msgid "Goal %s"
 msgstr ""
 
 #. translators: 1: the donor's own gift, 2: campaign total including that gift.
-#: src/Admin/class-guide.php:272
+#: src/Admin/class-guide.php:284
 #: src/Modules/Campaign/class-progress-live.php:174
 #, php-format
 msgid "With your %1$s it reaches %2$s"
 msgstr ""
 
-#: src/Admin/class-guide.php:273
+#: src/Admin/class-guide.php:285
 msgid "Real total (paid orders)"
 msgstr ""
 
-#: src/Admin/class-guide.php:274
+#: src/Admin/class-guide.php:286
 msgid "Donor's own gift"
 msgstr ""
 
-#: src/Admin/class-guide.php:277
+#: src/Admin/class-guide.php:289
 msgid "A slide with a compact donation card placed through a Shortcode widget."
 msgstr ""
 
-#: src/Admin/class-guide.php:279
+#: src/Admin/class-guide.php:291
 msgid "Slide"
 msgstr ""
 
-#: src/Admin/class-guide.php:280
+#: src/Admin/class-guide.php:292
 msgid "Your headline"
 msgstr ""
 
-#: src/Admin/class-guide.php:283
+#: src/Admin/class-guide.php:295
 msgid "Shortcode widget"
 msgstr ""
 
-#: src/Admin/class-guide.php:287
+#: src/Admin/class-guide.php:299
 #: src/Modules/EntryPoints/class-donations-list.php:982
 #: src/Modules/EntryPoints/class-shortcodes.php:318
 #: src/Modules/Experiences/class-form-renderer.php:72
 msgid "Donate"
 msgstr ""
 
-#: src/Admin/class-guide.php:318
+#: src/Admin/class-guide.php:330
 msgid "Open the full guide"
 msgstr ""
 
@@ -4122,8 +4182,12 @@ msgstr ""
 msgid "Yes, I make this declaration"
 msgstr ""
 
+#: src/Modules/Thanks/class-thanks-summary.php:36
+msgid "Your donation has been received. May it be a source of goodness."
+msgstr ""
+
 #. translators: %s: project (campaign) name.
-#: src/Modules/Thanks/class-thanks-summary.php:95
+#: src/Modules/Thanks/class-thanks-summary.php:106
 #, php-format
 msgid "I just donated to %s."
 msgstr ""
@@ -4757,6 +4821,12 @@ msgstr ""
 msgid "Direct donation started. Waiting for payment."
 msgstr ""
 
+#. translators: 1: campaign name, 2: amount raised so far, 3: goal amount.
+#: src/WooCommerce/Email/class-email-thanks.php:125
+#, php-format
+msgid "%1$s: %2$s raised of %3$s goal so far."
+msgstr ""
+
 #: src/WooCommerce/class-addon-line.php:100
 msgid ""
 "Add-on donation WooCommerce product was not found. Enter a valid product ID "
@@ -5145,10 +5215,6 @@ msgstr ""
 
 #: templates/donation-panel/tax-relief/step.php:22
 msgid "This step is optional. You can continue without ticking the box."
-msgstr ""
-
-#: templates/donation-panel/thanks/summary.php:16
-msgid "Your donation has been received. May it be a source of goodness."
 msgstr ""
 
 #: templates/donation-panel/thanks/summary.php:55
