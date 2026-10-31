@@ -135,6 +135,18 @@ final class Guide {
 				),
 				'code'  => '[wdp_donation_form]',
 			),
+			'email'      => array(
+				'title' => __( 'Donor e-mails', 'woo-donation-popup' ),
+				'body'  => array(
+					__( '1. Nothing to install: the donation details appear in the standard WooCommerce order e-mails (Processing, Completed, New order). Customize their colors and logo under WooCommerce → Settings → Emails.', 'woo-donation-popup' ),
+					__( '2. Thank-you above the order table: Donation Panel → Cart and checkout → Thank-you screen → "Thank-you in donor e-mails" (on by default). Donors get your thank-you message in the Processing and Completed e-mails. For a campaign product one extra line shows the amount raised and the goal at the time the e-mail is sent. It is never added to the e-mails you receive, and it works even when the Thank-you screen module is off.', 'woo-donation-popup' ),
+					__( '3. Change the wording: the same "Thank-you message" field under Thank-you screen is used on the page and in the e-mail. Leave it empty for the built-in wording. Only links, bold, italic and line breaks are kept.', 'woo-donation-popup' ),
+					__( '4. Privacy: in e-mails to donors the phone number is left out (WooCommerce already shows the billing phone); donation type, names and note stay. In e-mails to you every field stays. Internal plugin data is never shown in any e-mail, and the order itself is not changed.', 'woo-donation-popup' ),
+					__( '5. Language: e-mails to donors use the site language and the labels are translated when the e-mail is sent, so a Turkish label never appears in an English e-mail and the other way round.', 'woo-donation-popup' ),
+				),
+				'code'  => '',
+				'link'  => array( Admin_Bootstrap::SLUG_CHECKOUT, 'dpa-s-thanks', __( 'Open the Thank-you settings', 'woo-donation-popup' ) ),
+			),
 			'colors'     => array(
 				'title'  => __( 'Setting the colors', 'woo-donation-popup' ),
 				'body'   => array(
