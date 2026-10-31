@@ -144,6 +144,56 @@ for (const size of SIZES) {
         .toBe(true);
     });
 
+    test('12.4: klavye kapanışında alt bölüm ve düğme kare kare konum/genişlik değiştirmez', async ({ page }) => {
+      await installIosKeyboardSim(page);
+      const fields = await openDetails(page);
+      test.skip(fields.length < 1, 'bilgiler adımında metin alanı yok');
+      await fields[0].focus();
+      await expect.poll(async () => (await readSim(page)).keyboardUp).toBe(true);
+      await page.waitForTimeout(900);
+      // rAF örnekleme: alt bölüm/düğme/gövde; konum yüzey alt kenarına göre (yüzeyin klavyeyle inip çıkması hariç).
+      await page.evaluate(() => {
+        const frames = [];
+        window.__dpFrames = frames;
+        window.__dpFramesOn = true;
+        const rel = (r, s) => [Math.round(r.left * 100) / 100, Math.round(r.width * 100) / 100, Math.round((s.bottom - r.bottom) * 100) / 100, Math.round(r.height * 100) / 100];
+        const tick = () => {
+          const surface = document.querySelector('[data-dp-surface]');
+          const bar = document.querySelector('.donation-panel-actionbar');
+          const body = document.querySelector('.donation-panel-surface__body');
+          if (surface && bar && body) {
+            const sr = surface.getBoundingClientRect();
+            const btn = bar.querySelector('button, a');
+            frames.push({
+              bar: rel(bar.getBoundingClientRect(), sr),
+              btn: btn ? rel(btn.getBoundingClientRect(), sr) : null,
+              bodyW: Math.round(body.getBoundingClientRect().width * 100) / 100,
+              surfW: Math.round(sr.width * 100) / 100,
+            });
+          }
+          if (window.__dpFramesOn) {
+            requestAnimationFrame(tick);
+          }
+        };
+        tick();
+      });
+      await fields[0].blur();
+      await expect.poll(async () => (await readSim(page)).keyboardUp, { timeout: 5000 }).toBe(false);
+      await page.waitForTimeout(1200);
+      const frames = await page.evaluate(() => {
+        window.__dpFramesOn = false;
+        return window.__dpFrames;
+      });
+      const distinct = (pick) => new Set(frames.map((f) => JSON.stringify(pick(f)))).size;
+      const trace = { frames: frames.length, barRects: distinct((f) => f.bar), btnRects: distinct((f) => f.btn), bodyWidths: distinct((f) => f.bodyW), surfaceWidths: distinct((f) => f.surfW) };
+      console.log(`KBD-IZ ${size.name} ${JSON.stringify(trace)}`);
+      expect(frames.length, 'yeterli kare örneklendi').toBeGreaterThan(20);
+      expect(trace.barRects, `alt bölüm konum/genişlik ${JSON.stringify(trace)}`).toBe(1);
+      expect(trace.btnRects, `düğme konum/genişlik ${JSON.stringify(trace)}`).toBe(1);
+      expect(trace.bodyWidths, `gövde genişliği ${JSON.stringify(trace)}`).toBe(1);
+      expect(trace.surfaceWidths, `yüzey genişliği ${JSON.stringify(trace)}`).toBe(1);
+    });
+
     test('giriş alanlarında yazı boyutu en az 16px (iOS odak yakınlaşması yok)', async ({ page }) => {
       await installIosKeyboardSim(page);
       await openDetails(page);
