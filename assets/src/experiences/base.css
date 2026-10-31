@@ -20,9 +20,8 @@
 .donation-panel-overlay--sheet { align-items: end; }
 
 .donation-panel-surface { position: relative; display: flex; flex-direction: column; background: var(--dp-color-surface); color: var(--dp-color-text); max-block-size: 100%; overflow: hidden; box-shadow: var(--dp-shadow-3); outline: 0; }
-.donation-panel-actionbar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px var(--dp-gutter) max(22px, env(safe-area-inset-bottom)); background: var(--dp-color-surface); border-block-start: 1px solid var(--dp-hair); }
+.donation-panel-actionbar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px var(--dp-gutter) max(22px, env(safe-area-inset-bottom)); background: var(--dp-color-surface); border-block-start: 1px solid var(--dp-hair); transition: opacity .12s linear; }
 .donation-panel-inline .donation-panel-actionbar { position: sticky; inset-block-end: 0; }
-.donation-panel-actionbar { transition: opacity .12s linear; }
 .donation-panel-exp[data-dp-kb] .donation-panel-surface .donation-panel-actionbar { position: absolute; inset-inline: 0; inset-block-end: 0; opacity: 0; pointer-events: none; } /* ekran klavyesi açıkken alt bölüm aynı kutuda (aynı alt kenar/genişlik/yükseklik) kalır ve yalnız opacity ile gizlenir; akıştan çıkması kaydırma alanına yer açar (layer.mjs inert ekler) */
 @media (prefers-reduced-motion: reduce) { .donation-panel-actionbar { transition: none; } }
 .donation-panel-surface__handle { display: none; inline-size: 100%; padding-block: 10px 0; cursor: grab; touch-action: none; flex: none; }

@@ -160,8 +160,25 @@ export function createLayer(root, hooks = {}) {
     }
   };
 
+  /** Alt bölümü yerinde gizler/gösterir (yalnız durum değişince yazar; opacity + inert). */
+  const setBarHidden = (hide) => {
+    if (hide === barHidden) {
+      return;
+    }
+    barHidden = hide;
+    if (hide) {
+      root.setAttribute('data-dp-kb', '1');
+    } else {
+      root.removeAttribute('data-dp-kb');
+    }
+    const bar = surface.querySelector('.donation-panel-actionbar');
+    if (bar) {
+      bar.toggleAttribute('inert', hide); // gizliyken odak/dokunma almaz
+    }
+  };
+
   /**
-   * Klavye durumu (histerezisli) + alt bölümün akışa girmesi/çıkması: tek yerde, tek karede.
+   * Klavye durumu (histerezisli) + alt bölümün gizlenmesi/görünmesi: tek yerde, tek karede.
    *
    * @param {boolean} measured Gerçek ölçümden mi (resize sonrası) çağrıldı.
    */
@@ -188,18 +205,7 @@ export function createLayer(root, hooks = {}) {
         dismissed: keyboardDismissedFlag,
       });
     // Tek seferlik durum değişimi: alt bölüm yerinde kalır, yalnız opacity ile gizlenir/görünür (konum/boyut geçişi yok).
-    if (hide !== barHidden) {
-      barHidden = hide;
-      if (hide) {
-        root.setAttribute('data-dp-kb', '1');
-      } else {
-        root.removeAttribute('data-dp-kb');
-      }
-      const bar = surface.querySelector('.donation-panel-actionbar');
-      if (bar) {
-        bar.toggleAttribute('inert', hide); // gizliyken odak/dokunma almaz
-      }
-    }
+    setBarHidden(hide);
     if (measured && keyboardUp && revealTarget) {
       reveal(); // klavye yerleşti: tek kaydırma
     }
