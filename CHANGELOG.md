@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Phone field: country table, number formatting, +code and leading 0 stripping, warning hint, E.164 hand-off to the order, server-side validation.
 - Customer email: thank-you section (can be turned off in the settings; only for paid orders); item labels in the recipient's language; phone and technical meta filtered out of customer emails; compatibility with the block email editor.
 - Email info line for logged-in donors (no layout shift).
+- Physical-keyboard support: the bottom buttons appear on the first keystroke when no on-screen keyboard shrinks the view; a 4 s fallback applies only when the donor has not typed (emulator-measured cold keyboard start up to ~3 s).
 - Android keyboard verification (emulator test).
 - Strict `verify` (no silent skips), Knip, test port reservation.
 
