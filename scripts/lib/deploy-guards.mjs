@@ -268,22 +268,6 @@ export function extractPathsFromText(text) {
 }
 
 /**
- * Salt okunur sunucu cron ipucu: yalnız evet/hayır yazar, crontab satırı ASLA yazılmaz.
- * (`crontab -l` çıktısı doğrudan grep -q'ya gider; ekrana düşmez.)
- * Guard yalnız TAM bu dizgeyi WP-CLI --path kuralından muaf tutar (isCronCrontabHintCommand).
- */
-export const CRON_CRONTAB_HINT_COMMAND =
-  "if crontab -l 2>/dev/null | grep -qE 'wp-cron\\.php|wp cron event run'; then echo crontab_wp_cron=yes; else echo crontab_wp_cron=no; fi";
-
-/**
- * Tam sabit dizge eşleşmesi (kırpma/normalleştirme yok).
- * @param {string} cmd
- */
-export function isCronCrontabHintCommand(cmd) {
-  return typeof cmd === 'string' && cmd === CRON_CRONTAB_HINT_COMMAND;
-}
-
-/**
  * @param {string} cmd
  */
 export function isWpCliRemoteCommand(cmd) {
@@ -685,8 +669,7 @@ export function checkRemoteTarget(opts = {}) {
     if (!cmdInspect.ok) return cmdInspect;
   }
 
-  // Tek istisna: tam sabit salt-okur cron ipucu (başka kabuk komutu geçmez).
-  if (remoteCommand && !isCronCrontabHintCommand(remoteCommand) && isWpCliRemoteCommand(remoteCommand)) {
+  if (remoteCommand && isWpCliRemoteCommand(remoteCommand)) {
     if (!wpCliHasExactPath(remoteCommand, target.wpPath)) {
       return deny('WP-CLI --path izinli wpPath ile açıkça verilmeli.');
     }

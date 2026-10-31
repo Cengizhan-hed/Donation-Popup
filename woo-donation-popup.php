@@ -3,7 +3,7 @@
  * Plugin Name: Donation Panel for WooCommerce
  * Description: Adds a donation form to WooCommerce products as a popup, side panel or inline form, with fixed, custom, shared and campaign donation types.
  * Author: Cengizhan Çoban
- * Version: 12.3.0
+ * Version: 12.4.0
  * Requires at least: 6.3
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WDP_* sabitleri dışa açık sözleşmedir (geriye dönük uyum), yeniden adlandırılamaz.
 define( 'WDP_PLUGIN_FILE', __FILE__ );
-define( 'WDP_VERSION', '12.3.0' );
+define( 'WDP_VERSION', '12.4.0' );
 define( 'WDP_PLUGIN_DIR', plugin_dir_path( WDP_PLUGIN_FILE ) );
 define( 'WDP_PLUGIN_URL', plugin_dir_url( WDP_PLUGIN_FILE ) );
 define( 'WDP_ASSET_VERSION', get_option( 'wdp_cache_version', WDP_VERSION ) );
