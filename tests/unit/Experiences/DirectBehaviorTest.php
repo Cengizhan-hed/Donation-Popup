@@ -182,6 +182,42 @@ final class DirectBehaviorTest extends TestCase {
 		$this->assertTrue( Direct_Settings::enabled_for( $product, $model ), 'REST kontrolü formla aynı kararı verir' );
 	}
 
+	public function test_direct_requires_the_donor_email_and_cart_flow_is_unchanged(): void {
+		$legacy  = array(
+			'product_id'         => 44,
+			'allow_custom_price' => true,
+		);
+		$product = $this->product( 44 );
+
+		// Sepetli akış: e-posta alanı kapalıysa eklenmez (davranış değişmez).
+		$model = Form_Context::from_legacy( $legacy, $product );
+		$this->assertFalse( $model['direct'] );
+		$this->assertNotContains( 'donation_email', array_column( $model['fields'], 'name' ) );
+
+		// Doğrudan akış: order-pay sayfası fatura alanı sormaz; WooCommerce ödeme formundaki gibi e-posta zorunlu (telefondan sonra).
+		$this->settings( array( 'direct' => array( 'enabled' => true ) ) );
+		$model = Form_Context::from_legacy( $legacy, $product );
+		$this->assertTrue( $model['direct'] );
+		$names = array_column( $model['fields'], 'name' );
+		$this->assertSame( array( 'donation_full_name', 'donation_phone', 'donation_email' ), array_slice( $names, 0, 3 ) );
+		$email = $model['fields'][2];
+		$this->assertTrue( $email['required'] );
+		$this->assertSame( 'email', $email['type'] );
+		$this->assertSame( 'email', $email['autocomplete'] );
+		$this->assertNotSame( '', $email['required_msg'] );
+		$this->assertSame( 1, count( array_keys( $names, 'donation_email', true ) ), 'tek e-posta alanı' );
+
+		// Alan açıkken (isteğe bağlı) doğrudan akışta aynı alan zorunlu olur; yeri değişmez.
+		$model = Form_Context::from_legacy( $legacy + array( 'enable_email' => true ), $product );
+		$names = array_column( $model['fields'], 'name' );
+		$this->assertSame( 1, count( array_keys( $names, 'donation_email', true ) ) );
+		$this->assertTrue( $model['fields'][ array_search( 'donation_email', $names, true ) ]['required'] );
+
+		// Ayarda görünen = uygulanan: ayar açıklaması ve Rehber bu kuralı söyler.
+		$this->assertStringContainsString( 'email', Field_Registry::fields_for( Admin_Bootstrap::SLUG_CHECKOUT )['direct.enabled']['help'] );
+		$this->assertStringContainsString( 'required email field', implode( ' ', Guide::sections()['direct']['body'] ) );
+	}
+
 	public function test_compact_shortcode_builder_and_guide_sections(): void {
 		$this->assertSame( '[wdp_donation_form id="12" layout="compact"]', Compact_Tools::shortcode( 12 ) );
 		$this->assertSame( '[wdp_donation_form layout="compact"]', Compact_Tools::shortcode( 0 ) );

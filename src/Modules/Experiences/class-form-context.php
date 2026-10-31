@@ -136,7 +136,8 @@ final class Form_Context {
 			$model['direct'] = \DonationPanel\WooCommerce\Direct\Direct_Settings::enabled_for( $product, $model );
 		}
 		if ( $model['direct'] ) {
-			$model['addon'] = null;
+			$model['addon']  = null;
+			$model['fields'] = self::require_email( $model['fields'] );
 		}
 
 		// Form altı gizlilik bağlantısı: ayar açıksa ve form kişisel veri alanı topluyorsa; adres boşsa WordPress gizlilik sayfası.
@@ -423,6 +424,41 @@ final class Form_Context {
 			}
 		}
 		return count( $out ) > 1 ? $out : array();
+	}
+
+	/**
+	 * Doğrudan (sepetsiz) bağışta e-posta zorunludur: sipariş WooCommerce'in ödeme sayfasında (order-pay) ödenir ve o sayfa
+	 * fatura alanı sormaz. WooCommerce ödeme formunda fatura e-postası zorunlu bir standart alandır; ödeme geçitleri (ör. kartlı
+	 * ödeme) ve sipariş e-postaları onu bekler. E-posta alanı kapalı olsa bile doğrudan akışta eklenir (telefondan sonra),
+	 * açıksa zorunlu yapılır. Geçide özel kod değildir.
+	 *
+	 * @param array<int, array<string, mixed>> $fields Alanlar.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function require_email( array $fields ) {
+		$email = array(
+			'name'         => 'donation_email',
+			'type'         => 'email',
+			'label'        => __( 'Email *', 'woo-donation-popup' ),
+			'required'     => true,
+			'required_msg' => __( 'Please enter your email address.', 'woo-donation-popup' ),
+			'autocomplete' => 'email',
+			'inputmode'    => 'email',
+			'maxlength'    => 100,
+		);
+		$after = -1;
+		foreach ( $fields as $i => $field ) {
+			$name = is_array( $field ) && isset( $field['name'] ) ? (string) $field['name'] : '';
+			if ( 'donation_email' === $name ) {
+				$fields[ $i ] = array_merge( $field, array_intersect_key( $email, array_flip( array( 'label', 'required', 'required_msg' ) ) ) );
+				return $fields;
+			}
+			if ( in_array( $name, array( 'donation_full_name', 'donation_phone' ), true ) ) {
+				$after = (int) $i;
+			}
+		}
+		array_splice( $fields, $after + 1, 0, array( $email ) );
+		return array_values( $fields );
 	}
 
 	/**
