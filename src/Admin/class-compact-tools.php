@@ -21,17 +21,17 @@ final class Compact_Tools {
 	/**
 	 * Kart yüksekliği (px), varsayılan blok teması + yerel test ürünleri; `layout="compact"` (yalnız sepetli), TEK birleşik
 	 * değer: tüm ürün türleri ve adımlar aynı (adımlar aynı hücrede üst üste). e2e `kurgu-matrix` "compact kart
-	 * yükseklikleri" testi ölçümü bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Ölçüm 2026-10-31 (12.4 sade kart: 358 px taban
-	 * + 2 px kenarlık = 360), TT5, 1440/820/375/320 px; en dolu hal (serbest tutar + kampanya + etki ifadesi) doğal olarak 355 px
-	 * tutar, yani 5 px pay vardır; hedefli/hedefsiz/sabit fiyat, etki ifadesi ve vergi beyanı ile aynıdır. Tema yazı tipi çok
+	 * yükseklikleri" testi ölçümü bu tabloyla karşılaştırır (±HEIGHT_TOLERANCE). Ölçüm 2026-10-31 (12.4 sade kart: 354 px taban
+	 * + 2 px kenarlık = 356), TT5, 1440/820/375/320 px; en dolu hal (serbest tutar + kampanya + etki ifadesi) doğal olarak 347 px
+	 * tutar, yani 9 px pay vardır; hedefli/hedefsiz/sabit fiyat, etki ifadesi ve vergi beyanı ile aynıdır. Tema yazı tipi çok
 	 * büyükse içerik tabanı aşar ve kart uzar.
 	 *
 	 * @var array<string, array{0: int, 1: int}> genişlik => [ serbest tutar (hedefsiz), hedefli kampanya ].
 	 */
 	const HEIGHTS = array(
-		'desktop' => array( 360, 360 ),
-		'tablet'  => array( 360, 360 ),
-		'mobile'  => array( 360, 360 ),
+		'desktop' => array( 356, 356 ),
+		'tablet'  => array( 356, 356 ),
+		'mobile'  => array( 356, 356 ),
 	);
 
 	/** Ölçüm toleransı (px). */
