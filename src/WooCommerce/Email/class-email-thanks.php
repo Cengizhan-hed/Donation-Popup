@@ -4,7 +4,7 @@
  *
  * - Metin, teşekkür ekranıyla AYNI kaynaktan: `thanks.message` (boşsa yerleşik söz) → `Thanks_Summary::message`.
  * - Kampanyalı üründe TEK satır: toplanan / hedef (e-posta anındaki değer, WooCommerce para biçimi).
- * - Görsel ve satır içi stil yok: düz paragraf; WooCommerce e-posta CSS'i uygulanır. Düz metin sürümü de çizilir.
+ * - E-posta uyumlu tablo + SATIR İÇİ stil (Woo e-posta renk ayarlarından); görsel/dış CSS yok. Düz metin sürümü de çizilir.
  * - Yönetici e-postasına eklenmez. Ayardan kapatılabilir (`thanks.email`, varsayılan AÇIK). Teşekkür ekranı modülünden bağımsızdır.
  * - Bağış satırı olmayan siparişlerde hiçbir şey basılmaz.
  *
@@ -150,12 +150,74 @@ final class Email_Thanks {
 			'i'      => array(),
 			'br'     => array(),
 		);
-		$html    = wpautop( wp_kses( (string) $parts['message'], $allowed ) );
+		$colors  = self::colors();
+		$body    = wpautop( wp_kses( (string) $parts['message'], $allowed ) );
 		$line    = self::campaign_line( (array) $parts['campaign'], false );
 		if ( '' !== $line ) {
-			$html .= '<p>' . wp_kses_post( $line ) . '</p>';
+			$body .= '<p>' . wp_kses_post( $line ) . '</p>';
 		}
-		return $html;
+		// Stil, kaçışlamadan SONRA eklenir (kses stil özniteliğini zaten atar).
+		$body = str_replace( '<p>', '<p style="margin:0 0 12px;padding:0;color:' . $colors['text'] . ';font-family:inherit;font-size:15px;line-height:1.5;">', $body );
+		$body = str_replace( '<a ', '<a style="color:' . $colors['accent'] . ';" ', $body );
+		// Son paragrafın alt boşluğu hücre dolgusuna eklenmesin.
+		$pos = strrpos( $body, 'margin:0 0 12px;' );
+		if ( false !== $pos ) {
+			$body = substr_replace( $body, 'margin:0;', $pos, strlen( 'margin:0 0 12px;' ) );
+		}
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 24px;border-collapse:collapse;">'
+			. '<tr><td style="padding:16px 20px;background-color:' . $colors['tint'] . ';border-left:4px solid ' . $colors['accent'] . ';color:' . $colors['text'] . ';font-family:inherit;font-size:15px;line-height:1.5;text-align:left;">'
+			. $body
+			. '</td></tr></table>';
+	}
+
+	/**
+	 * Bölüm renkleri: WooCommerce e-posta ayarları (geçersizse varsayılan); yalnız #rrggbb basılır.
+	 *
+	 * @return array{text: string, accent: string, tint: string}
+	 */
+	public static function colors() {
+		$read   = static function ( $option, $fallback ) {
+			$value = function_exists( 'get_option' ) ? (string) get_option( $option, $fallback ) : $fallback;
+			$hex   = function_exists( 'sanitize_hex_color' ) ? (string) sanitize_hex_color( $value ) : '';
+			return '' !== $hex ? self::expand_hex( $hex ) : $fallback;
+		};
+		$text   = $read( 'woocommerce_email_text_color', '#3c3c3c' );
+		$accent = $read( 'woocommerce_email_base_color', '#7f54b3' );
+		$bg     = $read( 'woocommerce_email_body_background_color', '#ffffff' );
+		return array(
+			'text'   => $text,
+			'accent' => $accent,
+			'tint'   => self::mix( $accent, $bg, 0.08 ),
+		);
+	}
+
+	/**
+	 * #abc -> #aabbcc.
+	 *
+	 * @param string $hex Renk.
+	 * @return string
+	 */
+	private static function expand_hex( $hex ) {
+		$hex = strtolower( $hex );
+		return 4 === strlen( $hex ) ? '#' . $hex[1] . $hex[1] . $hex[2] . $hex[2] . $hex[3] . $hex[3] : $hex;
+	}
+
+	/**
+	 * İki rengi karıştırır (ratio: birinci rengin payı).
+	 *
+	 * @param string $a     #rrggbb.
+	 * @param string $b     #rrggbb.
+	 * @param float  $ratio 0..1.
+	 * @return string
+	 */
+	private static function mix( $a, $b, $ratio ) {
+		$out = '#';
+		for ( $i = 1; $i <= 5; $i += 2 ) {
+			$x    = (int) hexdec( substr( $a, $i, 2 ) );
+			$y    = (int) hexdec( substr( $b, $i, 2 ) );
+			$out .= str_pad( dechex( (int) round( $x * $ratio + $y * ( 1 - $ratio ) ) ), 2, '0', STR_PAD_LEFT );
+		}
+		return $out;
 	}
 
 	/**
