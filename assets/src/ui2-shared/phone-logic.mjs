@@ -265,3 +265,19 @@ export function typing(raw, iso, idx, available = null) {
   national = national.slice(0, lengthRange(idx, current).max);
   return { iso: current, national, display: formatNational(national, current, idx), hold: false };
 }
+
+/**
+ * Dolu ama geçersiz mi (PHP `Phone_Rules::error` ile aynı): gerçekten boş (yalnız boşluk dahil) geçerli; dolu ama rakamsız
+ * ya da yalnız sıfırdan ibaret ("+", "()", "---", "00") ve eksik/fazla/tanınmayan engellenir.
+ *
+ * @param {unknown} raw        Ham girdi.
+ * @param {string}  defaultIso Varsayılan ülke.
+ * @param {object}  idx        Dizin.
+ * @return {boolean} Engel mi.
+ */
+export function phoneBlocked(raw, defaultIso, idx) {
+  if (raw === null || raw === undefined || String(raw).trim() === '') {
+    return false;
+  }
+  return parsePhone(raw, defaultIso, idx).status !== 'ok';
+}
