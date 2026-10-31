@@ -8,7 +8,7 @@ import { addToCart, phoneValue } from '../experiences/form.mjs';
 import { phoneBad, phoneBind } from '../ui2-shared/phone-lazy.mjs';
 import { formatTotal } from '../experiences/store.mjs';
 import { REVEAL_GAP_PX, TEXT_FIELD } from '../experiences/keyboard.mjs';
-import { ISOLATED_EVENTS, STEPS, announcement, effectLine, evaluateAmount, fill, horizontalWheel, moveStep } from './logic.mjs';
+import { ISOLATED_EVENTS, STEPS, announcement, effectLine, evaluateAmount, fill, horizontalWheel, moveStep, safeCheckoutTarget } from './logic.mjs';
 
 /**
  * Kart olaylarını kaydırıcılardan yalıtır (kütüphaneye özel kod yok): olaylar kart kökünde durur; yatay tekerlek sayfayı/
@@ -416,7 +416,8 @@ export function createCompact(root) {
       serverErrors(outcome.errors);
       return;
     }
-    const target = outcome.ok ? outcome.checkoutUrl || root.dataset.dpCheckout : '';
+    // Yönlendirme doğrulanır (aynı alan adı, http/https, beklenen ödeme yolu); geçersizse anlaşılır hata, yönlendirme yok.
+    const target = outcome.ok ? safeCheckoutTarget(outcome.checkoutUrl || root.dataset.dpCheckout, root.dataset.dpCheckout, window.location.href) : '';
     if (!target) {
       throw new Error(outcome.rate ? 'rate' : 'failed');
     }

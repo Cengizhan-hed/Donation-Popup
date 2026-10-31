@@ -4,7 +4,7 @@
  * Tablo `src/Support/phone-rules.json` (≈1,5 KB gzip); yalnız telefon alanı olan yüzeyin paketine girer.
  */
 import rules from '../../../src/Support/phone-rules.json';
-import { buildIndex, parsePhone, typing } from './phone-logic.mjs';
+import { buildIndex, parsePhone, phoneBlocked, typing } from './phone-logic.mjs';
 
 let index = null;
 
@@ -53,10 +53,13 @@ function phoneState(input) {
   if (!select || !iso) {
     // Ülke seçici yok: yalnız eski ölçüt (en az 6 hane).
     const digits = input.value.replace(/\D/g, '');
-    return { status: digits === '' ? 'empty' : digits.length < 6 ? 'short' : 'ok', warning: false, hint: '', empty: digits === '', blocked: digits !== '' && digits.length < 6 };
+    const blank = input.value.trim() === '';
+    return { status: blank ? 'empty' : digits.length < 6 ? 'short' : 'ok', warning: false, hint: '', empty: blank, blocked: !blank && digits.length < 6 };
   }
   const result = parsePhone(input.value, iso, getIndex());
-  return { status: result.status, warning: result.warning, hint: result.hint, empty: result.status === 'empty', blocked: result.status !== 'empty' && result.status !== 'ok' };
+  // Dolu ama rakamsız/sıfırdan ibaret ("+", "()", "00") PHP `Phone_Rules::error` ile aynı: eksik.
+  const blank = input.value.trim() === '';
+  return { status: result.status, warning: result.warning, hint: result.hint, empty: blank, blocked: phoneBlocked(input.value, iso, getIndex()) };
 }
 
 /**

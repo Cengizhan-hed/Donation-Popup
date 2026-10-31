@@ -85,7 +85,7 @@ $donation_panel_top = static function ( $index, $back, $amount ) use ( $donation
 $donation_panel_status = static function ( $index ) use ( $donation_panel_key ) {
 	?>
 	<div class="donation-panel-compact__status">
-		<p class="donation-panel-compact__err" id="<?php echo esc_attr( $donation_panel_key . '-e' . $index ); ?>" data-dp-cerr></p>
+		<p class="donation-panel-compact__err" id="<?php echo esc_attr( $donation_panel_key . '-e' . $index ); ?>" role="status" aria-atomic="true" data-dp-cerr></p>
 	</div>
 	<?php
 };

@@ -142,6 +142,7 @@ final class Campaign_Module implements Module_Interface {
 			'script' => $script,
 			'style'  => $registry->style_css( Progress_Live::ASSET ),
 		);
+		$assets['base']                 = $registry->build_base_url();
 		return $assets;
 	}
 
