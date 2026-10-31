@@ -209,3 +209,5 @@ Notlar: `[wdp_donations]` kısa kodu/bloğu yeni `title` özniteliğini alır (v
 - `donation_panel_direct_enabled` (bool, WC_Product) — sözleşme aynen; artık ürün > tür (`direct.type_*`) > genel kararından SONRA son söz (kaynak `filter` olarak gösterilir).
 - `donation_panel_side_cart_suggestion` — varsayılanı artık yönetici ayarı (ayar kapalıysa boş dizi).
 - `donation_panel_experience_assets` — kampanyalı ürün form yanıtına eklenecek paket adresleri (yalnız eklenti kendi kayıtlı, sürümlü adresini ekler; istemci aynı köken ve yolu doğrular).
+
+- 12.3 düzeltme: `donation_panel_prefetch_forms` toplu uçta aynen; `donation_panel_experience_assets` experiences modülünce de kullanılır (anahtar `experiences`); REST `GET side-cart` yanıtına `drawer` alanı eklendi.
