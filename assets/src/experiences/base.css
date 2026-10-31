@@ -20,16 +20,17 @@
 .donation-panel-overlay--sheet { align-items: end; }
 
 .donation-panel-surface { position: relative; display: flex; flex-direction: column; background: var(--dp-color-surface); color: var(--dp-color-text); max-block-size: 100%; overflow: hidden; box-shadow: var(--dp-shadow-3); outline: 0; }
-.donation-panel-actionbar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px var(--dp-gutter) max(22px, env(safe-area-inset-bottom)); background: var(--dp-color-surface); border-block-start: 1px solid var(--dp-hair); }
+.donation-panel-actionbar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px var(--dp-gutter) max(22px, env(safe-area-inset-bottom)); background: var(--dp-color-surface); border-block-start: 1px solid var(--dp-hair); transition: opacity .12s linear; }
 .donation-panel-inline .donation-panel-actionbar { position: sticky; inset-block-end: 0; }
-.donation-panel-exp[data-dp-kb] .donation-panel-surface__body > .donation-panel-actionbar { position: static; margin-inline: calc(var(--dp-gutter) * -1); padding-block-end: 14px; } /* ekran klavyesi açıkken alt bölüm içerik akışına girer (layer.mjs taşır); klavye kapanınca sabit alta döner */
+.donation-panel-exp[data-dp-kb] .donation-panel-surface .donation-panel-actionbar { position: absolute; inset-inline: 0; inset-block-end: 0; opacity: 0; pointer-events: none; } /* ekran klavyesi açıkken alt bölüm aynı kutuda (aynı alt kenar/genişlik/yükseklik) kalır ve yalnız opacity ile gizlenir; akıştan çıkması kaydırma alanına yer açar (layer.mjs inert ekler) */
+@media (prefers-reduced-motion: reduce) { .donation-panel-actionbar { transition: none; } }
 .donation-panel-surface__handle { display: none; inline-size: 100%; padding-block: 10px 0; cursor: grab; touch-action: none; flex: none; }
 .donation-panel-surface__handle::before { content: ""; display: block; inline-size: 44px; block-size: 5px; border-radius: 99px; margin-inline: auto; background: var(--dp-color-border-strong); }
 .donation-panel-surface__head { display: flex; align-items: flex-start; gap: var(--dp-space-3); padding: var(--dp-space-5) var(--dp-gutter) var(--dp-space-3); flex: none; }
 .donation-panel-surface__title { font-size: var(--dp-fs-lg); font-weight: var(--dp-fw-bold); }
 .donation-panel-surface__sub { color: var(--dp-color-text-muted); font-size: var(--dp-fs-sm); margin-block-start: 2px; }
 .donation-panel-surface__close { margin-inline-start: auto; margin-block-start: -6px; margin-inline-end: -10px; }
-.donation-panel-surface__body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: var(--dp-space-2) var(--dp-gutter) var(--dp-space-6); scrollbar-width: thin; }
+.donation-panel-surface__body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: var(--dp-space-2) var(--dp-gutter) var(--dp-space-6); scrollbar-width: thin; scrollbar-gutter: stable; }
 
 /* Masaüstü: popup = ortada, yay ile açılır; panel = yan; alt panel = alttan */
 .donation-panel-surface--modal { inline-size: min(100%, 500px); border-radius: var(--dp-radius-sheet); transform: translateY(14px) scale(.96); opacity: 0; transition: transform var(--dp-dur-base) var(--dp-ease-out), opacity var(--dp-dur-base) var(--dp-ease-out); max-block-size: min(100%, 780px); }

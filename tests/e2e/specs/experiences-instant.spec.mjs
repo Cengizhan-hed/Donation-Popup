@@ -191,7 +191,7 @@ test.describe('mobil form davranışı', () => {
     await expect(page.locator('[data-dp-submit-label]')).not.toHaveText(await form.getAttribute('data-label-choose'));
   });
 
-  test('klavye: alan odaktayken alt bölüm akışa girer (görünür, tıklanabilir), odak kalkınca sabit alta döner; alan görünür alanda', async ({ page }) => {
+  test('klavye: alan odaktayken alt bölüm yerinde opacity ile gizlenir (12.4), odak kalkınca görünür; alan görünür alanda', async ({ page }) => {
     await page.goto(url('popup'));
     await expect(page.locator('[data-dp-exp][data-dp-mounted="1"]')).toBeVisible({ timeout: 20000 });
     const coarse = await page.evaluate(() => window.matchMedia('(pointer: coarse)').matches);
@@ -214,11 +214,9 @@ test.describe('mobil form davranışı', () => {
     }, null, { polling: 'raf' });
     await custom.focus();
     await expect(page.locator('[data-dp-exp]')).toHaveAttribute('data-dp-kb', '1');
-    // Akışa girer: gizlenmez, sabit değil (static) ve gönder düğmesi tıklanabilir (erişilebilir).
-    await expect(bar).toBeVisible();
-    expect(await bar.evaluate((el) => getComputedStyle(el).position)).toBe('static');
-    await bar.locator('[data-dp-submit]').scrollIntoViewIfNeeded();
-    await expect(bar.locator('[data-dp-submit]')).toBeVisible();
+    // 12.4: alt bölüm yerinde kalır ve yalnız opacity ile gizlenir (inert: odak/dokunma almaz); DOM'da taşınmaz.
+    await expect(bar).toHaveCSS('opacity', '0');
+    expect(await bar.evaluate((el) => el.hasAttribute('inert') && !el.closest('.donation-panel-surface__body'))).toBe(true);
     await custom.focus();
     const inView = await custom.evaluate((el) => {
       const r = el.getBoundingClientRect();
@@ -227,8 +225,10 @@ test.describe('mobil form davranışı', () => {
     });
     expect(inView).toBe(true);
     await custom.blur();
-    await expect(bar).toBeVisible();
     await expect(page.locator('[data-dp-exp]')).not.toHaveAttribute('data-dp-kb', '1');
+    await expect(bar).toHaveCSS('opacity', '1');
+    await expect(bar).not.toHaveAttribute('inert');
+    await expect(bar.locator('[data-dp-submit]')).toBeVisible();
   });
 });
 

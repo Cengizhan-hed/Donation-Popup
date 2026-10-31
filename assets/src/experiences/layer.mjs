@@ -63,9 +63,7 @@ export function createLayer(root, hooks = {}) {
   let blurTimer = 0;
   let revealTimer = 0;
   let revealTarget = null;
-  let barHome = null;
-  let barTimer = 0;
-  const BAR_RESTORE_MS = 400;
+  let barHidden = false;
   const SETTLE_MS = 100; // resize debounce
   const BLUR_GRACE_MS = 250; // alandan alana geçişte klavye durumu korunur
   const REVEAL_WARM_MS = 150; // klavye zaten açık
@@ -111,43 +109,6 @@ export function createLayer(root, hooks = {}) {
       hooks.onBuild(root);
     }
     return true;
-  };
-
-  /**
-   * Klavye açıkken alt bölüm kaydırma alanının sonuna (akışa) girer; kapanınca eski yerine döner.
-   * Odak sırası değişmez (öğe zaten formun son öğesidir).
-   *
-   * @param {boolean} inFlow Akışa mı girsin.
-   */
-  const placeActionBar = (inFlow) => {
-    const bar = surface.querySelector('.donation-panel-actionbar');
-    const body = surface.querySelector('.donation-panel-surface__body');
-    if (!bar || !body) {
-      return;
-    }
-    const active = document.activeElement;
-    const hadFocus = Boolean(active && bar.contains(active));
-    if (inFlow && bar.parentNode !== body) {
-      barHome = { parent: bar.parentNode, next: bar.nextSibling };
-      body.appendChild(bar);
-    } else if (!inFlow && barHome && bar.parentNode === body) {
-      barHome.parent.insertBefore(bar, barHome.next && barHome.next.parentNode === barHome.parent ? barHome.next : null);
-      barHome = null;
-    } else {
-      return;
-    }
-    if (hadFocus && document.activeElement !== active) {
-      active.focus({ preventScroll: true }); // DOM taşıması odağı düşürür; odak sırası korunur
-    }
-  };
-
-  const restoreActionBar = () => {
-    const bar = surface && surface.querySelector('.donation-panel-actionbar');
-    if (bar && (bar.contains(document.activeElement) || bar.matches(':active'))) {
-      barTimer = window.setTimeout(restoreActionBar, BAR_RESTORE_MS);
-      return;
-    }
-    placeActionBar(false);
   };
 
   /**
@@ -199,8 +160,25 @@ export function createLayer(root, hooks = {}) {
     }
   };
 
+  /** Alt bölümü yerinde gizler/gösterir (yalnız durum değişince yazar; opacity + inert). */
+  const setBarHidden = (hide) => {
+    if (hide === barHidden) {
+      return;
+    }
+    barHidden = hide;
+    if (hide) {
+      root.setAttribute('data-dp-kb', '1');
+    } else {
+      root.removeAttribute('data-dp-kb');
+    }
+    const bar = surface.querySelector('.donation-panel-actionbar');
+    if (bar) {
+      bar.toggleAttribute('inert', hide); // gizliyken odak/dokunma almaz
+    }
+  };
+
   /**
-   * Klavye durumu (histerezisli) + alt bölümün akışa girmesi/çıkması: tek yerde, tek karede.
+   * Klavye durumu (histerezisli) + alt bölümün gizlenmesi/görünmesi: tek yerde, tek karede.
    *
    * @param {boolean} measured Gerçek ölçümden mi (resize sonrası) çağrıldı.
    */
@@ -216,25 +194,18 @@ export function createLayer(root, hooks = {}) {
         keyboardDismissedFlag = true; // klavye kapandı, alan odakta (Android geri hareketi)
       }
     }
-    const hide = shouldHideActionBar({
-      fieldFocused,
-      keyboard: keyboardUp ? KEYBOARD_MIN_PX : 0,
-      coarse: coarse.matches,
-      dismissed: keyboardDismissedFlag,
-    });
-    if (hide) {
-      root.setAttribute('data-dp-kb', '1');
-    } else {
-      root.removeAttribute('data-dp-kb');
-    }
-    window.clearTimeout(barTimer);
-    if (hide) {
-      placeActionBar(true);
-    } else if (barHome) {
-      // Alandan düğmeye dokunma (blur → pointerup → click) sırasında DOM taşınırsa tıklama kaybolur:
-      // eski yerine dönüş kısa gecikmeyle ve odak/basış alt bölümdeyken ertelenir.
-      barTimer = window.setTimeout(restoreActionBar, BAR_RESTORE_MS);
-    }
+    // Alan odağı bırakılsa da klavye gerçekten kapanana (resize) dek gizli kalır: görünür alan hâlâ küçükken alt bölümün
+    // akışa dönmesi taşma ve sıçrama yaratır (iPhone SE).
+    const hide =
+      (keyboardUp && !fieldFocused) ||
+      shouldHideActionBar({
+        fieldFocused,
+        keyboard: keyboardUp ? KEYBOARD_MIN_PX : 0,
+        coarse: coarse.matches,
+        dismissed: keyboardDismissedFlag,
+      });
+    // Tek seferlik durum değişimi: alt bölüm yerinde kalır, yalnız opacity ile gizlenir/görünür (konum/boyut geçişi yok).
+    setBarHidden(hide);
     if (measured && keyboardUp && revealTarget) {
       reveal(); // klavye yerleşti: tek kaydırma
     }
@@ -428,8 +399,11 @@ export function createLayer(root, hooks = {}) {
     overlay.classList.remove('is-open');
     surface.style.removeProperty('--dp-drag');
     root.removeAttribute('data-dp-kb');
-    window.clearTimeout(barTimer);
-    placeActionBar(false);
+    barHidden = false;
+    const closingBar = surface && surface.querySelector('.donation-panel-actionbar');
+    if (closingBar) {
+      closingBar.removeAttribute('inert');
+    }
     trigger.setAttribute('aria-expanded', 'false');
     unlockPage(ownerId);
     document.removeEventListener('keydown', onKeydown, true);
