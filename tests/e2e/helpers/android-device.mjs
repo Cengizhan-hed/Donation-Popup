@@ -34,7 +34,10 @@ export async function connectAndroid() {
   return { device: devices[0], serial: devices[0].serial() };
 }
 
-const FIRST_RUN_BUTTONS = ['Use without an account', 'No thanks', 'Got it', 'No, thanks', 'Skip'];
+/** Test edilen tarayıcı paketi (varsayılan Google Chrome; Chromium anlık görüntüsü için org.chromium.chrome). */
+export const CHROME_PKG = process.env.WDP_ANDROID_CHROME_PKG || 'com.android.chrome';
+
+const FIRST_RUN_BUTTONS = ['Use without an account', 'Stay signed out', 'No thanks', 'Got it', 'No, thanks', 'Skip'];
 
 /**
  * Chrome ilk açılış karşılama/bildirim ekranlarını adb + uiautomator ile atlar (bayrak dosyası kullanıcı derlemesinde
@@ -43,7 +46,7 @@ const FIRST_RUN_BUTTONS = ['Use without an account', 'No thanks', 'Got it', 'No,
  * @param {string} serial Cihaz.
  */
 export function dismissChromeFirstRun(serial) {
-  adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'about:blank', 'com.android.chrome'], serial);
+  adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'about:blank', CHROME_PKG], serial);
   for (let i = 0; i < 8; i += 1) {
     spawnSync('sleep', ['2']);
     adb(['shell', 'uiautomator', 'dump', '/sdcard/wdp-ui.xml'], serial);
@@ -62,7 +65,7 @@ export function dismissChromeFirstRun(serial) {
     adb(['shell', 'input', 'tap', String(hit[0]), String(hit[1])], serial);
   }
   adb(['shell', 'rm', '-f', '/sdcard/wdp-ui.xml'], serial);
-  adb(['shell', 'am', 'force-stop', 'com.android.chrome'], serial);
+  adb(['shell', 'am', 'force-stop', CHROME_PKG], serial);
 }
 
 /**

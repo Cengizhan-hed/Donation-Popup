@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { test, expect, chromium } from '@playwright/test';
-import { adb, connectAndroid, dismissChromeFirstRun, reversePort } from '../helpers/android-device.mjs';
+import { adb, CHROME_PKG, connectAndroid, dismissChromeFirstRun, reversePort } from '../helpers/android-device.mjs';
 
 const PRODUCT = process.env.WDP_EXP_PRODUCT_ID || '0';
 const OUT = path.resolve('build/android');
@@ -31,7 +31,7 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
     dismissChromeFirstRun(serial);
     step('launch');
     // Gerçek Chrome: am start + adb forward (devtools soketi) + CDP (Playwright launchBrowser Chrome 124'te takılıyor).
-    adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'about:blank', 'com.android.chrome'], serial);
+    adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', 'about:blank', CHROME_PKG], serial);
     await new Promise((r) => setTimeout(r, 3000));
     expect(adb(['forward', 'tcp:9333', 'localabstract:chrome_devtools_remote'], serial).ok, 'adb forward').toBe(true);
     let browser = null;
@@ -58,9 +58,12 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
         window.__dpTouch = null;
         window.addEventListener('touchstart', (e) => { window.__dpTouch = [e.touches[0].clientX, e.touches[0].clientY]; }, { capture: true, passive: true });
       });
-      adb(['shell', 'input', 'tap', '540', '1200'], serial);
-      await page.waitForTimeout(400);
-      const calib = await page.evaluate(() => ({ t: window.__dpTouch, dpr: window.devicePixelRatio }));
+      let calib = { t: null, dpr: 1 };
+      for (let k = 0; k < 5 && !calib.t; k += 1) {
+        adb(['shell', 'input', 'tap', '540', '1200'], serial);
+        await page.waitForTimeout(900);
+        calib = await page.evaluate(() => ({ t: window.__dpTouch, dpr: window.devicePixelRatio }));
+      }
       expect(calib.t, 'dokunuş kalibrasyonu').not.toBeNull();
       const offY = 1200 - calib.t[1] * calib.dpr;
       const tap = async (loc) => {
@@ -173,7 +176,7 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
       expect(perField.some((m) => m.imeShown), `gerçek sanal klavye açılmadı ${JSON.stringify(perField)}`).toBe(true);
       for (const [i, m] of perField.entries()) {
         expect(m.covered, `alan ${i} sabit bölüm altında ${JSON.stringify(m)}`).toBe(false);
-        expect(m.fieldBottom, `alan ${i} klavye altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.visBottom - 4);
+        expect(m.fieldBottom, `alan ${i} klavye altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.visBottom); // alan tümüyle görünür (gerçek klavyede block:nearest alanı kenara yaslar)
       }
       expect(imeAfter, 'klavye kapanmadı').toBe(false);
       expect(trace.barRects, `alt bölüm konum/genişlik ${JSON.stringify(trace)}`).toBe(1);
@@ -185,7 +188,7 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
       expect(trace.docY, `sayfa kayması ${JSON.stringify(trace)}`).toBe(1);
     } finally {
       await browser.close().catch(() => {});
-      adb(['shell', 'am', 'force-stop', 'com.android.chrome'], serial);
+      adb(['shell', 'am', 'force-stop', CHROME_PKG], serial);
       adb(['shell', 'pkill', '-2', 'screenrecord'], serial);
       await new Promise((r) => setTimeout(r, 1500));
       rec.kill();
