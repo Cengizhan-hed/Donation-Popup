@@ -263,7 +263,14 @@ final class EmailTest extends TestCase {
 		Email_Thanks::render( $order, true, false, $mail( 'customer_processing_order' ) );
 		Email_Thanks::render( $order, false, false, $mail( 'customer_invoice' ) );
 		Email_Thanks::render( $order, false, false, null );
+		Email_Thanks::render( $order, false, false, $mail( 'customer_on_hold_order' ) );
+		Email_Thanks::render( $order, false, true, $mail( 'customer_on_hold_order' ) );
 		$this->assertSame( '', ob_get_clean(), 'yönetici / başka e-posta / e-posta nesnesiz: çıktı yok' );
+	}
+
+	public function test_thanks_only_for_paid_customer_emails_not_on_hold(): void {
+		$this->assertSame( array( 'customer_processing_order', 'customer_completed_order' ), Email_Thanks::EMAIL_IDS );
+		$this->assertNotContains( 'customer_on_hold_order', Email_Thanks::EMAIL_IDS, 'ödemesi gelmemiş (beklemede): teşekkür yok' );
 	}
 
 	public function test_hooks_are_registered_for_standard_woocommerce_email_hooks_only(): void {

@@ -1,0 +1,23 @@
+# Turkish translations — 12.4 email2 (teşekkür yalnız ödemesi alınmış bağışlarda).
+# Copyright (C) Donation Panel for WooCommerce
+msgid ""
+msgstr ""
+"Project-Id-Version: woo-donation-popup\n"
+"Language: tr_TR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: woo-donation-popup\n"
+
+#: src/Admin/class-field-registry.php
+msgid "Adds a short thank-you above the order table in the \"Processing\" and \"Completed\" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Sent only for donations whose payment has been received: it is not added to the \"On hold\" e-mail (for example while a bank transfer is awaited), and never to e-mails sent to you. Works even when the Thank-you screen module is off."
+msgstr "Bağışçıya giden \"İşleniyor\" ve \"Tamamlandı\" e-postalarında sipariş tablosunun üstüne kısa bir teşekkür ekler. Yukarıdaki teşekkür metnini kullanır; kampanyada toplanan ve hedef tutarı gösteren tek bir satır eklenir. Yalnız ödemesi alınmış bağışlarda gönderilir: \"Beklemede\" e-postasına (örneğin havale beklenirken) eklenmez, size giden e-postalara da hiçbir zaman eklenmez. Teşekkür ekranı modülü kapalıyken de çalışır."
+
+#: src/Admin/class-guide.php
+msgid "2. Thank-you above the order table: Donation Panel → Cart and checkout → Thank-you screen → \"Thank-you in donor e-mails\" (on by default). Donors get your thank-you message in the Processing and Completed e-mails, so it is sent only for donations whose payment has been received. The WooCommerce \"On hold\" e-mail (for example with bank transfer details) is left exactly as it is, without a thank-you. For a campaign product one extra line shows the amount raised and the goal at the time the e-mail is sent. It is never added to the e-mails you receive, and it works even when the Thank-you screen module is off."
+msgstr "2. Sipariş tablosunun üstünde teşekkür: Bağış Paneli → Sepet ve Ödeme → Teşekkür ekranı → \"Bağışçı e-postalarında teşekkür\" (varsayılan açık). Bağışçılar teşekkür mesajınızı İşleniyor ve Tamamlandı e-postalarında alır; yani teşekkür yalnız ödemesi alınmış bağışlarda gönderilir. WooCommerce'in kendi \"Beklemede\" e-postası (örneğin havale banka bilgileriyle) olduğu gibi gider, teşekkür eklenmez. Kampanyalı üründe e-postanın gönderildiği andaki toplanan ve hedef tutarı gösteren bir satır daha eklenir. Size gelen e-postalara hiçbir zaman eklenmez; Teşekkür ekranı modülü kapalıyken de çalışır."
+
+#: src/Admin/class-guide.php
+msgid "6. WooCommerce block e-mail editor: if you turn on WooCommerce's block-based e-mail editor (WooCommerce → Settings → Advanced → Features), everything above keeps working: the thank-you, translated labels, hidden phone number and hidden internal data all appear in the e-mails. The thank-you is shown as a plain paragraph at the top of the order content (the editor sets its look), without extra styling from this plugin."
+msgstr "6. WooCommerce blok e-posta düzenleyicisi: WooCommerce'in blok tabanlı e-posta düzenleyicisini açarsanız (WooCommerce → Ayarlar → Gelişmiş → Özellikler) yukarıdakilerin hepsi çalışmaya devam eder: teşekkür, çevrilmiş etiketler, gizlenen telefon ve gizlenen dahili veriler e-postalarda aynen uygulanır. Teşekkür, sipariş içeriğinin en üstünde düz bir paragraf olarak görünür (görünümünü düzenleyici belirler); bu eklenti ek stil eklemez."
