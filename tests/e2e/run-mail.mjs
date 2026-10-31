@@ -61,6 +61,8 @@ async function main() {
     JSON.stringify({
       locale,
       thanksEmail,
+      blockEmail: argv.includes('--block-email'),
+      onHold: argv.includes('--on-hold'),
       message: 'Allah kabul etsin, bağışınız için çok teşekkürler: çğüşiö ÇĞÜŞİÖ.',
       campaignProduct: Number(probe.products.custom.id),
     })
@@ -86,6 +88,8 @@ async function main() {
         WDP_EXP_TRY: '1',
         WDP_EXP_CHECKOUT: checkout,
         WDP_MAIL_LOCALE: locale,
+        WDP_MAIL_BLOCKEMAIL: argv.includes('--block-email') ? '1' : '0',
+        WDP_MAIL_ONHOLD: argv.includes('--on-hold') ? '1' : '0',
         WDP_MAIL_THANKS: thanksEmail ? '1' : '0',
         WDP_EXP_STORE: JSON.stringify(store),
         WDP_LOCAL_WP_DIR: wpDir,

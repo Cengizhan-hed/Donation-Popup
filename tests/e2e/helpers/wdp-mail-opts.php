@@ -47,9 +47,13 @@ add_filter(
 	},
 	20
 );
+// WooCommerce blok tabanlı e-posta düzenleyicisi (özellik bayrağı `block_email_editor`; seçenek: woocommerce_feature_block_email_editor_enabled).
+if ( ! empty( $wdp_opts['blockEmail'] ) ) {
+	add_filter( 'pre_option_woocommerce_feature_block_email_editor_enabled', static fn() => 'yes' );
+}
 // Çevrimdışı ödeme yöntemi siparişi "işleniyor" yapar (müşteriye "işleniyor" e-postası gider; gerçek ödeme akışını taklit eder).
 foreach ( array( 'cheque', 'bacs', 'cod' ) as $wdp_opts_gw ) {
-	add_filter( 'woocommerce_' . $wdp_opts_gw . '_process_payment_order_status', static fn() => 'processing' );
+	add_filter( 'woocommerce_' . $wdp_opts_gw . '_process_payment_order_status', static fn() => ! empty( $wdp_opts['onHold'] ) ? 'on-hold' : 'processing' );
 }
 if ( ! empty( $wdp_opts['campaignProduct'] ) ) {
 	add_action(
