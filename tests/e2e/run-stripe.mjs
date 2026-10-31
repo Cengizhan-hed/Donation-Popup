@@ -178,7 +178,7 @@ async function main() {
   let setup;
   try {
     setup = parseLocalEvalJson(
-      runLocalEvalFile('tests/e2e/helpers/stripe-setup.php', [String(product), '100000'], {
+      runLocalEvalFile('tests/local-wp/stripe-setup.php', [String(product), '100000'], {
         env: { WDP_LOCAL_WP_DIR: wpDir, WDP_STRIPE_PK: keys.keys.publishable, WDP_STRIPE_SK: keys.keys.secret, WDP_STRIPE_WHSEC: whsec },
       })
     );

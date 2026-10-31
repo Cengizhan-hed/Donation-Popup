@@ -10,7 +10,7 @@
  */
 import { test, expect } from '@playwright/test';
 import { applyLocalThirdPartyAllowlist } from '../helpers/network-guard.mjs';
-import { clearMailbox, waitForMessages, recipients } from '../helpers/mailpit.mjs';
+import { clearMailbox, listMessages, waitForMessages, recipients } from '../helpers/mailpit.mjs';
 import {
   CARDS,
   THANKS_URL,
@@ -121,9 +121,13 @@ test.describe('Stripe test modu (yerel)', () => {
       await expect.poll(async () => Number(String(await raisedText.textContent()).replace(/[^0-9]/g, '')), { timeout: 15000 }).toBe(Math.round(after.raised));
 
       // E-posta: müşteri + yönetici, ad/telefon/not Türkçe karakterlerle.
-      const messages = await waitForMessages({ min: 2, timeoutMs: 45000 });
+      // Önceki senaryodan geç gelen teyit e-postası da kutuya düşebilir: yalnız bu siparişin iletileri denetlenir.
+      await expect.poll(async () => (await listMessages()).filter((m) => recipients(m).includes(d.email)).length, { timeout: 60000, message: 'bağışçıya e-posta' }).toBeGreaterThanOrEqual(1);
+      const all = await waitForMessages({ min: 2, timeoutMs: 30000 });
+      const messages = all.filter((m) => `${m.Subject || ''} ${m.Text || ''}`.includes(String(orderId)));
       const toDonor = messages.filter((m) => recipients(m).includes(d.email));
       expect(toDonor.length, 'bağışçıya e-posta').toBeGreaterThanOrEqual(1);
+      expect(messages.length - toDonor.length, 'yöneticiye e-posta').toBeGreaterThanOrEqual(1);
       for (const m of messages) {
         const text = String(m.Text || '');
         expect(text).toContain(d.name);

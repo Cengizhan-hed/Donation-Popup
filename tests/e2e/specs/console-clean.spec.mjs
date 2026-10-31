@@ -52,6 +52,8 @@ test('konsol temiz: doğrudan bağış akışı order-pay sayfasına kadar', asy
   await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
   await page.locator('input[name="donation_full_name"]').fill('Çağlar Şükrü Öztürk');
   await page.locator('input[name="donation_phone"]').fill('+44 7700 900123');
+  // 12.4: doğrudan akışta e-posta zorunlu.
+  await page.locator('input[name="donation_email"]').fill('konsol@wdp-e2e.test');
   await page.locator('[data-dp-submit]').click();
   await page.waitForURL(/order-pay/, { timeout: 30000 });
   await page.waitForLoadState('networkidle');
