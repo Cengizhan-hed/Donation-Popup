@@ -7,7 +7,8 @@
  *   npm run analyse:security -- --only psalm|semgrep
  *
  * Taban: tools/security-baseline/baseline-security.json (parmak izi satır numarasından bağımsız).
- * Araç yoksa o parça atlanır (çıkış 0), tıpkı verify:lint gibi. Yalnız geliştirme; pakete girmez.
+ * Araç yoksa / çalışmazsa / Semgrep hata raporlarsa KIRMIZI (çıkış 1); sessiz atlama yok. Yalnız geliştirme; pakete girmez.
+ * Semgrep ikilisi: build/semgrep-venv (npm run security:install) ya da WDP_SEMGREP_BIN.
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -72,7 +73,8 @@ function runPsalm(cfg, extra = []) {
 
 if (want('psalm')) {
   if (!fs.existsSync(PSALM)) {
-    notes.push('Psalm yok (vendor-dev/bin/psalm): atlandı. Kurulum: npm run test:install');
+    console.error('analyse:security KIRMIZI: Psalm bulunamadı (vendor-dev/bin/psalm). Kurulum: npm run test:install');
+    process.exit(1);
   } else {
     // 1) Kanarya: stub'lar çalışıyor mu? (bilinen kötü → bulgu VAR; bilinen iyi → YOK)
     const canary = runPsalm('tests/security/psalm-canary/psalm-canary.xml');
@@ -116,7 +118,8 @@ if (want('psalm')) {
 if (want('semgrep')) {
   const bin = SEMGREP_CANDIDATES.find((c) => fs.existsSync(c));
   if (!bin || RULES.some((r) => !fs.existsSync(r))) {
-    notes.push('Semgrep yok (build/semgrep-venv) ya da kural dosyası eksik: atlandı. Kurulum: npm run security:install');
+    console.error('analyse:security KIRMIZI: Semgrep yok (build/semgrep-venv / WDP_SEMGREP_BIN) ya da kural dosyası eksik. Kurulum: npm run security:install');
+    process.exit(1);
   } else {
     const semArgs = [
       'scan',
@@ -131,8 +134,14 @@ if (want('semgrep')) {
       'src',
       'templates',
       'blocks',
-      'assets/js',
+      'assets/src',
     ];
+    // Tarama kökleri var olmalı: geçersiz kök sessizce geçmesin.
+    const missingRoots = semArgs.slice(semArgs.indexOf('woo-donation-popup.php')).filter((p) => !fs.existsSync(path.join(ROOT, p)));
+    if (missingRoots.length) {
+      console.error(`analyse:security KIRMIZI: Semgrep tarama kökü yok: ${missingRoots.join(', ')}`);
+      process.exit(1);
+    }
     const r = spawnSync(bin, semArgs, {
       cwd: ROOT,
       encoding: 'utf8',
@@ -158,7 +167,15 @@ if (want('semgrep')) {
         fp: `semgrep|${rule}|${x.path}|${hash(text)}`,
       });
     }
-    for (const e of doc.errors || []) notes.push(`Semgrep uyarısı: ${String(e.message || e.type).slice(0, 120)}`);
+    if ((doc.errors || []).length) {
+      for (const e of doc.errors) console.error(`  Semgrep hatası: ${String(e.message || e.type).slice(0, 160)}`);
+      console.error('analyse:security KIRMIZI: Semgrep hata raporladı (kapsam eksik olabilir).');
+      process.exit(1);
+    }
+    if (!Array.isArray(doc.paths?.scanned) || doc.paths.scanned.length === 0) {
+      console.error('analyse:security KIRMIZI: Semgrep hiç dosya taramadı.');
+      process.exit(1);
+    }
   }
 }
 
