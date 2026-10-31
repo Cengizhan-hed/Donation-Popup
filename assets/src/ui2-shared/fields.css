@@ -25,6 +25,7 @@
 .donation-panel-phone__code { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 12px; background: var(--dp-color-surface-2); border-inline-end: 1px solid var(--dp-color-border); font-size: 15px; font-weight: 600; flex: none; }
 .donation-panel-phone__chev { inline-size: 12px; block-size: 12px; color: var(--dp-color-text-muted); stroke-width: 2.4; }
 .donation-panel-phone__code:has(.donation-panel-phone__select:focus-visible) { box-shadow: inset 0 0 0 2px var(--dp-color-primary-strong); }
+.donation-panel-phone__note { margin: 6px 0 0; font-size: var(--dp-fs-sm); color: var(--dp-color-text-muted); }
 
 .donation-panel .donation-panel-check.donation-panel-check--plain, .donation-panel .donation-panel-check.donation-panel-check--plain:has(input:checked) { padding: 0; border: 0; min-block-size: 0; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.45; color: color-mix(in oklab, var(--dp-bridge-text) 78%, var(--dp-color-surface)); background: transparent; }
 .donation-panel-check--plain .donation-panel-check__t { font-size: 13px; }

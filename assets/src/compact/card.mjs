@@ -5,6 +5,7 @@
  * katmanda (popup / alttan panel) aynı kökenli çerçevede.
  */
 import { addToCart, phoneValue } from '../experiences/form.mjs';
+import { bindPhone, phoneState } from '../ui2-shared/phone.mjs';
 import { formatTotal } from '../experiences/store.mjs';
 import { createLayer } from '../experiences/layer.mjs';
 import { ISOLATED_EVENTS, STEPS, announcement, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel, moveStep } from './logic.mjs';
@@ -329,6 +330,49 @@ export function createCompact(root) {
     });
   });
 
+  // Telefon: yazarken biçimleme/sınır (ortak `phone.mjs`); eksik hane iletisi odak çıkınca, mobil önek yalnız uyarı;
+  // dolu ama eksik numarada "devam" düğmesi geçerli olana kadar pasif.
+  const detailsButton = sections[1] ? sections[1].querySelector('button[type="submit"]') : null;
+  let phoneMessageOn = false;
+  const phoneBlocked = () => detailsInputs().some((input) => input.closest('.donation-panel-phone') && !input.disabled && phoneState(input).blocked);
+  const paintDetailsGate = () => {
+    if (detailsButton) {
+      const off = phoneBlocked();
+      if (detailsButton.getAttribute('aria-disabled') !== (off ? 'true' : 'false')) {
+        detailsButton.setAttribute('aria-disabled', off ? 'true' : 'false');
+        detailsButton.classList.toggle('is-pending', off);
+      }
+    }
+  };
+  form.querySelectorAll('.donation-panel-phone').forEach((box) => {
+    const input = box.querySelector('.donation-panel-phone__input');
+    if (!input) {
+      return;
+    }
+    bindPhone(box, {
+      onInput: () => {
+        if (phoneMessageOn) {
+          phoneMessageOn = false;
+          setError(1, '');
+        }
+        paintDetailsGate();
+      },
+      onBlur: (info) => {
+        if (info.blocked) {
+          phoneMessageOn = true;
+          setError(1, input.dataset.msgShort || '', [input]);
+        } else if (info.warning) {
+          // Yalnız uyarı: alan geçersiz işaretlenmez, devam engellenmez.
+          phoneMessageOn = true;
+          setError(1, input.dataset.msgMobile || '');
+        } else if (phoneMessageOn) {
+          phoneMessageOn = false;
+          setError(1, '');
+        }
+      },
+    });
+  });
+
   const validateDetails = () => {
     const bad = detailsInputs().filter((input) => {
       if (input.type === 'checkbox' || input.disabled) {
@@ -338,13 +382,19 @@ export function createCompact(root) {
       if (input.required && value === '') {
         return true;
       }
+      if (value !== '' && input.closest('.donation-panel-phone') && phoneState(input).blocked) {
+        return true;
+      }
       return value !== '' && input.type === 'email' && input.validity && input.validity.typeMismatch;
     });
     if (!bad.length) {
       return true;
     }
     const first = bad[0];
-    const message = first.value.trim() === '' ? first.dataset.requiredMsg || ds.msgInvalid : ds.msgEmail || ds.msgInvalid;
+    let message = first.value.trim() === '' ? first.dataset.requiredMsg || ds.msgInvalid : ds.msgEmail || ds.msgInvalid;
+    if (first.value.trim() !== '' && first.closest('.donation-panel-phone')) {
+      message = first.dataset.msgShort || ds.msgInvalid;
+    }
     setError(1, message || '', bad);
     first.focus();
     return false;

@@ -44,7 +44,7 @@ final class CheckoutPrefillTest extends TestCase {
 		$v = Checkout_Prefill::values_from_cart( array( $this->item( array( 'full_name' => 'Şükrü Ömer Çağlayan', 'phone' => '+90 532 000 00 00', 'email' => 'a@example.com' ) ) ) );
 		$this->assertSame( 'Şükrü Ömer', $v['first_name'] );
 		$this->assertSame( 'Çağlayan', $v['last_name'] );
-		$this->assertSame( '+90 532 000 00 00', $v['phone'] );
+		$this->assertSame( '+905320000000', $v['phone'] ); // WooCommerce'e E.164.
 		$this->assertSame( 'a@example.com', $v['email'] );
 	}
 
@@ -66,7 +66,7 @@ final class CheckoutPrefillTest extends TestCase {
 		);
 		$v = Checkout_Prefill::values_from_cart( $items );
 		$this->assertSame( 'Yeni', $v['first_name'] );
-		$this->assertSame( '+44 7000 000000', $v['phone'] );
+		$this->assertSame( '+447000000000', $v['phone'] );
 	}
 
 	public function test_no_donation_data_returns_empty(): void {
@@ -89,7 +89,7 @@ final class CheckoutPrefillTest extends TestCase {
 		$this->assertSame( 'Hesap', $c->b['first_name'] );
 		$this->assertSame( 'hesap@example.com', $c->b['email'] );
 		$this->assertSame( 'Demir', $c->b['last_name'] );
-		$this->assertSame( '+90 555 111 22 33', $c->b['phone'] );
+		$this->assertSame( '+905551112233', $c->b['phone'] );
 		$this->assertSame( array( 'last_name', 'phone' ), array_keys( $w ) );
 	}
 }

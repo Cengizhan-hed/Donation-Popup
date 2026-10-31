@@ -73,6 +73,35 @@ final class PhoneRulesTest extends TestCase {
 		$this->assertSame( 'unknown', Phone_Rules::error( '+999 1234567', 'tr' ) );
 	}
 
+	public function test_validator_checks_phone_per_country_and_allows_empty_when_optional(): void {
+		$field = static function ( bool $required ): array {
+			return array(
+				'kind'     => 'fixed',
+				'unit'     => 10.0,
+				'quantity' => array( 'max' => 5 ),
+				'fields'   => array(
+					array(
+						'name'     => 'donation_phone',
+						'type'     => 'tel',
+						'required' => $required,
+					),
+				),
+			);
+		};
+		$run   = static function ( array $model, string $phone ): array {
+			return \DonationPanel\Modules\Experiences\Field_Validator::validate( $model, array( 'amount' => '10', 'quantity' => '1', 'donation_phone' => $phone ) )['errors'];
+		};
+		$this->assertArrayNotHasKey( 'donation_phone', $run( $field( false ), '' ) );
+		$this->assertArrayNotHasKey( 'donation_phone', $run( $field( false ), '+90 530 307 15 93' ) );
+		$this->assertArrayNotHasKey( 'donation_phone', $run( $field( false ), '+44 7911 123456' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+90 530 307 15' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+44 7911 12345' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+90 530 307 15 93 9' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '+999 1234567' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( false ), '530<script>' ) );
+		$this->assertArrayHasKey( 'donation_phone', $run( $field( true ), '' ) );
+	}
+
 	public function test_to_e164_normalises_but_never_loses_unparsed_input(): void {
 		$this->assertSame( '+905303071593', Phone_Rules::to_e164( '+90 530 307 15 93', 'tr' ) );
 		$this->assertSame( '+447911123456', Phone_Rules::to_e164( '07911 123456', 'gb' ) );

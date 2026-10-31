@@ -2,6 +2,7 @@
  * Form çekirdeği: bağış türleri (sabit/serbest/hisseli/kampanya), çok adımlı akış, durum -> DOM,
  * sepete ekleme ve doğrulama (REST `cart/add`).
  */
+import { bindPhone, phoneState } from '../ui2-shared/phone.mjs';
 import { clampQty, computeTotals, firstErrorStep, formatTotal, initialState, nextPresetIndex, parseAmount, reducer, stepLabel } from './store.mjs';
 
 const RTL = () => document.documentElement.dir === 'rtl' || document.dir === 'rtl';
@@ -358,10 +359,18 @@ export function createForm(root, hooks = {}) {
     }
   };
 
+  // Telefon: odak çıkınca gösterilen (yazarken rahatsız etmeyen) eksik/fazla hane iletisi; alan adı -> ileti.
+  const phoneBlurErrors = {};
+  /** Geçerli adımda dolu ama eksik/fazla telefon var mı (devam düğmesi geçerli olana kadar pasif). */
+  const phoneBlocked = () => {
+    const section = sections[state.step];
+    return Boolean(section) && Array.from(section.querySelectorAll('.donation-panel-phone__input:not(:disabled)')).some((input) => phoneState(input).blocked);
+  };
+
   const paintErrors = () => {
     form.querySelectorAll('[data-dp-error]').forEach((error) => {
       const name = error.dataset.dpError;
-      const message = state.errors[name] || '';
+      const message = state.errors[name] || phoneBlurErrors[name] || '';
       error.textContent = message;
       const wrap = error.closest('[data-dp-field], .donation-panel-fieldset');
       if (wrap) {
@@ -448,7 +457,14 @@ export function createForm(root, hooks = {}) {
       const pending = amountPending();
       submit.classList.toggle('is-loading', busy);
       submit.classList.toggle('is-pending', pending);
-      submit.setAttribute('aria-disabled', busy || pending ? 'true' : 'false');
+      submit.setAttribute('aria-disabled', busy || pending || phoneBlocked() ? 'true' : 'false');
+    }
+  };
+
+  /** Yazarken yalnız devam düğmesinin pasifliği güncellenir (tam boyama yok). */
+  const paintGate = () => {
+    if (submit) {
+      submit.setAttribute('aria-disabled', state.status === 'submitting' || amountPending() || phoneBlocked() ? 'true' : 'false');
     }
   };
 
@@ -486,6 +502,37 @@ export function createForm(root, hooks = {}) {
     focusStep();
   });
   bindToggles(form);
+  form.querySelectorAll('.donation-panel-phone').forEach((box) => {
+    const input = box.querySelector('.donation-panel-phone__input');
+    const note = box.parentElement ? box.parentElement.querySelector('[data-dp-phone-note]') : null;
+    if (!input) {
+      return;
+    }
+    bindPhone(box, {
+      onInput: () => {
+        if (note) {
+          note.hidden = true;
+        }
+        if (phoneBlurErrors[input.name]) {
+          delete phoneBlurErrors[input.name];
+          paintErrors();
+        }
+        paintGate();
+      },
+      onBlur: (info) => {
+        if (info.blocked) {
+          phoneBlurErrors[input.name] = input.dataset.msgShort || '';
+        } else {
+          delete phoneBlurErrors[input.name];
+        }
+        if (note) {
+          note.textContent = !info.blocked && info.warning ? input.dataset.msgMobile || '' : '';
+          note.hidden = note.textContent === '';
+        }
+        paintErrors();
+      },
+    });
+  });
   form.querySelectorAll('input, textarea').forEach((input) => {
     if (input.name && !['amount', 'addon_amount'].includes(input.name)) {
       input.addEventListener('input', () => {
@@ -585,6 +632,12 @@ export function createForm(root, hooks = {}) {
     section.querySelectorAll('input[required]:not(:disabled), textarea[required]:not(:disabled)').forEach((input) => {
       if (input.value.trim() === '') {
         errors[input.name] = input.dataset.requiredMsg || '';
+      }
+    });
+    // Telefon: dolu ama eksik/fazla/tanınmayan numara ilerletmez (mobil önek uyarısı engel değildir).
+    section.querySelectorAll('.donation-panel-phone__input:not(:disabled)').forEach((input) => {
+      if (!errors[input.name] && phoneState(input).blocked) {
+        errors[input.name] = input.dataset.msgShort || '';
       }
     });
     return errors;

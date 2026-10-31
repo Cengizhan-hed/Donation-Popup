@@ -108,6 +108,23 @@ function stripOwnDial(idx, iso, national) {
 }
 
 /**
+ * Ülkeyi belirler: `+`/`00` varsa arama kodundan, yoksa varsayılan ülkeden (bilinmiyorsa null).
+ *
+ * @param {boolean} explicit  Ülke kodu yazılmış mı.
+ * @param {string}  digits    Rakamlar (`00` ayıklanmış).
+ * @param {string}  preferred Varsayılan/seçili ülke.
+ * @param {object}  idx       Dizin.
+ * @return {{iso:string, national:string}|null} Ülke ve kalan rakamlar.
+ */
+function resolveCountry(explicit, digits, preferred, idx) {
+  if (!explicit) {
+    return idx.table[preferred] ? { iso: preferred, national: digits } : null;
+  }
+  const found = matchDial(idx, digits);
+  return found ? { iso: pickIso(idx, found.dial, found.isos, preferred), national: digits.slice(found.dial.length) } : null;
+}
+
+/**
  * Girdiyi çözümler: `+90 530…`, `0090…`, `0530…`, `530…`.
  *
  * @param {unknown} raw        Ham girdi.
@@ -131,22 +148,12 @@ export function parsePhone(raw, defaultIso, idx) {
       return out;
     }
   }
-  let iso;
-  let national;
-  if (explicit) {
-    const found = matchDial(idx, digits);
-    if (!found) {
-      return { ...out, status: 'unknown' };
-    }
-    iso = pickIso(idx, found.dial, found.isos, preferred);
-    national = digits.slice(found.dial.length);
-  } else {
-    if (!idx.table[preferred]) {
-      return { ...out, status: 'unknown', national: digits };
-    }
-    iso = preferred;
-    national = digits;
+  const base = resolveCountry(explicit, digits, preferred, idx);
+  if (!base) {
+    return { ...out, status: 'unknown', national: explicit ? '' : digits };
   }
+  const { iso } = base;
+  let { national } = base;
   national = stripTrunk(idx, iso, national);
   if (!explicit) {
     national = stripOwnDial(idx, iso, national);
