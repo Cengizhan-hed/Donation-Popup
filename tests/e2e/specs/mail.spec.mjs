@@ -21,7 +21,9 @@ const AMOUNT = '125';
 const SHOT_DIR = path.resolve(process.cwd(), process.env.WDP_MAIL_SHOT_DIR || 'build/handoff/RAPOR-124-email');
 
 const LOCALE = process.env.WDP_MAIL_LOCALE === 'tr_TR' ? 'tr_TR' : 'en_US';
-const THANKS_ON = process.env.WDP_MAIL_THANKS !== '0';
+const BLOCK_EMAIL = process.env.WDP_MAIL_BLOCKEMAIL === '1';
+const ONHOLD =process.env.WDP_MAIL_ONHOLD === '1';
+const THANKS_ON = process.env.WDP_MAIL_THANKS !== '0' && !ONHOLD;
 const THANKS_MESSAGE = 'Allah kabul etsin, bağışınız için çok teşekkürler: çğüşiö ÇĞÜŞİÖ.';
 const LABEL_IDS = { name: 'Donor name', phone: 'Donor phone', note: 'Donation note', type: 'Donation type' };
 
@@ -138,11 +140,20 @@ test.describe('e-posta içeriği ve görünümü (Mailpit)', () => {
         expect(html, 'müşteri HTML: teşekkür metni').toContain(THANKS_MESSAGE);
         expect(thanksAt, 'teşekkür sipariş tablosundan önce').toBeLessThan(text.indexOf(L('type')));
         // Eklenti stil basmaz: düz <p>; stili WooCommerce e-posta CSS'i satır içine alır (gövde paragraflarıyla aynı).
-        expect(html, 'teşekkür düz paragraf (Woo CSS ile stillenmiş)').toMatch(new RegExp(`<p style="margin: 0 0 16px;">${THANKS_MESSAGE.slice(0, 12)}`));
+        // Klasik şablon: Woo CSS'i paragrafa satır içi stil verir. Blok e-posta düzenleyicisi açıkken içerik blok yerleşimine girer: düz <p>.
+        const paragraph = BLOCK_EMAIL ? `<p>${THANKS_MESSAGE.slice(0, 12)}` : `<p style="margin: 0 0 16px;">${THANKS_MESSAGE.slice(0, 12)}`;
+        expect(html, 'teşekkür düz paragraf').toContain(paragraph);
+        if (BLOCK_EMAIL) expect(html, 'blok düzenleyici: yerleşim bloğu içinde').toContain('email-block-layout');
         expect(html, 'teşekkür: görsel yok').not.toMatch(/<img[^>]*>\s*<p[^>]*>Allah/);
         expect(text, 'kampanya satırı: hedef').toMatch(/5[.,]000/);
         expect(text, 'kampanya satırı (dil)').toMatch(LOCALE === 'tr_TR' ? /hedef|toplanan/i : /raised of/);
       } else {
+        if (who === 'musteri' && ONHOLD) {
+          // Beklemede: teşekkür/kampanya satırı yok; WooCommerce'in kendi içeriği bozulmamış (beklemede ifadesi, sipariş tablosu).
+          expect(text, 'beklemede: kampanya satırı yok').not.toMatch(/raised of|hedefin|5[.,]000/);
+          expect(text, 'beklemede: Woo beklemede metni').toMatch(/on-hold|on hold|beklemede|bekleme/i);
+          expect(text, 'beklemede: sipariş tablosu bozulmamış').toContain(L('type'));
+        }
         expect(thanksAt, `${who}: teşekkür metni olmamalı`).toBe(-1);
         expect(html, `${who} HTML: teşekkür metni olmamalı`).not.toContain(THANKS_MESSAGE);
       }
