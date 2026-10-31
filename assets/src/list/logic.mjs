@@ -88,27 +88,6 @@ export function trustedRestRoot(rest, pageHref) {
   return pretty || plain ? url.href : '';
 }
 
-/** Toplu ön alma isteği başına en çok ürün (sunucu sınırıyla aynı). */
-export const BATCH_MAX = 12;
-
-/**
- * Toplu form ucu adresi (`experiences?ids=1,2&kind=…`).
- *
- * @param {string}   rest Kök REST adresi.
- * @param {string[]} ids  Ürün kimlikleri (yinelenen/geçersiz atılır).
- * @param {string}   kind Kap türü.
- * @return {string} Adres ('' = geçerli kimlik yok).
- */
-export function buildBatchUrl(rest, ids, kind) {
-  const list = uniqueIds(ids);
-  if (!list.length) {
-    return '';
-  }
-  const base = String(rest || '');
-  const joiner = base.includes('?') ? '&' : '?';
-  return `${base}experiences${joiner}ids=${list.join(',')}&kind=${encodeURIComponent(String(kind || 'popup'))}`;
-}
-
 /**
  * @param {Array<string|number>} ids Kimlikler.
  * @return {string[]} Yalnız pozitif tam sayılar, sırası korunmuş, tekrarsız.
@@ -125,22 +104,7 @@ export function uniqueIds(ids) {
 }
 
 /**
- * Kimlikleri en çok `size` boyutlu parçalara böler.
- *
- * @param {string[]} ids  Kimlikler.
- * @param {number}   size Parça boyutu.
- * @return {string[][]} Parçalar.
- */
-export function chunk(ids, size = BATCH_MAX) {
-  const out = [];
-  for (let i = 0; i < ids.length; i += size) {
-    out.push(ids.slice(i, i + size));
-  }
-  return out;
-}
-
-/**
- * Görünür alana yaklaşan kartların formu boşta önceden alınsın mı (veri tasarrufu / 2G'de yalnız niyetle alınır).
+ * Form deneyimi betiği boşta önceden yüklensin mi (veri tasarrufu / 2G'de yalnız dokunma niyetiyle).
  *
  * @param {{saveData?: boolean, effectiveType?: string}|undefined} connection `navigator.connection`.
  * @return {boolean} Önceden alınsın mı.
@@ -171,7 +135,8 @@ export function hostKey(rest, id, kind) {
 const LAZY_PATHS = { progress: /\/assets\/build\/progress\/index\.js$/, experiences: /\/assets\/build\/experiences\/index\.js$/ };
 
 /**
- * REST yanıtındaki (`assets`) isteğe bağlı paket bilgisi. Adres yalnız SUNUCU YANITINDAN gelir (DOM özniteliğinden asla)
+ * REST yanıtındaki ya da sayfa sonundaki gömülü form paketindeki (`assets`; `<script type="application/json">`, içerik
+ * yazarının kullanabildiği bir öznitelik değil) isteğe bağlı paket bilgisi. Adres DOM özniteliğinden asla gelmez
  * ve yine de doğrulanır: aynı köken, kimlik bilgisi/parça yok, yol eklentinin `assets/build/<slug>/index.js` dosyası,
  * sorgu yalnız `ver`. Kimlikler yalnız rakam. Geçersizse null (paket yüklenmez; katman durağan çubukla çalışır).
  *

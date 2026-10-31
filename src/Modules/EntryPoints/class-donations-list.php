@@ -33,7 +33,27 @@ class Donations_List {
 	const ASSET_SLUG = 'list';
 
 	/** İşaretleme sürümü: kart/sekme HTML'i değişince önbellek anahtarına girer. */
-	const MARKUP_REV = '12.1.1';
+	const MARKUP_REV = '12.4.0';
+
+	/**
+	 * Kart formunu (gömülü paket) etkileyen ayarlar: değişince liste önbelleği tazelenir (12.4). Woo'nun yalnız para/sayı
+	 * biçimi ve ülke seçenekleri (sık yazılan Woo seçenekleri önbelleği boşuna düşürmesin).
+	 */
+	const FORM_OPTIONS = array(
+		'donation_panel_settings',
+		'wdp_placement_settings',
+		'wdp_button_settings',
+		'wdp_success_settings',
+		'wdp_cache_version',
+		'woocommerce_currency',
+		'woocommerce_currency_pos',
+		'woocommerce_price_thousand_sep',
+		'woocommerce_price_decimal_sep',
+		'woocommerce_price_num_decimals',
+		'woocommerce_allowed_countries',
+		'woocommerce_specific_allowed_countries',
+		'woocommerce_default_country',
+	);
 
 	/** @var bool */
 	private static $invalidation_hooked = false;
@@ -118,6 +138,20 @@ class Donations_List {
 		add_action( 'deleted_post_meta', array( __CLASS__, 'on_product_meta' ), 10, 4 );
 		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'bump_cache' ) );
 		add_action( 'woocommerce_order_refunded', array( __CLASS__, 'bump_cache' ) );
+		add_action( 'updated_option', array( __CLASS__, 'on_option' ), 10, 1 );
+		add_action( 'added_option', array( __CLASS__, 'on_option' ), 10, 1 );
+	}
+
+	/**
+	 * Kart formunu etkileyen ayar değişti: önbellekteki liste + gömülü form paketi tazelenir.
+	 *
+	 * @param string $option Seçenek adı.
+	 * @return void
+	 */
+	public static function on_option( $option ) {
+		if ( in_array( (string) $option, self::FORM_OPTIONS, true ) ) {
+			self::bump_cache();
+		}
 	}
 
 	/**
@@ -250,21 +284,44 @@ class Donations_List {
 
 		$use_cache = 'random' !== $atts['orderby'];
 		$html      = '';
+		$forms     = null;
 		if ( $use_cache ) {
 			$cache_key = self::cache_key( $atts );
 			$cached    = get_transient( $cache_key );
-			if ( is_string( $cached ) && '' !== $cached ) {
-				$html = $cached;
+			// 12.4: önbellek değeri HTML + kart formlarının gömme paketi (aynı kayıtta; ek sorgu yok).
+			if ( is_array( $cached ) && isset( $cached['html'] ) && is_string( $cached['html'] ) && '' !== $cached['html'] ) {
+				$html  = $cached['html'];
+				$forms = isset( $cached['forms'] ) && is_array( $cached['forms'] ) ? $cached['forms'] : null;
 			}
 		}
 		if ( '' === $html ) {
 			$built = self::build_html( $atts );
 			$html  = $built['html'];
+			$kind  = self::layer_kind( $atts );
+			if ( '' !== $kind && ! empty( $built['ids'] ) ) {
+				if ( $use_cache ) {
+					$forms = Card_Forms::build( $built['ids'], $kind );
+				} else {
+					foreach ( $built['ids'] as $id ) {
+						Card_Forms::add( $id, $kind ); // Rastgele sıralı liste önbelleğe girmez: formlar sayfa sonunda.
+					}
+				}
+			}
 			if ( $use_cache ) {
-				set_transient( self::cache_key( $atts ), $html, DAY_IN_SECONDS );
+				set_transient(
+					self::cache_key( $atts ),
+					array(
+						'html'  => $html,
+						'forms' => $forms,
+					),
+					DAY_IN_SECONDS
+				);
 			}
 		} else {
 			$built = array( 'empty' => ( strpos( $html, 'wdp-list__empty' ) !== false ) );
+		}
+		if ( null !== $forms ) {
+			Card_Forms::add_payload( $forms );
 		}
 
 		$html = self::apply_request_ids( $html );
@@ -511,7 +568,7 @@ class Donations_List {
 
 		$panel_id = self::PANEL_PLACEHOLDER;
 		$uid      = self::UID_PLACEHOLDER;
-		$kind     = 'link' === $atts['button'] ? '' : ( 'popup' === $atts['button'] ? 'popup' : 'side_panel' );
+		$kind     = self::layer_kind( $atts );
 		ob_start();
 		echo '<div class="' . esc_attr( $wrap_class ) . '" id="' . esc_attr( $uid ) . '" style="' . esc_attr( $style ) . '" data-wdp-list-id="' . esc_attr( $uid ) . '"';
 		if ( '' !== $kind ) {
@@ -537,7 +594,21 @@ class Donations_List {
 		return array(
 			'html'  => (string) ob_get_clean(),
 			'empty' => false,
+			'ids'   => '' === $kind ? array() : $ids,
 		);
+	}
+
+	/**
+	 * Kart düğmesinin açtığı katman türü ('' = düğme yalnız bağlantı).
+	 *
+	 * @param array<string, mixed> $atts Sanitized atts.
+	 * @return string
+	 */
+	private static function layer_kind( array $atts ) {
+		if ( 'link' === $atts['button'] ) {
+			return '';
+		}
+		return 'popup' === $atts['button'] ? 'popup' : 'side_panel';
 	}
 
 	/**
