@@ -91,7 +91,7 @@ final class FormContextTest extends TestCase {
 		$model = Form_Context::from_legacy( $this->legacy() );
 		$names = array_column( $model['fields'], 'name' );
 		$this->assertSame(
-			array( 'donation_full_name', 'donation_phone', 'donation_email', 'donation_dedication', 'donation_note', 'donation_anonymous' ),
+			array( 'donation_full_name', 'donation_phone', 'donation_dedication', 'donation_note', 'donation_anonymous' ),
 			$names
 		);
 	}
@@ -99,7 +99,7 @@ final class FormContextTest extends TestCase {
 	public function test_shares_product_has_no_donor_fields_only_shareholder_rows(): void {
 		$model = Form_Context::from_legacy( $this->legacy( array( 'allow_multiple_shares' => true ) ) );
 		$this->assertSame( array(), array_column( $model['fields'], 'name' ) );
-		$this->assertSame( array( 'name', 'phone', 'email', 'note' ), array_column( $model['shareholder'], 'key' ) );
+		$this->assertSame( array( 'name', 'phone', 'note' ), array_column( $model['shareholder'], 'key' ) );
 	}
 
 	public function test_fixed_price_product_has_single_preset_and_no_custom(): void {

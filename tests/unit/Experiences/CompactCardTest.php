@@ -86,7 +86,7 @@ final class CompactCardTest extends TestCase {
 		$this->assertSame( array( 10.0, 25.0, 100.0 ), $view['quick'] );
 		$this->assertSame( 100.0, $view['recommended'] );
 		$this->assertSame( array(), $view['campaign'] );
-		$this->assertSame( array( 'donation_full_name', 'donation_email', 'donation_phone' ), array_column( $view['fields'], 'name' ) );
+		$this->assertSame( array( 'donation_full_name', 'donation_phone' ), array_column( $view['fields'], 'name' ) );
 		$this->assertFalse( $view['tax_relief'] );
 	}
 
@@ -163,7 +163,8 @@ final class CompactCardTest extends TestCase {
 		$this->assertSame( 1, substr_count( $html, 'class="donation-panel-compact__rec"' ) );
 		$this->assertStringContainsString( 'inputmode="decimal"', $html );
 		$this->assertStringContainsString( 'autocomplete="name"', $html );
-		$this->assertStringContainsString( 'autocomplete="email"', $html );
+		$this->assertStringNotContainsString( 'autocomplete="email"', $html );
+		$this->assertStringNotContainsString( 'donation_email', $html );
 		$this->assertStringContainsString( 'autocomplete="tel"', $html );
 		$this->assertStringContainsString( 'aria-disabled="true"', $html );
 		$this->assertStringContainsString( 'aria-live="polite"', $html );

@@ -204,7 +204,6 @@ final class Product_Data_Tab {
 			'enable_quantity'           => $flag( '_enable_quantity', true ),
 			'enable_cover_fee'          => $flag( '_enable_cover_fee' ),
 			'cover_fee_percent'         => $meta( '_cover_fee_percent' ),
-			'enable_email'              => $tristate( '_enable_email' ),
 			'enable_dedication'         => $tristate( '_enable_dedication' ),
 			'dedication_placeholder'    => $meta( '_dedication_placeholder' ),
 			'enable_anonymous'          => $tristate( '_enable_anonymous' ),
@@ -745,9 +744,8 @@ final class Product_Data_Tab {
 	 * @return void
 	 */
 	private static function render_fields_section( array $values ) {
-		self::open_section( 'fields', __( 'Form fields', 'woo-donation-popup' ), __( 'Email, dedication, and anonymous donation', 'woo-donation-popup' ) );
+		self::open_section( 'fields', __( 'Form fields', 'woo-donation-popup' ), __( 'Dedication and anonymous donation', 'woo-donation-popup' ) );
 		self::open_type_scope( array( Donation_Type::FIXED, Donation_Type::CUSTOM, Donation_Type::CAMPAIGN ), $values['donation_type'] );
-		self::select( 'enable_email', $values['enable_email'], __( 'Email field', 'woo-donation-popup' ), __( 'Asks the donor for an email address; "Use general setting" follows the Forms and Appearance screen.', 'woo-donation-popup' ), self::tristate_options() );
 		self::select( 'enable_dedication', $values['enable_dedication'], __( 'Dedication field', 'woo-donation-popup' ), __( 'Shows a field to write who the donation is on behalf of.', 'woo-donation-popup' ), self::tristate_options() );
 		self::text( 'dedication_placeholder', $values['dedication_placeholder'], __( 'Dedication placeholder', 'woo-donation-popup' ), __( 'Sample text shown inside the dedication field when it is empty.', 'woo-donation-popup' ), array( 'custom_attributes' => array( 'maxlength' => '120' ) ) );
 		self::select( 'enable_anonymous', $values['enable_anonymous'], __( 'Anonymous donation', 'woo-donation-popup' ), __( 'If checked, the donor name is hidden on public lists; it remains visible on order records.', 'woo-donation-popup' ), self::tristate_options() );

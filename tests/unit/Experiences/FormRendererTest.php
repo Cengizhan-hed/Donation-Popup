@@ -129,7 +129,7 @@ final class FormRendererTest extends TestCase {
 		$this->assertStringContainsString( 'for="dp-7-test-donation_full_name"', $html );
 		$this->assertStringContainsString( 'autocomplete="name"', $html );
 		$this->assertStringContainsString( 'name="donation_dedication"', $html );
-		$this->assertStringContainsString( 'name="donation_email"', $html );
+		$this->assertStringNotContainsString( 'name="donation_email"', $html );
 	}
 
 	public function test_instances_get_unique_ids(): void {

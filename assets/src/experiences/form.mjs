@@ -183,6 +183,16 @@ export function createForm(root, hooks = {}) {
   const addCart = form.querySelector('[data-dp-addcart]');
   // Doğrudan (sepetsiz) bağış: gönderim siparişe gider (`POST direct`), sepet düğmesi yok, ödeme order-pay sayfasında.
   const direct = form.dataset.direct === '1';
+  // Girişli bağışçıda e-posta sorulmaz: sunucu hesap e-postasını kullanır (sayfa HTML'i kullanıcıya özel olamaz; WordPress'in
+  // standart `logged-in` gövde sınıfı okunur, yoksa alan görünür ve zorunlu kalır).
+  if (direct && document.body.classList.contains('logged-in')) {
+    const emailInput = form.querySelector('input[name="donation_email"]');
+    const emailWrap = emailInput && emailInput.closest('[data-dp-field]');
+    if (emailInput && emailWrap) {
+      emailInput.disabled = true;
+      emailWrap.hidden = true;
+    }
+  }
   const trust = form.querySelector('[data-dp-trust]');
   const legal = form.querySelector('[data-dp-legal]');
   const recapAmount = form.querySelector('[data-dp-recap-amount]');

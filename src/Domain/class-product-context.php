@@ -130,7 +130,6 @@ class Product_Context {
 			'impact_line_text'          => trim( (string) Product_Meta::get( $product, '_impact_line_text' ) ),
 			'amount_presets'            => trim( (string) Product_Meta::get( $product, '_amount_presets' ) ),
 			'amount_preset_recommended' => trim( (string) Product_Meta::get( $product, '_amount_preset_recommended' ) ),
-			'enable_email'              => self::meta_flag_or_global( $product, '_enable_email', 'enable_donor_email' ),
 			'enable_dedication'         => self::meta_flag_or_global( $product, '_enable_dedication', 'enable_dedication' ),
 			'enable_anonymous'          => self::meta_flag_or_global( $product, '_enable_anonymous', 'enable_anonymous' ),
 			'dedication_placeholder'    => trim( (string) Product_Meta::get( $product, '_dedication_placeholder' ) ),
