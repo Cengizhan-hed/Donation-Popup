@@ -99,8 +99,11 @@ class Loop_Price_Filters {
 			if ( ! Render_Registry::has_product_ui( $product_id ) ) {
 				Render_Registry::mark_trigger( $product_id );
 				Donations_List::enqueue_trigger_assets();
+				$kind = 'popup' === $mode ? 'popup' : 'side_panel';
+				// Formu sayfa sonunda gömülür (12.4): dokunuşta ağ yok, ek istek yok.
+				Card_Forms::add( $product_id, $kind );
 				$attrs .= ' data-wdp-form="' . esc_attr( (string) $product_id ) . '"'
-					. ' data-wdp-kind="' . esc_attr( 'popup' === $mode ? 'popup' : 'side_panel' ) . '"'
+					. ' data-wdp-kind="' . esc_attr( $kind ) . '"'
 					. ' data-wdp-rest="' . esc_url( rest_url( 'donation-panel/v1/' ) ) . '"'
 					. ' aria-haspopup="dialog"';
 			}

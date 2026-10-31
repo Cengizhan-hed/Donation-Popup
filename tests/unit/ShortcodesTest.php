@@ -98,6 +98,7 @@ final class ShortcodesTest extends TestCase {
 		$this->assertStringNotContainsString('wdp-admin-notice', $html);
 		$this->assertNotEmpty(WDP_Test_State::$transients);
 		foreach (WDP_Test_State::$transients as $cached) {
+			$cached = is_array($cached) ? (string) ($cached['html'] ?? '') : $cached; // 12.4: HTML + gömülü form paketi.
 			$this->assertStringNotContainsString('wdp-admin-notice', (string) $cached);
 			$this->assertStringNotContainsString('wdp-list-1', (string) $cached);
 			$this->assertStringContainsString(\DonationPanel\Modules\EntryPoints\Donations_List::UID_PLACEHOLDER, (string) $cached);
@@ -108,6 +109,7 @@ final class ShortcodesTest extends TestCase {
 		$admin_html = \DonationPanel\Modules\EntryPoints\Donations_List::render(array('limit' => 3));
 		$this->assertStringContainsString('wdp-admin-notice', $admin_html);
 		foreach (WDP_Test_State::$transients as $cached) {
+			$cached = is_array($cached) ? (string) ($cached['html'] ?? '') : $cached; // 12.4: HTML + gömülü form paketi.
 			$this->assertStringNotContainsString('wdp-admin-notice', (string) $cached);
 		}
 	}

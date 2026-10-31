@@ -1,27 +1,17 @@
 /**
  * Donation Panel — bağış listesi: kategori süzgeci (sekmeler) ve kart düğmesiyle formu açma.
  *
- * Form sayfa HTML'ine basılmaz (sayfa önbelleğe uygun, nonce yok). Ziyaretçinin ilk etkileşiminde ya da sayfa
- * yüklendikten sonra boşta (hangisi önce), görünür alana yakın kartların formları aynı REST kökü + kap türü için TEK
- * istekte (`GET donation-panel/v1/experiences?ids=…`, en çok 12) alınır ve BELLEKTE (Blob) tutulur; dokunma niyetinde
- * (üstüne gelme/basma/odak) eksikse hemen alınır ve katman DOM'u kurulur. Dokunuşta form hazırsa ağ isteği yoktur ve bu,
- * tarayıcının HTTP önbelleğine (Vary/no-store/çerez değişimi) bağlı değildir. Veri tasarrufu/2G'de yalnız niyetle alınır.
- * JS yoksa düğme ürün sayfasına gider.
+ * 12.4: kart formları sayfa HTML'ine GÖMÜLÜ gelir (sayfa sonunda `<script type="application/json" data-dp-forms>`,
+ * sunucu `Card_Forms` + `Form_Pack`: ortak şablon + ürün başına fark). Sayfa önbelleğiyle gelir; ek istek yok, dokunuşta
+ * ağ yok, çerez/HTTP önbelleği davranışından bağımsız. Paket ilk etkileşimde ya da yüklemeden 1 sn sonra boşta okunur
+ * (JSON çözümü; DOM işi yok), form deneyimi betiği (sayfa yüklemesinde yok) aynı anda paketteki doğrulanmış adresten
+ * yüklenir; dokunma niyetinde (üstüne gelme/basma/odak) katman DOM'u kurulur. Pakette olmayan kart (sonradan başka
+ * kaynaktan gelen kart, bütçe dışı, süzgeçle dışlanan) formu niyette tek REST isteğiyle alır. Sayfa HTML'inde nonce yok:
+ * form ilk gönderimde taze nonce alır. JS yoksa düğme ürün sayfasına gider.
  */
 import './list.css';
-import {
-  buildBatchUrl,
-  buildExperienceUrl,
-  chunk,
-  hostKey,
-  lazyAsset,
-  matchesCategory,
-  parseHashSlug,
-  shouldHandleClick,
-  shouldPrefetchAhead,
-  trustedRestRoot,
-  uniqueIds,
-} from './logic.mjs';
+import { buildExperienceUrl, hostKey, lazyAsset, matchesCategory, parseHashSlug, shouldHandleClick, shouldPrefetchAhead, trustedRestRoot } from './logic.mjs';
+import { openPack, restoreTokens } from './pack.mjs';
 
 const MOUNT_WAIT_MS = 5000;
 
@@ -122,27 +112,24 @@ function whenMounted(host) {
 
 /**
  * Sayfa genelinde iki önbellek; anahtar = REST kökü + ürün + kap türü (liste ve mağaza kartı paylaşır; aynı ürün bir
- * kez alınır, bir kez kurulur):
- *  - `sources`: sunucudan gelen form HTML'i (metin) + isteğe bağlı paket bilgisi (kampanya çubuğu). Ön alma YALNIZ bunu
- *    doldurur: boşta ağ + JSON, DOM işi yok.
- *  - `hosts`: DOM'a eklenmiş kap; dokunma niyetinde (üstüne gelme/basma/odak) ya da dokunuşta kurulur.
+ * kez kurulur):
+ *  - `sources`: formun HTML'i + isteğe bağlı paket bilgisi (gömülü paketten ya da yedek REST isteğinden).
+ *  - `hosts`: DOM'a eklenmiş kap; dokunma niyetinde ya da dokunuşta kurulur.
  *
- * @type {Map<string, Promise<{entry: function(): (FormEntry|Promise<FormEntry>)}>>}
+ * @type {Map<string, Promise<FormEntry>>}
  */
 const sources = new Map();
 /** @type {Map<string, Promise<HTMLElement>>} */
 const hosts = new Map();
-/** Sunucu toplu ön almayı kapattıysa (`prefetch:false`, filtre) sayfa boyunca yalnız niyetle alınır. */
-let aheadDisabled = false;
 
 /**
- * @typedef {{html: string, progress: ({ids: string[], script: string, style: string}|null)}} FormEntry
+ * @typedef {{html: string, progress: ({ids: string[], script: string, style: string}|null), exp: ({script: string}|null)}} FormEntry
  */
 
 /**
- * Yanıttan bir ürünün form girdisi: HTML + (yalnız bu ürün kampanyalıysa) çubuk paketi bilgisi.
+ * Yanıttan/paketten bir ürünün form girdisi: HTML + (yalnız bu ürün kampanyalıysa) çubuk paketi bilgisi.
  *
- * @param {any}    data Ayrıştırılmış yanıt.
+ * @param {any}    data Ayrıştırılmış yanıt ya da gömülü paket.
  * @param {string} html Formun HTML'i.
  * @param {string} id   Ürün.
  * @return {FormEntry} Girdi.
@@ -152,19 +139,67 @@ function entryOf(data, html, id) {
   return { html, progress: progress && progress.ids.includes(String(id)) ? progress : null, exp: lazyAsset(data, 'experiences', window.location.href) };
 }
 
+/**
+ * Gömülü paketler (sayfa sonundaki `script[data-dp-forms]`), bir kez okunur.
+ *
+ * @type {Array<{kind: string, data: any, reader: {ids: string[], form: function(string): (string|null)}}>|null}
+ */
+let packs = null;
+
+/** @return {Array<{kind: string, data: any, reader: {ids: string[], form: function(string): (string|null)}}>} Paketler. */
+function embeddedPacks() {
+  if (!packs) {
+    packs = [];
+    document.querySelectorAll('script[type="application/json"][data-dp-forms]').forEach((el) => {
+      try {
+        const data = JSON.parse(el.textContent || '');
+        const reader = openPack(data);
+        if (reader && ['popup', 'side_panel', 'bottom_sheet'].includes(data.kind)) {
+          packs.push({ kind: data.kind, data, reader });
+        }
+      } catch {
+        // Bozuk paket yok sayılır: kartlar niyette tek istekle alınır.
+      }
+    });
+  }
+  return packs;
+}
+
+let keySeq = 0;
+
+/**
+ * Gömülü formun girdisi (yoksa null). Sayfa kimliği her kurulumda benzersiz üretilir.
+ *
+ * @param {string} id   Ürün.
+ * @param {string} kind Kap türü.
+ * @return {FormEntry|null} Girdi.
+ */
+function embeddedEntry(id, kind) {
+  for (const pack of embeddedPacks()) {
+    if (pack.kind === kind && pack.reader.ids.includes(String(id))) {
+      const html = pack.reader.form(String(id));
+      if (html) {
+        keySeq += 1;
+        return entryOf(pack.data, restoreTokens(html, id, `dp-${id}-${kind}-e${keySeq}`), id);
+      }
+    }
+  }
+  return null;
+}
+
 /** Form deneyimi paketi (bir kez) yüklendi sözü. */
 let experiencesLoad = null;
 
 /**
- * Form deneyimi betiği: liste/mağaza kartı sayfasında sayfa yüklemesinde YOK (ilk yük baytı yok); formlar alınınca
- * yalnız sunucu yanıtındaki doğrulanmış adresten (`lazyAsset`) bir kez eklenir. Sayfada zaten varsa hiçbir şey yapmaz.
+ * Form deneyimi betiği: liste/mağaza kartı sayfasında sayfa yüklemesinde YOK (ilk yük baytı yok); yalnız gömülü paketteki
+ * ya da sunucu yanıtındaki doğrulanmış adresten (`lazyAsset`) bir kez eklenir. Sayfada zaten varsa hiçbir şey yapmaz.
  *
  * @param {{script: string}|null} info Paket bilgisi.
  * @return {Promise<void>} Betik yüklendi (ya da gerekmiyor / yüklenemedi).
  */
 function loadExperiences(info) {
   if (window.__dpExperiences || document.getElementById('donation-panel-experiences-js') || !info) {
-    return Promise.resolve();
+    return experiencesLoad || Promise.resolve();
   }
   if (!experiencesLoad) {
     experiencesLoad = new Promise((resolve) => {
@@ -179,7 +214,7 @@ function loadExperiences(info) {
   return experiencesLoad;
 }
 
-/** Formu bellekte hazır ürünler (sonradan DOM'a gelen/yeniden çizilen kart düğmeleri de işaretlenir). */
+/** Formu hazır ürünler (sonradan DOM'a gelen/yeniden çizilen kart düğmeleri de işaretlenir). */
 const readyIds = new Set();
 
 /**
@@ -197,29 +232,22 @@ function markReady(id) {
 }
 
 /**
- * @param {string} url Adres.
+ * Yedek: tek formu REST'ten alır. Yalnız aynı kökene; yönlendirme sonrası yanıt da aynı kökenden olmalı (yanıt HTML'i
+ * sayfaya basılır).
+ *
+ * @param {string} url Adres (trustedRestRoot ile doğrulanmış kökten türetilir).
  * @return {Promise<any>} JSON gövde.
  */
 async function getJson(url) {
-  return (await fetchTrusted(url)).json();
-}
-
-/**
- * Yalnız aynı kökene istek; yönlendirme sonrası yanıt da aynı kökenden olmalı (yanıt HTML'i sayfaya basılır).
- *
- * @param {string} url Adres (trustedRestRoot ile doğrulanmış kökten türetilir).
- * @return {Promise<Response>} Yanıt.
- */
-async function fetchTrusted(url) {
   const response = await window.fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
   if (!response.ok || (response.url && new URL(response.url).origin !== window.location.origin)) {
     throw new Error(String(response.status));
   }
-  return response;
+  return response.json();
 }
 
 /**
- * Söz önbelleğe girer; başarısız olursa düşer (dokunuşta tek istekle yeniden denenir).
+ * Söz önbelleğe girer; başarısız olursa düşer (dokunuşta yeniden denenir).
  *
  * @param {Map<string, Promise<any>>} map Önbellek.
  * @param {string} key Anahtar.
@@ -237,18 +265,22 @@ function remember(map, key, pending) {
 }
 
 /**
- * Formun HTML'i: ön alındıysa önbellekten, değilse şimdi tek istekle.
+ * Formun girdisi: gömülü paketten (ağ yok) ya da yedek olarak şimdi tek istekle.
  *
  * @param {string} rest Kök REST adresi.
  * @param {string} id   Ürün kimliği.
  * @param {string} kind Kap türü.
- * @return {Promise<{entry: function(): (FormEntry|Promise<FormEntry>)}>} Girdiyi (gerekirse ertelenmiş çözümle) veren nesne.
+ * @return {Promise<FormEntry>} Girdi.
  */
 function ensureSource(rest, id, kind) {
   const key = hostKey(rest, id, kind);
   const cached = sources.get(key);
   if (cached) {
     return cached;
+  }
+  const embedded = embeddedEntry(id, kind);
+  if (embedded) {
+    return remember(sources, key, Promise.resolve(embedded));
   }
   return remember(
     sources,
@@ -257,27 +289,13 @@ function ensureSource(rest, id, kind) {
       if (!data || typeof data.html !== 'string' || data.html === '') {
         throw new Error('empty');
       }
-      markReady(id);
-      return { entry: () => entryOf(data, data.html, id) };
+      const entry = entryOf(data, data.html, id);
+      return loadExperiences(entry.exp).then(() => {
+        markReady(id);
+        return entry;
+      });
     })
   );
-}
-
-/**
- * Form girdisi: önbellekteki kaynak çözülemezse (toplu yanıtta yoksa) bir kez tek istekle yeniden alınır.
- *
- * @param {string} rest Kök REST adresi.
- * @param {string} id   Ürün kimliği.
- * @param {string} kind Kap türü.
- * @return {Promise<FormEntry>} Girdi.
- */
-async function sourceEntry(rest, id, kind) {
-  try {
-    return await (await ensureSource(rest, id, kind)).entry();
-  } catch {
-    sources.delete(hostKey(rest, id, kind));
-    return (await ensureSource(rest, id, kind)).entry();
-  }
 }
 
 /** Kampanya çubuğu paketi bu sayfada istendi mi (bir kez). */
@@ -286,7 +304,8 @@ let progressRequested = false;
 /**
  * Kampanyalı ürünün katmanı kurulurken canlı çubuk paketi (bir kez): stil kap DOM'a girmeden ÖNCE satır içi eklenir
  * (katman hiçbir karede stilsiz değil), betik eşzamansız yüklenir ve kendi `scan`'iyle katmandaki çubuğu bağlar.
- * Adres yalnız sunucu yanıtından gelir ve `lazyAsset` ile doğrulanmıştır; sayfada paket zaten varsa hiçbir şey yapmaz.
+ * Adres yalnız sunucunun paketinden/yanıtından gelir ve `lazyAsset` ile doğrulanmıştır; sayfada paket zaten varsa hiçbir
+ * şey yapmaz.
  *
  * @param {{script: string, style: string}|null} info Paket bilgisi.
  */
@@ -326,7 +345,7 @@ function ensureHost(rest, id, kind) {
     remember(
       hosts,
       key,
-      sourceEntry(rest, id, kind).then(({ html, progress, exp }) => {
+      ensureSource(rest, id, kind).then(({ html, progress, exp }) => {
         loadProgress(progress);
         loadExperiences(exp);
         const host = document.createElement('div');
@@ -344,65 +363,6 @@ function ensureHost(rest, id, kind) {
       })
     )
   );
-}
-
-/**
- * Bir REST kökü + kap türü için birden çok ürünün form HTML'ini tek istekte (en çok 12) önceden alır; önbellekte
- * olanlar istenmez. DOM'a dokunmaz (boşta yalnız ağ + JSON çözme; ana iş parçacığı yükü yok denecek kadar az).
- *
- * @param {string}   rest Kök REST adresi.
- * @param {string}   kind Kap türü.
- * @param {string[]} ids  Ürünler.
- */
-function prefetchBatch(rest, kind, ids) {
-  const todo = uniqueIds(ids).filter((id) => !sources.has(hostKey(rest, id, kind)));
-  chunk(todo).forEach((part) => {
-    // Gövde Blob olarak saklanır (JS yığınına alınmaz, metin çözümü yok); metin + JSON çözümü ilk dokunma niyetinde
-    // (boşta ana iş parçacığı yükü yok denecek kadar az).
-    const request = fetchTrusted(buildBatchUrl(rest, part, kind)).then((response) => response.blob());
-    let parsed = null;
-    const read = (blob) => {
-      if (!parsed) {
-        parsed = blob.text().then((text) => {
-          const data = JSON.parse(text) || {};
-          if (data.prefetch === false) {
-            aheadDisabled = true;
-          }
-          return data;
-        });
-      }
-      return parsed;
-    };
-    const items = async (blob) => (await read(blob)).items || {};
-    // Yanıt boşta çözülür ve form deneyimi betiği (sayfada yoksa) şimdi yüklenir: dokunuşta ne ağ ne betik beklenir.
-    const ready = request
-      .then((blob) => new Promise((resolve) => idle(resolve)).then(() => read(blob)))
-      .then((data) => loadExperiences(lazyAsset(data, 'experiences', window.location.href)));
-    ready.catch(() => {}); // İptal/hata dokunuşta ele alınır (sayfa değişiminde işlenmemiş ret yok).
-    part.forEach((id) => {
-      const key = hostKey(rest, id, kind);
-      const lazy = request.then(async (blob) => {
-        // Kısa yanıt (ön alma kapalı / ürün yok) hemen çözülür: hazır işareti yalnız gerçekten gelen forma.
-        if (blob.size < 512 && typeof (await items(blob))[id] !== 'string') {
-          throw new Error('missing');
-        }
-        await ready;
-        markReady(id);
-        // Çözümü erteleyen nesne: kap ilk kez kurulurken çözülür.
-        return {
-          entry: async () => {
-            const data = await read(blob);
-            const html = (data.items || {})[id];
-            if (typeof html !== 'string' || html === '') {
-              throw new Error('missing');
-            }
-            return entryOf(data, html, id);
-          },
-        };
-      });
-      remember(sources, key, lazy).catch(() => {}); // Hata dokunuşta ele alınır (tek istekle yeniden denenir).
-    });
-  });
 }
 
 /**
@@ -430,8 +390,8 @@ function ctaInfo(cta) {
 }
 
 /**
- * Dokunma niyeti (üstüne gelme, basma, odak): form henüz yoksa hemen alınır; hazırsa katman DOM'u kurulur
- * (`dp:warm`), böylece tıklamada yalnız gösterilir.
+ * Dokunma niyeti (üstüne gelme, basma, odak): katman DOM'u kurulur (`dp:warm`), böylece tıklamada yalnız gösterilir.
+ * Form gömülü değilse şimdi tek istekle alınır.
  *
  * @param {HTMLElement} cta Düğme.
  */
@@ -442,18 +402,19 @@ function warmCta(cta) {
   }
   ensureHost(info.rest, info.id, info.kind).then(
     (host) => whenMounted(host).then((root) => root && root.dispatchEvent(new CustomEvent('dp:warm'))),
-    () => {} // Hata dokunuşta ele alınır (tek istekle yeniden denenir; olmazsa ürün sayfasına gidilir).
+    () => {} // Hata dokunuşta ele alınır (yeniden denenir; olmazsa ürün sayfasına gidilir).
   );
 }
 
 /**
- * Ürün formunu (önbellekten ya da şimdi) alır ve katmanı açar. Önceden alındıysa ağ isteği yoktur.
+ * Ürün formunu (paketten ya da şimdi) alır ve katmanı açar. Gömülüyse ağ isteği yoktur.
  *
  * @param {HTMLElement} cta Tıklanan düğme.
  */
 async function openForm(cta) {
   const info = ctaInfo(cta);
-  const waiting = !sources.has(hostKey(info.rest, info.id, info.kind));
+  const key = hostKey(info.rest, info.id, info.kind);
+  const waiting = !sources.has(key) && !embeddedPacks().some((pack) => pack.kind === info.kind && pack.reader.ids.includes(info.id));
   if (waiting) {
     cta.classList.add('is-loading');
     cta.setAttribute('aria-busy', 'true');
@@ -480,81 +441,9 @@ async function openForm(cta) {
   trigger.click();
 }
 
-/** Görünür alana yaklaşan kart düğmeleri: REST kökü + kap türüne göre gruplanır, yükleme bitince boşta toplu alınır. */
-const queued = new Map();
-let flushScheduled = false;
-let observer = null;
-
-function flushQueued() {
-  flushScheduled = false;
-  if (!aheadDisabled) {
-    queued.forEach((ids, group) => {
-      const [rest, kind] = JSON.parse(group);
-      prefetchBatch(rest, kind, Array.from(ids));
-    });
-  }
-  queued.clear();
-}
-
-function scheduleFlush() {
-  if (flushScheduled) {
-    return;
-  }
-  flushScheduled = true;
-  const run = () => {
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(flushQueued, { timeout: 2000 });
-    } else {
-      window.setTimeout(flushQueued, 200);
-    }
-  };
-  // Sayfanın kendi yüklemesiyle yarışmaz: yükleme bittikten sonra boşta.
-  if (document.readyState === 'complete') {
-    run();
-  } else {
-    window.addEventListener('load', run, { once: true });
-  }
-}
-
-/**
- * @param {HTMLElement} cta Düğme.
- */
-function queueCta(cta) {
-  const info = ctaInfo(cta);
-  if (!info || aheadDisabled || sources.has(hostKey(info.rest, info.id, info.kind))) {
-    return; // zaten alındı / alınıyor
-  }
-  const group = JSON.stringify([info.rest, info.kind]);
-  if (!queued.has(group)) {
-    queued.set(group, new Set());
-  }
-  queued.get(group).add(info.id);
-  scheduleFlush();
-}
-
-function startObserver() {
-  if (observer || typeof window.IntersectionObserver !== 'function') {
-    return;
-  }
-  if (!shouldPrefetchAhead(window.navigator.connection)) {
-    return;
-  }
-  observer = new window.IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          observer.unobserve(entry.target);
-          queueCta(entry.target);
-        }
-      });
-    },
-    { rootMargin: '300px' }
-  );
-}
-
 /** Dokunma niyeti olayları: belge düzeyinde tek yakalama dinleyicisi (kart başına dinleyici yok). */
 const INTENT_EVENTS = ['pointerover', 'pointerdown', 'touchstart', 'focusin'];
-/** Isınmış / izlemeye alınmış düğmeler (öznitelik değil: yükleme sırasında DOM'a yazılmaz). */
+/** Isınmış / işaretlenmiş düğmeler (öznitelik değil: yükleme sırasında DOM'a yazılmaz). */
 const warmed = new WeakSet();
 const watched = new WeakSet();
 
@@ -595,11 +484,9 @@ function bindDocument() {
 }
 
 /**
- * Kart düğmelerini izlemeye alır (bir kez; sonradan DOM'a gelen ya da sayfa oluşturucunun yeniden çizdiği düğmeler
- * dahil). Formu zaten bellekte olan ürünün yeni düğmesi hemen hazır işaretlenir.
+ * Hazır ürünlerin yeni (sonradan DOM'a gelen ya da sayfa oluşturucunun yeniden çizdiği) düğmelerini işaretler.
  */
-function watchCards() {
-  startObserver();
+function markCards() {
   document.querySelectorAll('[data-wdp-form]').forEach((cta) => {
     if (watched.has(cta)) {
       return;
@@ -607,9 +494,6 @@ function watchCards() {
     watched.add(cta);
     if (readyIds.has(cta.getAttribute('data-wdp-form') || '')) {
       cta.dataset.wdpReady = '1';
-    }
-    if (observer) {
-      observer.observe(cta);
     }
   });
 }
@@ -629,13 +513,13 @@ function idle(task) {
 
 let rescanPending = false;
 
-/** DOM değişti: kart düğmeleri boşta, tek seferde yeniden taranır (değişiklik başına iş yok). */
+/** DOM değişti: kart düğmeleri boşta, tek seferde yeniden işaretlenir (değişiklik başına iş yok). */
 function scheduleRescan() {
   if (!rescanPending) {
     rescanPending = true;
     idle(() => {
       rescanPending = false;
-      watchCards();
+      markCards();
     });
   }
 }
@@ -650,9 +534,8 @@ function init() {
     bindTabs(wrap);
     wrap.querySelectorAll('.wdp-card__cta[data-wdp-form]:not([aria-haspopup])').forEach((cta) => cta.setAttribute('aria-haspopup', 'dialog'));
   });
-  // Ön alma, ziyaretçinin İLK etkileşiminde (kaydırma, fare hareketi, dokunma, tuş) ya da sayfa yüklendikten
-  // IDLE_START_MS sonra boşta — hangisi önce — başlar. Yükleme sırasında eklenti betiği yalnız dinleyici kaydeder (ana iş
-  // süresi tabanla aynı); karta ilk dokunuş sayfa açılır açılmaz gelse de (kaydırmasız) form çoğunlukla hazırdır.
+  // Hazırlık, ziyaretçinin İLK etkileşiminde (kaydırma, fare hareketi, dokunma, tuş) ya da sayfa yüklendikten
+  // IDLE_START_MS sonra boşta — hangisi önce — başlar. Yükleme sırasında eklenti betiği yalnız dinleyici kaydeder.
   if (!firstScheduled) {
     firstScheduled = true;
     FIRST_INTERACTION.forEach((type) => window.addEventListener(type, activate, { capture: true, passive: true }));
@@ -666,13 +549,14 @@ function init() {
 }
 let firstScheduled = false;
 const FIRST_INTERACTION = ['scroll', 'pointermove', 'pointerdown', 'touchstart', 'keydown', 'wheel'];
-/** Etkileşim yoksa ön almanın başladığı an (yüklemeden sonra, ms): sayfanın kendi işi bitmiş olur. */
+/** Etkileşim yoksa hazırlığın başladığı an (yüklemeden sonra, ms): sayfanın kendi işi bitmiş olur. */
 const IDLE_START_MS = 1000;
 let active = false;
 
 /**
- * Ön almayı başlatır (bir kez): görünür alana yakın kart düğmeleri izlenir; sonradan eklenen/yeniden çizilen kartlar
- * (sayfa oluşturucu, kaydırıcı kopyaları) DOM değişikliğinde boşta yeniden taranır.
+ * Hazırlık (bir kez): gömülü paket okunur (ağ yok), form deneyimi betiği paketteki doğrulanmış adresten yüklenir
+ * (veri tasarrufu / 2G'de yalnız niyetle), gömülü kartların düğmeleri hazır işaretlenir. Sonradan eklenen/yeniden
+ * çizilen kart düğmeleri DOM değişikliğinde boşta yeniden işaretlenir.
  */
 function activate() {
   if (active) {
@@ -680,7 +564,13 @@ function activate() {
   }
   active = true;
   FIRST_INTERACTION.forEach((type) => window.removeEventListener(type, activate, { capture: true }));
-  watchCards();
+  const list = embeddedPacks();
+  if (list.length && shouldPrefetchAhead(window.navigator.connection)) {
+    loadExperiences(lazyAsset(list[0].data, 'experiences', window.location.href)).then(() => {
+      list.forEach((pack) => pack.reader.ids.forEach(markReady));
+    });
+  }
+  markCards();
   if (typeof window.MutationObserver === 'function' && document.body) {
     new window.MutationObserver(scheduleRescan).observe(document.body, { childList: true, subtree: true });
   }

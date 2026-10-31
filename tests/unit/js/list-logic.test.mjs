@@ -1,10 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  BATCH_MAX,
-  buildBatchUrl,
   buildExperienceUrl,
-  chunk,
   hostKey,
   lazyAsset,
   matchesCategory,
@@ -68,22 +65,8 @@ test('buildExperienceUrl: güzel ve düz bağlantı yapısı', () => {
   );
 });
 
-test('12.3 ön alma: toplu adres, tekrarsız kimlik, parçalama, veri tasarrufu, anahtar', () => {
-  assert.equal(
-    buildBatchUrl('https://x.test/wp-json/donation-panel/v1/', ['12', '13', '12', 'x', '0'], 'side_panel'),
-    'https://x.test/wp-json/donation-panel/v1/experiences?ids=12,13&kind=side_panel'
-  );
-  assert.equal(
-    buildBatchUrl('https://x.test/?rest_route=/donation-panel/v1/', [7], 'popup'),
-    'https://x.test/?rest_route=/donation-panel/v1/experiences&ids=7&kind=popup'
-  );
-  assert.equal(buildBatchUrl('https://x.test/', ['a'], 'popup'), '');
+test('tekrarsız kimlik, veri tasarrufu, anahtar', () => {
   assert.deepEqual(uniqueIds([1, '1', ' 2 ', -3, '04x']), ['1', '2']);
-  const ids = Array.from({ length: 30 }, (_, i) => String(i + 1));
-  assert.deepEqual(
-    chunk(ids).map((p) => p.length),
-    [BATCH_MAX, BATCH_MAX, 30 - 2 * BATCH_MAX]
-  );
   assert.equal(shouldPrefetchAhead(undefined), true);
   assert.equal(shouldPrefetchAhead({ effectiveType: '4g' }), true);
   assert.equal(shouldPrefetchAhead({ saveData: true, effectiveType: '4g' }), false);
