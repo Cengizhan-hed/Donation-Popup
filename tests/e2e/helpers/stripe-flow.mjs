@@ -234,6 +234,24 @@ export function expectRaised(before, after, o = {}) {
 }
 
 /**
+ * Mağazanın Woo para biçimine göre tutar deseni (ayraçlar, ondalık, simge konumu; boşluk/nbsp esnek).
+ * @param {{ decimals?: number, decimalSeparator?: string, thousandSeparator?: string, symbol?: string, symbolPosition?: string }} store
+ * @param {number} amount
+ * @return {RegExp}
+ */
+export function moneyPattern(store, amount) {
+  const d = Number(store.decimals ?? 2);
+  const [int, frac] = Number(amount).toFixed(d).split('.');
+  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, store.thousandSeparator ?? ',');
+  const num = frac ? `${grouped}${store.decimalSeparator ?? '.'}${frac}` : grouped;
+  const esc = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sym = esc(store.symbol || '');
+  const sp = '[\\s\\u00a0]?';
+  const right = /^right/.test(String(store.symbolPosition || 'left'));
+  return new RegExp(right ? `${esc(num)}${sp}${sym}` : `${sym}${sp}${esc(num)}`);
+}
+
+/**
  * Kanca günlüğünden sayımlar.
  * @param {Array<Record<string, any>>} log
  * @param {number} orderId
