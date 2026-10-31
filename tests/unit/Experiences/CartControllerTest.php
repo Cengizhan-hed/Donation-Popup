@@ -129,7 +129,7 @@ final class CartControllerTest extends TestCase {
 		$result = $this->controller()->nonce();
 		$this->assertInstanceOf( WP_REST_Response::class, $result );
 		$this->assertNotEmpty( $result->get_data()['nonce'] );
-		$this->assertSame( array( 'nonce' ), array_keys( $result->get_data() ) );
+		$this->assertSame( array( 'nonce', 'logged_in' ), array_keys( $result->get_data() ) );
 		$this->assertStringContainsString( 'no-store', $result->headers['Cache-Control'] );
 	}
 

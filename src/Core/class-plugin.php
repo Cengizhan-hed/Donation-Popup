@@ -206,6 +206,13 @@ final class Plugin {
 						( new Release_12_Upgrade() )->run();
 					}
 				);
+				$migrations->add_step(
+					'email_settings_cleanup',
+					3,
+					static function () {
+						( new Email_Settings_Cleanup() )->run();
+					}
+				);
 				return $migrations;
 			}
 		);

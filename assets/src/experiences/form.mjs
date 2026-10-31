@@ -148,21 +148,42 @@ function bindToggles(form) {
 }
 
 /**
- * Girişli bağışçıda doğrudan akışın e-posta alanı gizlenir ve devre dışı kalır (sunucu hesap e-postasını kullanır).
+ * Girişli bağışçıda doğrudan akışın e-posta alanı gizlenir, devre dışı kalır ve zorunlu olmaktan çıkar (sunucu hesap
+ * e-postasını kullanır). Bilgi temadan bağımsızdır: formun nonce için zaten yaptığı REST yanıtındaki `logged_in`
+ * (yalnız boolean) okunur; sayfa HTML'i herkese aynıdır. Yanıt gelmeden alan görünür ve zorunludur (güvenli varsayılan).
  *
+ * Alan, ilk etkileşimde yapılan nonce isteği dönünce gizlenir. Çok adımlı formda e-posta alanı ayrıntı adımındadır ve
+ * bağışçı oraya varmadan gizlenmiş olur (yerleşim kayması yok); tek adımlı yerleşimde gizleme kullanıcının kendi
+ * etkileşiminin hemen ardından olur.
+ *
+ * @param {HTMLElement} root   Kök.
  * @param {HTMLElement} form   Form.
  * @param {boolean}     direct Doğrudan (sepetsiz) bağış.
  */
-function hideAccountEmail(form, direct) {
-  if (!direct || !document.body.classList.contains('logged-in')) {
-    return;
-  }
+function watchAccountEmail(root, form, direct) {
   const input = form.querySelector('input[name="donation_email"]');
   const wrap = input && input.closest('[data-dp-field]');
-  if (input && wrap) {
+  if (!direct || !input || !wrap) {
+    return;
+  }
+  const apply = () => {
+    if (root.dataset.dpLoggedIn !== '1') {
+      return;
+    }
+    input.required = false;
+    input.removeAttribute('required');
     input.disabled = true;
     wrap.hidden = true;
-  }
+  };
+  on(root, 'dp:session', apply);
+  apply();
+  // İlk etkileşimde (dokunuşta değil; panel açılışında ağ isteği yok) bir kez; sonuç gönderimde nonce olarak yeniden kullanılır.
+  const types = ['pointerdown', 'focusin', 'keydown'];
+  const once = () => {
+    types.forEach((type) => form.removeEventListener(type, once, true));
+    refreshNonce(root);
+  };
+  types.forEach((type) => form.addEventListener(type, once, true));
 }
 
 /**
@@ -201,9 +222,8 @@ export function createForm(root, hooks = {}) {
   const addCart = form.querySelector('[data-dp-addcart]');
   // Doğrudan (sepetsiz) bağış: gönderim siparişe gider (`POST direct`), sepet düğmesi yok, ödeme order-pay sayfasında.
   const direct = form.dataset.direct === '1';
-  // Girişli bağışçıda e-posta sorulmaz: sunucu hesap e-postasını kullanır (sayfa HTML'i kullanıcıya özel olamaz; WordPress'in
-  // standart `logged-in` gövde sınıfı okunur, yoksa alan görünür ve zorunlu kalır).
-  hideAccountEmail(form, direct);
+  // Girişli bağışçıda e-posta sorulmaz: sunucu hesap e-postasını kullanır (sayfa HTML'i kullanıcıya özel olamaz; bilgi nonce yanıtından gelir).
+  watchAccountEmail(root, form, direct);
   const trust = form.querySelector('[data-dp-trust]');
   const legal = form.querySelector('[data-dp-legal]');
   const recapAmount = form.querySelector('[data-dp-recap-amount]');
@@ -771,7 +791,25 @@ export function createForm(root, hooks = {}) {
  * @param {HTMLElement} root Kök.
  * @return {Promise<string>} Nonce ya da boş.
  */
-async function refreshNonce(root) {
+function refreshNonce(root) {
+  // Uçuştaki istek paylaşılır: ilk etkileşimdeki ön alma bitmeden gönderilirse ikinci istek gitmez.
+  const pending = nonceInflight.get(root);
+  if (pending) {
+    return pending;
+  }
+  const run = fetchNonce(root).finally(() => nonceInflight.delete(root));
+  nonceInflight.set(root, run);
+  return run;
+}
+
+/** Uçuştaki nonce istekleri (kök başına). */
+const nonceInflight = new WeakMap();
+
+/**
+ * @param {HTMLElement} root Kök.
+ * @return {Promise<string>} Nonce ya da boş.
+ */
+async function fetchNonce(root) {
   try {
     const response = await window.fetch(`${root.dataset.dpRest}nonce`, { credentials: 'same-origin', cache: 'no-store' });
     if (!response.ok) {
@@ -779,6 +817,9 @@ async function refreshNonce(root) {
     }
     const body = await response.json();
     root.dataset.dpNonce = body && body.nonce ? String(body.nonce) : '';
+    // Yalnız boolean: girişli bağışçıda formlar e-posta alanını gizler.
+    root.dataset.dpLoggedIn = body && body.logged_in === true ? '1' : '0';
+    root.dispatchEvent(new window.CustomEvent('dp:session'));
     return root.dataset.dpNonce;
   } catch {
     return '';
