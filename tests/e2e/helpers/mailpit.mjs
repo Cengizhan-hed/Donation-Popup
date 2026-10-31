@@ -124,3 +124,67 @@ export function recipients(msg) {
 export function htmlViewUrl(id) {
   return `${API}/view/${id}.html`;
 }
+
+/** Mailpit arama sözdizimi için adresi güvenli tırnaklar. @param {string} to @return {string} */
+const toQuery = (to) => `to:"${String(to).replace(/"/g, '')}"`;
+
+/**
+ * Test yalıtımı: YALNIZ `to` adresine gelen iletiler (Mailpit `/api/v1/search`); ortak kutunun geri kalanına bakılmaz.
+ * @param {string} to
+ * @return {Promise<Array<Record<string, any>>>} Özet listesi.
+ */
+export async function searchTo(to) {
+  const r = await fetch(`${API}/api/v1/search?query=${encodeURIComponent(toQuery(to))}&limit=200`);
+  if (!r.ok) throw new Error(`mailpit arama ${r.status}`);
+  const j = await r.json();
+  return j.messages || [];
+}
+
+/**
+ * YALNIZ `to` adresine gelen iletileri siler (arama ile silme); başka adreslerin iletilerine dokunmaz.
+ * @param {string} to
+ */
+export async function clearMailboxTo(to) {
+  const r = await fetch(`${API}/api/v1/search?query=${encodeURIComponent(toQuery(to))}`, { method: 'DELETE' });
+  if (!r.ok) throw new Error(`mailpit arama ile silme ${r.status}`);
+}
+
+/**
+ * Belirli iletileri kimliğiyle siler (yalnız bu testin bulduğu iletiler).
+ * @param {string[]} ids
+ */
+export async function deleteByIds(ids) {
+  if (!ids.length) return;
+  const r = await fetch(`${API}/api/v1/messages`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ IDs: ids }),
+  });
+  if (!r.ok) throw new Error(`mailpit kimlikle silme ${r.status}`);
+}
+
+/**
+ * `to` adresine en az `min` ileti gelene (ve `settleMs` boyunca yeni gelmeyene) kadar bekler; ayrıntılarıyla döndürür.
+ * `filter` verilirse yalnız süzgeçten geçen ayrıntılar sayılır (ör. ortak yönetici adresinde bu testin siparişi).
+ *
+ * @param {string} to
+ * @param {{min?: number, timeoutMs?: number, settleMs?: number, filter?: (msg: Record<string, any>) => boolean}} [opts]
+ * @return {Promise<Array<Record<string, any>>>}
+ */
+export async function waitForMessagesTo(to, opts = {}) {
+  const { min = 1, timeoutMs = 45000, settleMs = 1500, filter } = opts;
+  const end = Date.now() + timeoutMs;
+  let last = -1;
+  let stableSince = Date.now();
+  while (Date.now() < end) {
+    let details = await Promise.all((await searchTo(to)).map((m) => getMessage(m.ID)));
+    if (filter) details = details.filter(filter);
+    if (details.length !== last) {
+      last = details.length;
+      stableSince = Date.now();
+    }
+    if (details.length >= min && Date.now() - stableSince >= settleMs) return details;
+    await sleep(300);
+  }
+  throw new Error(`mailpit: ${to} için ${min} ileti beklendi, ${last} geldi`);
+}

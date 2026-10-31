@@ -26,6 +26,8 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
 const PORT = Number(process.env.WDP_LOCAL_E2E_PORT || 9064) || 9064;
+// Koşu kimliği: her koşu kendi yönetici adresini ve alıcı öneklerini üretir (paralel koşular karışmaz).
+const RUN_ID = (process.env.WDP_MAIL_RUN_ID || `r${Date.now().toString(36)}${process.pid.toString(36)}`).toLowerCase().replace(/[^a-z0-9]/g, '');
 
 /** @param {string[]} argv @param {string} name @return {string} */
 function flag(argv, name) {
@@ -62,6 +64,8 @@ async function main() {
       locale,
       thanksEmail,
       blockEmail: argv.includes('--block-email'),
+      customTemplate: argv.includes('--custom-template'),
+      adminEmail: `admin.${RUN_ID}@wdp-e2e.test`,
       onHold: argv.includes('--on-hold'),
       message: 'Allah kabul etsin, bağışınız için çok teşekkürler: çğüşiö ÇĞÜŞİÖ.',
       campaignProduct: Number(probe.products.custom.id),
@@ -74,8 +78,9 @@ async function main() {
   const server = await startPhpServer({ wpDir, port: PORT });
   let status;
   try {
-    fs.rmSync(path.join(ROOT, 'test-results'), { recursive: true, force: true });
-    const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', flag(argv, '--spec') || 'specs/mail.spec'];
+    const outDir = path.join(ROOT, `test-results/mail-${RUN_ID}`);
+    fs.rmSync(outDir, { recursive: true, force: true });
+    const args = ['playwright', 'test', '-c', 'tests/e2e/playwright.config.mjs', flag(argv, '--spec') || 'specs/mail.spec', '--output', outDir];
     const project = flag(argv, '--project');
     if (project) args.push('--project', project);
     const r = spawnSync('npx', args, {
@@ -90,6 +95,8 @@ async function main() {
         WDP_MAIL_LOCALE: locale,
         WDP_MAIL_BLOCKEMAIL: argv.includes('--block-email') ? '1' : '0',
         WDP_MAIL_ONHOLD: argv.includes('--on-hold') ? '1' : '0',
+        WDP_MAIL_RUN_ID: RUN_ID,
+        WDP_MAIL_CUSTOMTPL: argv.includes('--custom-template') ? '1' : '0',
         WDP_MAIL_THANKS: thanksEmail ? '1' : '0',
         WDP_EXP_STORE: JSON.stringify(store),
         WDP_LOCAL_WP_DIR: wpDir,
@@ -98,7 +105,7 @@ async function main() {
       },
     });
     status = r.status ?? 1;
-    if (status === 0) fs.rmSync(path.join(ROOT, 'test-results'), { recursive: true, force: true });
+    if (status === 0) fs.rmSync(outDir, { recursive: true, force: true });
   } finally {
     await server.stop();
     await mailpit.stop();

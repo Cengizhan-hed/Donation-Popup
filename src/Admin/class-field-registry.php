@@ -490,7 +490,7 @@ final class Field_Registry {
 			'page'    => Admin_Bootstrap::SLUG_CHECKOUT,
 			'section' => 'thanks',
 			'label'   => __( 'Thank-you in donor e-mails', 'woo-donation-popup' ),
-			'help'    => __( 'Adds a short thank-you above the order table in the "Processing" and "Completed" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Sent only for donations whose payment has been received: it is not added to the "On hold" e-mail (for example while a bank transfer is awaited), and never to e-mails sent to you. Works even when the Thank-you screen module is off.', 'woo-donation-popup' ),
+			'help'    => __( 'Adds a short thank-you above the order table in the "Processing" and "Completed" e-mails donors receive. It uses the thank-you message above, and for a campaign one line with the amount raised and the goal. Sent only for donations whose payment has been received: it is not added to the "On hold" e-mail (for example while a bank transfer is awaited), and never to e-mails sent to you. Works even when the Thank-you screen module is off. It looks the same in the classic and block e-mail editor and uses the colors from WooCommerce → Settings → Emails.', 'woo-donation-popup' ),
 			'type'    => 'switch',
 		);
 		$f['thanks.celebrate'] = array(

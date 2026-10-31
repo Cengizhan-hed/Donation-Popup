@@ -9,16 +9,25 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { test, expect } from '@playwright/test';
 import { completeLocalCheckout } from '../helpers/place-order.mjs';
-import { clearMailbox, waitForMessages, recipients, htmlViewUrl } from '../helpers/mailpit.mjs';
+import { clearMailboxTo, deleteByIds, waitForMessagesTo, searchTo, recipients, htmlViewUrl } from '../helpers/mailpit.mjs';
 
 const PRODUCT = process.env.WDP_EXP_PRODUCT_ID || '0';
 const CHECKOUT = process.env.WDP_EXP_CHECKOUT === 'blocks' ? 'blocks' : 'classic';
 const STORE = JSON.parse(process.env.WDP_EXP_STORE || '{}');
 const WP_DIR = process.env.WDP_LOCAL_WP_DIR || '';
 const CHECKOUT_URL = /checkout|odeme|ödeme/i;
-const DONOR = { name: 'Çağlar Şükrü Öztürk İğdır', phone: '+44 7700 900123', note: 'Ğüşiöç ĞÜŞİÖÇ notu', email: 'caglar.sukru@wdp-e2e.test' };
+const RUN_ID = process.env.WDP_MAIL_RUN_ID || 'local';
+const ADMIN_EMAIL = `admin.${RUN_ID}@wdp-e2e.test`;
+const CUSTOM_TPL = process.env.WDP_MAIL_CUSTOMTPL === '1';
+/** Test yalıtımı: alıcı adresi koşu kimliği + test adı + cihaz ile benzersiz; yalnız bu adrese bakılır. */
+const donorFor = (testTitle, device) => {
+  const slug = `${testTitle}`.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 12);
+  return { name: 'Çağlar Şükrü Öztürk İğdır', phone: '+44 7700 900123', note: 'Ğüşiöç ĞÜŞİÖÇ notu', email: `donor.${RUN_ID}.${slug}.${String(device).replace(/[^a-z0-9]/gi, '').toLowerCase()}@wdp-e2e.test` };
+};
+/** Satır içi stil karşılaştırması: Woo CSS satır içine alıcı boşlukları değiştirebilir. */
+const squash = (s) => String(s).replace(/\s*([:;,])\s*/g, '$1').replace(/;"/g, '"');
 const AMOUNT = '125';
-const SHOT_DIR = path.resolve(process.cwd(), process.env.WDP_MAIL_SHOT_DIR || 'build/handoff/RAPOR-124-email');
+const SHOT_DIR = path.resolve(process.cwd(), process.env.WDP_MAIL_SHOT_DIR || 'build/handoff/RAPOR-124-email3');
 
 const LOCALE = process.env.WDP_MAIL_LOCALE === 'tr_TR' ? 'tr_TR' : 'en_US';
 const BLOCK_EMAIL = process.env.WDP_MAIL_BLOCKEMAIL === '1';
@@ -53,7 +62,7 @@ function assertLocal(baseURL) {
 }
 
 /** @param {import('@playwright/test').Page} page */
-async function donate(page) {
+async function donate(page, DONOR) {
   await page.goto(`/?dp_e6_test=form&dp_product=${PRODUCT}`);
   await expect(page.locator('[data-dp-form]')).toBeVisible({ timeout: 20000 });
   await page.locator('input[name="amount"]').fill(AMOUNT);
@@ -84,16 +93,21 @@ test.describe('e-posta içeriği ve görünümü (Mailpit)', () => {
   test('sipariş: yönetici + müşteri e-postası, Türkçe karakter, tutar, kırık içerik yok', async ({ page, baseURL, browser }, info) => {
     test.setTimeout(240000);
     assertLocal(baseURL);
-    await clearMailbox();
-    const orderId = await donate(page);
-    const messages = await waitForMessages({ min: 2, timeoutMs: 45000 });
-
-    const toDonor = messages.filter((m) => recipients(m).includes(DONOR.email));
-    const toAdmin = messages.filter((m) => !recipients(m).includes(DONOR.email));
+    const startedAt = new Date().toISOString();
+    const DONOR = donorFor(info.title, info.project.name);
+    // Yalıtım: yalnız kendi adresimizin eski iletileri silinir; ortak kutuya dokunulmaz.
+    await clearMailboxTo(DONOR.email);
+    const orderId = await donate(page, DONOR);
+    // Yalnız bu teste gelenler: müşteri adresi + (koşuya özgü yönetici adresinde bu bağışçının siparişi).
+    const toDonor = await waitForMessagesTo(DONOR.email, { min: 1 });
+    const toAdmin = await waitForMessagesTo(ADMIN_EMAIL, { min: 1, filter: (m) => String(m.Text || '').includes(DONOR.email) });
+    const messages = [...toDonor, ...toAdmin];
+    expect((await searchTo(DONOR.email)).length, 'müşteri adresinde yalnız kendi iletilerimiz').toBe(toDonor.length);
     expect(toDonor.length, 'müşteriye e-posta').toBeGreaterThanOrEqual(1);
     expect(toAdmin.length, 'yöneticiye e-posta').toBeGreaterThanOrEqual(1);
 
     const report = [];
+    const themedSections = [];
     for (const m of messages) {
       const html = String(m.HTML || '');
       const text = String(m.Text || '');
@@ -139,11 +153,17 @@ test.describe('e-posta içeriği ve görünümü (Mailpit)', () => {
         expect(thanksAt, 'müşteri: teşekkür metni').toBeGreaterThan(-1);
         expect(html, 'müşteri HTML: teşekkür metni').toContain(THANKS_MESSAGE);
         expect(thanksAt, 'teşekkür sipariş tablosundan önce').toBeLessThan(text.indexOf(L('type')));
-        // Eklenti stil basmaz: düz <p>; stili WooCommerce e-posta CSS'i satır içine alır (gövde paragraflarıyla aynı).
-        // Klasik şablon: Woo CSS'i paragrafa satır içi stil verir. Blok e-posta düzenleyicisi açıkken içerik blok yerleşimine girer: düz <p>.
-        const paragraph = BLOCK_EMAIL ? `<p>${THANKS_MESSAGE.slice(0, 12)}` : `<p style="margin: 0 0 16px;">${THANKS_MESSAGE.slice(0, 12)}`;
-        expect(html, 'teşekkür düz paragraf').toContain(paragraph);
+        // 12.4 email3: bölüm e-posta uyumlu tablo + SATIR İÇİ stil; klasik ve blok düzenleyicide AYNI yapı/renk/boşluk.
+        const at = html.indexOf(THANKS_MESSAGE.slice(0, 12));
+        const start = html.lastIndexOf('<table', at);
+        const section = squash(html.slice(start, html.indexOf('</table>', at) + 8));
+        expect(section, 'teşekkür: tablo yapısı').toMatch(/^<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 24px;border-collapse:collapse"><tr><td style="padding:16px 20px;background-color:#[0-9a-f]{6};border-left:4px solid #[0-9a-f]{6};color:#[0-9a-f]{6};font-family:inherit;font-size:15px;line-height:1.5;text-align:left"[^>]*><p style="margin:0 0 12px;padding:0;color:#[0-9a-f]{6};font-family:inherit;font-size:15px;line-height:1.5">/);
+        expect(section, 'teşekkür: dış CSS/görsel yok').not.toMatch(/<img|<link|<style/);
+        expect(section, 'teşekkür: kampanya satırı aynı bölümde').toMatch(/5[.,]000/);
+        themedSections.push(section.replace(/Allah[^<]*/, '{M}').replace(/WDP E2E[^<]*/, '{C}'));
         if (BLOCK_EMAIL) expect(html, 'blok düzenleyici: yerleşim bloğu içinde').toContain('email-block-layout');
+        if (BLOCK_EMAIL && CUSTOM_TPL) expect(html, 'özel şablon: yayımlanmış şablon işlenmiş').toContain('WDP-CUSTOM-TEMPLATE-MARK');
+        else expect(html, 'varsayılan şablonda özel işaret yok').not.toContain('WDP-CUSTOM-TEMPLATE-MARK');
         expect(html, 'teşekkür: görsel yok').not.toMatch(/<img[^>]*>\s*<p[^>]*>Allah/);
         expect(text, 'kampanya satırı: hedef').toMatch(/5[.,]000/);
         expect(text, 'kampanya satırı (dil)').toMatch(LOCALE === 'tr_TR' ? /hedef|toplanan/i : /raised of/);
@@ -181,6 +201,9 @@ test.describe('e-posta içeriği ve görünümü (Mailpit)', () => {
       paths.push(file);
     }
     await ctx.close();
-    fs.writeFileSync(path.join(SHOT_DIR, `mail-${CHECKOUT}-${info.project.name}.json`), JSON.stringify({ report, paths }, null, 2));
+    fs.writeFileSync(path.join(SHOT_DIR, `mail-${CHECKOUT}-${info.project.name}.json`), JSON.stringify({ runId: RUN_ID, donor: DONOR.email, startedAt, endedAt: new Date().toISOString(), report, paths, themedSections }, null, 2));
+    // Yalnız kendi iletilerimizi sil (kimlik + adres araması); ortak kutuya dokunulmaz.
+    await deleteByIds(messages.map((m) => m.ID));
+    await clearMailboxTo(DONOR.email);
   });
 });
