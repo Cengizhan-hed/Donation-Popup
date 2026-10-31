@@ -1,15 +1,14 @@
 /**
- * Compact bağış kartı denetleyicisi: adımlar aynı grid hücresinde; yükseklik CSS ile sabittir, burada ölçüm YOKTUR. Pasif
- * adımlar `inert` + `aria-hidden`. Sepetli akış 2 adım (tutar → bilgiler; bilgiler adımının düğmesi sepete ekleyip üst
- * pencerede ödeme sayfasını açar). Doğrudan akış 3 adım (tutar → bilgiler → ödeme) + teşekkür: order-pay sayfası mevcut
- * katmanda (popup / alttan panel) aynı kökenli çerçevede.
+ * Compact bağış kartı denetleyicisi (slider/hero): adımlar aynı grid hücresinde; yükseklik CSS ile sabittir, burada ölçüm
+ * YOKTUR. Pasif adımlar `inert` + `aria-hidden`. Ödeme davranışı HER ZAMAN sepetlidir: son adımın düğmesi bağışı sepete ekler
+ * ve üst pencerede WooCommerce ödeme sayfasını açar (doğrudan bağış, ödeme adımı ve çerçeve bu düzende yoktur). Serbest tutar
+ * 2 adım (tutar → ad/telefon), sabit fiyat tek ekran. Toplam yalnız ana düğmede ("Ödemeye geç · £X") anında güncellenir.
  */
 import { addToCart, phoneValue } from '../experiences/form.mjs';
 import { phoneBad, phoneBind } from '../ui2-shared/phone-lazy.mjs';
 import { formatTotal } from '../experiences/store.mjs';
-import { createLayer } from '../experiences/layer.mjs';
 import { REVEAL_GAP_PX, TEXT_FIELD } from '../experiences/keyboard.mjs';
-import { ISOLATED_EVENTS, STEPS, announcement, backStep, countedStep, effectLine, embedUrl, evaluateAmount, fill, frameState, horizontalWheel } from './logic.mjs';
+import { ISOLATED_EVENTS, STEPS, announcement, effectLine, evaluateAmount, fill, horizontalWheel, moveStep } from './logic.mjs';
 
 /**
  * Kart olaylarını kaydırıcılardan yalıtır (kütüphaneye özel kod yok): olaylar kart kökünde durur; yatay tekerlek sayfayı/
@@ -75,8 +74,7 @@ function readConfig(ds) {
   }
   return {
     fixed: ds.kind === 'fixed',
-    direct: ds.direct === '1',
-    total: Number(ds.steps) || (ds.direct === '1' ? 3 : 2) - (ds.kind === 'fixed' ? 1 : 0),
+    total: Number(ds.steps) || (ds.kind === 'fixed' ? 1 : 2),
     decimals,
     currency: { decimals, thousandSeparator: ds.thousandSep ?? ',', decimalSeparator: ds.decimalSep ?? '.' },
     locale: document.documentElement.lang || undefined,
@@ -85,28 +83,6 @@ function readConfig(ds) {
     qtyMax: Math.max(1, Number(ds.qtyMax || 1)),
     tiers: Array.isArray(tiers) ? tiers : [],
   };
-}
-
-/**
- * Çerçevedeki belgenin durumu (aynı köken); okunamazsa null.
- *
- * @param {HTMLIFrameElement} frame Çerçeve.
- * @return {{bodyClasses: string[], hasReceived: boolean, blank: boolean}|null} Gözlem.
- */
-function probeFrame(frame) {
-  try {
-    const doc = frame.contentDocument;
-    if (!doc || !doc.body) {
-      return null;
-    }
-    return {
-      bodyClasses: Array.from(doc.body.classList),
-      hasReceived: Boolean(doc.querySelector('.woocommerce-thankyou-order-received')),
-      blank: frame.contentWindow.location.href === 'about:blank',
-    };
-  } catch {
-    return null;
-  }
 }
 
 /**
@@ -119,14 +95,13 @@ export function createCompact(root) {
     return null;
   }
   const ds = form.dataset;
-  const { fixed, direct, total, decimals, currency, locale, symbol, unit, qtyMax, tiers } = readConfig(ds);
-  // Sepetli akışta ödeme/teşekkür adımı çizilmez (null).
+  const { fixed, total, decimals, currency, locale, symbol, unit, qtyMax, tiers } = readConfig(ds);
+  // Sabit fiyatta yalnız tek ekran vardır ("amount"); serbest tutarda ikinci bölüm "details" (null olabilir).
   const sections = STEPS.map((id) => form.querySelector(`[data-dp-cstep="${id}"]`));
-  // Bilgi alanlarının bulunduğu adım: serbest tutarda "bilgiler" (1); sabit fiyatta tek ekran (0, ayrı tutar adımı yok).
+  // Ad/telefon alanlarının bulunduğu adım: serbest tutarda "details" (1); sabit fiyatta tek ekran (0).
   const detailsAt = fixed ? 0 : 1;
   const effect = form.querySelector('[data-dp-ceffect]');
-  const totalOut = form.querySelector('[data-dp-ctotal]');
-  const amountNodes = Array.from(form.querySelectorAll('[data-dp-camount], [data-dp-crecap-amount]'));
+  const amountNodes = Array.from(form.querySelectorAll('[data-dp-camount]'));
   /**
    * Metni yalnız değiştiyse yazar (gereksiz DOM değişikliği ve yeniden yerleşim yok).
    *
@@ -148,9 +123,8 @@ export function createCompact(root) {
   const nextLabel = form.querySelector('[data-dp-cnext-label]');
   const payButton = form.querySelector('[data-dp-cpay]');
   const payLabel = form.querySelector('[data-dp-cpay-label]');
-  const paySection = sections[2];
   const payDefault = payLabel ? payLabel.textContent : '';
-  const state = { step: 0, qty: 1, quick: null, busy: false, payUrl: '', round: 0, value: null };
+  const state = { step: 0, qty: 1, quick: null, busy: false, value: null };
 
   // WooCommerce ayırıcılarıyla; tam sayıda ondalık yok.
   const money = (value) => formatTotal(value, symbol, decimals, locale, { thousands: currency.thousandSeparator, decimal: currency.decimalSeparator });
@@ -174,10 +148,6 @@ export function createCompact(root) {
     if (node) {
       node.textContent = message || '';
       node.classList.toggle('is-on', Boolean(message));
-      // Hata, güven satırının yerini alır (aynı ayrılmış satır; yükseklik değişmez).
-      if (node.parentElement) {
-        node.parentElement.classList.toggle('has-err', Boolean(message));
-      }
     }
     section.querySelectorAll('[aria-invalid="true"]').forEach((el) => el.removeAttribute('aria-invalid'));
     fields.forEach((el) => el.setAttribute('aria-invalid', 'true'));
@@ -189,18 +159,16 @@ export function createCompact(root) {
       nextButton.setAttribute('aria-disabled', pending ? 'true' : 'false');
       nextButton.classList.toggle('is-pending', pending);
     }
-    setText(nextLabel, (pending && !fixed ? ds.labelChoose : ds.labelNext) || '');
+    setText(nextLabel, (pending ? ds.labelChoose : ds.labelNext) || '');
   };
 
-  /** Seçilen tutar: üst bölgeler, özet, ödeme düğmesi. */
+  /** Seçilen tutar: üst bölge, ödeme düğmesindeki toplam (adet/tutar değişince anında), etki satırı. */
   const paintAmount = () => {
     const shown = state.value !== null ? money(state.value) : '';
     amountNodes.forEach((node) => setText(node, shown));
     if (payLabel && payButton) {
       setText(payLabel, shown !== '' ? fill(payButton.dataset.label || '', [shown]) : payDefault);
     }
-    // Yalnız değişince yazılır (ilk çizimde sunucu metni aynıdır: DOM/yerleşim işi yok).
-    setText(totalOut, shown !== '' ? shown : '—');
     if (tiers.length) {
       setText(effect, effectLine(state.value, tiers, locale));
     }
@@ -218,19 +186,6 @@ export function createCompact(root) {
     }
   };
 
-  const paint = () => {
-    const { value, error } = amount();
-    state.value = error ? null : value;
-    paintNext(error !== '');
-    paintAmount();
-    paintQty();
-    // İlk çizimde değil, bağışçı seçtiğinde (önerilen tutar kendiliğinden önizlenmez).
-    // (Kart tembel kurulur: `data-dp-ready` yüklemede yazılır; ilk çizim ayrımı yerel bayrakla.)
-    if (state.mounted && state.step < 3) {
-      emitAmount(state.value || 0);
-    }
-  };
-
   const paintQty = () => {
     if (qtyIn) {
       qtyIn.value = String(state.qty);
@@ -244,8 +199,21 @@ export function createCompact(root) {
     });
   };
 
+  const paint = () => {
+    const { value, error } = amount();
+    state.value = error ? null : value;
+    paintNext(error !== '');
+    paintAmount();
+    paintQty();
+    // İlk çizimde değil, bağışçı seçtiğinde (önerilen tutar kendiliğinden önizlenmez).
+    // (Kart tembel kurulur: `data-dp-ready` yüklemede yazılır; ilk çizim ayrımı yerel bayrakla.)
+    if (state.mounted) {
+      emitAmount(state.value || 0);
+    }
+  };
+
   /**
-   * Adımı gösterir: diğerleri `inert` + `aria-hidden` (görünmez ama yer kaplar: yükseklik sabit). Odak yeni adımın başlığına
+   * Adımı gösterir: diğeri `inert` + `aria-hidden` (görünmez ama yer kaplar: yükseklik sabit). Odak yeni adımın başlığına
    * (mobilde klavye kendiliğinden açılmaz), ekran okuyucuya kısa duyuru.
    *
    * @param {number}  index Adım.
@@ -285,7 +253,7 @@ export function createCompact(root) {
       }
     }
     if (live && section && focus) {
-      live.textContent = announcement(ds.msgStep || '', countedStep(fixed, index), section.dataset.stepName || '', total);
+      live.textContent = announcement(ds.msgStep || '', index, section.dataset.stepName || '', total);
     }
   };
 
@@ -341,7 +309,7 @@ export function createCompact(root) {
     });
   });
 
-  // ---- Bilgiler adımı ----
+  // ---- Ad/telefon alanları ----
   form.querySelectorAll('[data-dp-dial]').forEach((select) => {
     const label = select.parentElement ? select.parentElement.querySelector('[data-dp-dial-label]') : null;
     select.addEventListener('change', () => {
@@ -381,17 +349,13 @@ export function createCompact(root) {
       if (input.type === 'checkbox' || input.disabled) {
         return false;
       }
-      const value = input.value.trim();
-      if (input.required && value === '') {
-        return true;
-      }
-      return off.includes(input) || value !== '' && input.type === 'email' && input.validity && input.validity.typeMismatch;
+      return (input.required && input.value.trim() === '') || off.includes(input);
     });
     if (!bad.length) {
       return true;
     }
     const first = bad[0];
-    const message = first.value.trim() === '' ? first.dataset.requiredMsg || ds.msgInvalid : first.dataset.msgShort || ds.msgEmail || ds.msgInvalid;
+    const message = first.value.trim() === '' ? first.dataset.requiredMsg || ds.msgInvalid : first.dataset.msgShort || ds.msgInvalid;
     setError(detailsAt, message || '', bad);
     first.focus();
     return false;
@@ -431,7 +395,7 @@ export function createCompact(root) {
   const serverErrors = (errors) => {
     const names = Object.keys(errors);
     const amountSide = names.find((name) => ['amount', 'quantity'].includes(name));
-    if (amountSide) {
+    if (amountSide && !fixed) {
       show(0);
       setError(0, errors[amountSide], amountIn ? [amountIn] : []);
       return;
@@ -441,123 +405,26 @@ export function createCompact(root) {
     setError(detailsAt, errors[names[0]] || ds.msgInvalid || '', fields);
   };
 
-  // ---- Ödeme adımı ----
-  let layer = null;
-  let frame = null;
-  let body = null;
-  let alt = null;
-
-  const onFrameLoad = () => {
-    const probe = probeFrame(frame);
-    if (probe && probe.blank) {
-      return;
-    }
-    if (body) {
-      body.removeAttribute('data-loading');
-    }
-    const status = frameState(probe);
-    if (alt) {
-      alt.classList.toggle('is-alert', status === 'unknown');
-    }
-    if (status === 'paid') {
-      paid();
-    }
-  };
-
-  const ensureFrame = () => {
-    if (frame || !layer || !layer.build()) {
-      return Boolean(frame);
-    }
-    frame = paySection.querySelector('[data-dp-cframe]');
-    body = paySection.querySelector('[data-dp-cpaybody]');
-    alt = paySection.querySelector('[data-dp-cpayalt]');
-    if (frame) {
-      frame.addEventListener('load', onFrameLoad);
-    }
-    return Boolean(frame);
-  };
-
-  const loadFrame = (url) => {
-    const target = embedUrl(url, window.location.origin);
-    if (!target || !ensureFrame()) {
-      // Ödeme adresi başka kökende ya da katman yok: üst pencerede standart ödeme sayfası.
-      window.location.assign(url);
-      return;
-    }
-    if (alt) {
-      alt.href = url;
-      alt.classList.remove('is-off');
-    }
-    if (body) {
-      body.setAttribute('data-loading', '1');
-    }
-    frame.src = target;
-  };
-
-  function paid() {
-    state.round += 1;
-    state.payUrl = '';
-    const thanks = form.querySelector('[data-dp-cthanks]');
-    if (thanks) {
-      thanks.textContent = fill(thanks.dataset.text || '', [state.value !== null ? money(state.value) : '', thanks.dataset.title || '']);
-    }
-    const finish = () => {
-      if (frame) {
-        frame.src = 'about:blank';
-      }
-      if (body) {
-        body.setAttribute('data-loading', '1');
-      }
-      if (alt) {
-        alt.classList.add('is-off');
-      }
-      show(3);
-      if (live && ds.msgPaid) {
-        live.textContent = ds.msgPaid;
-      }
-      refreshCampaign();
-    };
-    if (layer && layer.isOpen()) {
-      root.addEventListener('dp:closed', finish, { once: true });
-      layer.close();
-    } else {
-      finish();
-    }
-  }
-
-  const closeLayer = () => {
-    if (layer) {
-      layer.close();
-    }
-  };
-
+  // ---- Sepete ekle ve ödeme sayfasına geç ----
   /**
-   * Sunucu yanıtı: alan hataları adımına döner; doğrudan bağışta ödeme sayfası katmandaki çerçevede, sepet akışında üst
-   * pencerede açılır.
+   * Sunucu yanıtı: alan hataları kendi adımına döner; başarıda üst pencerede WooCommerce ödeme sayfası açılır.
    *
    * @param {{ok: boolean, errors?: Record<string, string>, checkoutUrl?: string, rate?: boolean}} outcome Sonuç.
    */
   const handleOutcome = (outcome) => {
     if (outcome.errors) {
-      closeLayer();
       serverErrors(outcome.errors);
       return;
     }
-    const target = outcome.ok ? outcome.checkoutUrl || (direct ? '' : root.dataset.dpCheckout) : '';
+    const target = outcome.ok ? outcome.checkoutUrl || root.dataset.dpCheckout : '';
     if (!target) {
       throw new Error(outcome.rate ? 'rate' : 'failed');
     }
-    if (!direct) {
-      window.location.assign(target);
-      return;
-    }
-    state.payUrl = target;
-    loadFrame(target);
+    window.location.assign(target);
   };
 
   const pay = async () => {
-    // Katman aynı siparişin ödeme sayfasıyla yeniden açıldıysa yeni istek yok.
-    if (state.busy || (direct && state.payUrl) || !payButton) {
+    if (state.busy || !payButton) {
       return;
     }
     const at = state.step;
@@ -565,44 +432,14 @@ export function createCompact(root) {
     payButton.classList.add('is-loading');
     setError(at, '');
     try {
-      handleOutcome(await addToCart(root, root.dataset.dpProduct, values(), direct, state.round ? `#${state.round}` : ''));
+      handleOutcome(await addToCart(root, root.dataset.dpProduct, values(), false, ''));
     } catch (error) {
-      closeLayer();
       setError(state.step, (error && error.message === 'rate' ? ds.msgRate : ds.msgFailed) || '');
     } finally {
       state.busy = false;
       payButton.classList.remove('is-loading');
     }
   };
-
-  if (direct && paySection && payButton) {
-    // Katman (popup / mobilde alttan panel) ödeme düğmesine bağlanır; açılış anında, sipariş isteği beklenmeden.
-    payButton.setAttribute('data-dp-open', '');
-    layer = createLayer(paySection);
-  }
-
-  /** Ödeme adımı özeti: ad, e-posta (yazıldıysa), vergi indirimi beyanı (verildiyse). */
-  function fillRecap() {
-    const text = (name) => {
-      const input = form.querySelector(`input[name="${name}"]`);
-      return input ? input.value.trim() : '';
-    };
-    const name = form.querySelector('[data-dp-crecap-name]');
-    if (name) {
-      name.textContent = text('donation_full_name');
-    }
-    const email = form.querySelector('[data-dp-crecap-email]');
-    const emailRow = form.querySelector('[data-dp-crecap-email-row]');
-    if (email && emailRow) {
-      email.textContent = text('donation_email');
-      emailRow.hidden = email.textContent === '';
-    }
-    const taxRow = form.querySelector('[data-dp-crecap-tax-row]');
-    const tax = form.querySelector('[data-dp-ctax]');
-    if (taxRow) {
-      taxRow.hidden = !(tax && tax.checked);
-    }
-  }
 
   // ---- Vergi indirimi beyanının tam metni: kart içi katman (yükseklik değişmez); Esc / "Tamam" kapatır, odak geri döner ----
   const taxMore = form.querySelector('[data-dp-ctax-more]');
@@ -647,17 +484,13 @@ export function createCompact(root) {
   form.querySelectorAll('[data-dp-cback]').forEach((button) => {
     button.addEventListener('click', () => {
       setError(state.step, '');
-      show(backStep(fixed, state.step));
+      show(moveStep(state.step, -1));
     });
   });
-  const again = form.querySelector('[data-dp-cagain]');
-  if (again) {
-    again.addEventListener('click', () => reset(true));
-  }
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    // Sabit fiyatta tutar adımı yok: ilk ekran doğrudan bilgiler adımıdır.
+    // Sabit fiyatta tutar adımı yok: ilk ekran doğrudan ad/telefon ekranıdır.
     if (state.step === 0 && !fixed) {
       const { error } = amount();
       if (error) {
@@ -673,38 +506,13 @@ export function createCompact(root) {
       show(1);
       return;
     }
-    if (state.step === detailsAt) {
-      if (!validateDetails()) {
-        return;
-      }
+    if (validateDetails()) {
       setError(detailsAt, '');
-      if (!direct) {
-        // Sepetli akışın son adımı: sepete ekler, ödeme sayfasına geçer.
-        pay();
-        return;
-      }
-      fillRecap();
-      // Sürüm değişince (tutar/bilgi) eski ödeme sayfası kullanılmaz; aynı içerik aynı siparişi bulur (sunucu).
-      state.payUrl = '';
-      show(2);
-      return;
-    }
-    if (state.step === 2) {
       pay();
     }
   });
 
-  // ---- Kampanya çubuğu: teşekkürde ortak canlı çubuk tek hafif istekle gerçek toplamı alır; önizleme dolumla birleşir ----
-  function refreshCampaign() {
-    const paidAmount = state.value || 0;
-    emitAmount(0);
-    root.dispatchEvent(
-      new CustomEvent('donation-panel:progress-refresh', { bubbles: true, detail: { productId: Number(root.dataset.dpProduct), amount: paidAmount } })
-    );
-  }
-
-  // ---- Ekran klavyesi (124-kbd): odaktaki alanın (satırı) alt kenarı ile klavyenin üst kenarı arasında ≥12 px boşluk. Kart
-  // sayfada akışta durur, sabit alt çubuğu yoktur (gizlenecek bölüm yok; yükseklik/yerleşim değişmez); yalnız sayfa kaydırılır. ----
+  // ---- Ekran klavyesi (124-kbd): kart akışta durur, sabit alt çubuğu yoktur; yalnız sayfa kaydırılır ----
   bindKeyboardGap(form);
 
   // ---- Kaydırıcı uyumu ----
@@ -715,7 +523,7 @@ export function createCompact(root) {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           seen = true;
-        } else if (seen && state.step > 0 && !state.busy && !(layer && layer.isOpen())) {
+        } else if (seen && state.step > 0 && !state.busy) {
           reset(false);
         }
       });

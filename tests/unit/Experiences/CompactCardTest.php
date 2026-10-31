@@ -1,7 +1,8 @@
 <?php
 /**
- * 122-compact: compact bağış kartı — ayar sınırları, hızlı tutar seçimi, görünüm verisi, şablon (4 adım tek grid, pasifler
- * inert/aria-hidden, tutar seçili gelmez), kısa kod/blok/Elementor `layout` eşlemesi, order-pay gömülü görünüm bayrağı.
+ * Compact bağış kartı (12.4: yalnız sepetli, sade) — ayar sınırları, hızlı tutar seçimi, görünüm verisi, şablon (serbest tutar
+ * 2 adım tek grid, sabit fiyat tek ekran, pasifler inert/aria-hidden, tutar seçili gelmez; güven satırı, toplam satırı, e-posta
+ * alanı, ödeme adımı ve çerçeve yok; doğrudan bağış ayarı uygulanmaz), kısa kod/blok/Elementor `layout` eşlemesi.
  *
  * @package DonationPanel
  */
@@ -14,14 +15,12 @@ use DonationPanel\Frontend\Template_Loader;
 use DonationPanel\Modules\EntryPoints\Elementor\Donation_Form_Widget;
 use DonationPanel\Modules\Experiences\Compact_Card;
 use DonationPanel\Modules\Experiences\Form_Context;
-use DonationPanel\WooCommerce\Direct\Pay_Embed;
 use PHPUnit\Framework\TestCase;
 
 final class CompactCardTest extends TestCase {
 
 	protected function setUp(): void {
 		WDP_Test_State::reset();
-		unset( $_GET[ Pay_Embed::QUERY ] );
 	}
 
 	/**
@@ -86,7 +85,8 @@ final class CompactCardTest extends TestCase {
 		$this->assertSame( array( 10.0, 25.0, 100.0 ), $view['quick'] );
 		$this->assertSame( 100.0, $view['recommended'] );
 		$this->assertSame( array(), $view['campaign'] );
-		$this->assertSame( array( 'donation_full_name', 'donation_email', 'donation_phone' ), array_column( $view['fields'], 'name' ) );
+		// E-posta alanı kartta yok (e-posta WooCommerce ödeme sayfasında alınır), ayar açık olsa da.
+		$this->assertSame( array( 'donation_full_name', 'donation_phone' ), array_column( $view['fields'], 'name' ) );
 		$this->assertFalse( $view['tax_relief'] );
 	}
 
@@ -155,23 +155,46 @@ final class CompactCardTest extends TestCase {
 		$this->assertSame( 1, substr_count( $html, 'data-dp-cpay ' ) );
 		$this->assertMatchesRegularExpression( '#data-dp-cpay data-label="[^"]*%s[^"]*"#', $html );
 		$this->assertStringNotContainsString( 'donation-panel-compact__note', $html );
-		// Güven satırı (varsayılan açık): satır içi SVG kilit, iki adımda.
-		$this->assertSame( 2, substr_count( $html, 'class="donation-panel-compact__trust"' ) );
-		$this->assertStringContainsString( 'width="14" height="14"', $html );
+		// Sade: güven satırı ("Güvenli ödeme"), "Bağışınız"/"Toplam" satırı ve e-posta alanı yok; toplam yalnız ana düğmede.
+		$this->assertStringNotContainsString( 'donation-panel-compact__trust', $html );
+		$this->assertStringNotContainsString( 'donation-panel-compact__total', $html );
+		$this->assertStringNotContainsString( 'data-dp-ctotal', $html );
+		$this->assertStringNotContainsString( 'name="donation_email"', $html );
+		$this->assertStringNotContainsString( 'autocomplete="email"', $html );
 		$this->assertStringNotContainsString( 'checked', $html );
 		$this->assertSame( 3, substr_count( $html, 'data-dp-cquick' ) );
 		$this->assertSame( 1, substr_count( $html, 'class="donation-panel-compact__rec"' ) );
 		$this->assertStringContainsString( 'inputmode="decimal"', $html );
 		$this->assertStringContainsString( 'autocomplete="name"', $html );
-		$this->assertStringContainsString( 'autocomplete="email"', $html );
 		$this->assertStringContainsString( 'autocomplete="tel"', $html );
 		$this->assertStringContainsString( 'aria-disabled="true"', $html );
 		$this->assertStringContainsString( 'aria-live="polite"', $html );
 		$this->assertStringNotContainsString( '<b>', $html, 'ürün adı kaçışlanır' );
 		$this->assertStringNotContainsString( 'nonce', strtolower( $html ) );
-		// Sepet akışında (doğrudan bağış kapalı) ödeme katmanı ve çerçeve yok.
+		// Ödeme adımı, ödeme katmanı, çerçeve ve teşekkür bölümü yok.
 		$this->assertStringNotContainsString( '<iframe', $html );
+		$this->assertStringNotContainsString( '<template', $html );
+		$this->assertStringNotContainsString( 'data-dp-cstep="thanks"', $html );
 		$this->assertStringContainsString( 'width="20" height="20"', $html );
+	}
+
+	/**
+	 * Doğrudan (sepetsiz) bağış ayarı compact düzende uygulanmaz: model doğrudan olsa da kart sepetlidir (ödeme adımı,
+	 * çerçeve, teşekkür bölümü ve `data-direct` yok; düğme sepete ekler).
+	 */
+	public function test_direct_setting_is_not_applied_to_the_compact_card(): void {
+		$model           = $this->model();
+		$model['direct'] = true;
+		$html            = $this->card()->render( $model, array( 'rest_url' => 'https://example.org/wp-json/donation-panel/v1/' ) );
+		$this->assertStringNotContainsString( 'data-direct', $html );
+		$this->assertStringNotContainsString( 'data-dp-cstep="pay"', $html );
+		$this->assertStringNotContainsString( 'data-dp-cstep="thanks"', $html );
+		$this->assertStringNotContainsString( '<template', $html );
+		$this->assertStringNotContainsString( '<iframe', $html );
+		$this->assertStringNotContainsString( 'name="donation_email"', $html );
+		$this->assertSame( 2, substr_count( $html, 'class="donation-panel-compact__step' ) );
+		$this->assertStringContainsString( 'data-steps="2"', $html );
+		$this->assertMatchesRegularExpression( '#data-dp-cpay data-label="[^"]*%s[^"]*"#', $html );
 	}
 
 	/**
@@ -199,23 +222,22 @@ final class CompactCardTest extends TestCase {
 		$this->assertStringNotContainsString( 'donation-panel-compact__count', $cart, 'tek adımda sayaç gizlenir' );
 		$this->assertStringNotContainsString( 'data-dp-cnext', $cart );
 		$this->assertStringContainsString( 'donation-panel-compact__fixed', $cart );
-		$this->assertSame( 1, substr_count( $cart, 'data-dp-ctotal' ) );
+		// Toplam yalnız ana düğmede; fiyat satırında toplam yok.
+		$this->assertStringNotContainsString( 'data-dp-ctotal', $cart );
+		$this->assertStringNotContainsString( 'name="donation_email"', $cart );
 		$this->assertStringContainsString( 'name="donation_full_name"', $cart );
 		$this->assertStringContainsString( 'autocomplete="tel"', $cart );
 		$this->assertStringContainsString( 'name="quantity" value="1"', $cart );
 		$this->assertMatchesRegularExpression( '#data-dp-cpay data-label="[^"]*%s[^"]*"><span data-dp-cpay-label>[^<]*250[^<]*</span>#', $cart );
-		$this->assertSame( 1, substr_count( $cart, 'class="donation-panel-compact__trust"' ) );
+		$this->assertStringNotContainsString( 'donation-panel-compact__trust', $cart );
 
-		// Doğrudan: iki adım (tek ekran, ödeme) + teşekkür; ödeme sayacı 2/2.
+		// Doğrudan bağış ayarı uygulanmaz: aynı tek ekran, ödeme adımı yok.
 		$direct_model           = Form_Context::from_legacy( $fixed );
 		$direct_model['direct'] = true;
 		$direct                 = $this->card()->render( $direct_model, $args );
-		$this->assertSame( 3, substr_count( $direct, 'class="donation-panel-compact__step' ) );
-		$this->assertStringContainsString( 'data-steps="2"', $direct );
-		$this->assertStringContainsString( '>1/2<', $direct );
-		$this->assertStringContainsString( '>2/2<', $direct );
-		$this->assertStringNotContainsString( '>3/', $direct );
-		$this->assertStringNotContainsString( 'data-dp-cstep="details"', $direct );
+		$this->assertSame( 1, substr_count( $direct, 'class="donation-panel-compact__step' ) );
+		$this->assertStringContainsString( 'data-steps="1"', $direct );
+		$this->assertStringNotContainsString( 'data-dp-cstep="pay"', $direct );
 
 		// Serbest tutar değişmez: ayrı "bilgiler" adımı sürer.
 		$custom = $this->card()->render( $this->model(), $args );
@@ -232,27 +254,10 @@ final class CompactCardTest extends TestCase {
 			)
 		);
 		$this->assertSame( 1, Compact_Card::view( $fixed, Compact_Card::normalize_settings( array() ) )['steps'] );
-		$fixed['direct'] = true;
-		$this->assertSame( 2, Compact_Card::view( $fixed, Compact_Card::normalize_settings( array() ) )['steps'] );
 		$this->assertSame( 2, Compact_Card::view( $this->model(), Compact_Card::normalize_settings( array() ) )['steps'] );
 	}
 
-	public function test_direct_mode_renders_payment_layer_template(): void {
-		$model           = $this->model();
-		$model['direct'] = true;
-		$html            = $this->card()->render( $model, array( 'rest_url' => 'https://example.org/wp-json/donation-panel/v1/' ) );
-		$this->assertStringContainsString( 'data-direct="1"', $html );
-		// Doğrudan akış: 3 sayılan adım + teşekkür.
-		$this->assertSame( 4, substr_count( $html, 'class="donation-panel-compact__step' ) );
-		$this->assertSame( 3, substr_count( $html, 'inert aria-hidden="true"' ) );
-		$this->assertStringContainsString( 'data-steps="3"', $html );
-		$this->assertStringContainsString( '>2/3<', $html );
-		$this->assertStringContainsString( '<template data-dp-tpl>', $html );
-		$this->assertStringContainsString( 'data-dp-cframe', $html );
-		$this->assertMatchesRegularExpression( '#<template data-dp-tpl>.*<iframe.*</template>#s', $html );
-	}
-
-	public function test_v2_campaign_amounts_trust_impact_and_tax_relief(): void {
+	public function test_v2_campaign_amounts_impact_and_tax_relief(): void {
 		// Ham tutarla biçim: tam sayıda ondalık yok (Woo biçimi), hedef "/ £X" ile aynı satırda.
 		$model             = $this->model();
 		$model['campaign'] = array(
@@ -264,10 +269,9 @@ final class CompactCardTest extends TestCase {
 		$view              = Compact_Card::view( $model, Compact_Card::normalize_settings( array() ), 0.0, 3000.0 );
 		$this->assertStringNotContainsString( ',00', $view['campaign']['raised'] . $view['campaign']['goal'] );
 		$this->assertStringContainsString( '3.000', $view['campaign']['goal'] );
-		$this->assertTrue( $view['trust'] );
 		$this->assertSame( 2, $view['steps'] );
-		$this->assertFalse( Compact_Card::normalize_settings( array( 'trust' => false ) )['trust'] );
-		$this->assertTrue( Compact_Card::normalize_settings( array( 'trust' => '1' ) )['trust'] );
+		// Eski kayıtlı `trust` anahtarı (kaldırılan güven satırı ayarı) ayar okumasını bozmaz, yok sayılır.
+		$this->assertArrayNotHasKey( 'trust', Compact_Card::normalize_settings( array( 'trust' => false ) ) );
 
 		// Etki kademeleri yalnız düz metin; seçilen tutarın ifadesi için satır yeri ayrılır.
 		$model           = $this->model();
@@ -298,10 +302,10 @@ final class CompactCardTest extends TestCase {
 		);
 		$html = $this->card()->render( $model );
 		$this->assertStringContainsString( 'data-impact="', $html );
-		$this->assertStringContainsString( 'data-dp-ceffect', $html );
+		$this->assertSame( 1, substr_count( $html, 'data-dp-ceffect' ) );
 
-		// Güven satırı kapalı: çizilmez.
-		WDP_Test_State::$options['donation_panel_settings'] = array( 'compact' => array( 'trust' => false ) );
+		// Eski kayıtlı güven satırı ayarı (kapalı ya da açık) çıktıyı etkilemez: satır hiç çizilmez.
+		WDP_Test_State::$options['donation_panel_settings'] = array( 'compact' => array( 'trust' => true ) );
 		$this->assertStringNotContainsString( 'donation-panel-compact__trust', $this->card()->render( $this->model() ) );
 	}
 
@@ -319,8 +323,7 @@ final class CompactCardTest extends TestCase {
 				'label' => 'Tax relief',
 			),
 		);
-		$model['direct'] = true;
-		$html            = $this->card()->render( $model );
+		$html = $this->card()->render( $model );
 		$this->assertStringContainsString( '<b>Boost your donation by 25% with Gift Aid</b>', $html );
 		$this->assertStringContainsString( 'data-dp-ctax-more', $html );
 		$this->assertStringContainsString( 'aria-expanded="false"', $html );
@@ -329,7 +332,7 @@ final class CompactCardTest extends TestCase {
 		// Onay etiketi yalnız ekran okuyucu metni; tek başına görünür "Yes, I make this declaration" yok.
 		$this->assertMatchesRegularExpression( '#<span class="donation-panel-sr">[^<]+</span>\s*<span class="donation-panel-compact__taxs" aria-hidden="true">#', $html );
 		$this->assertStringNotContainsString( 'donation-panel-check__t', $html );
-		$this->assertStringContainsString( 'data-dp-crecap-tax-row hidden', $html );
+		$this->assertStringNotContainsString( 'data-dp-crecap', $html );
 	}
 
 	public function test_elementor_layout_maps_to_shortcode_attribute(): void {
@@ -353,16 +356,5 @@ final class CompactCardTest extends TestCase {
 		);
 		$this->assertSame( 'wdp_donation_button', $popup_tag );
 		$this->assertArrayNotHasKey( 'layout', $popup );
-	}
-
-	public function test_pay_embed_flag_only_on_order_pay(): void {
-		$this->assertFalse( Pay_Embed::requested() );
-		$this->assertSame( '/theme/page.php', Pay_Embed::template( '/theme/page.php' ) );
-		$_GET[ Pay_Embed::QUERY ] = '1';
-		$this->assertTrue( Pay_Embed::requested() );
-		// Test ortamında order-pay sayfası değil: tema şablonu değişmez.
-		$this->assertSame( '/theme/page.php', Pay_Embed::template( '/theme/page.php' ) );
-		$_GET[ Pay_Embed::QUERY ] = 'yes';
-		$this->assertFalse( Pay_Embed::requested() );
 	}
 }

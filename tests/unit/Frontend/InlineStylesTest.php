@@ -143,12 +143,9 @@ final class InlineStylesTest extends TestCase {
 			'campaign'      => 2048,
 			// 12.3: alan parçaları + durum yalıtımı form paketinden ayrıldı (form + compact ortak; compact form paketini taşımaz).
 			'ui-fields'     => 1536,
-			// 12.4 compact1: sabit fiyat tek ekran (fiyat × adet = toplam satırı + sıkı yerleşim; 384 px'e sığar). Yüzey toplamı ≤9 KB
-			// sınırının çok altında.
-			'compact'       => 2432, // ölçülen 2422 (12.3 tavanı 2304 + 128 B)
-			// 12.3 compact v2 koşullu parçalar: yalnız beyanlı / yalnız doğrudan bağışlı kartta basılır.
+			'compact'       => 2432, // geçici; sadeleşme sonrası ölçüme göre düşürülür
+			// Koşullu parça: yalnız beyanlı kartta basılır (doğrudan bağış / ödeme adımı parçası 12.4'te kaldırıldı).
 			'compact-tax'   => 1024,
-			'compact-pay'   => 1024,
 			'list'          => 2048,
 			'donor-account' => 3072,
 			'side-cart'     => 3072,

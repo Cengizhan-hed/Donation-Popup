@@ -5,10 +5,10 @@ import { parseAmountDetailed } from '../experiences/amount.mjs';
 import { describeImpact } from '../campaign/format.mjs';
 
 /**
- * Adımlar (sıra sabit). Sepetli akışta yalnız ilk ikisi çizilir (bilgiler adımı sepete ekleyip ödemeye geçer); doğrudan
- * akışta ilk üçü sayılır, teşekkür sayaçsızdır.
+ * Adımlar (sıra sabit). Serbest tutar: tutar → ad/telefon (düğme sepete ekleyip ödeme sayfasına götürür). Sabit fiyatta tek
+ * ekran ("amount" adıyla, ad/telefon dahil) vardır.
  */
-export const STEPS = ['amount', 'details', 'pay', 'thanks'];
+export const STEPS = ['amount', 'details'];
 
 /**
  * Seçilen tutarın etki ifadesi ("2 sıcak yemek"; tutar aynı satırda ayrıca yazılır); kademe yoksa ''.
@@ -71,7 +71,7 @@ function pickAmount(input) {
 }
 
 /**
- * Gezinme sonrası adım dizini (0–3 aralığı).
+ * Gezinme sonrası adım dizini (0–1 aralığı).
  *
  * @param {number} current Mevcut dizin.
  * @param {number} delta   +1 / -1.
@@ -79,28 +79,6 @@ function pickAmount(input) {
  */
 export function moveStep(current, delta) {
   return Math.min(STEPS.length - 1, Math.max(0, (Number(current) || 0) + delta));
-}
-
-/**
- * Geri düğmesinin hedefi: sabit fiyatta bilgiler adımı yoktur (tek ekran = 0, ödeme = 2), ödemeden geri tek ekrana döner.
- *
- * @param {boolean} fixed   Sabit fiyatlı ürün.
- * @param {number}  current Mevcut dizin.
- * @return {number} Hedef dizin.
- */
-export function backStep(fixed, current) {
-  return fixed && current === 2 ? 0 : moveStep(current, -1);
-}
-
-/**
- * Sayılan adım dizini (duyuru için): sabit fiyatta ödeme ikinci adımdır (tek ekran 0, ödeme 1; teşekkür sayaçsız).
- *
- * @param {boolean} fixed Sabit fiyatlı ürün.
- * @param {number}  index Adım dizini.
- * @return {number} Sayılan dizin.
- */
-export function countedStep(fixed, index) {
-  return fixed && index === 2 ? 1 : index;
 }
 
 /**
@@ -119,12 +97,12 @@ export function fill(format, values) {
 }
 
 /**
- * Ekran okuyucu adım duyurusu ("Adım 2/3: Bilgileriniz"; sepetli akışta "Adım 2/2"); teşekkür adımı sayaçsızdır.
+ * Ekran okuyucu adım duyurusu ("Adım 2/2: Bilgileriniz").
  *
  * @param {string} format Biçim (`Step %1$d of %2$d: %3$s`).
  * @param {number} index  Adım dizini.
  * @param {string} name   Adım adı.
- * @param {number} total  Sayılan adım sayısı (sepetli 2, doğrudan 3).
+ * @param {number} total  Sayılan adım sayısı (serbest tutar 2, sabit fiyat 1).
  * @return {string} Duyuru.
  */
 export function announcement(format, index, name, total = STEPS.length - 1) {
@@ -132,40 +110,7 @@ export function announcement(format, index, name, total = STEPS.length - 1) {
 }
 
 /**
- * Ödeme adresine gömülü görünüm bayrağı ekler (aynı kökende değilse dokunmaz).
- *
- * @param {string} url    order-pay adresi.
- * @param {string} origin Sayfanın kökeni.
- * @return {string} Çerçeve adresi ('' = çerçevede açılmaz).
- */
-export function embedUrl(url, origin) {
-  try {
-    const parsed = new URL(url, origin);
-    if (parsed.origin !== origin) {
-      return '';
-    }
-    parsed.searchParams.set('donation_panel_embed', '1');
-    return parsed.toString();
-  } catch {
-    return '';
-  }
-}
-
-/**
- * Çerçevedeki belgenin durumu: teşekkür sayfası (ödeme bitti), ödeme sayfası ya da okunamıyor (başka köken/engelli).
- *
- * @param {{bodyClasses: string[]|null, hasReceived: boolean}} probe Çerçeve gözlemi (null: okunamadı).
- * @return {'paid'|'page'|'unknown'} Durum.
- */
-export function frameState(probe) {
-  if (!probe || !probe.bodyClasses) {
-    return 'unknown';
-  }
-  return probe.bodyClasses.includes('woocommerce-order-received') || probe.hasReceived ? 'paid' : 'page';
-}
-
-/**
- * Kaydırıcı uyumu: kart içinde sonuçlanan olay dışarı yayılmamalı mı. Katman (ödeme penceresi) açıkken de kart içi sayılır.
+ * Kaydırıcı uyumu: kart içinde sonuçlanan olay dışarı yayılmamalı mı.
  *
  * @param {string} type Olay türü.
  * @return {boolean} Yayılım durdurulsun mu.

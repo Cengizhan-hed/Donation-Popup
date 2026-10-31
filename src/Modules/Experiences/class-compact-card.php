@@ -1,8 +1,9 @@
 <?php
 /**
- * Compact bağış kartı (`[wdp_donation_form layout="compact"]`): slider/hero içinde yüksekliği HİÇ değişmeyen kart. Adım sayısı
- * ödeme akışına göre: sepetli 2 adım (tutar → bilgiler + "Ödemeye geç"), doğrudan 3 adım (tutar → bilgiler → ödeme) + teşekkür.
- * Form modelinden (Form_Context) türetilir; kişi verisi içermez.
+ * Compact bağış kartı (`[wdp_donation_form layout="compact"]`): slider/hero içinde yüksekliği HİÇ değişmeyen kart. Tek amacı
+ * bağışı sepete ekleyip WooCommerce ödeme sayfasına götürmektir: ödeme davranışı HER ZAMAN sepetlidir (doğrudan bağış bu
+ * düzende uygulanmaz; kartta ödeme adımı, çerçeve ve e-posta alanı yoktur). Serbest tutar 2 adım (tutar → ad/telefon +
+ * "Ödemeye geç · tutar"), sabit fiyat tek ekran. Form modelinden (Form_Context) türetilir; kişi verisi içermez.
  *
  * - Adımlar aynı CSS grid hücresinde üst üste durur; kart yüksekliği en uzun adıma eşittir (JS ölçümü yok).
  * - Tutar önceden seçilmez; "Önerilen" etiketi yalnız yöneticinin tanımladığı tutarda.
@@ -35,16 +36,14 @@ final class Compact_Card {
 	const ASSET = 'compact';
 
 	/**
-	 * Koşullu stil parçaları (yalnız CSS): vergi beyanı ve doğrudan bağış (ödeme adımı + teşekkür). Gerekmeyen kartta
-	 * basılmaz (sepetli, beyansız kart yalnız temel paketi taşır).
+	 * Koşullu stil parçası (yalnız CSS): vergi beyanı. Beyansız kart yalnız temel paketi taşır.
 	 */
 	const ASSET_TAX = 'compact-tax';
-	const ASSET_PAY = 'compact-pay';
 
 	/**
-	 * Kart alanları (bilgiler adımı; sıra: ad, e-posta, telefon).
+	 * Kart alanları (bilgiler adımı; sıra: ad, telefon). E-posta alanı yoktur: e-posta WooCommerce ödeme sayfasında alınır.
 	 */
-	const FIELDS = array( 'donation_full_name', 'donation_email', 'donation_phone' );
+	const FIELDS = array( 'donation_full_name', 'donation_phone' );
 
 	/**
 	 * Şablon yükleyici.
@@ -84,9 +83,6 @@ final class Compact_Card {
 		if ( in_array( 'tax_relief', $steps, true ) ) {
 			$out[] = self::ASSET_TAX;
 		}
-		if ( ! empty( $model['direct'] ) ) {
-			$out[] = self::ASSET_PAY;
-		}
 		return $out;
 	}
 
@@ -103,7 +99,9 @@ final class Compact_Card {
 		}
 		static $counter = 0;
 		++$counter;
-		$raw  = self::campaign_raw( $model );
+		// Ödeme davranışı bu düzende her zaman sepetlidir: ürünün/türün/genel doğrudan bağış ayarı uygulanmaz.
+		$model['direct'] = false;
+		$raw             = self::campaign_raw( $model );
 		$view = self::view( $model, self::settings(), $raw ? $raw['raised'] : null, $raw ? $raw['goal'] : null );
 		return $this->loader->render_to_string(
 			'experiences/compact.php',
@@ -125,7 +123,7 @@ final class Compact_Card {
 	/**
 	 * Kart ayarları (geçersiz değerler güvenli varsayılana düşer).
 	 *
-	 * @return array{quick: int, first_text: string, reset_hidden: bool, trust: bool}
+	 * @return array{quick: int, first_text: string, reset_hidden: bool}
 	 */
 	public static function settings() {
 		$settings = new Settings();
@@ -134,7 +132,6 @@ final class Compact_Card {
 				'quick'        => $settings->get( 'compact.quick_amounts', 3 ),
 				'first_text'   => $settings->get( 'compact.first_text', '' ),
 				'reset_hidden' => $settings->get( 'compact.reset_hidden', false ),
-				'trust'        => $settings->get( 'compact.trust', true ),
 			)
 		);
 	}
@@ -143,7 +140,7 @@ final class Compact_Card {
 	 * Ayarları sınırlar (saf; test edilebilir).
 	 *
 	 * @param array<string, mixed> $raw Ham ayarlar.
-	 * @return array{quick: int, first_text: string, reset_hidden: bool, trust: bool}
+	 * @return array{quick: int, first_text: string, reset_hidden: bool}
 	 */
 	public static function normalize_settings( array $raw ) {
 		$quick = isset( $raw['quick'] ) && is_numeric( $raw['quick'] ) ? (int) $raw['quick'] : 3;
@@ -151,8 +148,6 @@ final class Compact_Card {
 			'quick'        => min( 3, max( 0, $quick ) ),
 			'first_text'   => isset( $raw['first_text'] ) && is_scalar( $raw['first_text'] ) ? trim( sanitize_text_field( (string) $raw['first_text'] ) ) : '',
 			'reset_hidden' => ! empty( $raw['reset_hidden'] ),
-			// Güven satırı varsayılan açık; yalnız açıkça kapatılırsa gizlenir.
-			'trust'        => ! array_key_exists( 'trust', $raw ) || ( ! empty( $raw['trust'] ) && 'no' !== $raw['trust'] ),
 		);
 	}
 
@@ -250,10 +245,9 @@ final class Compact_Card {
 			'fields'       => $ordered,
 			'tax_relief'   => in_array( 'tax_relief', $step_ids, true ),
 			'reset_hidden' => ! empty( $settings['reset_hidden'] ),
-			'trust'        => ! isset( $settings['trust'] ) || ! empty( $settings['trust'] ),
-			// Adım göstergesi gerçek sayıyı gösterir: sepetli 2 (tutar, bilgiler), doğrudan 3 (tutar, bilgiler, ödeme).
-			// Sabit fiyatta tutar adımı yok (fiyat × adet + bilgiler tek ekran): sepetli 1, doğrudan 2 (ekran, ödeme).
-			'steps'        => ( ! empty( $model['direct'] ) ? 3 : 2 ) - ( $fixed ? 1 : 0 ),
+			// Adım göstergesi gerçek sayıyı gösterir: serbest tutar 2 (tutar, ad/telefon); sabit fiyatta tutar adımı yok
+			// (fiyat × adet + ad/telefon tek ekran): 1.
+			'steps'        => $fixed ? 1 : 2,
 			// Seçilen tutarın etki ifadesi (Etki ifadeleri modülü; yöneticinin yazdığı kademeler). Yoksa satır çizilmez.
 			'impact_tiers' => self::impact_tiers( $model ),
 		);

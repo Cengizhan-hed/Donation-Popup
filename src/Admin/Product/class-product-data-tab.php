@@ -480,7 +480,7 @@ final class Product_Data_Tab {
 			'direct',
 			$value,
 			__( 'Skip the cart (direct donation)', 'woo-donation-popup' ),
-			__( 'Direct: the donor goes from the form straight to payment and nothing is added to the cart. Works with every form style, including the compact card.', 'woo-donation-popup' ),
+			__( 'Direct: the donor goes from the form straight to payment and nothing is added to the cart. Works with the centered window, side panel, bottom sheet and in-page form. Not applied to the compact card: it always goes through the cart.', 'woo-donation-popup' ),
 			array(
 				/* translators: %s: current value and where it comes from, e.g. "Direct (from the donation type: Campaign)" */
 				''    => sprintf( __( 'Donation type or general setting (now: %s)', 'woo-donation-popup' ), self::direct_text( $fallback ) ),
@@ -493,6 +493,7 @@ final class Product_Data_Tab {
 			/* translators: %s: current value and where it comes from */
 			. esc_html( sprintf( __( 'Current value: %s', 'woo-donation-popup' ), self::direct_text( $current ) ) )
 			. '<br><span class="description">'
+			. esc_html__( 'The compact card ignores this value and always goes through the cart.', 'woo-donation-popup' ) . ' '
 			/* translators: %s: link to the settings screen */
 			. sprintf( esc_html__( 'Donation type and general settings: %s', 'woo-donation-popup' ), $screen ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- bağlantı yukarıda kaçışlandı.
 			. '</span></p>';
