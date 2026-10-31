@@ -482,7 +482,7 @@ test.describe('compact kart', () => {
       await plus.click();
       await expect(amount.locator('[data-dp-cqty-out]')).toHaveText('2');
       await expect(total).not.toHaveText(before);
-      await expect(amount.locator('[data-dp-cpay-label], [data-dp-cnext]').first()).toBeVisible();
+      await expect(amount.locator('button[type="submit"]')).toBeVisible();
       // Fiyat, adet ve toplam aynı satırda (dikey merkezler ±3 px).
       const centers = await amount
         .locator('.donation-panel-compact__fixed > b, .donation-panel-compact__fixed .donation-panel-stepper')
