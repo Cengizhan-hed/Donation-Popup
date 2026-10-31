@@ -231,7 +231,8 @@ async function openDetails(page, baseURL, kind) {
     await page.locator('[data-dp-open]').click();
   }
   await expect(page.locator('[data-dp-form]')).toBeVisible({ timeout: 20000 });
-  await page.locator('input[name="amount"]').fill('60');
+  // Hazır tutar düğmesi (mobil katmanlarda klavye açan yazı alanı yerine; gerçek kullanıcı akışı).
+  await page.locator('[data-dp-amounts] [role="radio"]').nth(1).click();
   await page.locator('[data-dp-submit]').click();
   await expect(page.locator('[data-dp-step="details"]')).toBeVisible();
 }
@@ -259,6 +260,8 @@ for (const kind of LATE_KINDS) {
     const wrap = page.locator('[data-dp-field="donation_email"]');
     await expect(wrap).toBeVisible();
     await expect(page.locator('input[name="donation_email"]')).toHaveAttribute('required', '');
+    await page.locator('input[name="donation_full_name"]').fill(DONOR.name); // ilk etkileşim: nonce isteği başlar (yanıt tutulur)
+    await page.waitForTimeout(700); // adım girişi/odak kaydırması otursun; ölçüm yalnız geçişi kapsar
     await page.evaluate(() => {
       const state = { cls: 0, frames: [] };
       window.__lateTrace = state;
@@ -280,7 +283,6 @@ for (const kind of LATE_KINDS) {
       };
       window.requestAnimationFrame(sample);
     });
-    await page.locator('input[name="donation_full_name"]').fill(DONOR.name); // ilk etkileşim: nonce isteği başlar
     await page.waitForTimeout(300);
     release();
     await expect(page.locator('[data-dp-account-note]')).toHaveText(/account email/);
