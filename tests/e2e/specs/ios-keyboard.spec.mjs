@@ -123,7 +123,7 @@ for (const size of SIZES) {
         const after = (await readSim(page)).scrollIntoView;
         expect(m.coveredByBar, `alan ${i} sabit çubuk altında ${JSON.stringify(m)}`).toBe(false);
         expect(m.centerHit, `alan ${i} merkezinde başka öğe ${JSON.stringify(m)}`).toBe(true);
-        expect(m.fieldBottom, `alan ${i} klavyenin altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.bottomOfVisible - 8);
+        expect(m.fieldBottom, `alan ${i} klavyenin altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.bottomOfVisible - 12);
         expect(m.fieldTop, `alan ${i} görünür alanın üstünde ${JSON.stringify(m)}`).toBeGreaterThanOrEqual(m.topOfVisible);
         expect(m.bodyHeight, `kaydırma alanı çok dar ${JSON.stringify(m)}`).toBeGreaterThanOrEqual(120);
         expect(after - before, `alan ${i}: scrollIntoView sayısı`).toBeLessThanOrEqual(1);

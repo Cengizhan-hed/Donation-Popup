@@ -145,6 +145,9 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
           const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
           return {
             ih: window.innerHeight, vv: Math.round(vv.height), offTop: Math.round(vv.offsetTop),
+            sT: Math.round(el.closest('.donation-panel-surface__body').scrollTop),
+            sMax: Math.round(el.closest('.donation-panel-surface__body').scrollHeight - el.closest('.donation-panel-surface__body').clientHeight),
+            bodyBottom: Math.round(el.closest('.donation-panel-surface__body').getBoundingClientRect().bottom),
             kb: document.querySelector('[data-dp-exp]').getAttribute('data-dp-kb'),
             fieldBottom: Math.round(r.bottom), visBottom: Math.round(vv.offsetTop + vv.height),
             covered: Boolean(hit && hit.closest('.donation-panel-actionbar')), val: el.value.length,
@@ -176,7 +179,7 @@ test.describe('gerçek Android Chrome (emülatör)', () => {
       expect(perField.some((m) => m.imeShown), `gerçek sanal klavye açılmadı ${JSON.stringify(perField)}`).toBe(true);
       for (const [i, m] of perField.entries()) {
         expect(m.covered, `alan ${i} sabit bölüm altında ${JSON.stringify(m)}`).toBe(false);
-        expect(m.fieldBottom, `alan ${i} klavye altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.visBottom); // alan tümüyle görünür (gerçek klavyede block:nearest alanı kenara yaslar)
+        expect(m.fieldBottom, `alan ${i} klavye altında ${JSON.stringify(m)}`).toBeLessThanOrEqual(m.visBottom - 12); // alanın altı ile klavye arasında en az 12 px
       }
       expect(imeAfter, 'klavye kapanmadı').toBe(false);
       expect(trace.barRects, `alt bölüm konum/genişlik ${JSON.stringify(trace)}`).toBe(1);

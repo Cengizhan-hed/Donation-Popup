@@ -6,7 +6,7 @@
  * yaklaşılınca/dokunulunca ya da ilk açılışta <dialog> olarak oluşturulur ve form bağlanır.
  */
 import { NARROW_QUERY, presentedAs, shouldDismissOnDrag } from './store.mjs';
-import { KEYBOARD_MIN_PX, TEXT_FIELD, keyboardShrink, nextKeyboardUp, shouldHideActionBar } from './keyboard.mjs';
+import { KEYBOARD_MIN_PX, REVEAL_GAP_PX, TEXT_FIELD, keyboardShrink, nextKeyboardUp, shouldHideActionBar } from './keyboard.mjs';
 import { isTopmost, lockPage, measureScrollbar, unlockPage } from '../ui2-shared/scroll-lock.mjs';
 
 let layerSeq = 0;
@@ -62,10 +62,12 @@ export function createLayer(root, hooks = {}) {
   let settleTimer = 0;
   let blurTimer = 0;
   let revealTimer = 0;
+  let gapTimer = 0;
   let revealTarget = null;
   let barHidden = false;
   const SETTLE_MS = 100; // resize debounce
   const BLUR_GRACE_MS = 250; // alandan alana geçişte klavye durumu korunur
+  const GAP_RECHECK_MS = [250, 600]; // reveal sonrası boşluk doğrulama (tarayıcının geç kaydırması için)
   const REVEAL_WARM_MS = 150; // klavye zaten açık
   const REVEAL_COLD_MS = 450; // klavye açılış animasyonu için yedek zamanlayıcı (resize gelmezse)
 
@@ -157,7 +159,44 @@ export function createLayer(root, hooks = {}) {
     revealTarget = null;
     if (opened && target && document.activeElement === target && typeof target.scrollIntoView === 'function') {
       target.scrollIntoView({ block: 'nearest' });
+      ensureGap(target);
+      // Chrome Android kendi "odaktaki alanı göster" kaydırmasını (görsel görünüm/bölüm) bu işten sonra da uygulayabilir:
+      // kısa bir pencerede boşluk bir kez daha doğrulanır (kullanıcı kaydırmasıyla yarışmaz; pencere bitince durur).
+      GAP_RECHECK_MS.forEach((ms) => {
+        window.setTimeout(() => {
+          if (opened && keyboardUp && document.activeElement === target) {
+            ensureGap(target);
+          }
+        }, ms);
+      });
     }
+  };
+
+  /**
+   * "nearest" alanı görünür alanın kenarına yaslar; alt kenar ile klavye (visualViewport alt kenarı) arasında en az
+   * REVEAL_GAP_PX boşluk bırakır. Bölüm içi kaydırma; sayfa kaymaz, alt bölüm/düğme konumu değişmez.
+   */
+  const ensureGap = (target) => {
+    const scroller = target.closest('.donation-panel-surface__body');
+    if (!scroller || !viewport) {
+      return;
+    }
+    const deficit = target.getBoundingClientRect().bottom - (viewport.offsetTop + viewport.height - REVEAL_GAP_PX);
+    if (deficit > 0) {
+      scroller.scrollTop += Math.ceil(deficit);
+    }
+  };
+
+  /** Tarayıcı odaktaki alan için görsel görünümü kendisi kaydırınca (Chrome Android) boşluğu yeniden sağlar (en çok bir kez/sakinlik). */
+  const onViewportScroll = () => {
+    scheduleGeometry();
+    window.clearTimeout(gapTimer);
+    gapTimer = window.setTimeout(() => {
+      const active = document.activeElement;
+      if (opened && keyboardUp && isTextField(active)) {
+        ensureGap(active);
+      }
+    }, SETTLE_MS);
   };
 
   /** Alt bölümü yerinde gizler/gösterir (yalnız durum değişince yazar; opacity + inert). */
@@ -361,7 +400,7 @@ export function createLayer(root, hooks = {}) {
     }
     if (viewport) {
       viewport.addEventListener('resize', onViewportResize);
-      viewport.addEventListener('scroll', scheduleGeometry);
+      viewport.addEventListener('scroll', onViewportScroll);
     }
     window.cancelAnimationFrame(openFrame);
     openFrame = window.requestAnimationFrame(afterOpenFrame);
@@ -410,9 +449,9 @@ export function createLayer(root, hooks = {}) {
     window.removeEventListener('popstate', onPopState);
     if (viewport) {
       viewport.removeEventListener('resize', onViewportResize);
-      viewport.removeEventListener('scroll', scheduleGeometry);
+      viewport.removeEventListener('scroll', onViewportScroll);
     }
-    [settleTimer, blurTimer, revealTimer].forEach((t) => window.clearTimeout(t));
+    [settleTimer, blurTimer, revealTimer, gapTimer].forEach((t) => window.clearTimeout(t));
     if (geoFrame) {
       window.cancelAnimationFrame(geoFrame);
       geoFrame = 0;

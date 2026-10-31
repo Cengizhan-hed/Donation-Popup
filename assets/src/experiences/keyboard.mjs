@@ -8,6 +8,9 @@ export const KEYBOARD_MIN_PX = 150;
 /** Görsel görünüm bu değerin altına dönünce klavye kapanmış sayılır (px). */
 export const KEYBOARD_GONE_PX = 80;
 
+/** Odaktaki alanın alt kenarı ile görünür alanın (klavyenin) üst kenarı arasında kalacak en az boşluk (px). */
+export const REVEAL_GAP_PX = 12;
+
 /** Yazı alanı seçicisi (onay kutusu/radyo/düğme klavye açmaz). */
 export const TEXT_FIELD =
   'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="range"]):not([type="file"]):not([type="hidden"]), textarea, select';
