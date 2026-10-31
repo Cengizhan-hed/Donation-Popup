@@ -204,9 +204,9 @@
   inset-block-end: 0;
   margin: 0;
   background: var(--dp-color-surface);
-  font-size: 12.5px;
+  font-size: 16px;
   font-weight: 650;
-  line-height: 15px;
+  line-height: 20px;
   color: var(--dp-color-danger);
 }
 

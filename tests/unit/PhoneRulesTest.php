@@ -44,6 +44,25 @@ final class PhoneRulesTest extends TestCase {
 		$this->assertSame( $case['e164'], $r['e164'] );
 		$this->assertSame( $case['warning'], $r['warning'] );
 		$this->assertSame( $case['hint'], $r['hint'] );
+		if ( isset( $case['error'] ) ) {
+			$this->assertSame( $case['error'], Phone_Rules::error( $case['raw'], $case['iso'] ), 'error ' . $case['raw'] );
+		}
+	}
+
+	public function test_required_phone_rejects_separator_only_values(): void {
+		$run = static function ( string $phone ): array {
+			$model = array(
+				'kind'     => 'fixed',
+				'unit'     => 10.0,
+				'quantity' => array( 'max' => 5 ),
+				'fields'   => array( array( 'name' => 'donation_phone', 'type' => 'tel', 'required' => true ) ),
+			);
+			return \DonationPanel\Modules\Experiences\Field_Validator::validate( $model, array( 'amount' => '10', 'quantity' => '1', 'donation_phone' => $phone ) )['errors'];
+		};
+		foreach ( array( '+', '()', '---', '00', '0000', '+0' ) as $bad ) {
+			$this->assertArrayHasKey( 'donation_phone', $run( $bad ), $bad );
+		}
+		$this->assertArrayNotHasKey( 'donation_phone', $run( '+44 7911 123456' ) );
 	}
 
 	public function test_table_covers_all_countries_with_sane_ranges(): void {

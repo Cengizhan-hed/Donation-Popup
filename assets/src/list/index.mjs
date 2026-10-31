@@ -127,6 +127,19 @@ const hosts = new Map();
  */
 
 /**
+ * Telefon tembel paketinin adresi: yalnız sunucu yanıtındaki doğrulanmış (`lazyAsset`) adres; form betiği yüklendiğinde
+ * `phone-lazy` bunu okur. Zaten belirlenmişse ya da geçersizse dokunmaz.
+ *
+ * @param {any} data Ayrıştırılmış yanıt ya da gömülü paket.
+ */
+function rememberPhone(data) {
+  const phone = lazyAsset(data, 'phone', window.location.href);
+  if (phone && !window.__dpPhoneSrc) {
+    window.__dpPhoneSrc = phone.script;
+  }
+}
+
+/**
  * Yanıttan/paketten bir ürünün form girdisi: HTML + (yalnız bu ürün kampanyalıysa) çubuk paketi bilgisi.
  *
  * @param {any}    data Ayrıştırılmış yanıt ya da gömülü paket.
@@ -135,6 +148,7 @@ const hosts = new Map();
  * @return {FormEntry} Girdi.
  */
 function entryOf(data, html, id) {
+  rememberPhone(data);
   const progress = lazyAsset(data, 'progress', window.location.href);
   return { html, progress: progress && progress.ids.includes(String(id)) ? progress : null, exp: lazyAsset(data, 'experiences', window.location.href) };
 }
@@ -566,6 +580,7 @@ function activate() {
   FIRST_INTERACTION.forEach((type) => window.removeEventListener(type, activate, { capture: true }));
   const list = embeddedPacks();
   if (list.length && shouldPrefetchAhead(window.navigator.connection)) {
+    rememberPhone(list[0].data);
     loadExperiences(lazyAsset(list[0].data, 'experiences', window.location.href)).then(() => {
       list.forEach((pack) => pack.reader.ids.forEach(markReady));
     });

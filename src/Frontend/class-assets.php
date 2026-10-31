@@ -52,6 +52,12 @@ class Assets {
 	);
 
 	/**
+	 * Telefon paketi (tembel; ilk etkileşimde yüklenir): slug ve onu isteyen betikler.
+	 */
+	const PHONE      = 'phone';
+	const PHONE_HOST = array( 'experiences', 'compact' );
+
+	/**
 	 * Tanımlar: slug => [ script, style, shared ] (eklenti köküne göreli yollar; shared = gereken ortak parçalar).
 	 *
 	 * @var array<string, array{script: string, style: string, shared: string[]}>
@@ -102,6 +108,20 @@ class Assets {
 				'shared' => array(),
 			);
 		}
+		$this->definitions[ self::PHONE ] = array(
+			'script' => 'assets/build/phone/index.js',
+			'style'  => '',
+			'shared' => array(),
+		);
+	}
+
+	/**
+	 * Derleme klasörü adresi (sonunda eğik çizgi): istemci, REST/gömülü paketteki betik adreslerini bununla sınırlar.
+	 *
+	 * @return string
+	 */
+	public function build_base_url() {
+		return $this->plugin_url . 'assets/build/';
 	}
 
 	/**
@@ -161,6 +181,12 @@ class Assets {
 					'strategy'  => 'defer',
 				)
 			);
+			// Telefon paketinin adresi sunucunun güvenilir yapılandırmasından gelir (DOM özniteliğinden ya da
+			// `document.currentScript`ten değil): CDN/birleştirme/erteleme altında da paket yüklenir.
+			$phone = in_array( $slug, self::PHONE_HOST, true ) ? $this->script_url( self::PHONE ) : '';
+			if ( '' !== $phone ) {
+				wp_add_inline_script( $handle, 'self.__dpPhoneSrc=' . wp_json_encode( $phone ) . ';', 'before' );
+			}
 		}
 	}
 

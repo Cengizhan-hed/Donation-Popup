@@ -270,8 +270,12 @@ class Phone_Rules {
 	 */
 	public static function error( $raw, $default_iso = '' ) {
 		$result = self::parse( $raw, $default_iso );
-		if ( 'ok' === $result['status'] || 'empty' === $result['status'] ) {
+		if ( 'ok' === $result['status'] ) {
 			return '';
+		}
+		// Gerçekten boş (yalnız boşluk dahil) geçerli; dolu ama rakam taşımayan ("+", "()", "---", "00") eksik sayılır.
+		if ( 'empty' === $result['status'] ) {
+			return '' === ( is_scalar( $raw ) ? trim( (string) $raw ) : '' ) ? '' : 'short';
 		}
 		// Varsayılan ülke bilinmiyorsa (kuralsız) eski ölçüt: en az 6 hane.
 		if ( 'unknown' === $result['status'] && '' !== $result['national'] ) {

@@ -132,7 +132,11 @@ export function hostKey(rest, id, kind) {
 }
 
 /** REST'le gelen katmanın isteğe bağlı paketleri: yalnız bilinen slug ve eklentinin kendi derleme yolu. */
-const LAZY_PATHS = { progress: /\/assets\/build\/progress\/index\.js$/, experiences: /\/assets\/build\/experiences\/index\.js$/ };
+const LAZY_PATHS = {
+  progress: /\/assets\/build\/progress\/index\.js$/,
+  experiences: /\/assets\/build\/experiences\/index\.js$/,
+  phone: /\/assets\/build\/phone\/index\.js$/,
+};
 
 /**
  * REST yanıtındaki ya da sayfa sonundaki gömülü form paketindeki (`assets`; `<script type="application/json">`, içerik
@@ -151,9 +155,21 @@ export function lazyAsset(data, slug, pageHref) {
   if (!entry || !has(LAZY_PATHS, slug) || !Array.isArray(entry.ids)) {
     return null;
   }
-  const script = trustedAssetUrl(entry.script, LAZY_PATHS[slug], pageHref);
+  const script = trustedAssetUrl(entry.script, LAZY_PATHS[slug], pageHref, data.assets.base);
   const ids = uniqueIds(entry.ids.map(String));
   return script && ids.length ? { ids, script, style: typeof entry.style === 'string' ? entry.style : '' } : null;
+}
+
+/**
+ * Eklenti klasörüne bağlama: taban (sunucudan) aynı kökende ve `/assets/build/` ile biter; betik onun altındadır.
+ *
+ * @param {URL} url  Betik adresi.
+ * @param {URL} root Taban.
+ * @param {URL} page Sayfa.
+ * @return {boolean} Altında mı.
+ */
+function underBuildBase(url, root, page) {
+  return root.origin === page.origin && root.pathname.endsWith('/assets/build/') && url.href.startsWith(root.href.split(/[?#]/)[0]);
 }
 
 /**
@@ -162,15 +178,21 @@ export function lazyAsset(data, slug, pageHref) {
  * @param {string} raw      Adres.
  * @param {RegExp} pattern  Yol kalıbı.
  * @param {string} pageHref Sayfa adresi.
+ * @param {string} base     Sunucudan gelen eklenti derleme klasörü adresi (`assets.base`); adres bunun altında olmalı.
  * @return {string} Doğrulanmış adres ya da ''.
  */
-function trustedAssetUrl(raw, pattern, pageHref) {
+function trustedAssetUrl(raw, pattern, pageHref, base) {
   let url;
   let page;
+  let root;
   try {
     page = new URL(String(pageHref));
     url = new URL(String(raw || ''), page.href);
+    root = new URL(String(base || ''), page.href);
   } catch {
+    return '';
+  }
+  if (!underBuildBase(url, root, page)) {
     return '';
   }
   const keys = Array.from(url.searchParams.keys());

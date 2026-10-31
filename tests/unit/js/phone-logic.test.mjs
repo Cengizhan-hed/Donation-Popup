@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { buildIndex, formatNational, parsePhone, typing } from '../../../assets/src/ui2-shared/phone-logic.mjs';
+import { buildIndex, formatNational, parsePhone, phoneBlocked, typing } from '../../../assets/src/ui2-shared/phone-logic.mjs';
 
 const rules = JSON.parse(fs.readFileSync(new URL('../../../src/Support/phone-rules.json', import.meta.url), 'utf8'));
 const vectors = JSON.parse(fs.readFileSync(new URL('../../fixtures/phone-vectors.json', import.meta.url), 'utf8'));
@@ -18,6 +18,9 @@ test('ortak vektörler: PHP ile aynı sonuç', () => {
     assert.equal(r.e164, c.e164, label);
     assert.equal(r.warning, c.warning, label);
     assert.equal(r.hint, c.hint, label);
+    if (c.error !== undefined) {
+      assert.equal(phoneBlocked(c.raw, c.iso, idx), c.error !== '', `${label} (engel)`);
+    }
   });
 });
 

@@ -12,6 +12,7 @@ import {
   isolates,
   moveStep,
   percentOf,
+  safeCheckoutTarget,
 } from '../../../assets/src/compact/logic.mjs';
 
 const GBP = { decimals: 2, thousandSeparator: ',', decimalSeparator: '.' };
@@ -88,4 +89,17 @@ test('12.3 v2: seçilen tutarın etki ifadesi (kademe yoksa boş)', () => {
   assert.equal(effectLine(5, tiers, 'en'), '');
   assert.equal(effectLine(null, tiers, 'en'), '');
   assert.equal(effectLine(50, [], 'en'), '');
+});
+
+test('safeCheckoutTarget: aynı alan adı, http/https, beklenen ödeme yolu (D4)', () => {
+  const page = 'https://site.test/bagis/';
+  const checkout = 'https://site.test/checkout/';
+  assert.equal(safeCheckoutTarget('https://site.test/checkout/', checkout, page), 'https://site.test/checkout/');
+  assert.equal(safeCheckoutTarget('/checkout/order-pay/12/?key=wc_x', checkout, page), 'https://site.test/checkout/order-pay/12/?key=wc_x');
+  assert.equal(safeCheckoutTarget('', checkout, page), '', 'boş adres sayfaya çözülür; ödeme yolu değil');
+  for (const bad of ['javascript:alert(1)', 'data:text/html,x', 'https://evil.test/checkout/', 'https://site.test/wp-admin/', 'https://site.test/checkout-evil/', 'https://u:p@site.test/checkout/', '//evil.test/checkout/']) {
+    assert.equal(safeCheckoutTarget(bad, checkout, page), '', bad);
+  }
+  assert.equal(safeCheckoutTarget('https://site.test/checkout/', '', page), '', 'beklenen adres yoksa yönlendirme yok');
+  assert.equal(safeCheckoutTarget('https://site.test/', 'https://site.test/', page), '', 'kök yol beklenen ödeme yolu sayılmaz');
 });

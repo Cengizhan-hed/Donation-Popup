@@ -107,13 +107,25 @@ final class Experiences_Module implements Module_Interface {
 		if ( empty( $ids ) || ! $this->container ) {
 			return $assets;
 		}
-		$script = $this->container->get( Assets::class )->script_url( self::SLUG );
+		$registry = $this->container->get( Assets::class );
+		$script   = $registry->script_url( self::SLUG );
 		if ( '' !== $script ) {
 			$assets[ self::SLUG ] = array(
 				'ids'    => $ids,
 				'script' => $script,
 				'style'  => '',
 			);
+			// Derleme klasörü: istemci betik adreslerini eklentinin kendi klasörüyle sınırlar.
+			$assets['base'] = $registry->build_base_url();
+			// Telefon paketi (tembel): adres sunucudan gelir; istemci ilk etkileşimde yükler.
+			$phone = $registry->script_url( Assets::PHONE );
+			if ( '' !== $phone ) {
+				$assets[ Assets::PHONE ] = array(
+					'ids'    => $ids,
+					'script' => $phone,
+					'style'  => '',
+				);
+			}
 		}
 		return $assets;
 	}

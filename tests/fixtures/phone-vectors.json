@@ -33,6 +33,17 @@
     { "raw": "+999 123", "iso": "tr", "status": "unknown", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "" },
     { "raw": "", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "" },
     { "raw": "abc", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "" },
-    { "raw": "0", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "" }
+    { "raw": "0", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "short" },
+    { "raw": "+", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "short" },
+    { "raw": "()", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "short" },
+    { "raw": "---", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "short" },
+    { "raw": "00", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "short" },
+    { "raw": "0000", "iso": "gb", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "short" },
+    { "raw": "+0", "iso": "tr", "status": "unknown", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "unknown" },
+    { "raw": "   ", "iso": "tr", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "" },
+    { "raw": "", "iso": "gb", "status": "empty", "oiso": "", "national": "", "e164": "", "warning": false, "hint": "", "error": "" },
+    { "raw": "07911 123456", "iso": "gb", "status": "ok", "oiso": "gb", "national": "7911123456", "e164": "+447911123456", "warning": false, "hint": "", "error": "" },
+    { "raw": "07911 12345", "iso": "gb", "status": "ok", "oiso": "gb", "national": "791112345", "e164": "+44791112345", "warning": false, "hint": "", "error": "" },
+    { "raw": "+90 530 307 15 93", "iso": "tr", "status": "ok", "oiso": "tr", "national": "5303071593", "e164": "+905303071593", "warning": false, "hint": "", "error": "" }
   ]
 }

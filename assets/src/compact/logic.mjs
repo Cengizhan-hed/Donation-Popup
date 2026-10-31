@@ -71,6 +71,31 @@ function pickAmount(input) {
 }
 
 /**
+ * Ödeme yönlendirmesi doğrulaması (derinlemesine savunma): http/https, sayfayla aynı alan adı, kimlik bilgisi yok ve yol,
+ * beklenen ödeme sayfasının (sunucunun `dpCheckout` adresi) yolu ya da altındaki bir uç (ör. `order-pay`) olmalı.
+ * Geçersizse '' (yönlendirme yapılmaz).
+ *
+ * @param {string} target   Yönlendirilecek adres (sunucu yanıtı ya da yedek).
+ * @param {string} expected Beklenen ödeme sayfası adresi.
+ * @param {string} pageHref Sayfa adresi.
+ * @return {string} Güvenli adres ya da ''.
+ */
+export function safeCheckoutTarget(target, expected, pageHref) {
+  try {
+    const page = new URL(String(pageHref));
+    const url = new URL(String(target || ''), page.href);
+    const base = new URL(String(expected || ''), page.href);
+    const root = base.pathname.replace(/\/+$/, '');
+    const web = (u) => u.protocol === 'https:' || u.protocol === 'http:';
+    const under = url.pathname.replace(/\/+$/, '') === root || url.pathname.startsWith(`${root}/`);
+    const same = url.hostname === page.hostname && base.hostname === page.hostname;
+    return web(url) && web(base) && same && !url.username && !url.password && root !== '' && under ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
  * Gezinme sonrası adım dizini (0–1 aralığı).
  *
  * @param {number} current Mevcut dizin.
