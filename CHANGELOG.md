@@ -3,6 +3,33 @@
 All notable changes to Donation Panel for WooCommerce are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [12.4.0]
+
+### Added
+- Phone field: country table, number formatting, +code and leading 0 stripping, warning hint, E.164 hand-off to the order, server-side validation.
+- Customer email: thank-you section (can be turned off in the settings; only for paid orders); item labels in the recipient's language; phone and technical meta filtered out of customer emails; compatibility with the block email editor.
+- Email info line for logged-in donors (no layout shift).
+- Android keyboard verification (emulator test).
+- Strict `verify` (no silent skips), Knip, test port reservation.
+
+### Changed
+- Card forms are embedded in the page HTML: 0 extra requests.
+- Compact card v3: cart flow only, 356 px card, single fixed-price screen, trust line and Total row removed, setting `compact.trust` removed.
+- The email field appears only in the direct + guest flow and is required; it is not shown in cart forms.
+- On keyboard close only the lower section changes opacity; the field stays at least 12 px above the keyboard.
+- Removed email settings are cleaned up by migration.
+
+### Fixed
+- Direct donations did not ask for an email, so Stripe payments failed.
+- The button shook and shrank while the keyboard closed.
+- The phone hint shifted the button.
+- Semgrep did not scan JS.
+
+### Security
+- Card bundle is independent of capability; per-product cache key.
+- `logged_in` is a boolean only.
+- Read-only cron-status.
+
 ## [12.3.0]
 
 ### Added

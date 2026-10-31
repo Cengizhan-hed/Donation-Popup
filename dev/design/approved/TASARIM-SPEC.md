@@ -22,3 +22,12 @@ Kaynak: claude.ai tasarım tuvali "Bağış Paneli — Yeni Tasarım Taslakları
 - Gölge: kartlarda çok hafif (0 1px 2px + 0 8px 24px düşük opaklık); paneller için belirgin.
 - Desenler: tutma çubuklu alttan panel; adım göstergesi (ADIM 1/2 + çubuk); etki ifadeli tutar kartları, "EN ÇOK SEÇİLEN" rozeti; serbest tutar için kesikli çerçeveli alan; formun üstünde kampanya ilerleme çubuğu ve hedef/bağışçı/kalan gün satırı; sabit alt bölümde toplam + ana düğme + güven satırı; teşekkür ekranında kampanyaya katkı çubuğu; yan sepette ek bağış önerisi.
 - Erişilebilirlik: gerçek button/a/input/label; ikon düğmelerinde aria-label; metin kontrastı ≥4.5:1.
+
+## Compact kart v3 (12.4)
+(Yalnız ekleme; yukarıdaki onaylı içerik değişmedi.)
+- **Amaç:** slider/hero içinde bağışçıyı ödeme sayfasına götüren kart. Her zaman sepetli akış (doğrudan/sepetsiz değil).
+- **Akış:** serbest tutarda 2 adım (tutar, sonra bağış türü/ek seçenek); sabit fiyatta tek ekran. Son adımda düğme doğrudan ödeme sayfasına götürür.
+- **Kaldırılanlar:** güven satırı (`compact.trust` ayarı), "Toplam" satırı (toplam düğme metnindedir), kart içi e-posta alanı.
+- **Boyut:** kart yüksekliği **356 px** (sabit); Elementor slayt/konteyner en az **372 px**. Kart genişliği önceki düzenle aynı.
+- **Dokunma ve yazı:** dokunma alanları ≥48 px; yazı ≥16 px (iOS yakınlaştırma ve okunabilirlik).
+- **Düğme metni:** "Ödemeye geç · £X" (tutar sitenin para biriminde ve biçiminde).

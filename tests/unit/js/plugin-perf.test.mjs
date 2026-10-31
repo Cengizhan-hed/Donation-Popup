@@ -22,7 +22,7 @@ import {
   parsePagesArg,
 } from '../../../scripts/lib/plugin-perf.mjs';
 
-const P = 'https://site.test/wp-content/plugins/woo-donation-popup/assets/build/experiences.js?ver=12.3.0';
+const P = 'https://site.test/wp-content/plugins/woo-donation-popup/assets/build/experiences.js?ver=12.4.0';
 const T = 'https://site.test/wp-content/themes/x/app.js';
 const meta = (pid, tid, name) => ({ ph: 'M', name: 'thread_name', pid, tid, ts: 0, args: { name } });
 const ev = (name, ts, dur, url, pid = 1, tid = 1) => ({ ph: 'X', name, ts, dur, pid, tid, args: { data: { url } } });
