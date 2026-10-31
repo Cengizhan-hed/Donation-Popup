@@ -27,12 +27,12 @@
 .donation-panel-phone__code:has(.donation-panel-phone__select:focus-visible) { box-shadow: inset 0 0 0 2px var(--dp-color-primary-strong); }
 .donation-panel-phone__note { font-size: var(--dp-fs-sm); }
 /* Telefon ipucu/uyarısı: yer önceden ayrılı (3 satır, geniş ekranda 2); belirip kaybolurken alttaki düğme/alanlar kaymaz (CLS 0).
-   İpucu ve hata aynı hücrede üst üste durur (karşılıklı dışlayıcı); görünmezken yalnız görünürlük kapalı. */
-.donation-panel-field:has(.donation-panel-phone) > .donation-panel-error,
-.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note { display: flex; align-items: flex-start; margin: 0; font-size: 1rem; line-height: 1.35; min-block-size: calc(3 * 1.35em); visibility: hidden; }
-.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note { display: block; }
-.donation-panel-field:has(.donation-panel-phone).has-error > .donation-panel-error,
-.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note:not(:empty) { visibility: visible; }
+   İpucu ve hata aynı hücrede üst üste durur (karşılıklı dışlayıcı); görünmezken yalnız görünürlük kapalı.
+   İpucu metni boşken (:empty) görünmez; `hidden` özniteliği kullanılmaz (`[hidden]` = display:none sözleşmesi bozulmaz,
+   temaların `[hidden]{display:none}` kuralı ayrılmış yeri silip kayma yaratmaz). */
+.donation-panel-field:has(.donation-panel-phone) > :is(.donation-panel-error, .donation-panel-phone__note) { display: flex; align-items: flex-start; margin: 0; font-size: 1rem; line-height: 1.35; min-block-size: calc(3 * 1.35em); visibility: hidden; }
+.donation-panel-field:has(.donation-panel-phone) > .donation-panel-phone__note:not(:empty) { display: block; visibility: visible; }
+.donation-panel-field.has-error > .donation-panel-error { visibility: visible; } /* özgüllük üstteki gizleme kuralına eşit, sonra gelir */
 .donation-panel-field:has(.donation-panel-phone__note) > :is(.donation-panel-error, .donation-panel-phone__note) { grid-area: 3 / 1; }
 @media (min-width: 520px) { .donation-panel-field:has(.donation-panel-phone) > :is(.donation-panel-error, .donation-panel-phone__note) { min-block-size: calc(2 * 1.35em); } }
 
