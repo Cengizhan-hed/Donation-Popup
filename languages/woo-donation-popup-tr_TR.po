@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: woo-donation-popup\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 10:57:12+0000\n"
-"PO-Revision-Date: 2026-10-31 10:57:12+0000\n"
+"POT-Creation-Date: 2026-10-31 11:02:26+0000\n"
+"PO-Revision-Date: 2026-10-31 11:02:26+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr_TR\n"
@@ -340,6 +340,10 @@ msgstr "4. Ek bağış önerisi: \"Sepette ek bağış öner\"i açın, ürün I
 msgid "4. Privacy: in e-mails to donors the phone number is left out (WooCommerce already shows the billing phone); donation type, names and note stay. In e-mails to you every field stays. Internal plugin data is never shown in any e-mail, and the order itself is not changed."
 msgstr "4. Gizlilik: bağışçıya giden e-postalarda telefon numarası bağış satırında gösterilmez (WooCommerce fatura telefonunu zaten gösterir); bağış türü, adlar ve not kalır. Size giden e-postalarda tüm alanlar kalır. Eklentinin iç verileri hiçbir e-postada görünmez; siparişin kendisi değişmez."
 
+#: src/Admin/class-guide.php
+msgid "4. Slide height: make the slide at least as tall as the card (356 px on every screen, see step 8). The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
+msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın (her ekranda 356 px, bkz. adım 8). Compact kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Her karta tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) değişkenini yazın."
+
 msgid "4. Slide height: make the slide at least as tall as the card (about 384 px on every screen). The Compact card screen shows the card heights for desktop, tablet and phone. To give every card one height, set --dp-compact-h (and --dp-compact-h-md, --dp-compact-h-sm) on the slide."
 msgstr "4. Slayt yüksekliği: slaytı en az kart kadar yüksek yapın (her ekranda yaklaşık 384 px). Kompakt kart ekranı masaüstü, tablet ve telefon için kart yüksekliklerini gösterir. Tüm kartlara tek yükseklik vermek için slayta --dp-compact-h (ve --dp-compact-h-md, --dp-compact-h-sm) yazın."
 
@@ -373,6 +377,10 @@ msgstr "5. Dil: bağışçıya giden e-postalar site dilini kullanır ve etiketl
 msgid "5. The side cart never opens on the cart and checkout pages, and pages without a donation form load none of its files."
 msgstr "5. Yan sepet sepet ve ödeme sayfalarında açılmaz; bağış formu olmayan sayfalar onun hiçbir dosyasını yüklemez."
 
+#: src/Admin/class-guide.php
+msgid "6. If the slider moves on while a donor is halfway through, switch on \"Start over when the card is hidden\". The compact card always goes through the cart: the \"Skip the cart (direct donation)\" settings do not apply to it."
+msgstr "6. Slayt, bağışçı işlemin ortasındayken ilerliyorsa \"Kart gizlenince baştan başla\" ayarını açın. Compact kart her zaman sepetten geçer: \"Sepeti atla (doğrudan bağış)\" ayarları ona uygulanmaz."
+
 msgid "6. If the slider moves on while a donor is halfway through, switch on \"Start over when the card is hidden\". The compact card is only a look: how the donor pays is set under Cart and checkout."
 msgstr "6. Bağışçı yarıdayken slider ilerliyorsa \"Kart gizlenince başa dön\" ayarını açın. Kompakt kart yalnız bir görünümdür: bağışçının nasıl ödeyeceği Sepet ve Ödeme ekranında ayarlanır."
 
@@ -393,11 +401,19 @@ msgid "7. Milestones on the shortcode bar (optional): a product custom field nam
 msgstr "7. Kısa kod çubuğunda ara hedefler (isteğe bağlı): _donation_panel_milestones adlı ürün özel alanına her satıra bir tane, yüzde = etiket biçiminde yazın; örneğin 50 = Yarı yol. Geliştiriciler donation_panel_milestones filtresini de kullanabilir."
 
 #: src/Admin/class-guide.php
+msgid "7. What the donor sees: a custom amount has 2 steps (amount, then name and phone with the button \"Continue to checkout · amount\"). A fixed-price or quantity product has one screen: the price and a quantity selector on one thin line, then name and phone, the Gift Aid line if it is on, and the main button. The step counter shows the real number (it is hidden when there is only one step). The total appears only on the main button and changes at once when the amount or quantity changes. The card never asks for an email address: checkout does. With the Impact phrases module the chosen amount's impact appears as one extra line; with the Tax relief module the declaration shows its title and a short line, and \"Details\" opens the full text inside the card."
+msgstr "7. Bağışçının gördüğü: serbest tutarda 2 adım vardır (tutar, ardından ad ve telefon ile \"Ödemeye geç · tutar\" düğmesi). Sabit fiyatlı veya adetli üründe tek ekran vardır: fiyat ve adet seçici tek ince satırda, altında ad ve telefon, açıksa Gift Aid satırı ve ana düğme. Adım sayacı gerçek sayıyı gösterir (tek adımda gizlenir). Toplam yalnız ana düğmede görünür ve tutar ya da adet değişince anında güncellenir. Kart e-posta adresi sormaz: ödeme sayfası sorar. Etki ifadeleri modülüyle seçilen tutarın etkisi tek ek satır olarak görünür; Vergi indirimi modülüyle beyan başlığını ve kısa bir satırı gösterir, \"Ayrıntılar\" tam metni kartın içinde açar."
+
+#: src/Admin/class-guide.php
 msgid "7. What the donor sees: through the cart the card has 2 steps (amount, then details with \"Continue to checkout · amount\"); with direct donation it has 3 (amount, details, payment) and a thank-you. The step counter shows the real number (it is hidden when there is only one step). A fixed-price or quantity product has no amount step: price × quantity = total sits on one thin line, with the name, phone (and email, if you ask for it) fields right below it, the Gift Aid line if it is on, the lock line and the main button; through the cart that is a single screen with \"Continue to checkout · amount\", with direct donation it is a single screen plus payment. A small lock line (\"Secure payment\") sits above the button; you can switch it off under Compact card. With the Impact phrases module the chosen amount's impact appears next to the amount; with the Tax relief module the declaration shows its title and a short line, and \"Details\" opens the full text inside the card."
 msgstr "7. Bağışçının gördüğü: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç · tutar\" düğmeli bilgiler); doğrudan bağışta 3 adım (tutar, bilgiler, ödeme) ve teşekkür vardır. Adım sayacı gerçek sayıyı gösterir (tek adım varsa gizlenir). Sabit fiyatlı veya adetli üründe tutar adımı yoktur: fiyat × adet = toplam tek ince satırdadır; ad, telefon (ve istediyseniz e-posta) alanları, açıksa Gift Aid satırı, güven satırı ve ana düğme hemen altındadır; sepetli akışta bu tek ekrandır (\"Ödemeye geç · tutar\"), doğrudan bağışta tek ekran artı ödemedir. Düğmenin üstünde küçük bir kilit satırı (\"Güvenli ödeme\") durur; Compact kart altında kapatabilirsiniz. Etki ifadeleri modülüyle seçilen tutarın etkisi tutarın yanında görünür; Vergi indirimi modülüyle beyan başlığını ve kısa bir satırı gösterir, \"Ayrıntılar\" tam metni kartın içinde açar."
 
 msgid "7. What the donor sees: through the cart the card has 2 steps (amount, then details with \"Continue to checkout · amount\"); with direct donation it has 3 (amount, details, payment) and a thank-you. The step counter shows the real number. A small lock line (\"Secure payment\") sits above the button; you can switch it off under Compact card. With the Impact phrases module the chosen amount's impact appears next to the amount; with the Tax relief module the declaration shows its title and a short line, and \"Details\" opens the full text inside the card."
 msgstr "7. Bağışçının gördüğü: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç · tutar\" düğmeli bilgiler); doğrudan bağışta 3 adımdır (tutar, bilgiler, ödeme) ve bir teşekkür ekranı vardır. Adım sayacı gerçek sayıyı gösterir. Düğmenin üstünde küçük bir kilit satırı (\"Güvenli ödeme\") durur; Kompakt kart bölümünden kapatabilirsiniz. Etki ifadeleri modülü açıksa seçilen tutarın karşılığı tutarın yanında görünür; Vergi indirimi modülü açıksa beyan başlığı ve kısa bir satırla gösterilir, \"Ayrıntılar\" tam metni kartın içinde açar."
+
+#: src/Admin/class-guide.php
+msgid "8. Exact slide height (Elementor and other sliders): the card is 356 px tall on desktop, tablet and phone, for every product type and every step (measured from 320 to 1440 px). The fullest card, a custom amount with a goal bar and an impact line, needs 347 px. Give the slide at least 372 px (card plus a 16 px safety margin for your theme font); a taller slide only adds space around the card. Text in the card never wraps to extra lines, so the height does not change with the screen width."
+msgstr "8. Kesin slayt yüksekliği (Elementor ve diğer slaytlar): kart masaüstü, tablet ve telefonda, her ürün türünde ve her adımda 356 px yüksekliktedir (320–1440 px arası ölçüldü). En dolu kart (hedef çubuğu ve etki satırı olan serbest tutar) 347 px gerektirir. Slayta en az 372 px verin (kart + tema yazı tipi için 16 px güvenli pay); daha yüksek slayt yalnız kartın çevresine boşluk ekler. Kartın içindeki metinler fazladan satıra kırılmaz, bu yüzden yükseklik ekran genişliğiyle değişmez."
 
 #: src/Admin/class-guide.php
 msgid "8. Exact slide height (Elementor and other sliders): the card is 384 px tall on desktop, tablet and phone, for every product type and in both flows (measured from 320 to 1440 px). The fullest card, a fixed-price product with quantity, three fields and the tax relief declaration, needs 378 px. Give the slide at least 400 px (card plus a 16 px safety margin for your theme font); a taller slide only adds space around the card. Text in the card never wraps to extra lines, so the height does not change with the screen width."
@@ -1983,6 +1999,10 @@ msgstr "Doğrudan bağış zamanında ödenmedi ve otomatik olarak iptal edildi.
 msgid "Direct: the donor goes from the form straight to payment and nothing is added to the cart. Works with every form style, including the compact card."
 msgstr "Doğrudan: bağışçı formdan doğrudan ödemeye geçer, sepete hiçbir şey eklenmez. Kompakt kart dahil her form türünde çalışır."
 
+#: src/Admin/Product/class-product-data-tab.php
+msgid "Direct: the donor goes from the form straight to payment and nothing is added to the cart. Works with the centered window, side panel, bottom sheet and in-page form. Not applied to the compact card: it always goes through the cart."
+msgstr "Doğrudan: bağışçı formdan doğrudan ödemeye geçer ve sepete hiçbir şey eklenmez. Ortadaki pencere, yan panel, alttan panel ve sayfa içi formla çalışır. Compact karta uygulanmaz: o her zaman sepetten geçer."
+
 #: includes/elementor/class-widget-donations-list.php:92
 msgid "Direction"
 msgstr "Yön"
@@ -2365,6 +2385,12 @@ msgstr "%s bağış ayarlarını düzenle"
 #: includes/class-phone-field.php:125
 msgid "Egypt"
 msgstr "Mısır"
+
+#: src/Admin/class-compact-tools.php
+#. translators: 1: card height in pixels, 2: minimum slide height in pixels.
+#, php-format
+msgid "Elementor and other sliders: the card is %1$d px tall on desktop, tablet and phone. Give the slide at least %2$d px (card plus a 16 px safety margin for your theme font)."
+msgstr "Elementor ve diğer slaytlar: kart masaüstü, tablet ve telefonda %1$d px yüksekliktedir. Slayta en az %2$d px verin (kart + tema yazı tipi için 16 px güvenli pay)."
 
 msgctxt "elementor widget search keyword"
 msgid "campaign"
@@ -2883,6 +2909,10 @@ msgstr "Genel ayar (şu an: %s)"
 
 msgid "General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart."
 msgstr "Tüm bağış ürünleri için genel ayar. Bağışçı formdan doğrudan ödemeye geçer; bağışçının mevcut sepeti olduğu gibi kalır. Aşağıdaki bağış türleri ve her ürün bunu değiştirebilir. Siteniz bir vekil sunucu ya da CDN arkasındaysa ziyaretçilerin ayırt edilebilmesi için Araçlar altında güvenilen vekil adreslerini girin."
+
+#: src/Admin/class-field-registry.php
+msgid "General setting for every donation product. The donor goes from the form straight to payment and a cart the donor already has stays untouched. Donation types below and each product can override it. Not applied to the compact card: that layout always goes through the cart. If your site runs behind a proxy or CDN, set the trusted proxy addresses under Tools so visitors can be told apart."
+msgstr "Tüm bağış ürünleri için genel ayar. Bağışçı formdan doğrudan ödemeye geçer; bağışçının mevcut sepeti olduğu gibi kalır. Aşağıdaki bağış türleri ve her ürün bunu değiştirebilir. Compact karta uygulanmaz: o düzen her zaman sepetten geçer. Siteniz bir vekil sunucu ya da CDN arkasındaysa ziyaretçilerin ayırt edilebilmesi için Araçlar altında güvenilen vekil adreslerini girin."
 
 #: includes/class-phone-field.php:79
 msgid "Georgia"
@@ -4083,6 +4113,10 @@ msgstr "Kuzey Makedonya"
 #: includes/class-phone-field.php:57
 msgid "Norway"
 msgstr "Norveç"
+
+#: src/Admin/class-field-registry.php
+msgid "Not applied to the compact card (it always goes through the cart)."
+msgstr "Compact karta uygulanmaz (o her zaman sepetten geçer)."
 
 #: includes/class-icon-library.php:50
 msgid "Note"
@@ -6015,6 +6049,10 @@ msgid "Step title"
 msgstr "Adım başlığı"
 
 #: src/Admin/class-compact-tools.php
+msgid "Steps: a custom amount has 2 steps (amount, then name and phone with \"Continue to checkout · amount\"); a fixed-price product has one screen: price and a quantity selector on one thin line, then name and phone and the button. The total is shown only on the main button and changes at once when the amount or quantity changes. The card never asks for an email address (checkout does)."
+msgstr "Adımlar: serbest tutarda 2 adım vardır (tutar, ardından ad ve telefon ile \"Ödemeye geç · tutar\"); sabit fiyatlı üründe tek ekran vardır: fiyat ve adet seçici tek ince satırda, altında ad ve telefon ve düğme. Toplam yalnız ana düğmede görünür ve tutar ya da adet değişince anında güncellenir. Kart e-posta adresi sormaz (ödeme sayfası sorar)."
+
+#: src/Admin/class-compact-tools.php
 msgid "Steps: through the cart the card has 2 steps (amount, then your details with \"Continue to checkout\"); with direct donation it has 3 (amount, details, payment). A fixed-price product has no amount step: price × quantity = total sits on one thin line with the name and phone fields right below it, so it has 1 step through the cart and 2 with direct donation (details, payment). The height is the same with or without a goal, an impact phrase or the tax relief declaration, and a fixed-price product is as tall as the others."
 msgstr "Adımlar: sepetli akışta kart 2 adımdır (tutar, ardından \"Ödemeye geç\" düğmeli bilgileriniz); doğrudan bağışta 3 adımdır (tutar, bilgiler, ödeme). Sabit fiyatlı üründe tutar adımı yoktur: fiyat × adet = toplam tek ince satırdadır, ad ve telefon alanları hemen altındadır; bu yüzden sepetli akışta 1, doğrudan bağışta 2 adımdır (bilgiler, ödeme). Yükseklik; hedef, etki ifadesi veya vergi indirimi beyanı olsa da olmasa da aynıdır ve sabit fiyatlı ürün diğerleriyle aynı yüksekliktedir."
 
@@ -6291,6 +6329,10 @@ msgstr "Buton kısa kodu ortada açılan pencere, Sağ panel kısa kodu sağdan 
 msgid "The card is as tall as its tallest step, and that height never changes while the donor moves through the steps. It is the same through the cart and with direct donation. Measured with a default block theme; your theme's font can change it a little."
 msgstr "Kart en uzun adımı kadar yüksektir ve bağışçı adımlar arasında ilerlerken bu yükseklik hiç değişmez. Sepetli ve doğrudan bağışta aynıdır. Varsayılan bir blok temasıyla ölçülmüştür; temanızın yazı tipi biraz değiştirebilir."
 
+#: src/Admin/class-compact-tools.php
+msgid "The card shows at most one extra line: the impact phrase of the chosen amount, or else the short product description. A fixed-price product never shows a goal bar: a product with a goal is a goal-based product and has the amount step. The height is the same with or without a goal, an impact phrase or the tax relief declaration."
+msgstr "Kart en çok bir ek satır gösterir: seçilen tutarın etki ifadesi, yoksa ürün kısa açıklaması. Sabit fiyatlı ürün hedef çubuğu göstermez: hedefli ürün, hedefli bağış türüdür ve tutar adımı vardır. Yükseklik; hedef, etki ifadesi veya vergi indirimi beyanı olsa da olmasa da aynıdır."
+
 msgid "The carried-over amount was saved."
 msgstr "Devreden tutar kaydedildi."
 
@@ -6305,6 +6347,22 @@ msgstr "Klasik form güvenli varsayılandır. Yeni form bağış türleri ve dah
 #: src/Admin/class-ui-switch.php
 msgid "The classic screen keeps all your settings and will be removed in 12.0."
 msgstr "Klasik ekran tüm ayarlarınızı korur ve 12.0 sürümünde kaldırılacaktır."
+
+#: src/Admin/Product/class-product-data-tab.php
+msgid "The compact card ignores this value and always goes through the cart."
+msgstr "Compact kart bu değeri yok sayar ve her zaman sepetten geçer."
+
+#: src/Admin/class-guide.php
+msgid "The compact card is made for sliders and hero areas and always sends the donor to the checkout page; direct donation is not used with this layout."
+msgstr "Compact kart slider ve hero alanları içindir ve bağışçıyı her zaman ödeme sayfasına yönlendirir; doğrudan bağış bu düzende kullanılmaz."
+
+#: src/Admin/class-compact-tools.php
+msgid "The compact card is made for sliders and hero areas and always sends the donor to the checkout page; direct donation is not used with this layout. Its height is one single value for every product type and every step, and it never changes while the donor moves through the steps. Measured with a default block theme; your theme's font can change it a little."
+msgstr "Compact kart slider ve hero alanları içindir ve bağışçıyı her zaman ödeme sayfasına yönlendirir; doğrudan bağış bu düzende kullanılmaz. Yüksekliği tüm ürün türleri ve adımlar için tek değerdir ve bağışçı adımlar arasında gezerken hiç değişmez. Varsayılan blok temasıyla ölçüldü; temanızın yazı tipi biraz değiştirebilir."
+
+#: src/Admin/class-field-registry.php
+msgid "The compact card is made for sliders and hero areas and always sends the donor to the checkout page: it adds the gift to the cart and opens WooCommerce checkout. Direct donation is not used with this layout. Its height never changes. Colors and fonts come from the settings above."
+msgstr "Compact kart slider ve hero alanları içindir ve bağışçıyı her zaman ödeme sayfasına yönlendirir: bağışı sepete ekler ve WooCommerce ödeme sayfasını açar. Doğrudan bağış bu düzende kullanılmaz. Yüksekliği hiç değişmez. Renkler ve yazı tipleri yukarıdaki ayarlardan gelir."
 
 #: includes/class-admin-product-data-tab.php:601
 msgid "The donation amount is the product price: %s. You can change the price on the \"General\" tab."
@@ -6717,6 +6775,10 @@ msgstr "Sepetli: form, sepet, ödeme, teşekkür. Doğrudan: form, ödeme sayfas
 
 msgid "Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with every form style (centered window, side panel, bottom sheet, in-page form and compact card). A product setting wins over its donation type, and a donation type wins over the general setting."
 msgstr "Sepetli: bağış sepete eklenir ve bağışçı ödeme sayfasında öder. Doğrudan: bağışçı formdan doğrudan ödeme sayfasına geçer, sepete hiçbir şey eklenmez. Her form türünde çalışır (ortada pencere, sağ panel, alttan panel, sayfa içi form ve kompakt kart). Ürün ayarı bağış türünün, bağış türü de genel ayarın önüne geçer."
+
+#: src/Admin/class-field-registry.php
+msgid "Through the cart: the gift is added to the cart and the donor pays on the checkout page. Direct: the donor goes from the form straight to a payment page and nothing is added to the cart. This works with the centered window, side panel, bottom sheet and in-page form; the compact card always goes through the cart. A product setting wins over its donation type, and a donation type wins over the general setting."
+msgstr "Sepetli: bağış sepete eklenir ve bağışçı ödeme sayfasında öder. Doğrudan: bağışçı formdan doğrudan bir ödeme sayfasına geçer ve sepete hiçbir şey eklenmez. Bu, ortadaki pencere, yan panel, alttan panel ve sayfa içi formla çalışır; compact kart her zaman sepetten geçer. Ürün ayarı bağış türünü, bağış türü de genel ayarı geçersiz kılar."
 
 #: includes/elementor/class-widget-donations-list.php:86
 msgid "Title"
@@ -7274,6 +7336,10 @@ msgstr "Pencere genişliği ve padding “Modal & Form Görünümü” sekmesind
 
 msgid "Wins over the product's own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct."
 msgstr "Ürünün kendi bağış türünün önüne geçer. Doğrudan bağış tek kalemli bir sipariştir; sonuç doğrudan olduğunda ek bağış seçeneği bağışçıya gösterilmez."
+
+#: src/Admin/class-field-registry.php
+msgid "Wins over the product's own donation type. A direct donation is a single-line order, so the add-on choice is not shown to the donor when the result is direct. Not applied to the compact card (it always goes through the cart)."
+msgstr "Ürünün kendi bağış türünü geçersiz kılar. Doğrudan bağış tek kalemli bir sipariştir; bu yüzden sonuç doğrudansa ek bağış seçeneği bağışçıya gösterilmez. Compact karta uygulanmaz (o her zaman sepetten geçer)."
 
 #: src/Admin/class-field-registry.php
 msgid "With direct donation the form always asks for the donor's email address (required): WooCommerce's payment page does not ask for billing details, and payment methods and order emails need it."
