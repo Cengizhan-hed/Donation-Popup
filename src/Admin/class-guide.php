@@ -125,6 +125,28 @@ final class Guide {
 				),
 				'code'  => '',
 			),
+			'phone'      => array(
+				'title' => __( 'Phone number field', 'woo-donation-popup' ),
+				'body'  => array(
+					__( '1. Where it is: the phone number is part of the donor details step of the donation form and of the compact card. There is nothing to set: the check works for every country and language, on phones and computers.', 'woo-donation-popup' ),
+					__( '2. What donors see: the country code list starts with your WooCommerce store country. While typing, the number is spaced the way that country writes it (for Turkey: 530 307 15 93) and no extra digits can be typed. A leading 0, 00 or country code (+90, +44) that is typed or pasted is removed by itself and the country code list follows it.', 'woo-donation-popup' ),
+					__( '3. Wrong numbers: if the number is too short, a clear line appears under the field when the donor leaves it, and the Continue button stays dimmed until the number is complete. A number that does not look like a mobile number (Turkey: not starting with 5, United Kingdom: not starting with 7) only shows a hint and never blocks the gift. The same goes for countries whose number lengths vary: a number of unusual length only shows a hint, and only clearly impossible lengths are stopped.', 'woo-donation-popup' ),
+					__( '4. What is saved: the donor details on the order keep the number exactly as typed with its country code. The WooCommerce billing phone receives the same number in international format (for example +905303071593), which payment, SMS and shipping tools expect. The server checks the number again with the same rules.', 'woo-donation-popup' ),
+				),
+				'code'  => '[wdp_donation_form]',
+			),
+			'email'      => array(
+				'title' => __( 'Donor e-mails', 'woo-donation-popup' ),
+				'body'  => array(
+					__( '1. Nothing to install: the donation details appear in the standard WooCommerce order e-mails (Processing, Completed, New order). Customize their colors and logo under WooCommerce → Settings → Emails.', 'woo-donation-popup' ),
+					__( '2. Thank-you above the order table: Donation Panel → Cart and checkout → Thank-you screen → "Thank-you in donor e-mails" (on by default). Donors get your thank-you message in the Processing and Completed e-mails. For a campaign product one extra line shows the amount raised and the goal at the time the e-mail is sent. It is never added to the e-mails you receive, and it works even when the Thank-you screen module is off.', 'woo-donation-popup' ),
+					__( '3. Change the wording: the same "Thank-you message" field under Thank-you screen is used on the page and in the e-mail. Leave it empty for the built-in wording. Only links, bold, italic and line breaks are kept.', 'woo-donation-popup' ),
+					__( '4. Privacy: in e-mails to donors the phone number is left out (WooCommerce already shows the billing phone); donation type, names and note stay. In e-mails to you every field stays. Internal plugin data is never shown in any e-mail, and the order itself is not changed.', 'woo-donation-popup' ),
+					__( '5. Language: e-mails to donors use the site language and the labels are translated when the e-mail is sent, so a Turkish label never appears in an English e-mail and the other way round.', 'woo-donation-popup' ),
+				),
+				'code'  => '',
+				'link'  => array( Admin_Bootstrap::SLUG_CHECKOUT, 'dpa-s-thanks', __( 'Open the Thank-you settings', 'woo-donation-popup' ) ),
+			),
 			'colors'     => array(
 				'title'  => __( 'Setting the colors', 'woo-donation-popup' ),
 				'body'   => array(

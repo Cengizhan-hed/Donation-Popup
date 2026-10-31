@@ -10,7 +10,8 @@ import { parseLocalEvalJson, runLocalEvalFile } from '../helpers/local-wp-eval.m
 const PRODUCT = process.env.WDP_EXP_PRODUCT_ID || '0';
 const CHECKOUT = process.env.WDP_EXP_CHECKOUT === 'blocks' ? 'blocks' : 'classic';
 const WP_DIR = process.env.WDP_LOCAL_WP_DIR || '';
-const DONOR = { name: 'Çağlar Şükrü Öztürk İğdır', phone: '+44 7700 900123' };
+// Bağışçı yazdığı numara (ülke koduyla); ödeme sayfasına WooCommerce'e uygun E.164 olarak gelir.
+const DONOR = { name: 'Çağlar Şükrü Öztürk İğdır', phone: '+44 7700 900123', e164: '+447700900123' };
 const CHECKOUT_URL = /checkout|odeme|ödeme/i;
 const SHOT_DIR = path.resolve(process.cwd(), process.env.WDP_ONCE_SONRA_DIR || 'build/handoff/ONCE-SONRA/checkout-prefill');
 
@@ -61,7 +62,7 @@ test.describe(`ödeme ön doldurma (${CHECKOUT})`, () => {
     const hasEmail = await donate(page);
     await expect(page.locator(sel.first).first()).toHaveValue('Çağlar Şükrü Öztürk');
     await expect(page.locator(sel.last).first()).toHaveValue('İğdır');
-    await expect(page.locator(sel.phone).first()).toHaveValue(DONOR.phone);
+    await expect(page.locator(sel.phone).first()).toHaveValue(DONOR.e164);
     if (hasEmail) {
       await expect(page.locator(sel.email).first()).toHaveValue('caglar.sukru@wdp-e2e.test');
     }
@@ -84,7 +85,7 @@ test.describe(`ödeme ön doldurma (${CHECKOUT})`, () => {
     await donate(page);
     await expect(page.locator(sel.first).first()).toHaveValue('Hesap');
     await expect(page.locator(sel.last).first()).toHaveValue('İğdır');
-    await expect(page.locator(sel.phone).first()).toHaveValue(DONOR.phone);
+    await expect(page.locator(sel.phone).first()).toHaveValue(DONOR.e164);
     await shot(page, info, 'girisli-kismi');
   });
 });

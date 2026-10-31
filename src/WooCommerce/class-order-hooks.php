@@ -28,6 +28,7 @@ class Order_Hooks {
 		( new Donation_Order_Meta() )->register();
 
 		Order_Meta_Keys::init();
+		\DonationPanel\WooCommerce\Email\Email_Hooks::init();
 		Order_Privacy::init();
 	}
 

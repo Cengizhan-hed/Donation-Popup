@@ -108,7 +108,10 @@ $donation_panel_lock_icon = '<svg class="donation-panel-ico" width="20" height="
  * @param bool   $required Zorunlu mu.
  * @param string $extra    Ek öznitelikler (çağıran kaçışlar).
  */
-$donation_panel_phone_field = static function ( $name, $id, $required, $extra ) use ( $donation_panel_phone ) {
+$donation_panel_phone_short  = __( 'This phone number looks incomplete or too long. Please check the digits.', 'woo-donation-popup' );
+$donation_panel_phone_mobile = __( 'This does not look like a mobile number. You can still continue.', 'woo-donation-popup' );
+$donation_panel_phone_length = __( 'This number has an unusual length for the selected country. Please double-check it; you can still continue.', 'woo-donation-popup' );
+$donation_panel_phone_field  = static function ( $name, $id, $required, $extra ) use ( $donation_panel_phone, $donation_panel_phone_short, $donation_panel_phone_mobile, $donation_panel_phone_length ) {
 	$dial = isset( $donation_panel_phone['dial'] ) ? (string) $donation_panel_phone['dial'] : '';
 	$iso  = isset( $donation_panel_phone['iso'] ) ? (string) $donation_panel_phone['iso'] : '';
 	$list = isset( $donation_panel_phone['countries'] ) ? (array) $donation_panel_phone['countries'] : array();
@@ -120,13 +123,16 @@ $donation_panel_phone_field = static function ( $name, $id, $required, $extra ) 
 				<svg class="donation-panel-ico donation-panel-phone__chev" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
 				<select class="donation-panel-phone__select" data-dp-dial aria-label="<?php esc_attr_e( 'Country code', 'woo-donation-popup' ); ?>">
 					<?php foreach ( $list as $donation_panel_country ) : ?>
-						<option value="<?php echo esc_attr( (string) $donation_panel_country['dial'] ); ?>"<?php echo (string) $donation_panel_country['iso'] === $iso ? ' selected' : ''; ?>><?php echo esc_html( (string) $donation_panel_country['name'] . ' (+' . (string) $donation_panel_country['dial'] . ')' ); ?></option>
+						<option value="<?php echo esc_attr( (string) $donation_panel_country['dial'] ); ?>" data-iso="<?php echo esc_attr( (string) $donation_panel_country['iso'] ); ?>"<?php echo (string) $donation_panel_country['iso'] === $iso ? ' selected' : ''; ?>><?php echo esc_html( (string) $donation_panel_country['name'] . ' (+' . (string) $donation_panel_country['dial'] . ')' ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</span>
 		<?php endif; ?>
-		<input class="donation-panel-phone__input" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="tel" inputmode="tel" autocomplete="tel-national" maxlength="28"<?php echo $required ? ' required aria-required="true"' : ''; ?> <?php echo $extra; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Çağıran kaçışlar. ?> />
+		<input class="donation-panel-phone__input" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $name ); ?>" type="tel" inputmode="tel" autocomplete="tel" maxlength="28" data-msg-short="<?php echo esc_attr( $donation_panel_phone_short ); ?>" data-msg-mobile="<?php echo esc_attr( $donation_panel_phone_mobile ); ?>" data-msg-length="<?php echo esc_attr( $donation_panel_phone_length ); ?>"<?php echo $required ? ' required aria-required="true"' : ''; ?> <?php echo $extra; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Çağıran kaçışlar. ?> />
 	</span>
+	<?php if ( $list ) : ?>
+		<p class="donation-panel-muted donation-panel-phone__note" data-dp-phone-note role="status" hidden></p>
+	<?php endif; ?>
 	<?php
 };
 

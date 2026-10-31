@@ -89,8 +89,9 @@ final class PhoneFieldLocaleTest extends TestCase {
 		$this->assertSame('Israel', $countries['il']['name']);
 		$this->assertSame('il', \DonationPanel\Support\Phone_Countries::get_default_country_iso());
 		$len = \DonationPanel\Support\Phone_Countries::get_national_length_for_iso('il');
-		$this->assertSame(7, $len['min']);
-		$this->assertSame(12, $len['max']);
+		// Tüm ülkeler phone-rules.json'da (İsrail 8-9 hane).
+		$this->assertSame(8, $len['min']);
+		$this->assertSame(9, $len['max']);
 	}
 
 	public function test_filter_overrides_default_but_unknown_value_falls_back_to_store_country(): void {
